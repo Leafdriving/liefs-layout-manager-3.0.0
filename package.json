@@ -1,0 +1,11 @@
+{
+  "name": "liefs-layout-manager",
+  "version": "3.0.1",
+  "description": "Dom Layout Framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Stacy Lief Kelly",
+  "license": "ISC"
+}
