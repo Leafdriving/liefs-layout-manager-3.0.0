@@ -63,17 +63,21 @@ class Handler {
     }
     static screensizeToCoord(dislaycell:DisplayCell, handlerMargin: number){
         let viewport = pf.viewport();
-        dislaycell.coord.replace(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex)
+        // dislaycell.coord.replace(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
+        dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
 
     static update(ArrayofHandlerInstances:Handler[] = Handler.instances, instanceNo:number = 0, derender:boolean = false){
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
-            if (handlerInstance.coord) 
+            if (handlerInstance.coord) {
                 handlerInstance.rootCell.coord.copy(handlerInstance.coord);
-            else
-                Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
+            }
+            else {
+                Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);  
+            }
+            handlerInstance.rootCell.coord.copyWithin();
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
@@ -186,6 +190,7 @@ class Handler {
             width = (ishor) ? cellsizepx : coord.width;
             height = (ishor) ? coord.height : cellsizepx;
             displaycell.coord.replace(x, y, width, height, Handler.currentZindex);
+            displaycell.coord.copyWithin( displaygroup.coord );
 
             Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
             
@@ -200,7 +205,6 @@ class Handler {
         let clipString:string;
 
         if(parentDisplaygroup){
-            // displaycell.coord.clippedBy(parentDisplaygroup.coord, displaycell.label, parentDisplaygroup.label);
             if (parentDisplaygroup.coord.isCoordCompletelyOutside( displaycell.coord )) derender = true;
             else clipString = parentDisplaygroup.coord.clipStyleString( displaycell.coord );
         }

@@ -6,12 +6,21 @@ css("BlueBG", "background-color:blue;color:white");
 
 
 H( h(
-    dragbar(I("one", "hi", "BlueBG", "250px"), 100, 500),
-    tree( I("two", "", "GreenBG", "250px") ),
+    I("one", "hi", "BlueBG", "250px"),
+    I("two", "", "GreenBG", "250px"),
     5
     ),
     10
 )
+
+// H( h(
+//     dragbar(I("one", "hi", "BlueBG", "250px"), 100, 500),
+//     tree( I("two", "", "GreenBG", "250px") ),
+//     5
+//     ),
+//     10
+// )
+
 // H(
 //     h(
 //         I("one", "", "BlueBG", tree()),

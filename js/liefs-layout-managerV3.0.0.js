@@ -157,33 +157,34 @@ class Coord {
         return undefined;
     }
     copyWithin(...Arguments) {
-        let O = {};
+        let possArgs = {};
         let obj;
-        mf.applyArguments("Coord.copyWithin", Arguments, {}, Coord.CopyArgMap, O);
-        if ("Within" in O)
-            obj = O["Within"];
-        if ("Coord" in O)
-            obj = O["Coord"];
-        this.within.x = (obj) ? obj.x : ((O.x) ? O.x : this.x);
-        this.within.y = (obj) ? obj.y : ((O.y) ? O.y : this.y);
-        this.within.width = (obj) ? obj.width : ((O.width) ? O.width : this.width);
-        this.within.height = (obj) ? obj.height : ((O.height) ? O.height : this.height);
+        mf.applyArguments("Coord.copyWithin", Arguments, {}, Coord.CopyArgMap, possArgs);
+        if ("Within" in possArgs)
+            obj = possArgs["Within"];
+        if ("Coord" in possArgs)
+            obj = possArgs["Coord"];
+        this.within.x = (obj) ? obj.x : (("x" in possArgs) ? possArgs.x : this.x);
+        this.within.y = (obj) ? obj.y : (("y" in possArgs) ? possArgs.y : this.y);
+        this.within.width = (obj) ? obj.width : (("width" in possArgs) ? possArgs.width : this.width);
+        this.within.height = (obj) ? obj.height : (("height" in possArgs) ? possArgs.height : this.height);
+        console.log("CopyWithin");
+        console.log(this);
     }
     copy(...Arguments) {
-        // if no object, x, width, y, height
-        // if object left, top, right, bottom
+        // if no object, x, width, y, height, zindex
+        // if object left, top, right, bottom, zindex
         let possArgs = {};
         let obj;
         mf.applyArguments("Coord.copy", Arguments, {}, Coord.CopyArgMap, possArgs);
+        // console.log("Copy",possArgs); //////////////////
         if ("Within" in possArgs)
             obj = possArgs.Within;
         else if ("Coord" in possArgs) {
             obj = possArgs.Coord;
             this.within = possArgs.Coord.within;
         }
-        else {
-            this.copyWithin();
-        }
+        // if (this.within.x == undefined) this.copyWithin();
         if (obj) {
             possArgs.left = (possArgs.x) ? possArgs.x : 0;
             possArgs.top = (possArgs.y) ? possArgs.y : 0;
@@ -196,10 +197,13 @@ class Coord {
             : ((possArgs.width) ? possArgs.width : this.width);
         this.height = (obj) ? obj.height - (possArgs.top + possArgs.bottom)
             : ((possArgs.height) ? possArgs.height : this.height);
-        this.zindex = ("Coord" in possArgs)
-            ? possArgs.Coord.zindex + ((possArgs.left == 0 && possArgs.right == 0 && possArgs.top == 0 && possArgs.bottom == 0)
-                ? 0 : Handler.handlerZindexIncrement)
-            : ((possArgs.zindex) ? possArgs.zindex : this.zindex);
+        this.zindex = ("zindex" in possArgs) ? possArgs.zindex : Handler.currentZindex;
+        // this.zindex = ("Coord" in possArgs) 
+        //             ? possArgs.Coord.zindex + ( (possArgs.left==0 && possArgs.right==0 && possArgs.top==0 && possArgs.bottom==0) 
+        //                                   ? 0 : Handler.handlerZindexIncrement )
+        //             : ( (possArgs.zindex) ? possArgs.zindex : this.zindex);
+        console.log("Copy");
+        console.log(this); ////////////////////////////
     }
     // copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
     //     this.x = fromCoord.x +left;
@@ -546,16 +550,20 @@ class Handler {
     }
     static screensizeToCoord(dislaycell, handlerMargin) {
         let viewport = pf.viewport();
-        dislaycell.coord.replace(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
+        // dislaycell.coord.replace(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
+        dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
     }
     static update(ArrayofHandlerInstances = Handler.instances, instanceNo = 0, derender = false) {
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
-            if (handlerInstance.coord)
+            if (handlerInstance.coord) {
                 handlerInstance.rootCell.coord.copy(handlerInstance.coord);
-            else
+            }
+            else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
+            }
+            handlerInstance.rootCell.coord.copyWithin();
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
@@ -653,6 +661,7 @@ class Handler {
             width = (ishor) ? cellsizepx : coord.width;
             height = (ishor) ? coord.height : cellsizepx;
             displaycell.coord.replace(x, y, width, height, Handler.currentZindex);
+            displaycell.coord.copyWithin(displaygroup.coord);
             Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
             x += (ishor) ? width + displaygroup.marginHor : 0;
             y += (ishor) ? 0 : height + displaygroup.marginVer;
@@ -664,7 +673,6 @@ class Handler {
         let alreadyexists = (el) ? true : false;
         let clipString;
         if (parentDisplaygroup) {
-            // displaycell.coord.clippedBy(parentDisplaygroup.coord, displaycell.label, parentDisplaygroup.label);
             if (parentDisplaygroup.coord.isCoordCompletelyOutside(displaycell.coord))
                 derender = true;
             else

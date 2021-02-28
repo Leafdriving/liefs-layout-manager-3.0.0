@@ -86,8 +86,8 @@ declare class Coord {
     copyWithin(...Arguments: any): void;
     copy(...Arguments: any): void;
     replace(x: number, y: number, width: number, height: number, zindex?: number): void;
-    isCoordCompletelyOutside(sub: Coord): boolean;
-    clipStyleString(sub: Coord): string;
+    isCoordCompletelyOutside(sub: Coord | Within): boolean;
+    clipStyleString(sub: Coord | Within): string;
     isPointIn(x: number, y: number): boolean;
     asAttributeString(): string;
 }
