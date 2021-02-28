@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        // "outFile" : "js/liefs-core.js",
+        "outFile" : "js/liefs-layout-managerV3.0.0.js",
         "outDir" : "js",
         "declaration" : true,        
         "allowJs": false,
@@ -19,12 +19,12 @@
         "ts/Pages.ts",
         "ts/Drag.ts",
         "ts/Hold.ts",
+        "ts/Overlay.ts",
         "ts/DragBar.ts",
         "ts/ScrollBar.ts",
         "ts/Context.ts",
         "ts/Modal.ts",
         "ts/Tree.ts",
-        "ts/Overlay.ts",
-        "ts/testscript.ts"
+        // "ts/testscript.ts"
     ]
 }

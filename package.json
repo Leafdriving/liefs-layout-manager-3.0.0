@@ -1,11 +1,19 @@
 {
   "name": "liefs-layout-manager",
-  "version": "3.0.1",
-  "description": "Dom Layout Framework",
+  "version": "3.0.0",
+  "description": "Javascript Framework for Webpage Layout",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leafdriving/liefs-layout-manager-3.0.0.git"
+  },
   "author": "Stacy Lief Kelly",
-  "license": "ISC"
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Leafdriving/liefs-layout-manager-3.0.0/issues"
+  },
+  "homepage": "https://github.com/Leafdriving/liefs-layout-manager-3.0.0#readme"
 }

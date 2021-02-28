@@ -1,3 +1,13 @@
+class Point{x:number;y:number}
+class Within{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    constructor(...Arguments: any) {
+        mf.applyArguments("Within", Arguments, {}, {number : ["x", "y", "width", "height"]}, this);
+    }
+}
 class Coord {
     static instances:Coord[] = [];
     static byLabel(label:string):Coord{
@@ -9,11 +19,12 @@ class Coord {
     static defaults = {
         label : function(){return `Coord_${pf.pad_with_zeroes(Coord.instances.length)}`},
         x : 0, y : 0, width : 0, height: 0, zindex: 0
-    }
+    };
     static argMap = {
         string : ["label"],
         number : ["x", "y", "width", "height", "zindex"]
-    }
+    };
+    static CopyArgMap = {Within : ["Within"],Coord : ["Coord"],number : ["x", "y", "width", "height", "zindex"]};
 
     label:string;
     x: number;
@@ -21,31 +32,65 @@ class Coord {
     width: number;
     height: number;
     zindex: number;
-    parent: Coord;
+    within: Within = new Within();
 
     constructor(...Arguments: any) {
         Coord.instances.push(this);
         mf.applyArguments("Coord", Arguments, Coord.defaults, Coord.argMap, this);
-
     }
-    // clippedBy(clipCoord:Coord, childName:string="", parentName:string=""): void{
-    //     // console.log(`child: ${childName}, parent: ${parentName}`);
+    copyWithin(...Arguments:any){
+        let O:{x?:number,y?:number,width?:number,height?:number} = {};
+        let obj:Coord|Within;
+        mf.applyArguments("Coord.copyWithin", Arguments, {}, Coord.CopyArgMap, O);
+        if ("Within" in O) obj = O["Within"];
+        if ("Coord" in O) obj = O["Coord"];
+        this.within.x = (obj) ? obj.x : ( (O.x) ? O.x : this.x);
+        this.within.y = (obj) ? obj.y : ( (O.y) ? O.y : this.y);
+        this.within.width = (obj) ? obj.width : ( (O.width) ? O.width : this.width);
+        this.within.height = (obj) ? obj.height : ( (O.height) ? O.height : this.height);
+    }
+    copy(...Arguments:any){
+        // if no object, x, width, y, height
+        // if object left, top, right, bottom
+        let possArgs:{x?:number,y?:number,width?:number,height?:number,zindex?:number,
+               left?:number,right?:number,top?:number,bottom?:number,
+               Within?:Within,Coord?:Coord} = {};
+        let obj:Coord|Within;
+        mf.applyArguments("Coord.copy", Arguments, {}, Coord.CopyArgMap, possArgs);
+        if ("Within" in possArgs) obj = possArgs.Within;
+        else if ("Coord" in possArgs) {
+            obj = possArgs.Coord;
+            this.within = possArgs.Coord.within;
+        } else {this.copyWithin();}
+        if (obj) {possArgs.left = (possArgs.x) ? possArgs.x : 0; possArgs.top = (possArgs.y) ? possArgs.y : 0;
+                  possArgs.right = (possArgs.width) ? possArgs.width : 0;possArgs.bottom= (possArgs.height) ? possArgs.height : 0
+        }
+        this.x = (obj) ? obj.x + possArgs.left : (("x" in possArgs) ? possArgs.x : this.x);
+        this.y = (obj) ? obj.y + possArgs.top  : (("y" in possArgs) ? possArgs.y : this.y);
+        this.width = (obj) ? obj.width - (possArgs.left + possArgs.right)
+                           : ( (possArgs.width) ? possArgs.width : this.width );
+        this.height = (obj) ? obj.height - (possArgs.top + possArgs.bottom)
+                           : ( (possArgs.height) ? possArgs.height : this.height );                           
+        this.zindex = ("Coord" in possArgs) 
+                    ? possArgs.Coord.zindex + ( (possArgs.left==0 && possArgs.right==0 && possArgs.top==0 && possArgs.bottom==0) 
+                                          ? 0 : Handler.handlerZindexIncrement )
+                    : ( (possArgs.zindex) ? possArgs.zindex : this.zindex);
+    }
+    // copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
+    //     this.x = fromCoord.x +left;
+    //     this.y = fromCoord.y + top;
+    //     this.width = fromCoord.width - (left + right);
+    //     this.height = fromCoord.height - (top + bottom);
+    //     this.zindex = fromCoord.zindex + ((left==0 && right==0 && top==0 && bottom==0) ? 0 : Handler.handlerZindexIncrement);
+    //     if (this.within.x == undefined) this.copyWithin();
     // }
-    copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
-        this.x = fromCoord.x +left;
-        this.y = fromCoord.y + top;
-        this.width = fromCoord.width - (left + right);
-        this.height = fromCoord.height - (top + bottom);
-        this.zindex = fromCoord.zindex + ((left==0 && right==0 && top==0 && bottom==0) ? 0 : Handler.handlerZindexIncrement);
-        this.parent = fromCoord.parent;
-    }
-    replace(x:number, y:number, width:number, height:number, zindex:number = undefined, clip:Coord = undefined) {
+    replace(x:number, y:number, width:number, height:number, zindex:number = undefined) {
         if (x != undefined) this.x = x;
         if (y != undefined)this.y = y;
         if (width != undefined) this.width = width;
         if (height != undefined) this.height = height;
         if (zindex != undefined) this.zindex = zindex;
-        if (clip != undefined) this.parent = clip;
+        // if (clip != undefined) this.parent = clip;
     }
     isCoordCompletelyOutside(sub: Coord){
         return ((sub.x + sub.width < this.x) ||

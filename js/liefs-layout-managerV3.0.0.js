@@ -1,0 +1,1745 @@
+class mf {
+    /**
+    * Sample Comment
+    * argobj is blah blah
+    * @returns blah blah
+    */
+    static modifyClassProperties(argobj, targetobject) {
+        for (let key of Object.keys(argobj)) {
+            if (typeof (argobj[key]) == "function" && key == "label") {
+                targetobject[key] = argobj[key]();
+            }
+            else
+                targetobject[key] = argobj[key];
+        }
+    }
+    static applyArguments(callLabel, Arguments, classDefaults, classArgmap, THIS, customtypes = []) {
+        let retArgs = pf.sortArgs(Arguments, callLabel, customtypes);
+        let updatedDefaults = pf.ifObjectMergeWithDefaults(retArgs, classDefaults);
+        let retArgsMapped = pf.retArgsMapped(retArgs, updatedDefaults, classArgmap);
+        mf.modifyClassProperties(retArgsMapped, THIS);
+    }
+}
+class pf {
+    /**
+    * 'message' is the string outputed to the viewer
+    * @returns nothing
+    */
+    static errorHandling(message) {
+        console.log(`Error Handeling Called\n${message}`);
+    }
+    static commonKeys(obj1, obj2) {
+        let returnStringArray = [];
+        for (let index in obj1)
+            if (index in obj2)
+                returnStringArray.push(index);
+        return returnStringArray;
+    }
+    static retArgsMapped(retArgs, defaults, argsMap) {
+        let returnObject = {};
+        let propertyName;
+        let indexNo;
+        for (let i in defaults)
+            returnObject[i] = defaults[i];
+        for (let typeName in retArgs) {
+            if (typeName in argsMap) {
+                indexNo = 0;
+                while (indexNo < retArgs[typeName].length &&
+                    indexNo < argsMap[typeName].length) {
+                    returnObject[argsMap[typeName][indexNo]] = retArgs[typeName][indexNo];
+                    indexNo++;
+                }
+            }
+        }
+        return returnObject;
+    }
+    static ifObjectMergeWithDefaults(retArgs, defaults) {
+        return ("object" in retArgs) ? pf.mergeObjects(defaults, retArgs["object"][0]) : defaults;
+    }
+    static sortArgs(Args, // 1st argument is a list of args.
+    label = "unlabeled", // 2nd argument is a debug label
+    customTypes = []) {
+        customTypes = customTypes.concat(pf.defaultIsChecks); // assumed these are included.
+        let returnArray = {};
+        let valueType;
+        let returnValue;
+        for (let value of Args) {
+            valueType = typeof (value); // evaluate type
+            for (let checkFunction of customTypes) { // check if it is a custom Type
+                returnValue = checkFunction(value);
+                if (returnValue) {
+                    valueType = returnValue;
+                }
+            }
+            if (!(valueType in returnArray)) { // If type doesn't exist, add empty array
+                returnArray[valueType] = [];
+            }
+            returnArray[valueType].push(value); // Assign Type Value
+        }
+        ;
+        return returnArray;
+    }
+    static setAttrib(el, attrib, value) {
+        let prevAttrib = el.getAttribute(attrib);
+        if (prevAttrib != value) {
+            let att = document.createAttribute(attrib);
+            att.value = value;
+            el.setAttributeNode(att);
+        }
+    }
+    static getAttribs(el, retObj = {}) {
+        for (let i = 0; i < el.attributes.length; i++) {
+            retObj[el.attributes[i].name] = el.attributes[i].value;
+        }
+        return retObj;
+    }
+    static elExists(id_label) { return document.getElementById(id_label); }
+    static viewport() {
+        var width = window.innerWidth || document.documentElement.clientWidth ||
+            document.body.clientWidth;
+        var height = window.innerHeight || document.documentElement.clientHeight ||
+            document.body.clientHeight;
+        return [width, height];
+    }
+    static errorReporting(errString) {
+        console.log("Error Reporting");
+        console.log(errString);
+    }
+    static uis0(num) { return (num == undefined) ? 0 : num; }
+    static concatArray(main, added) { for (let displaycell of added)
+        main.push(displaycell); }
+}
+pf.isTypePx = function (it) { if (typeof (it) == "string" && it.substr(-2) == "px")
+    return "pixels"; };
+pf.pxAsNumber = function (dim) { return +(dim.slice(0, -2)); };
+pf.isTypePercent = function (it) { if (typeof (it) == "string" && it.substr(-1) == "%")
+    return "percent"; };
+pf.percentAsNumber = function (dim) { return +(dim.slice(0, -1)); };
+pf.isDim = function (it) { if ((typeof (it) == "string") && (it.substr(-2) == "px" || it.substr(-1) == "%"))
+    return "dim"; };
+pf.isArray = function (it) { if (typeof (it) == "object" && Array.isArray(it))
+    return "Array"; };
+pf.isObjectAClass = function (it) { if (typeof (it) == "object" && it.constructor.name != "Object")
+    return it.constructor.name; };
+pf.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
+pf.classProperties = function (a) { return Object.getOwnPropertyNames(a); };
+pf.pad_with_zeroes = function (Number, length = 3) {
+    let returnString = '' + Number;
+    while (returnString.length < length)
+        returnString = '0' + returnString;
+    return returnString;
+};
+pf.mergeObjects = function (startObj, AddObj) {
+    let returnObject = {};
+    for (let i in startObj)
+        returnObject[i] = startObj[i];
+    for (let j in AddObj)
+        returnObject[j] = AddObj[j];
+    return returnObject;
+};
+class Point {
+}
+class Within {
+    constructor(...Arguments) {
+        mf.applyArguments("Within", Arguments, {}, { number: ["x", "y", "width", "height"] }, this);
+    }
+}
+class Coord {
+    constructor(...Arguments) {
+        this.within = new Within();
+        Coord.instances.push(this);
+        mf.applyArguments("Coord", Arguments, Coord.defaults, Coord.argMap, this);
+    }
+    static byLabel(label) {
+        for (let key in Coord.instances)
+            if (Coord.instances[key].label == label)
+                return Coord.instances[key];
+        return undefined;
+    }
+    copyWithin(...Arguments) {
+        let O = {};
+        let obj;
+        mf.applyArguments("Coord.copyWithin", Arguments, {}, Coord.CopyArgMap, O);
+        if ("Within" in O)
+            obj = O["Within"];
+        if ("Coord" in O)
+            obj = O["Coord"];
+        this.within.x = (obj) ? obj.x : ((O.x) ? O.x : this.x);
+        this.within.y = (obj) ? obj.y : ((O.y) ? O.y : this.y);
+        this.within.width = (obj) ? obj.width : ((O.width) ? O.width : this.width);
+        this.within.height = (obj) ? obj.height : ((O.height) ? O.height : this.height);
+    }
+    copy(...Arguments) {
+        // if no object, x, width, y, height
+        // if object left, top, right, bottom
+        let possArgs = {};
+        let obj;
+        mf.applyArguments("Coord.copy", Arguments, {}, Coord.CopyArgMap, possArgs);
+        if ("Within" in possArgs)
+            obj = possArgs.Within;
+        else if ("Coord" in possArgs) {
+            obj = possArgs.Coord;
+            this.within = possArgs.Coord.within;
+        }
+        else {
+            this.copyWithin();
+        }
+        if (obj) {
+            possArgs.left = (possArgs.x) ? possArgs.x : 0;
+            possArgs.top = (possArgs.y) ? possArgs.y : 0;
+            possArgs.right = (possArgs.width) ? possArgs.width : 0;
+            possArgs.bottom = (possArgs.height) ? possArgs.height : 0;
+        }
+        this.x = (obj) ? obj.x + possArgs.left : (("x" in possArgs) ? possArgs.x : this.x);
+        this.y = (obj) ? obj.y + possArgs.top : (("y" in possArgs) ? possArgs.y : this.y);
+        this.width = (obj) ? obj.width - (possArgs.left + possArgs.right)
+            : ((possArgs.width) ? possArgs.width : this.width);
+        this.height = (obj) ? obj.height - (possArgs.top + possArgs.bottom)
+            : ((possArgs.height) ? possArgs.height : this.height);
+        this.zindex = ("Coord" in possArgs)
+            ? possArgs.Coord.zindex + ((possArgs.left == 0 && possArgs.right == 0 && possArgs.top == 0 && possArgs.bottom == 0)
+                ? 0 : Handler.handlerZindexIncrement)
+            : ((possArgs.zindex) ? possArgs.zindex : this.zindex);
+    }
+    // copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
+    //     this.x = fromCoord.x +left;
+    //     this.y = fromCoord.y + top;
+    //     this.width = fromCoord.width - (left + right);
+    //     this.height = fromCoord.height - (top + bottom);
+    //     this.zindex = fromCoord.zindex + ((left==0 && right==0 && top==0 && bottom==0) ? 0 : Handler.handlerZindexIncrement);
+    //     if (this.within.x == undefined) this.copyWithin();
+    // }
+    replace(x, y, width, height, zindex = undefined) {
+        if (x != undefined)
+            this.x = x;
+        if (y != undefined)
+            this.y = y;
+        if (width != undefined)
+            this.width = width;
+        if (height != undefined)
+            this.height = height;
+        if (zindex != undefined)
+            this.zindex = zindex;
+        // if (clip != undefined) this.parent = clip;
+    }
+    isCoordCompletelyOutside(sub) {
+        return ((sub.x + sub.width < this.x) ||
+            (sub.x > this.x + this.width) ||
+            (sub.y + sub.height < this.y) ||
+            (sub.y > this.y + this.height));
+    }
+    clipStyleString(sub) {
+        let returnString = "";
+        let left = (sub.x < this.x) ? (this.x - sub.x) : 0;
+        let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
+        let top = (sub.y < this.y) ? (this.y - sub.y) : 0;
+        let bottom = (sub.y + sub.height > this.y + this.height) ? (sub.y + sub.height - (this.y + this.height)) : 0;
+        if (left + right + top + bottom > 0)
+            returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`;
+        return returnString;
+    }
+    isPointIn(x, y) { return (this.x <= x && x <= this.x + this.width && this.y <= y && y <= this.y + this.height); }
+    asAttributeString() { return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; z-index:${this.zindex};`; }
+}
+Coord.instances = [];
+Coord.defaults = {
+    label: function () { return `Coord_${pf.pad_with_zeroes(Coord.instances.length)}`; },
+    x: 0, y: 0, width: 0, height: 0, zindex: 0
+};
+Coord.argMap = {
+    string: ["label"],
+    number: ["x", "y", "width", "height", "zindex"]
+};
+Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], number: ["x", "y", "width", "height", "zindex"] };
+/**
+ * This Class Holds the HTMLElement
+ */
+class HtmlBlock {
+    /**
+     * Constructor Arguments include:
+     *
+     *  label:string;[first string argument]
+     *  innerHTML:string;[second string argument]
+     *  tag:string;
+     *  dim:string;
+     *
+     *  events: Events;
+     *  el:HTMLElement;
+     *
+     *  marginLeft : number;
+     *  marginRight : number;
+     *  marginTop : number;
+     *  marginBottom : number;
+     *
+     *
+     * css:string - generated Argument of Class Css
+     */
+    constructor(...Arguments) {
+        this.attributes = {};
+        HtmlBlock.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "HtmlBlock");
+        mf.applyArguments("HtmlBlock", Arguments, HtmlBlock.defaults, HtmlBlock.argMap, this);
+        let elementWithIdAsLabel = document.getElementById(this.label);
+        if (elementWithIdAsLabel) {
+            this.innerHTML = elementWithIdAsLabel.innerHTML;
+            this.attributes = pf.getAttribs(elementWithIdAsLabel, this.attributes);
+            elementWithIdAsLabel.remove();
+        }
+        if ("Css" in retArgs) {
+            this.css = retArgs["Css"][0].label;
+        }
+        if ("number" in retArgs) {
+            let length = retArgs["number"].length;
+            if (length == 1) {
+                this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
+            }
+            else if (length == 2) {
+                this.marginRight = this.marginLeft;
+                this.marginBottom = this.marginTop;
+            }
+        }
+        if (this.label.trim() == "")
+            this.label = `htmlBlock_${pf.pad_with_zeroes(HtmlBlock.instances.length)}`;
+    }
+    static byLabel(label) {
+        for (let key in HtmlBlock.instances)
+            if (HtmlBlock.instances[key].label == label)
+                return HtmlBlock.instances[key];
+        return undefined;
+    }
+}
+HtmlBlock.instances = [];
+HtmlBlock.defaults = {
+    label: function () { return `htmlBlock_${pf.pad_with_zeroes(HtmlBlock.instances.length)}`; },
+    innerHTML: " ",
+    tag: "DIV",
+    css: " ",
+    dim: ""
+};
+HtmlBlock.argMap = {
+    string: ["label", "innerHTML", "css"],
+    dim: ["dim"],
+    Events: ["events"],
+    number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+    Tree: ["tree"]
+};
+function html(...Arguments) {
+    let htmlblock = new HtmlBlock("", ...Arguments);
+    htmlblock.label = HtmlBlock.defaults["label"]();
+    return htmlblock;
+}
+//interface Action { [key: string]: Function; }
+class Events {
+    constructor(...Arguments) {
+        Events.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Events");
+        if ("object" in retArgs) {
+            this.actions = retArgs["object"][0];
+            delete retArgs["object"];
+        }
+        let updatedDefaults = pf.ifObjectMergeWithDefaults(retArgs, Events.defaults);
+        let retArgsMapped = pf.retArgsMapped(retArgs, updatedDefaults, Events.argMap);
+        mf.modifyClassProperties(retArgsMapped, this);
+    }
+    static byLabel(label) {
+        for (let key in Events.instances)
+            if (Events.instances[key].label == label)
+                return Events.instances[key];
+        return undefined;
+    }
+    applyToHtmlBlock(htmlblock) {
+        let el = htmlblock.el;
+        this.label = htmlblock.label;
+        for (let key in this.actions) {
+            if (key == "onhold") {
+                new Hold(el, this.actions[key]);
+            }
+            else if (key == "ondrag") {
+                new Drag(el, this.actions[key]);
+            }
+            else {
+                let value_Function = this.actions[key];
+                Events.history.push(`document.getElementById("${htmlblock.label}").${key} = ${value_Function}`);
+                el[key] = value_Function;
+            }
+        }
+    }
+}
+Events.elementId = "llmEvents";
+Events.instances = [];
+Events.history = [];
+Events.defaults = {
+    label: function () { return `Events_${pf.pad_with_zeroes(Events.instances.length)}`; },
+};
+Events.argMap = {
+    string: ["label"]
+};
+function events(...arguments) { return new Events(...arguments); }
+class DisplayCell {
+    constructor(...Arguments) {
+        this.htmlBlock = undefined;
+        this.displaygroup = undefined;
+        this.overlay = undefined;
+        this.isRendered = false;
+        DisplayCell.instances.push(this);
+        mf.applyArguments("DisplayCell", Arguments, DisplayCell.defaults, DisplayCell.argMap, this);
+        if (this.displaygroup && this.displaygroup.htmlBlock) {
+            this.htmlBlock = this.displaygroup.htmlBlock;
+        }
+        if (this.htmlBlock)
+            this.label = `${this.htmlBlock.label}`;
+        this.coord = new Coord(this.label);
+    }
+    static byLabel(label) {
+        for (let key in DisplayCell.instances)
+            if (DisplayCell.instances[key].label == label)
+                return DisplayCell.instances[key];
+        return undefined;
+    }
+    hMenuBar(menuObj) {
+        menuObj["launchcell"] = this;
+        this.htmlBlock.events = events({ onmouseover: hMenuBar(menuObj) });
+    }
+    vMenuBar(menuObj) {
+        menuObj["launchcell"] = this;
+        this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) });
+    }
+}
+DisplayCell.instances = [];
+DisplayCell.defaults = {
+    label: function () { return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`; },
+    dim: ""
+};
+DisplayCell.argMap = {
+    string: ["label"],
+    HtmlBlock: ["htmlBlock"],
+    DisplayGroup: ["displaygroup"],
+    dim: ["dim"],
+    // number : ["marginLeft", "marginRight", "marginTop", "marginBottom"],
+    Pages: ["pages"],
+};
+function I(...Arguments) {
+    let newblock = new HtmlBlock(...Arguments);
+    return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
+}
+class DisplayGroup {
+    constructor(...Arguments) {
+        this.cellArray = [];
+        this.htmlBlock = undefined;
+        this.overlay = undefined;
+        DisplayGroup.instances.push(this);
+        this.coord = new Coord();
+        let retArgs = pf.sortArgs(Arguments, "DisplayGroup");
+        mf.applyArguments("DisplayGroup", Arguments, DisplayGroup.defaults, DisplayGroup.argMap, this);
+        if ("DisplayCell" in retArgs)
+            this.cellArray = retArgs["DisplayCell"];
+        if ("HtmlBlock" in retArgs) {
+            this.htmlBlock = retArgs["HtmlBlock"][0];
+        }
+        if ("Array" in retArgs)
+            this.cellArray = retArgs["Array"][0];
+        if (("number" in retArgs) && retArgs["number"].length == 1)
+            this.marginVer = this.marginHor = retArgs["number"][0];
+        // Fill In Dim Values
+        let percentsum = 0;
+        let numOfEmptydims = 0;
+        for (let displaycell of this.cellArray) {
+            let dim = displaycell.dim;
+            if (dim == "")
+                numOfEmptydims++;
+            else if (pf.isTypePercent(dim))
+                percentsum += pf.percentAsNumber(dim);
+        }
+        let percentRamaining = 100 - percentsum;
+        if (numOfEmptydims) {
+            let newDimValue = String(percentRamaining / numOfEmptydims) + "%";
+            for (let displaycell of this.cellArray)
+                if (displaycell.dim == "")
+                    displaycell.dim = newDimValue;
+        }
+    }
+    static byLabel(label) {
+        for (let key in DisplayGroup.instances)
+            if (DisplayGroup.instances[key].label == label)
+                return DisplayGroup.instances[key];
+        return undefined;
+    }
+    totalPx() {
+        let cellArray = this.cellArray;
+        let totalFixedpx = 0;
+        for (let displaycell of cellArray) {
+            if (displaycell.pages && (!displaycell.dim)) {
+                displaycell.dim = displaycell.pages.evalCell().dim; // only covers one loop!
+            }
+            if (pf.isTypePx(displaycell.dim))
+                totalFixedpx += pf.pxAsNumber(displaycell.dim);
+        }
+        return totalFixedpx;
+    }
+}
+DisplayGroup.defaultMargins = 0;
+DisplayGroup.instances = [];
+DisplayGroup.defaults = {
+    label: function () { return `DisplayGroup_${pf.pad_with_zeroes(DisplayGroup.instances.length)}`; },
+    ishor: true,
+    marginHor: DisplayGroup.defaultMargins,
+    marginVer: DisplayGroup.defaultMargins,
+};
+DisplayGroup.argMap = {
+    string: ["label"],
+    boolean: ["ishor"],
+    number: ["marginHor", "marginVer"],
+    dim: ["dim"],
+    Overlay: ["overlay"]
+};
+DisplayGroup.argCustomTypes = [];
+function h(...Arguments) {
+    let displaycell = new DisplayCell(new DisplayGroup(...Arguments));
+    if (displaycell.displaygroup.dim)
+        displaycell.dim = displaycell.displaygroup.dim;
+    return displaycell;
+}
+function v(...Arguments) {
+    let displaycell = new DisplayCell(new DisplayGroup(false, ...Arguments));
+    if (displaycell.displaygroup.dim)
+        displaycell.dim = displaycell.displaygroup.dim;
+    return displaycell;
+}
+class Handler {
+    constructor(...Arguments) {
+        this.rootCell = undefined;
+        Handler.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Handler");
+        mf.applyArguments("Handler", Arguments, Handler.defaults, Handler.argMap, this);
+        if ("DisplayCell" in retArgs)
+            this.rootCell = retArgs["DisplayCell"][0];
+        else
+            pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
+        if (this.handlerMargin == undefined)
+            this.handlerMargin = Handler.handlerMarginDefault;
+        Handler.update( /* [this] */);
+        Css.update();
+        if (Handler.firstRun) {
+            Handler.firstRun = false;
+            window.onresize = function () { Handler.update(); };
+        }
+    }
+    static byLabel(label) {
+        for (let key in Handler.instances)
+            if (Handler.instances[key].label == label)
+                return Handler.instances[key];
+        return undefined;
+    }
+    pop() { Handler.pop(this); }
+    toTop() {
+        let index = Handler.instances.indexOf(this);
+        Handler.instances.splice(index, 1);
+        Handler.instances.push(this);
+        Handler.update();
+    }
+    static pop(handlerInstance = Handler.instances[Handler.instances.length - 1]) {
+        let index = Handler.instances.indexOf(handlerInstance);
+        if (index != -1) {
+            Handler.update([handlerInstance], index, true);
+            Handler.instances.splice(index, 1);
+        }
+    }
+    static screensizeToCoord(dislaycell, handlerMargin) {
+        let viewport = pf.viewport();
+        dislaycell.coord.replace(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
+    }
+    static update(ArrayofHandlerInstances = Handler.instances, instanceNo = 0, derender = false) {
+        Pages.activePages = [];
+        Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
+        for (let handlerInstance of ArrayofHandlerInstances) {
+            if (handlerInstance.coord)
+                handlerInstance.rootCell.coord.copy(handlerInstance.coord);
+            else
+                Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
+            Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
+            instanceNo += 1;
+            Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
+        }
+        if (Pages.activePages.length)
+            Pages.applyOnclick();
+    }
+    static renderDisplayCell(displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
+        let pages = displaycell.pages;
+        if (pages) {
+            let evalCurrentPage = pages.eval();
+            if (evalCurrentPage != pages.previousPage) {
+                pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
+                Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+            }
+            pages.displaycells[evalCurrentPage].coord.copy(displaycell.coord);
+            Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, false);
+            pages.currentPage = evalCurrentPage;
+            pages.addSelected();
+            Pages.activePages.push(pages);
+        }
+        else {
+            let htmlBlock = displaycell.htmlBlock;
+            let displaygroup = displaycell.displaygroup;
+            let overlay = displaycell.overlay;
+            if (htmlBlock) {
+                Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup);
+            }
+            if (displaygroup) {
+                displaygroup.coord.copy(displaycell.coord);
+                if (displaygroup && htmlBlock) {
+                    Handler.currentZindex += Handler.zindexIncrement;
+                    displaygroup.coord.copy(displaycell.coord, pf.uis0(htmlBlock.marginLeft), pf.uis0(htmlBlock.marginTop), pf.uis0(htmlBlock.marginRight), pf.uis0(htmlBlock.marginBottom));
+                }
+                Handler.renderDisplayGroup(displaycell, derender);
+            }
+            if (overlay) {
+                overlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+            }
+        }
+    }
+    static renderDisplayGroup(parentDisplaycell, derender) {
+        let displaygroup = parentDisplaycell.displaygroup;
+        let ishor = displaygroup.ishor;
+        let coord = displaygroup.coord;
+        let cellArraylength = displaygroup.cellArray.length;
+        let marginpx = (ishor) ? displaygroup.marginHor * (cellArraylength - 1) : displaygroup.marginVer * (cellArraylength - 1);
+        let maxpx = (ishor) ? coord.width - marginpx : coord.height - marginpx;
+        let x = displaygroup.coord.x;
+        let y = displaygroup.coord.y;
+        let width;
+        let height;
+        let cellsizepx;
+        let totalFixedpx = displaygroup.totalPx();
+        let pxForPercent = maxpx - totalFixedpx;
+        let totalPercent = 0;
+        let DisplayCellPercent = 0;
+        let displayCellPx;
+        let pxForPercentLeft = pxForPercent;
+        let overlay = displaygroup.overlay;
+        // this part opens and/or closes the scrollbar overlay
+        if (pxForPercent < 0) {
+            if (!overlay) {
+                displaygroup.overlay = new Overlay("ScrollBar", `${displaygroup.label}_ScrollBar`, displaygroup, totalFixedpx, maxpx);
+            }
+            displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, false);
+        }
+        else {
+            if (overlay) {
+                if (overlay.currentlyRendered)
+                    displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, true);
+            }
+        }
+        // apply scrollbar offset
+        if (displaygroup.overlay) {
+            displaygroup.offset = displaygroup.overlay.returnObj["offset"];
+            x -= (ishor) ? displaygroup.offset : 0;
+            y -= (ishor) ? 0 : displaygroup.offset;
+        }
+        // this part loops the displaycells in cellarray
+        for (let index = 0; index < cellArraylength; index++) {
+            let displaycell = displaygroup.cellArray[index];
+            if (pf.isTypePercent(displaycell.dim)) {
+                DisplayCellPercent = pf.percentAsNumber(displaycell.dim);
+                totalPercent += DisplayCellPercent;
+                if (totalPercent <= 100) {
+                    displayCellPx = Math.round(pxForPercent * DisplayCellPercent / 100.0);
+                    pxForPercentLeft -= displayCellPx;
+                }
+                else {
+                    displayCellPx = pxForPercentLeft;
+                }
+            }
+            cellsizepx = (pf.isTypePx(displaycell.dim)) ? (pf.pxAsNumber(displaycell.dim)) : displayCellPx;
+            width = (ishor) ? cellsizepx : coord.width;
+            height = (ishor) ? coord.height : cellsizepx;
+            displaycell.coord.replace(x, y, width, height, Handler.currentZindex);
+            Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
+            x += (ishor) ? width + displaygroup.marginHor : 0;
+            y += (ishor) ? 0 : height + displaygroup.marginVer;
+        }
+    }
+    static renderHtmlBlock(displaycell, derender = false, parentDisplaygroup) {
+        let htmlBlock = displaycell.htmlBlock;
+        let el = pf.elExists(displaycell.label);
+        let alreadyexists = (el) ? true : false;
+        let clipString;
+        if (parentDisplaygroup) {
+            // displaycell.coord.clippedBy(parentDisplaygroup.coord, displaycell.label, parentDisplaygroup.label);
+            if (parentDisplaygroup.coord.isCoordCompletelyOutside(displaycell.coord))
+                derender = true;
+            else
+                clipString = parentDisplaygroup.coord.clipStyleString(displaycell.coord);
+        }
+        if (derender) {
+            if (alreadyexists)
+                el.remove();
+            htmlBlock.el = undefined;
+        }
+        else {
+            if (!alreadyexists)
+                el = document.createElement(htmlBlock.tag);
+            pf.setAttrib(el, "id", displaycell.label);
+            pf.setAttrib(el, "class", htmlBlock.css);
+            Handler.renderHtmlAttributes(el, htmlBlock, displaycell.label);
+            if (el.innerHTML != htmlBlock.innerHTML)
+                el.innerHTML = htmlBlock.innerHTML;
+            if (!alreadyexists) {
+                document.body.appendChild(el);
+                htmlBlock.el = el;
+                if (htmlBlock.events)
+                    htmlBlock.events.applyToHtmlBlock(htmlBlock);
+            }
+            let attrstring = displaycell.coord.asAttributeString() + clipString;
+            if (el.style.cssText != attrstring)
+                el.style.cssText = attrstring;
+            if (htmlBlock.tree)
+                htmlBlock.tree.render(displaycell);
+        }
+    }
+    static renderHtmlAttributes(el, htmlblock, id) {
+        for (let key in htmlblock.attributes) {
+            let value = htmlblock.attributes[key];
+            if (key == "class")
+                value += " " + htmlblock.css;
+            if (key == "id")
+                value = id;
+            pf.setAttrib(el, key, value);
+        }
+    }
+}
+Handler.handlerMarginDefault = 0;
+Handler.firstRun = true;
+Handler.instances = [];
+Handler.defaults = {
+    label: function () { return `handler_${pf.pad_with_zeroes(Handler.instances.length)}`; },
+    cssString: " ",
+    addThisHandlerToStack: true
+};
+Handler.argMap = {
+    string: ["label"],
+    number: ["handlerMargin"],
+    Coord: ["coord"]
+};
+Handler.argCustomTypes = [];
+Handler.handlerZindexStart = 1;
+Handler.zindexIncrement = 1;
+Handler.handlerZindexIncrement = 100;
+function H(...Arguments) {
+    return new Handler(...Arguments);
+}
+class Css {
+    constructor(...Arguments) {
+        Css.instances.push(this);
+        mf.applyArguments("Css", Arguments, Css.defaults, Css.argMap, this);
+        if (this.asString == undefined)
+            this.makeString();
+        if (this.asObj == undefined)
+            this.makeObj();
+    }
+    static byLabel(label) {
+        for (let key in Css.instances)
+            if (Css.instances[key].label == label)
+                return Css.instances[key];
+        return undefined;
+    }
+    makeString() {
+        this.asString = `${(this.isClassname) ? "." : ""}${this.label} {\n`;
+        for (let key in this.asObj)
+            this.asString += `  ${key}:${this.asObj[key]};\n`;
+        this.asString += "}";
+    }
+    makeObj() {
+        let str = this.asString;
+        let obj = {};
+        if (str.indexOf('{') > -1) {
+            str = str.split('{')[1];
+            str = str.split('}')[0];
+        }
+        let strArray = str.split(';');
+        let index;
+        let arr;
+        for (let ele of strArray) {
+            index = ele.indexOf(':');
+            if (index > -1) {
+                arr = ele.split(':');
+                obj[arr[0].trim()] = arr[1].trim();
+            }
+        }
+        this.asObj = obj;
+        this.makeString();
+    }
+    static byname(label) {
+        for (let cssInstance of Css.instances)
+            if (cssInstance.label == label)
+                return cssInstance;
+        return undefined;
+    }
+    static update() {
+        let style = document.getElementById(Css.elementId);
+        let alreadyexists = true;
+        if (!style) {
+            alreadyexists = false;
+            style = document.createElement('style');
+        }
+        pf.setAttrib(style, "id", Css.elementId);
+        let outstring = "\n";
+        for (let instance of Css.instances) {
+            outstring += instance.asString + "\n";
+        }
+        style.innerHTML = outstring;
+        if (!alreadyexists)
+            document.getElementsByTagName('head')[0].appendChild(style);
+    }
+}
+Css.elementId = "llmStyle";
+Css.instances = [];
+Css.defaults = {
+    label: function () { return `Css_${pf.pad_with_zeroes(Css.instances.length)}`; },
+    isClassname: true
+};
+Css.argMap = {
+    string: ["label", "asString"],
+    boolean: ["isClassname"]
+};
+new Css("div", "position:absolute;", false);
+function css(label, content) { return new Css(label, content); }
+class Pages {
+    constructor(...Arguments) {
+        Pages.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Pages");
+        mf.applyArguments("Pages", Arguments, Pages.defaults, Pages.argMap, this);
+        if (retArgs["DisplayCell"])
+            this.displaycells = retArgs["DisplayCell"];
+        else
+            pf.errorHandling("Pages Requires at least one DisplayCells");
+    }
+    static byLabel(label, source = Pages.instances) {
+        for (let key in Pages.instances)
+            if (Pages.instances[key].label == label)
+                return Pages.instances[key];
+        return undefined;
+    }
+    eval() { return this.evalFunction(this); }
+    evalCell() { return this.displaycells[this.eval()]; }
+    setPage(pageNumber) {
+        if (pageNumber != this.currentPage) {
+            this.previousPage = this.currentPage;
+            this.currentPage = pageNumber;
+            Handler.update();
+        }
+    }
+    // removeSelected(pageNumber:number = this.previousPage){
+    //     // console.log("RemoveSelected for Page " + pageNumber);
+    //     // console.log(
+    //     //     document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}']`)
+    //     // );
+    // }
+    addSelected(pageNumber = this.currentPage) {
+        let querry = document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}']`);
+        let el;
+        let select;
+        for (let i = 0; i < querry.length; i++) {
+            el = querry[i];
+            select = el.getAttribute("select");
+            if (select)
+                pf.setAttrib(querry[i], "class", select);
+        }
+    }
+    static setPage(label, pageNumber) { Pages.byLabel(label).setPage(pageNumber); }
+    static applyOnclick() {
+        let querry = document.querySelectorAll(`[pagebutton]`);
+        let value;
+        let valueArray;
+        let pagename;
+        let pageNo;
+        let el;
+        for (let i = 0; i < querry.length; i++) {
+            el = querry[i];
+            value = el.getAttribute("pagebutton");
+            valueArray = value.split("|");
+            pagename = valueArray[0];
+            pageNo = parseInt(valueArray[1]);
+            el.setAttribute("onclick", `Pages.setPage('${pagename}',${pageNo})`);
+        }
+    }
+}
+Pages.activePages = [];
+Pages.instances = [];
+Pages.defaults = {
+    label: function () { return `Pages_${pf.pad_with_zeroes(Pages.instances.length)}`; },
+    currentPage: 0, previousPage: 0,
+    evalFunction: function (thisPages) { return thisPages.currentPage; }
+};
+Pages.argMap = {
+    string: ["label"],
+    number: ["currentPage"],
+    Function: ["evalFunction"],
+    dim: ["dim"]
+};
+function P(...arguments) {
+    let displaycell = new DisplayCell(new Pages(...arguments));
+    if (displaycell.pages.dim)
+        displaycell.dim = displaycell.pages.dim;
+    return displaycell;
+}
+class Drag {
+    constructor(...Arguments) {
+        this.onDown = function () { };
+        this.onMove = function () { };
+        this.onUp = function () { };
+        this.isDown = false;
+        Drag.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Drag");
+        mf.applyArguments("Drag", Arguments, Drag.defaults, Drag.argMap, this);
+        if ("Array" in retArgs) {
+            let array = retArgs["Array"][0];
+            this.onDown = array[0];
+            this.onMove = array[1];
+            this.onUp = array[2];
+        }
+        if ("HTMLDivElement" in retArgs) {
+            this.el = retArgs["HTMLDivElement"][0];
+        }
+        let THIS = this;
+        this.el.onmousedown = function (e) {
+            THIS.onDown();
+            THIS.isDown = true;
+            THIS.mousePos = { x: e.clientX, y: e.clientY };
+            window.onmousemove = function (e) {
+                THIS.mouseDiff = { x: e.clientX - THIS.mousePos["x"], y: e.clientY - THIS.mousePos["y"] };
+                THIS.onMove(THIS.mouseDiff);
+            };
+            window.onmouseup = function (e) {
+                THIS.reset();
+                THIS.onUp(THIS.mouseDiff);
+            };
+        };
+    }
+    static byLabel(label) {
+        for (let key in Drag.instances)
+            if (Drag.instances[key].label == label)
+                return Drag.instances[key];
+        return undefined;
+    }
+    reset() {
+        window.onmousemove = function () { };
+        window.onmouseup = function () { };
+        this.isDown = false;
+    }
+}
+Drag.instances = [];
+Drag.defaults = {
+    label: function () { return `Drag_${pf.pad_with_zeroes(Drag.instances.length)}`; },
+};
+Drag.argMap = {
+    string: ["label"],
+};
+class Swipe {
+    constructor(...Arguments) {
+        Swipe.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Swipe");
+        let updatedDefaults = pf.ifObjectMergeWithDefaults(retArgs, Swipe.defaults);
+        let retArgsMapped = pf.retArgsMapped(retArgs, updatedDefaults, Swipe.argMap);
+        mf.modifyClassProperties(retArgsMapped, this);
+    }
+}
+Swipe.swipeDistance = 50;
+Swipe.elementId = "llmSwipe";
+Swipe.instances = [];
+Swipe.defaults = {
+    label: function () { return `Swipe_Instance_${pf.pad_with_zeroes(Swipe.instances.length)}`; },
+    swipeDistance: Swipe.swipeDistance
+};
+Swipe.argMap = {
+    string: ["label"],
+    number: ["swipeDistance"]
+};
+function swipe(...Arguments) {
+    let swipeObj = new Swipe(...Arguments);
+    let retObj = { onMove: function (offset) {
+            let dragObj = this;
+            if (swipeObj["left"] && (offset["x"] < -swipeObj.swipeDistance)) {
+                swipeObj["left"]();
+                dragObj.reset();
+            }
+            if (swipeObj["right"] && (offset["x"] > swipeObj.swipeDistance)) {
+                swipeObj["right"]();
+                dragObj.reset();
+            }
+            if (swipeObj["up"] && (offset["y"] < -swipeObj.swipeDistance)) {
+                swipeObj["up"]();
+                dragObj.reset();
+            }
+            if (swipeObj["down"] && (offset["y"] > swipeObj.swipeDistance)) {
+                swipeObj["down"]();
+                dragObj.reset();
+            }
+        } };
+    return retObj;
+}
+class Hold {
+    constructor(...Arguments) {
+        this.onDown = function () { };
+        this.event = function () { };
+        this.onUp = function () { };
+        this.isDown = false;
+        Hold.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Hold");
+        mf.applyArguments("Hold", Arguments, Hold.defaults, Hold.argMap, this);
+        if ("HTMLDivElement" in retArgs) {
+            this.el = retArgs["HTMLDivElement"][0];
+        }
+        let THIS = this;
+        this.el.onmousedown = function (e) {
+            THIS.onDown();
+            // console.log(THIS.doOnclick);
+            THIS.isDown = true;
+            if (THIS.doOnclick)
+                THIS.event();
+            setTimeout(function () { Hold.start(THIS); }, THIS.startTime);
+            window.onmouseup = function (e) {
+                THIS.onUp();
+                THIS.isDown = false;
+            };
+        };
+    }
+    static byLabel(label) {
+        for (let key in Hold.instances)
+            if (Hold.instances[key].label == label)
+                return Hold.instances[key];
+        return undefined;
+    }
+    static start(THIS) {
+        if (THIS.isDown) {
+            THIS.event();
+            setTimeout(function () { Hold.start(THIS); }, THIS.repeatTime);
+        }
+    }
+}
+Hold.instances = [];
+Hold.defaults = {
+    label: function () { return `Hold_${pf.pad_with_zeroes(Hold.instances.length)}`; },
+    startTime: 1000, repeatTime: 100, doOnclick: true
+};
+Hold.argMap = {
+    string: ["label"],
+};
+class Overlay {
+    constructor(...Arguments) {
+        Overlay.instances.push(this);
+        this.label = `Overlay_${pf.pad_with_zeroes(Overlay.instances.length)}`;
+        this.sourceClassName = Arguments.shift();
+        this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);
+    }
+    static byLabel(label) {
+        for (let key in Overlay.instances)
+            if (Overlay.instances[key].label == label)
+                return Overlay.instances[key];
+        return undefined;
+    }
+    renderOverlay(displaycell, parentDisplaygroup, index, derender) {
+        this.currentlyRendered = !derender;
+        (this.returnObj["render"])(displaycell, parentDisplaygroup, index, derender);
+    }
+}
+Overlay.instances = [];
+Overlay.classes = {
+//    DragBar,for wxample... filled in when modules load.
+};
+class DragBar {
+    constructor(...Arguments) {
+        let dragbar = this;
+        let parentDisplaycell = this.parentDisplaycell;
+        DragBar.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "DragBar");
+        mf.applyArguments("DragBar", Arguments, DragBar.defaults, DragBar.argMap, this);
+        // this.parentDisplaycell.dragbar = this;
+        this.displaycell = I(`${this.label}_dragbar`, "", events({ ondrag: { onDown: function (xmouseDiff) {
+                    dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplaycell.dim);
+                },
+                onMove: function (xmouseDiff) {
+                    let newdim = dragbar.startpos + ((dragbar.ishor) ? xmouseDiff["x"] : xmouseDiff["y"]) * ((dragbar.isLast) ? -1 : 1);
+                    if (newdim > dragbar.max)
+                        newdim = dragbar.max;
+                    if (newdim < dragbar.min)
+                        newdim = dragbar.min;
+                    dragbar.parentDisplaycell.dim = `${newdim}px`;
+                    Handler.update();
+                },
+            } }));
+    }
+    static byLabel(label) {
+        for (let key in DragBar.instances)
+            if (DragBar.instances[key].label == label)
+                return DragBar.instances[key];
+        return undefined;
+    }
+    render(displaycell, parentDisplaygroup, index, derender) {
+        let dragbar = this;
+        let dragcell = dragbar.displaycell;
+        let ishor = parentDisplaygroup.ishor;
+        dragbar.ishor = ishor;
+        let pxsize = (dragbar.pxsize) ? dragbar.pxsize : ((ishor) ? parentDisplaygroup.marginHor : parentDisplaygroup.marginVer);
+        let isLast = (index == parentDisplaygroup.cellArray.length - 1) ? true : false;
+        dragbar.isLast = isLast;
+        let pcoord = displaycell.coord;
+        let x = (ishor) ? ((isLast) ? pcoord.x - pxsize : pcoord.x + pcoord.width) : pcoord.x;
+        let y = (ishor) ? pcoord.y : ((isLast) ? pcoord.y - pxsize : pcoord.y + pcoord.height);
+        let width = (ishor) ? pxsize : pcoord.width;
+        let height = (ishor) ? pcoord.height : pxsize;
+        dragcell.coord.replace(x, y, width, height, Handler.currentZindex + Handler.zindexIncrement);
+        dragcell.htmlBlock.css = (ishor) ? dragbar.horcss.label : dragbar.vercss.label;
+        if (parentDisplaygroup.coord.isCoordCompletelyOutside(dragcell.coord))
+            derender = true;
+        Handler.renderDisplayCell(dragcell, parentDisplaygroup, undefined, derender);
+    }
+}
+DragBar.horCss = css("db_hor", "background-color:black;cursor: ew-resize;");
+DragBar.verCss = css("db_ver", "background-color:black;cursor: ns-resize;");
+DragBar.instances = [];
+DragBar.defaults = {
+    label: function () { return `DragBar_${pf.pad_with_zeroes(DragBar.instances.length)}`; },
+    horcss: DragBar.horCss,
+    vercss: DragBar.verCss
+};
+DragBar.argMap = {
+    string: ["label"],
+    DisplayCell: ["parentDisplaycell"],
+    number: ["min", "max", "pxsize"],
+    Css: ["horcss", "vercss"]
+};
+function dragbar(...Arguments) {
+    let overlay = new Overlay("DragBar", ...Arguments);
+    let newDragBar = overlay.returnObj;
+    let parentDisplaycell = newDragBar.parentDisplaycell;
+    parentDisplaycell.overlay = overlay;
+    return parentDisplaycell;
+}
+Overlay.classes["DragBar"] = DragBar;
+class ScrollBar {
+    constructor(...Arguments) {
+        ScrollBar.instances.push(this);
+        mf.applyArguments("ScrollBar", Arguments, ScrollBar.defaults, ScrollBar.argMap, this);
+        this.build();
+    }
+    static byLabel(label) {
+        for (let key in ScrollBar.instances)
+            if (ScrollBar.instances[key].label == label)
+                return ScrollBar.instances[key];
+        return undefined;
+    }
+    build() {
+        let THIS = this;
+        let off = this.arrowOffset;
+        let ss = this.scrollWidth;
+        let w = ss - off;
+        let mid = ss / 2;
+        this.leftArrow = I("", `<svg height="${ss}" width="${ss}">
+            <polygon points="${off},${mid} ${w},${off} ${w},${w} ${off},${mid}"
+            style="fill:black;stroke:black;stroke-width:1" />
+            </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickLeftorUp(mouseEvent); } }
+        }));
+        this.upArrow = I("", `<svg height="${ss}" width="${ss}">
+            <polygon points="${off},${w} ${mid},${off} ${w},${w} ${off},${w}"
+            style="fill:black;stroke:black;stroke-width:1" />
+            </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickLeftorUp(mouseEvent); } }
+        }));
+        this.prePaddle = I("", "", "whiteBG", events({ onclick: function (mouseEvent) { THIS.clickPageLeftorUp(mouseEvent); } }));
+        this.paddle = I("", "", "blackBG", events({ ondrag: { onDown: function () { THIS.offsetAtDrag = THIS.offset; }, onMove: function (output) { THIS.dragging(output); },
+            }
+        }));
+        this.postPaddle = I("", "", "whiteBG", events({ onclick: function (mouseEvent) { THIS.clickPageRightOrDown(mouseEvent); } }));
+        this.rightArrow = I("", `<svg height="${ss}" width="${ss}">
+            <polygon points="${off},${off} ${w},${mid} ${off},${w} ${off},${off}"
+            style="fill:black;stroke:black;stroke-width:1" />
+            </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickRightOrDown(mouseEvent); } }
+        }));
+        this.downArrow = I("", `<svg height="${ss}" width="${ss}">
+            <polygon points="${off},${off} ${w},${off} ${mid},${w} ${off},${off}"
+            style="fill:black;stroke:black;stroke-width:1" />
+            </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickRightOrDown(mouseEvent); } }
+        }));
+        this.ishor = this.displaygroup.ishor;
+        this.displaycell = h(this.ishor, // note even though I'm using H - id chooses here.
+        (this.ishor) ? this.leftArrow : this.upArrow, this.prePaddle, this.paddle, this.postPaddle, (this.ishor) ? this.rightArrow : this.downArrow);
+    }
+    clickLeftorUp(mouseEvent) {
+        this.offset -= this.offsetPixelRatio;
+        if (this.offset < 0)
+            this.offset = 0;
+        Handler.update();
+    }
+    clickRightOrDown(mouseEvent) {
+        this.offset += this.offsetPixelRatio;
+        if (this.offset > this.maxOffset)
+            this.offset = this.maxOffset;
+        Handler.update();
+    }
+    clickPageLeftorUp(mouseEvent) {
+        this.offset -= this.displayedFixedPx;
+        if (this.offset < 0)
+            this.offset = 0;
+        Handler.update();
+    }
+    clickPageRightOrDown(mouseEvent) {
+        this.offset += this.displayedFixedPx;
+        if (this.offset > this.maxOffset)
+            this.offset = this.maxOffset;
+        Handler.update();
+    }
+    dragging(output) {
+        let diff = (this.ishor) ? output["x"] : output["y"];
+        // console.log(diff, diff*this.offsetPixelRatio);
+        let newoffset = this.offsetAtDrag + diff * this.offsetPixelRatio;
+        if (newoffset < 0)
+            newoffset = 0;
+        if (newoffset > this.maxOffset)
+            newoffset = this.maxOffset;
+        this.offset = newoffset;
+        Handler.update();
+    }
+    render(displaycell, parentDisplaygroup, index, derender) {
+        let dgCoord = this.displaygroup.coord;
+        // calculate outer scrollbar dimensions
+        let x = (this.ishor) ? dgCoord.x : dgCoord.x + dgCoord.width - this.scrollWidth;
+        let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
+        let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
+        let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
+        this.displaycell.coord.replace(x, y, width, height);
+        // calculate inner scrollbar dimensions
+        let preDisplayCell = this.displaycell.displaygroup.cellArray[1];
+        let paddleDisplayCell = this.displaycell.displaygroup.cellArray[2];
+        let postDisplayCell = this.displaycell.displaygroup.cellArray[3];
+        let actualFixedPx = this.displaygroup.totalPx();
+        let displayedFixedPx = this.displayedFixedPx = ((this.ishor) ? width : height);
+        this.maxOffset = actualFixedPx - displayedFixedPx;
+        if (this.offset > this.maxOffset)
+            this.offset = this.maxOffset;
+        if (this.offset < 0)
+            this.offset = 0;
+        // console.log(this.offset);
+        this.offsetPixelRatio = actualFixedPx / displayedFixedPx;
+        let prePercent = Math.round((this.offset / actualFixedPx) * 100);
+        let paddlePercent = Math.round((displayedFixedPx / actualFixedPx) * 100);
+        let postPercent = 100 - paddlePercent - prePercent;
+        preDisplayCell.dim = `${prePercent}%`;
+        paddleDisplayCell.dim = `${paddlePercent}%`;
+        postDisplayCell.dim = `${postPercent}%`;
+        Handler.currentZindex += Handler.zindexIncrement * 2;
+        this.currentlyRendered = !derender;
+        Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
+        Handler.currentZindex -= Handler.zindexIncrement * 2;
+    }
+}
+ScrollBar.instances = [];
+ScrollBar.whiteBG = css("whiteBG", "background-color:white;outline: 1px solid black;outline-offset: -1px;");
+ScrollBar.blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
+ScrollBar.defaults = {
+    label: function () { return `ScrollBar_${pf.pad_with_zeroes(ScrollBar.instances.length)}`; },
+    offset: 0, displayAtEnd: true, scrollWidth: 20, currentlyRendered: true, arrowOffset: 5,
+};
+ScrollBar.argMap = {
+    string: ["label"],
+    DisplayGroup: ["displaygroup"],
+    number: ["fixedPixels", "viewingPixels", "scroolWidth"],
+    boolean: ["displayAtEnd"]
+};
+Overlay.classes["ScrollBar"] = ScrollBar;
+class Context {
+    constructor(...Arguments) {
+        this.coord = new Coord();
+        Context.instances.push(this);
+        mf.applyArguments("Context", Arguments, Context.defaults, Context.argMap, this);
+        if (!this.menuObj)
+            this.menuObj = Context.defaultObj;
+        this.height = Object.keys(this.menuObj).length * this.cellheight;
+        this.buildCell();
+    }
+    static byLabel(label) {
+        for (let key in Context.instances)
+            if (Context.instances[key].label == label)
+                return Context.instances[key];
+        return undefined;
+    }
+    buildCell() {
+        let THIS = this;
+        let cellArray = [];
+        let numKeys = Object.keys(this.menuObj).length;
+        let index = 0;
+        let newContext;
+        this.displaycell = v({ cellArray: [ /* filled at bottom */] });
+        for (let key in this.menuObj) {
+            let valueFunctionOrObject = this.menuObj[key];
+            if (typeof (valueFunctionOrObject) == "function") {
+                cellArray.push(I(((index == numKeys - 1) ? "100%" : `${this.cellheight}px`), { innerHTML: key }, this.css, events({ onclick: function (mouseEvent) {
+                        valueFunctionOrObject(mouseEvent);
+                        THIS.popAll();
+                    } })));
+            }
+            else {
+                newContext = new Context({ menuObj: valueFunctionOrObject,
+                    width: this.width,
+                    cellheight: this.cellheight,
+                    css: this.css,
+                    parentContext: this
+                });
+                newContext.launchcell = I(((index == numKeys - 1) ? "100%" : `${this.cellheight}px`), { innerHTML: key }, this.css, events({ onmouseover: function () {
+                        let coord = THIS.coord;
+                        if (!newContext.handler)
+                            newContext.render(undefined, coord.x + coord.width - Context.subOverlapPx, coord.y + THIS.cellheight * (index - 2) - Context.subOverlapPx);
+                    }
+                }));
+                cellArray.push(newContext.launchcell);
+            }
+            index += 1;
+        }
+        this.displaycell.displaygroup.cellArray = cellArray;
+    }
+    popAll() {
+        this.pop();
+        if (this.parentContext)
+            this.parentContext.popAll();
+        else
+            window.onmousemove = function () { };
+    }
+    pop() {
+        this.handler.pop();
+        this.handler = undefined;
+        if (this.parentContext)
+            Context.lastRendered = this.parentContext;
+    }
+    managePop(mouseEvent) {
+        let x = mouseEvent.clientX;
+        let y = mouseEvent.clientY;
+        let pop = !this.displaycell.coord.isPointIn(x, y);
+        if (pop && this.launchcell && this.launchcell.coord.isPointIn(x, y))
+            pop = false;
+        let THIS = this;
+        if (pop) {
+            if (this.parentContext)
+                window.onmousemove = function (mouseEvent) { THIS.parentContext.managePop(mouseEvent); };
+            else
+                window.onmousemove = function () { };
+            this.pop();
+        }
+    }
+    render(mouseEvent, x = 0, y = 0) {
+        if (mouseEvent) {
+            x = mouseEvent.clientX - Context.subOverlapPx;
+            y = mouseEvent.clientY - Context.subOverlapPx;
+        }
+        this.coord.replace(x, y, this.width, this.height);
+        this.handler = H(this.displaycell, this.coord);
+        let THIS = this;
+        window.onmousemove = function (mouseEvent) { THIS.managePop(mouseEvent); };
+        Context.lastRendered = this;
+    }
+    hMenuBarx() { return this.launchcell.coord.x; }
+    hMenuBary() { return this.launchcell.coord.y + this.launchcell.coord.height; }
+    vMenuBarx() { return this.launchcell.coord.x + this.launchcell.coord.width; }
+    vMenuBary() { return this.launchcell.coord.y; }
+}
+Context.subOverlapPx = 4;
+Context.instances = [];
+Context.defaultContextCss = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;");
+Context.defaultContextCssHover = css("contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+Context.defaultMenuBarCss = css("menuBar", "background-color:white;color: black;");
+Context.defaultMenuBarHover = css("menuBar:hover", "background-color:black;color: white;");
+Context.defaultMenuBarNoHoverCss = css("menuBarNoHover", "background-color:white;color: black;");
+Context.defaultObj = { one: function () { console.log("one"); },
+    two: function () { console.log("two"); },
+    three: function () { console.log("three"); },
+};
+Context.defaults = {
+    label: function () { return `Context_${pf.pad_with_zeroes(Context.instances.length)}`; },
+    width: 100,
+    cellheight: 25,
+    css: Context.defaultContextCss
+};
+Context.argMap = {
+    string: ["label"],
+    number: ["width", "cellheight"]
+};
+let context = function (...Arguments) {
+    let newcontext = new Context(...Arguments);
+    return function (mouseEvent) { newcontext.render(mouseEvent); return false; };
+};
+let hMenuBar = function (...Arguments) {
+    let newcontext = new Context(...Arguments);
+    return function (mouseEvent) {
+        if (Context.lastRendered && Context.lastRendered.handler) {
+            Context.lastRendered.popAll();
+        }
+        newcontext.render(undefined, newcontext.hMenuBarx(), newcontext.hMenuBary());
+        return false;
+    };
+};
+let vMenuBar = function (...Arguments) {
+    let newcontext = new Context(...Arguments);
+    return function (mouseEvent) { newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary()); return false; };
+};
+class Modal {
+    constructor(...Arguments) {
+        Modal.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Modal");
+        mf.applyArguments("Modal", Arguments, Modal.defaults, Modal.argMap, this);
+        if ("number" in retArgs) {
+            if (!this.coord)
+                this.coord = new Coord();
+            let numbers = retArgs["number"];
+            let numberOfArgs = numbers.length;
+            let x, y, width, height;
+            if (numberOfArgs == 2) {
+                let vp = pf.viewport();
+                width = numbers[0];
+                height = numbers[1];
+                x = (vp[0] - width) / 2;
+                y = (vp[1] - height) / 2;
+                this.coord.replace(x, y, width, height);
+            }
+            else if (numberOfArgs == 4) {
+                this.coord.replace(numbers[0], numbers[1], numbers[2], numbers[3]);
+            }
+        }
+        else {
+            if (!this.coord) {
+                let vp = pf.viewport();
+                this.coord = new Coord(Math.round(vp[0] / 4), Math.round(vp[1] / 4), Math.round(vp[0] / 2), Math.round(vp[1] / 2));
+            }
+        }
+        if (!this.minWidth)
+            this.minWidth = this.coord.width;
+        if (!this.minHeight)
+            this.minHeight = this.coord.height;
+        this.build();
+    }
+    static byLabel(label) {
+        for (let key in Modal.instances)
+            if (Modal.instances[key].label == label)
+                return Modal.instances[key];
+        return undefined;
+    }
+    buildHeader() {
+        let THIS = this;
+        if (!this.headerCell) {
+            this.headerCell = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_headerTitle`, this.headerTitle, Modal.headerCss, events({ ondrag: { onDown: function () { return Modal.startMoveModal(THIS.handler); }, onMove: function (offset) { return Modal.moveModal(THIS.handler, offset); },
+                    onUp: function (offset) { console.log(offset, "up"); }
+                } })));
+            if (this.showClose) {
+                this.headerCell.displaygroup.cellArray.push(I({ innerHTML: `<svg viewPort="0 0 ${this.headerHeight} ${this.headerHeight}" version="1.1"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <line x1="3" y1="${this.headerHeight - 3}" 
+                                x2="${this.headerHeight - 3}" y2="3" 
+                                stroke="black" 
+                                stroke-width="2"/>
+                              <line x1="3" y1="3" 
+                                x2="${this.headerHeight - 3}" y2="${this.headerHeight - 3}" 
+                                stroke="black" 
+                                stroke-width="2"/>
+                              </svg>`
+                }, Modal.closeCss, `${this.headerHeight}px`, events({ onclick: function () { THIS.hide(); } })));
+            }
+        }
+    }
+    buildFooter() {
+        if (!this.footerCell)
+            this.footerCell = h(`${this.label}_footer`, `${this.footerHeight}px`, I(`${this.label}_footerTitle`, this.footerTitle, Modal.footerCss));
+    }
+    buildFull() {
+        this.fullCell = v(this.bodyCell);
+        if (this.showHeader) {
+            this.fullCell.displaygroup.cellArray.unshift(this.headerCell);
+        }
+        if (this.showFooter) {
+            this.fullCell.displaygroup.cellArray.push(this.footerCell);
+        }
+    }
+    build() {
+        this.buildHeader();
+        this.buildFooter();
+        this.buildFull();
+        this.handler = H(v(this.fullCell), this.coord);
+        this.handler.pop();
+    }
+    show() {
+        Handler.instances.push(this.handler);
+        Handler.update();
+    }
+    hide() {
+        this.handler.pop();
+    }
+    static startMoveModal(handler) {
+        Modal.x = handler.coord.x;
+        Modal.y = handler.coord.y;
+        // handler.toTop();
+    }
+    static moveModal(handler, offset) {
+        let vp = pf.viewport();
+        let x = Modal.x + offset["x"];
+        if (x < 0)
+            x = 0;
+        if (x + handler.coord.width > vp[0])
+            x = vp[0] - handler.coord.width;
+        handler.coord.x = x;
+        let y = Modal.y + offset["y"];
+        if (y < 0)
+            y = 0;
+        if (y + handler.coord.height > vp[1])
+            y = vp[1] - handler.coord.height;
+        handler.coord.y = y;
+        Handler.update();
+    }
+}
+Modal.instances = [];
+Modal.headerCss = css("HeaderTitle", "background-color:blue;color:white;text-align: center;border: 1px solid black;cursor: -webkit-grab; cursor: grab;");
+Modal.footerCss = css("FooterTitle", "background-color:white;color:black;border: 1px solid black;");
+Modal.closeCss = css("Close", "background-color:white;color:black;border: 1px solid black;font-size: 20px;");
+Modal.closeCssHover = css("Close:hover", "background-color:red;color:white;border: 1px solid black;font-size: 20px;");
+Modal.defaults = {
+    label: function () { return `Modal_${pf.pad_with_zeroes(Modal.instances.length)}`; },
+    showHeader: true, showFooter: true, resizeable: true, showClose: true,
+    headerHeight: 20, footerHeight: 20, headerTitle: ""
+};
+Modal.argMap = {
+    string: ["label", "headerTitle", "footerTitle"],
+    DisplayCell: ["bodyCell", "headerCell", "footerCell"],
+    Coord: ["coord"]
+};
+class TreeNode {
+    constructor(...Arguments) {
+        this.collapsed = false;
+        this.nodeCellArray = [];
+        TreeNode.instances.push(this);
+        mf.applyArguments("TreeNode", Arguments, TreeNode.defaults, TreeNode.argMap, this);
+    }
+    static byLabel(label) {
+        for (let key in TreeNode.instances)
+            if (TreeNode.instances[key].label == label)
+                return TreeNode.instances[key];
+        return undefined;
+    }
+    visibleChildren(noChildren = 0) {
+        if (!this.collapsed && this.children)
+            for (let child of this.children)
+                noChildren += child.visibleChildren(1);
+        return noChildren;
+    }
+    addDisplayCells(newCellArray = [], isFirst = true) {
+        if (!isFirst)
+            newCellArray.push(this.horizontalDisplayCell);
+        if (!this.collapsed && this.children) {
+            for (let childNode of this.children) {
+                newCellArray = childNode.addDisplayCells(newCellArray, false);
+            }
+        }
+        return newCellArray;
+    }
+}
+TreeNode.instances = [];
+TreeNode.defaults = {
+    label: function () { return `TreeNode_${pf.pad_with_zeroes(TreeNode.instances.length)}`; },
+};
+TreeNode.argMap = {
+    DisplayCell: ["labelCell"],
+    string: ["label"],
+    Props: ["props"],
+    Array: ["children"],
+    boolean: ["collapsed"]
+};
+function T(...Arguments) { return new TreeNode(...Arguments); }
+class Props {
+    constructor(...Arguments) {
+        Props.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Prop");
+        mf.applyArguments("Prop", Arguments, Props.defaults, Props.argMap, this);
+        if ("DisplayCell" in retArgs)
+            this.cellArray = retArgs["DisplayCell"];
+    }
+    static byLabel(label) {
+        for (let key in Props.instances)
+            if (Props.instances[key].label == label)
+                return Props.instances[key];
+        return undefined;
+    }
+}
+Props.instances = [];
+Props.defaults = {
+    label: function () { return `Prop_${pf.pad_with_zeroes(Props.instances.length)}`; },
+};
+Props.argMap = {
+    string: ["label"],
+};
+function props(...Arguments) { return new Props(...Arguments); }
+class Tree {
+    constructor(...Arguments) {
+        Tree.instances.push(this);
+        mf.applyArguments("Tree", Arguments, Tree.defaults, Tree.argMap, this);
+        if (!this.rootTreeNode) {
+            this.rootTreeNode = Tree.defaultObj;
+        }
+        if (!this.parentDisplayCell) {
+            this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`);
+        }
+        this.parentDisplayCell.displaygroup = new DisplayGroup(false);
+        this.buildTreeNode(this.rootTreeNode, this.parentDisplayCell.displaygroup.cellArray);
+    }
+    static byLabel(label) {
+        for (let key in Tree.instances)
+            if (Tree.instances[key].label == label)
+                return Tree.instances[key];
+        return undefined;
+    }
+    drawSVG(collapsed) {
+        let X = this.collapsePad;
+        let Y = (this.cellHeight - this.collapseSize) / 2 + this.collapsePad;
+        let XX = this.collapseSize - X;
+        let YY = Y + this.collapseSize - 2 * this.collapsePad;
+        let XMID = this.collapseSize / 2;
+        let YMID = this.cellHeight / 2;
+        let C = this.SVGColor;
+        return `<svg height="${this.cellHeight}" width="${this.collapseSize}">` +
+            ((collapsed) ? `<polygon points="${X},${Y} ${XX},${YMID} ${X},${YY} ${X},${Y}"`
+                : `<polygon points="${X},${Y} ${XX},${Y} ${XMID},${YY} ${X},${Y}"`) +
+            `style="fill:${C};stroke:${C};stroke-width:1" />
+            </svg>`;
+    }
+    toggleCollapse(node, mouseEvent, el) {
+        node.collapsed = !node.collapsed;
+        node.horizontalDisplayCell.displaygroup.cellArray[1].htmlBlock.innerHTML = this.drawSVG(node.collapsed);
+        let cellArray = this.parentDisplayCell.displaygroup.cellArray;
+        let index = cellArray.indexOf(node.horizontalDisplayCell);
+        // remove from Dom if collapsed
+        if (node.collapsed) {
+            for (let displaycell of node.nodeCellArray) {
+                Handler.renderDisplayCell(displaycell, undefined, undefined, true);
+            }
+            node.collapsed = !node.collapsed;
+            let noVisibleChildren = node.visibleChildren();
+            node.collapsed = !node.collapsed;
+            cellArray.splice(index + 1, noVisibleChildren);
+        }
+        else { // Add DisplayCells if Toggled Open
+            cellArray.splice(index + 1, 0, ...node.addDisplayCells());
+        }
+        Handler.update();
+    }
+    static temp(cellArray) {
+        for (let cell of cellArray) {
+            console.log(cell.displaygroup.cellArray[2].htmlBlock.innerHTML);
+        }
+    }
+    buildTreeNode(node = this.rootTreeNode, cellArray, indent = this.startIndent) {
+        let THIS = this;
+        let hasChildren = (node.children) ? ((node.children.length) ? true : false) : false;
+        node.horizontalDisplayCell = h(// Horizontal DisplayGroup Containing:
+        I("", "", `${indent}px`), // spacer First
+        I("", // This is the SVG
+        (hasChildren) ? this.drawSVG(node.collapsed) : "", `${this.collapseSize}px`, events({ onclick: function (mouseEvent) {
+                THIS.toggleCollapse(node, mouseEvent, this);
+            } })), node.labelCell, // This is the TreeNode Label
+        `${this.cellHeight}px` // Height in pixels of TreeNode
+        );
+        cellArray.push(node.horizontalDisplayCell);
+        if (node.children) {
+            for (let childNode of node.children)
+                this.buildTreeNode(childNode, node.nodeCellArray, indent + this.indent);
+            if (!node.collapsed)
+                pf.concatArray(cellArray, node.nodeCellArray);
+        }
+    }
+    render(displaycell) { }
+}
+Tree.instances = [];
+Tree.defaultObj = T(I("", "Top Display"), props(I("", "prop1"), I("", "prop2")), [T(I("", "Child1ofTop"), // true,       
+    [T(I("", "Child1ofChild1")),
+        T(I("", "Child2ofChild1"))
+    ]),
+    T(I("", "Child2ofTop"))]);
+Tree.defaults = {
+    label: function () { return `Tree_${pf.pad_with_zeroes(Tree.instances.length)}`; },
+    cellHeight: 20, SVGColor: "white", startIndent: 0, indent: 10, collapsePad: 4, collapseSize: 16,
+};
+Tree.argMap = {
+    string: ["label"],
+    number: ["cellHeight"],
+    TreeNode: ["rootTreeNode"],
+    DisplayCell: ["parentDisplayCell"]
+};
+function tree(...Arguments) {
+    let overlay = new Overlay("Tree", ...Arguments);
+    let newTree = overlay.returnObj;
+    let displaycell = newTree.parentDisplayCell;
+    displaycell.overlay = overlay;
+    return displaycell;
+}
+Overlay.classes["Tree"] = Tree;
+// svgCollapsed() : string{
+//     let X = this.collapsePad;
+//     let Y = (this.cellHeight - this.collapseSize)/2 + this.collapsePad;
+//     let XX = this.collapseSize - X;
+//     let YY = Y + this.collapseSize - 2*this.collapsePad;
+//     let XMID = this.collapseSize/2;
+//     let YMID = this.cellHeight/2;
+//     let C = this.SVGColor;
+//     return `<svg height="${this.cellHeight}" width="${this.collapseSize}">
+//         <polygon points="${X},${Y} ${XX},${YMID} ${X},${YY} ${X},${Y}"
+//         style="fill:${C};stroke:${C};stroke-width:1" />
+//         </svg>`;  
+// }
+// svgExpanded() : string{
+//     let X = this.collapsePad;
+//     let Y = (this.cellHeight - this.collapseSize)/2 + this.collapsePad;
+//     let XX = this.collapseSize - X;
+//     let YY = Y + this.collapseSize - 2*this.collapsePad;
+//     let XMID = this.collapseSize/2;
+//     let YMID = this.cellHeight/2;
+//     let C = this.SVGColor;
+//     return `<svg height="${this.cellHeight}" width="${this.collapseSize}">
+//         <polygon points="${X},${Y} ${XX},${Y} ${XMID},${YY} ${X},${Y}"
+//         style="fill:${C};stroke:${C};stroke-width:1" />
+//         </svg>`;  
+// }
+// let CW = this.checkWidth;
+// let CM = this.checkMargin;
+// let CH = this.cellHeight;
+// let X = CM;
+// let Y = (CH-CW)/2 + CM;
+// let XMAX = CW - CM;
+// let YMAX = CH - (CH-CW)/2 - CM;
+// let XMID = CW/2;
+// let YMID = CH/2;
+// let XX = CW;
+// let YY = CH;
+// let C = this.SVGColor;
+// let NodeClosedRoot = `<svg height="${CH}" width="${CW}">
+//     <polygon points="${X},${Y} ${XMAX},${YMID} ${X},${YMAX} ${X},${Y}"
+//     style="fill:${C};stroke:${C};stroke-width:1" />
+//     </svg>`;
+// let NodeClosed = `<svg height="${CH}" width="${CW-CM}">
+//     <polygon points="${X-CM},${Y} ${XMAX-CM},${YMID} ${X-CM},${YMAX} ${X-CM},${Y}"
+//     style="fill:${C};stroke:${C};stroke-width:1" />
+//     </svg>`;            
+// let openSVG = `<svg height="${CH}" width="${CW}">
+//     <polygon points="${X},${Y} ${XMAX},${Y} ${XMID},${YMAX} ${X},${Y}"
+//     style="fill:${C};stroke:${C};stroke-width:1" />
+//     <line x1="${XMID}" y1="${YMAX}" x2="${XMID}" y2="${YY}" style="stroke:${C};stroke-width:2" />
+//     </svg>`;
+// let midSVGn = `<svg height="${CH}" width="${CW}">
+//     <line x1="${XMID}" y1="0" x2="${XMID}" y2="${YY}" style="stroke:${this.SVGColor};stroke-width:2" />
+//     <line x1="${XMID}" y1="${YMID}" x2="${XX}" y2="${YMID}" style="stroke:${this.SVGColor};stroke-width:2" />
+//     </svg>`;
+// let endSVG = `<svg height="${CH}" width="${CW}">
+//     <line x1="${XMID}" y1="0" x2="${XMID}" y2="${YMID}" style="stroke:${this.SVGColor};stroke-width:2" />
+//     <line x1="${XMID}" y1="${YMID}" x2="${XX}" y2="${YMID}" style="stroke:${this.SVGColor};stroke-width:2" />
+//     </svg>`;
+// let dim = `${this.cellHeight}px`;
+// this.parentDisplayCell.displaygroup = new DisplayGroup(false,
+//     // I("tree1","TreeOne", dim),
+//     h( I("",NodeClosedRoot, `${CW}px`), I("tree1","TreeOne"), dim),
+//     h( I("",openSVG, `${CW}px`), I("tree2","TreeTwo"), dim),
+//     h( I("",midSVGn, `${CW}px`), I("",NodeClosed, `${CW-CM}px`), I("tree3","TreeThree"), dim),
+//     h( I("",endSVG, `${CW}px`), I("tree4","TreeFour"), dim),
+//     I("tree5","TreeFive", dim),
+//     I("tree6","TreeSix", dim),
+// );
+// // this.parentDisplayCell = v(this.label);
