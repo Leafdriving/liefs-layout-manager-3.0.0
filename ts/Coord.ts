@@ -7,6 +7,9 @@ class Within{
     constructor(...Arguments: any) {
         mf.applyArguments("Within", Arguments, {}, {number : ["x", "y", "width", "height"]}, this);
     }
+    clipStyleString(sub: Coord|Within){
+        return Coord.clipStyleString(this, sub);
+    }
 }
 class Coord {
     static instances:Coord[] = [];
@@ -24,7 +27,8 @@ class Coord {
         string : ["label"],
         number : ["x", "y", "width", "height", "zindex"]
     };
-    static CopyArgMap = {Within : ["Within"],Coord : ["Coord"],number : ["x", "y", "width", "height", "zindex"]};
+    static CopyArgMap = {Within : ["Within"],Coord : ["Coord"], boolean:["isRoot"],
+                         number : ["x", "y", "width", "height", "zindex"]};
 
     label:string;
     x: number;
@@ -33,23 +37,54 @@ class Coord {
     height: number;
     zindex: number;
     within: Within = new Within();
+    isRoot: boolean;
 
     constructor(...Arguments: any) {
         Coord.instances.push(this);
         mf.applyArguments("Coord", Arguments, Coord.defaults, Coord.argMap, this);
     }
     copyWithin(...Arguments:any){
-        let possArgs:{x?:number,y?:number,width?:number,height?:number} = {};
+        let possArgs:{x?:number,y?:number,width?:number,height?:number, isRoot?:boolean, Coord?:Coord} = {};
         let obj:Coord|Within;
-        mf.applyArguments("Coord.copyWithin", Arguments, {}, Coord.CopyArgMap, possArgs);
+        mf.applyArguments("Coord.copyWithin", Arguments, {isRoot: false}, Coord.CopyArgMap, possArgs);
+        let isRoot = possArgs.isRoot;
         if ("Within" in possArgs) obj = possArgs["Within"];
         if ("Coord" in possArgs) obj = possArgs["Coord"];
-        this.within.x = (obj) ? obj.x : ( ("x" in possArgs) ? possArgs.x : this.x);
-        this.within.y = (obj) ? obj.y : ( ("y" in possArgs) ? possArgs.y : this.y);
-        this.within.width = (obj) ? obj.width : ( ("width" in possArgs) ? possArgs.width : this.width);
-        this.within.height = (obj) ? obj.height : ( ("height" in possArgs) ? possArgs.height : this.height);
-        console.log("CopyWithin");
-        console.log(this);
+
+        if (possArgs.isRoot) {
+            for (let key of ["x", "y", "width", "height"]) {
+                this.within[key] = this[key];
+            }
+        } else {
+            if ("Coord" in possArgs) {
+                let coord = possArgs.Coord
+                for (let key of ["x", "y", "width", "height"]) {
+                    this.within[key] = coord.within[key];
+                }
+                let x=this.x, y=this.y, width=this.width, height=this.height, x2=x+width, y2=y+height;
+                let wx=this.within.x, wy=this.within.y, wwidth=this.within.width, wheight=this.within.height, wx2=wx+wwidth, wy2=wy+wheight;
+                let bx = (x > wx) ? x : wx;
+                let sx2 = (x2 < wx2) ? x2 : wx2;
+                let by = (y > wy) ? y : wy;
+                let sy2 = (y2 < wy2) ? y2 : wy2;
+                this.within.x = bx;
+                this.within.width = sx2-bx;
+                this.within.y = by;
+                this.within.height = sy2-by;
+            } else {
+                console.log("Boo");
+            }
+        }
+
+        // let x2= this.x + this.width;
+        // let y2= this.y + this.height;
+        // let wx2 = this.within.x + this.within.width;
+        // let wy2 = this.within.y + this.within.height;
+
+        // if (!this.label.includes("ScrollBar")){
+        //     console.log(`${this.label}\n${JSON.stringify(possArgs)}\nx=${this.x}\t x2=${x2}\t\t wx=${this.within.x}\t wx2=${wx2}\n`+
+        //             `y=${this.y}\t y2=${y2}\t\t wy=${this.within.y}\t wy2=${wy2}`);
+        // }
     }
     copy(...Arguments:any){
         // if no object, x, width, y, height, zindex
@@ -65,7 +100,6 @@ class Coord {
             obj = possArgs.Coord;
             this.within = possArgs.Coord.within;
         }
-        // if (this.within.x == undefined) this.copyWithin();
         if (obj) {possArgs.left = (possArgs.x) ? possArgs.x : 0; possArgs.top = (possArgs.y) ? possArgs.y : 0;
                   possArgs.right = (possArgs.width) ? possArgs.width : 0;possArgs.bottom= (possArgs.height) ? possArgs.height : 0
         }
@@ -80,8 +114,9 @@ class Coord {
         //             ? possArgs.Coord.zindex + ( (possArgs.left==0 && possArgs.right==0 && possArgs.top==0 && possArgs.bottom==0) 
         //                                   ? 0 : Handler.handlerZindexIncrement )
         //             : ( (possArgs.zindex) ? possArgs.zindex : this.zindex);
-        console.log("Copy");
-        console.log(this); ////////////////////////////
+
+        // console.log("Copy");
+        // console.log(this); ////////////////////////////
     }
     // copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
     //     this.x = fromCoord.x +left;
@@ -106,11 +141,22 @@ class Coord {
                 (sub.y > this.y + this.height)) 
     }
     clipStyleString(sub: Coord|Within) {
+        return Coord.clipStyleString(this, sub);
+        // let returnString:string = "";
+        // let left = (sub.x < this.x) ? (this.x-sub.x) : 0;
+        // let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
+        // let top = (sub.y < this.y) ? (this.y - sub.y) : 0;
+        // let bottom = (sub.y + sub.height > this.y + this.height) ? (sub.y + sub.height - (this.y + this.height)) : 0;
+        // if (left + right + top + bottom > 0)
+        //     returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
+        // return returnString;
+    }
+    static clipStyleString(THIS:Coord|Within, sub: Coord|Within) {
         let returnString:string = "";
-        let left = (sub.x < this.x) ? (this.x-sub.x) : 0;
-        let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
-        let top = (sub.y < this.y) ? (this.y - sub.y) : 0;
-        let bottom = (sub.y + sub.height > this.y + this.height) ? (sub.y + sub.height - (this.y + this.height)) : 0;
+        let left = (sub.x < THIS.x) ? (THIS.x-sub.x) : 0;
+        let right = (sub.x + sub.width > THIS.x + THIS.width) ? (sub.x + sub.width - (THIS.x + THIS.width)) : 0;
+        let top = (sub.y < THIS.y) ? (THIS.y - sub.y) : 0;
+        let bottom = (sub.y + sub.height > THIS.y + THIS.height) ? (sub.y + sub.height - (THIS.y + THIS.height)) : 0;
         if (left + right + top + bottom > 0)
             returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
         return returnString;
