@@ -38,7 +38,7 @@ class DisplayGroup {
 
     constructor(...Arguments: any) {
         DisplayGroup.instances.push(this);
-        this.coord = new Coord();
+
         let retArgs : ArgsObj = pf.sortArgs(Arguments, "DisplayGroup");
         mf.applyArguments("DisplayGroup", Arguments, DisplayGroup.defaults, DisplayGroup.argMap, this);
         if ("DisplayCell" in retArgs) this.cellArray = retArgs["DisplayCell"];
@@ -50,7 +50,7 @@ class DisplayGroup {
         if (("number" in retArgs) && retArgs["number"].length == 1) 
             this.marginVer = this.marginHor = retArgs["number"][0];
 
-
+        this.coord = new Coord(this.label);
         // Fill In Dim Values
 
         let percentsum:number = 0;

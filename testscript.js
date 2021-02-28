@@ -5,15 +5,19 @@ css("GreenBG", "background-color:green;color:white;overflow-y:auto");
 css("BlueBG", "background-color:blue;color:white");
 
 
-H( h(
-    I("one", "hi", "BlueBG", "250px"),
-    I("two", "", "GreenBG", "250px"),
+H("MainHandler", h("MainHor",
+    I("one", "ONE", "BlueBG", "250px"),
+    v("split",
+        I("two", "TWO", "GreenBG", "100px"),
+        I("three", "THREE", "CyanBG", "100px"),
+        "250px"
+    ),
     5
     ),
     10
 )
 
-// H( h(
+// H("MainHandler", h("MainHor",
 //     dragbar(I("one", "hi", "BlueBG", "250px"), 100, 500),
 //     tree( I("two", "", "GreenBG", "250px") ),
 //     5

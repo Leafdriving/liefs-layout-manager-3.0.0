@@ -80,15 +80,15 @@ class Tree {
                 return Tree.instances[key];
         return undefined;
     }
-    static defaultObj = T(
-        I("", "Top Display"),
-        props(I("", "prop1"), I("", "prop2")),
-        [ T( I("","Child1ofTop"), // true,       
-            [ T( I("","Child1ofChild1") ),
-              T( I("","Child2ofChild1") )
+    static defaultObj = T("Tree",
+        I("Tree_TopDisplay", "Top Display"),
+        props(I("Tree_TopDisplay_prop1", "prop1"), I("Tree_TopDisplay_prop2", "prop2")),
+        [ T( "Tree_child1", I("Tree_Child1ofTop","Child1ofTop"), // true,       
+            [ T("Tree_child1_1", I("Tree_Child1ofChild1","Child1ofChild1") ),
+              T("Tree_child1_2", I("Tree_Child2ofChild1","Child2ofChild1") )
             ]
           ),
-          T( I("","Child2ofTop") )]
+          T( "Tree_child2", I("Tree_Child2ofTop","Child2ofTop") )]
     )
     static defaults = {
         label : function(){return `Tree_${pf.pad_with_zeroes(Tree.instances.length)}`},
@@ -166,8 +166,8 @@ class Tree {
         let THIS = this;
         let hasChildren = (node.children) ? ( (node.children.length) ? true : false) : false;
         node.horizontalDisplayCell = h(                                 // Horizontal DisplayGroup Containing:
-            I("","",`${indent}px`),                                     // spacer First
-            I("",                                                       // This is the SVG
+            I(node.label+"_spacer","",`${indent}px`),                                     // spacer First
+            I(node.label+"_svg",                                                       // This is the SVG
                 (hasChildren) ? this.drawSVG(node.collapsed) : "",
                 `${this.collapseSize}px`,
                 events({onclick:function(mouseEvent:MouseEvent){        // Event Handler for clicking the SVG

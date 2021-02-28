@@ -143,6 +143,9 @@ class Within {
     constructor(...Arguments) {
         mf.applyArguments("Within", Arguments, {}, { number: ["x", "y", "width", "height"] }, this);
     }
+    clipStyleString(sub) {
+        return Coord.clipStyleString(this, sub);
+    }
 }
 class Coord {
     constructor(...Arguments) {
@@ -159,17 +162,46 @@ class Coord {
     copyWithin(...Arguments) {
         let possArgs = {};
         let obj;
-        mf.applyArguments("Coord.copyWithin", Arguments, {}, Coord.CopyArgMap, possArgs);
+        mf.applyArguments("Coord.copyWithin", Arguments, { isRoot: false }, Coord.CopyArgMap, possArgs);
+        let isRoot = possArgs.isRoot;
         if ("Within" in possArgs)
             obj = possArgs["Within"];
         if ("Coord" in possArgs)
             obj = possArgs["Coord"];
-        this.within.x = (obj) ? obj.x : (("x" in possArgs) ? possArgs.x : this.x);
-        this.within.y = (obj) ? obj.y : (("y" in possArgs) ? possArgs.y : this.y);
-        this.within.width = (obj) ? obj.width : (("width" in possArgs) ? possArgs.width : this.width);
-        this.within.height = (obj) ? obj.height : (("height" in possArgs) ? possArgs.height : this.height);
-        console.log("CopyWithin");
-        console.log(this);
+        if (possArgs.isRoot) {
+            for (let key of ["x", "y", "width", "height"]) {
+                this.within[key] = this[key];
+            }
+        }
+        else {
+            if ("Coord" in possArgs) {
+                let coord = possArgs.Coord;
+                for (let key of ["x", "y", "width", "height"]) {
+                    this.within[key] = coord.within[key];
+                }
+                let x = this.x, y = this.y, width = this.width, height = this.height, x2 = x + width, y2 = y + height;
+                let wx = this.within.x, wy = this.within.y, wwidth = this.within.width, wheight = this.within.height, wx2 = wx + wwidth, wy2 = wy + wheight;
+                let bx = (x > wx) ? x : wx;
+                let sx2 = (x2 < wx2) ? x2 : wx2;
+                let by = (y > wy) ? y : wy;
+                let sy2 = (y2 < wy2) ? y2 : wy2;
+                this.within.x = bx;
+                this.within.width = sx2 - bx;
+                this.within.y = by;
+                this.within.height = sy2 - by;
+            }
+            else {
+                console.log("Boo");
+            }
+        }
+        // let x2= this.x + this.width;
+        // let y2= this.y + this.height;
+        // let wx2 = this.within.x + this.within.width;
+        // let wy2 = this.within.y + this.within.height;
+        // if (!this.label.includes("ScrollBar")){
+        //     console.log(`${this.label}\n${JSON.stringify(possArgs)}\nx=${this.x}\t x2=${x2}\t\t wx=${this.within.x}\t wx2=${wx2}\n`+
+        //             `y=${this.y}\t y2=${y2}\t\t wy=${this.within.y}\t wy2=${wy2}`);
+        // }
     }
     copy(...Arguments) {
         // if no object, x, width, y, height, zindex
@@ -184,7 +216,6 @@ class Coord {
             obj = possArgs.Coord;
             this.within = possArgs.Coord.within;
         }
-        // if (this.within.x == undefined) this.copyWithin();
         if (obj) {
             possArgs.left = (possArgs.x) ? possArgs.x : 0;
             possArgs.top = (possArgs.y) ? possArgs.y : 0;
@@ -202,8 +233,8 @@ class Coord {
         //             ? possArgs.Coord.zindex + ( (possArgs.left==0 && possArgs.right==0 && possArgs.top==0 && possArgs.bottom==0) 
         //                                   ? 0 : Handler.handlerZindexIncrement )
         //             : ( (possArgs.zindex) ? possArgs.zindex : this.zindex);
-        console.log("Copy");
-        console.log(this); ////////////////////////////
+        // console.log("Copy");
+        // console.log(this); ////////////////////////////
     }
     // copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
     //     this.x = fromCoord.x +left;
@@ -233,11 +264,22 @@ class Coord {
             (sub.y > this.y + this.height));
     }
     clipStyleString(sub) {
+        return Coord.clipStyleString(this, sub);
+        // let returnString:string = "";
+        // let left = (sub.x < this.x) ? (this.x-sub.x) : 0;
+        // let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
+        // let top = (sub.y < this.y) ? (this.y - sub.y) : 0;
+        // let bottom = (sub.y + sub.height > this.y + this.height) ? (sub.y + sub.height - (this.y + this.height)) : 0;
+        // if (left + right + top + bottom > 0)
+        //     returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
+        // return returnString;
+    }
+    static clipStyleString(THIS, sub) {
         let returnString = "";
-        let left = (sub.x < this.x) ? (this.x - sub.x) : 0;
-        let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
-        let top = (sub.y < this.y) ? (this.y - sub.y) : 0;
-        let bottom = (sub.y + sub.height > this.y + this.height) ? (sub.y + sub.height - (this.y + this.height)) : 0;
+        let left = (sub.x < THIS.x) ? (THIS.x - sub.x) : 0;
+        let right = (sub.x + sub.width > THIS.x + THIS.width) ? (sub.x + sub.width - (THIS.x + THIS.width)) : 0;
+        let top = (sub.y < THIS.y) ? (THIS.y - sub.y) : 0;
+        let bottom = (sub.y + sub.height > THIS.y + THIS.height) ? (sub.y + sub.height - (THIS.y + THIS.height)) : 0;
         if (left + right + top + bottom > 0)
             returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`;
         return returnString;
@@ -254,7 +296,8 @@ Coord.argMap = {
     string: ["label"],
     number: ["x", "y", "width", "height", "zindex"]
 };
-Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], number: ["x", "y", "width", "height", "zindex"] };
+Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
+    number: ["x", "y", "width", "height", "zindex"] };
 /**
  * This Class Holds the HTMLElement
  */
@@ -392,6 +435,10 @@ class DisplayCell {
         }
         if (this.htmlBlock)
             this.label = `${this.htmlBlock.label}`;
+        if (!this.label)
+            this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
+                : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
+                    : `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`;
         this.coord = new Coord(this.label);
     }
     static byLabel(label) {
@@ -411,7 +458,7 @@ class DisplayCell {
 }
 DisplayCell.instances = [];
 DisplayCell.defaults = {
-    label: function () { return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`; },
+    // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
     dim: ""
 };
 DisplayCell.argMap = {
@@ -432,7 +479,6 @@ class DisplayGroup {
         this.htmlBlock = undefined;
         this.overlay = undefined;
         DisplayGroup.instances.push(this);
-        this.coord = new Coord();
         let retArgs = pf.sortArgs(Arguments, "DisplayGroup");
         mf.applyArguments("DisplayGroup", Arguments, DisplayGroup.defaults, DisplayGroup.argMap, this);
         if ("DisplayCell" in retArgs)
@@ -444,6 +490,7 @@ class DisplayGroup {
             this.cellArray = retArgs["Array"][0];
         if (("number" in retArgs) && retArgs["number"].length == 1)
             this.marginVer = this.marginHor = retArgs["number"][0];
+        this.coord = new Coord(this.label);
         // Fill In Dim Values
         let percentsum = 0;
         let numOfEmptydims = 0;
@@ -554,6 +601,7 @@ class Handler {
         dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
     }
     static update(ArrayofHandlerInstances = Handler.instances, instanceNo = 0, derender = false) {
+        console.clear();
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
@@ -563,7 +611,7 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
             }
-            handlerInstance.rootCell.coord.copyWithin();
+            handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
@@ -678,6 +726,11 @@ class Handler {
             else
                 clipString = parentDisplaygroup.coord.clipStyleString(displaycell.coord);
         }
+        let clip2 = displaycell.coord.within.clipStyleString(displaycell.coord);
+        //console.log here
+        if (clipString || clip2)
+            console.log(htmlBlock.label, (clipString) ? clipString : "undefined", displaycell.coord.within.clipStyleString(displaycell.coord));
+        /////////////////
         if (derender) {
             if (alreadyexists)
                 el.remove();
@@ -1142,27 +1195,27 @@ class ScrollBar {
         let ss = this.scrollWidth;
         let w = ss - off;
         let mid = ss / 2;
-        this.leftArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.leftArrow = I(this.label + "_Left", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${mid} ${w},${off} ${w},${w} ${off},${mid}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickLeftorUp(mouseEvent); } }
         }));
-        this.upArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.upArrow = I(this.label + "_Up", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${w} ${mid},${off} ${w},${w} ${off},${w}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickLeftorUp(mouseEvent); } }
         }));
-        this.prePaddle = I("", "", "whiteBG", events({ onclick: function (mouseEvent) { THIS.clickPageLeftorUp(mouseEvent); } }));
-        this.paddle = I("", "", "blackBG", events({ ondrag: { onDown: function () { THIS.offsetAtDrag = THIS.offset; }, onMove: function (output) { THIS.dragging(output); },
+        this.prePaddle = I(this.label + "_Pre", "", "whiteBG", events({ onclick: function (mouseEvent) { THIS.clickPageLeftorUp(mouseEvent); } }));
+        this.paddle = I(this.label + "_Paddle", "", "blackBG", events({ ondrag: { onDown: function () { THIS.offsetAtDrag = THIS.offset; }, onMove: function (output) { THIS.dragging(output); },
             }
         }));
-        this.postPaddle = I("", "", "whiteBG", events({ onclick: function (mouseEvent) { THIS.clickPageRightOrDown(mouseEvent); } }));
-        this.rightArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.postPaddle = I(this.label + "_Post", "", "whiteBG", events({ onclick: function (mouseEvent) { THIS.clickPageRightOrDown(mouseEvent); } }));
+        this.rightArrow = I(this.label + "_Right", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${off} ${w},${mid} ${off},${w} ${off},${off}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickRightOrDown(mouseEvent); } }
         }));
-        this.downArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.downArrow = I(this.label + "_down", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${off} ${w},${off} ${mid},${w} ${off},${off}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({ onhold: { event: function (mouseEvent) { THIS.clickRightOrDown(mouseEvent); } }
@@ -1640,8 +1693,8 @@ class Tree {
         let THIS = this;
         let hasChildren = (node.children) ? ((node.children.length) ? true : false) : false;
         node.horizontalDisplayCell = h(// Horizontal DisplayGroup Containing:
-        I("", "", `${indent}px`), // spacer First
-        I("", // This is the SVG
+        I(node.label + "_spacer", "", `${indent}px`), // spacer First
+        I(node.label + "_svg", // This is the SVG
         (hasChildren) ? this.drawSVG(node.collapsed) : "", `${this.collapseSize}px`, events({ onclick: function (mouseEvent) {
                 THIS.toggleCollapse(node, mouseEvent, this);
             } })), node.labelCell, // This is the TreeNode Label
@@ -1658,11 +1711,11 @@ class Tree {
     render(displaycell) { }
 }
 Tree.instances = [];
-Tree.defaultObj = T(I("", "Top Display"), props(I("", "prop1"), I("", "prop2")), [T(I("", "Child1ofTop"), // true,       
-    [T(I("", "Child1ofChild1")),
-        T(I("", "Child2ofChild1"))
+Tree.defaultObj = T("Tree", I("Tree_TopDisplay", "Top Display"), props(I("Tree_TopDisplay_prop1", "prop1"), I("Tree_TopDisplay_prop2", "prop2")), [T("Tree_child1", I("Tree_Child1ofTop", "Child1ofTop"), // true,       
+    [T("Tree_child1_1", I("Tree_Child1ofChild1", "Child1ofChild1")),
+        T("Tree_child1_2", I("Tree_Child2ofChild1", "Child2ofChild1"))
     ]),
-    T(I("", "Child2ofTop"))]);
+    T("Tree_child2", I("Tree_Child2ofTop", "Child2ofTop"))]);
 Tree.defaults = {
     label: function () { return `Tree_${pf.pad_with_zeroes(Tree.instances.length)}`; },
     cellHeight: 20, SVGColor: "white", startIndent: 0, indent: 10, collapsePad: 4, collapseSize: 16,

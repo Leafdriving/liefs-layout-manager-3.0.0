@@ -68,6 +68,7 @@ class Handler {
     }
 
     static update(ArrayofHandlerInstances:Handler[] = Handler.instances, instanceNo:number = 0, derender:boolean = false){
+        console.clear();
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
@@ -77,7 +78,7 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);  
             }
-            handlerInstance.rootCell.coord.copyWithin();
+            handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
@@ -208,6 +209,13 @@ class Handler {
             if (parentDisplaygroup.coord.isCoordCompletelyOutside( displaycell.coord )) derender = true;
             else clipString = parentDisplaygroup.coord.clipStyleString( displaycell.coord );
         }
+        let clip2 = displaycell.coord.within.clipStyleString( displaycell.coord);
+
+        //console.log here
+        if (clipString || clip2) console.log(htmlBlock.label,
+                    (clipString)?clipString:"undefined",
+                    displaycell.coord.within.clipStyleString( displaycell.coord));
+        /////////////////
 
         if (derender) {
             if (alreadyexists) el.remove();

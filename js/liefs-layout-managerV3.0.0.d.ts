@@ -54,6 +54,7 @@ declare class Within {
     width: number;
     height: number;
     constructor(...Arguments: any);
+    clipStyleString(sub: Coord | Within): string;
 }
 declare class Coord {
     static instances: Coord[];
@@ -73,6 +74,7 @@ declare class Coord {
     static CopyArgMap: {
         Within: string[];
         Coord: string[];
+        boolean: string[];
         number: string[];
     };
     label: string;
@@ -82,12 +84,14 @@ declare class Coord {
     height: number;
     zindex: number;
     within: Within;
+    isRoot: boolean;
     constructor(...Arguments: any);
     copyWithin(...Arguments: any): void;
     copy(...Arguments: any): void;
     replace(x: number, y: number, width: number, height: number, zindex?: number): void;
     isCoordCompletelyOutside(sub: Coord | Within): boolean;
     clipStyleString(sub: Coord | Within): string;
+    static clipStyleString(THIS: Coord | Within, sub: Coord | Within): string;
     isPointIn(x: number, y: number): boolean;
     asAttributeString(): string;
 }
@@ -167,7 +171,6 @@ declare class DisplayCell {
     static instances: DisplayCell[];
     static byLabel(label: string): DisplayCell;
     static defaults: {
-        label: () => string;
         dim: string;
     };
     static argMap: {

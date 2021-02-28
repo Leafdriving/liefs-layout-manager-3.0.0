@@ -7,7 +7,7 @@ class DisplayCell {
         return undefined;
     }
     static defaults = {
-        label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
+        // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
         dim : ""
     }
     static argMap = {
@@ -38,6 +38,10 @@ class DisplayCell {
         }
 
         if (this.htmlBlock) this.label = `${this.htmlBlock.label}`;
+        if (!this.label)
+            this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
+                            : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
+                                : `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`
         this.coord = new Coord(this.label);
     }
     hMenuBar(menuObj:object){

@@ -58,7 +58,7 @@ class ScrollBar {
         let w = ss-off;
         let mid = ss/2;
 
-        this.leftArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.leftArrow = I(this.label+"_Left", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${mid} ${w},${off} ${w},${w} ${off},${mid}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickLeftorUp(mouseEvent)} } 
@@ -66,29 +66,29 @@ class ScrollBar {
             );
 
 
-        this.upArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.upArrow = I(this.label+"_Up", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${w} ${mid},${off} ${w},${w} ${off},${w}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickLeftorUp(mouseEvent)} } 
                                                   })
         );
 
-        this.prePaddle = I("", "","whiteBG", events({onclick:function(mouseEvent:MouseEvent){THIS.clickPageLeftorUp(mouseEvent)}}));
-        this.paddle = I("", "","blackBG", events({ondrag: { onDown :function(){THIS.offsetAtDrag = THIS.offset},
+        this.prePaddle = I(this.label+"_Pre", "","whiteBG", events({onclick:function(mouseEvent:MouseEvent){THIS.clickPageLeftorUp(mouseEvent)}}));
+        this.paddle = I(this.label+"_Paddle", "","blackBG", events({ondrag: { onDown :function(){THIS.offsetAtDrag = THIS.offset},
                                                             onMove :function(output:object){THIS.dragging(output)},
                                                            /* onUp: function(output:object){console.log("mouseup");console.log(output)}*/
                                                           }
                         }));
-        this.postPaddle = I("", "","whiteBG", events({onclick:function(mouseEvent:MouseEvent){THIS.clickPageRightOrDown(mouseEvent)}}));
+        this.postPaddle = I(this.label+"_Post", "","whiteBG", events({onclick:function(mouseEvent:MouseEvent){THIS.clickPageRightOrDown(mouseEvent)}}));
             
-        this.rightArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.rightArrow = I(this.label+"_Right", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${off} ${w},${mid} ${off},${w} ${off},${off}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickRightOrDown(mouseEvent)} } 
                                                   })
         );
 
-        this.downArrow = I("", `<svg height="${ss}" width="${ss}">
+        this.downArrow = I(this.label+"_down", `<svg height="${ss}" width="${ss}">
             <polygon points="${off},${off} ${w},${off} ${mid},${w} ${off},${off}"
             style="fill:black;stroke:black;stroke-width:1" />
             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickRightOrDown(mouseEvent)} } 
