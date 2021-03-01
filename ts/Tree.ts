@@ -190,7 +190,8 @@ function tree(...Arguments:any){
     let overlay=new Overlay("Tree", ...Arguments);
     let newTree = <Tree>overlay.returnObj;
     let displaycell = newTree.parentDisplayCell;
-    displaycell.overlay = overlay;
+    // displaycell.overlay = overlay; // remove this one soon
+    displaycell.addOverlay(overlay);
     return displaycell;
 }
 Overlay.classes["Tree"] = Tree;

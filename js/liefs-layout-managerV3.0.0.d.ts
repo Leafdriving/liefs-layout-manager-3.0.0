@@ -186,11 +186,12 @@ declare class DisplayCell {
     coord: Coord;
     htmlBlock: HtmlBlock;
     displaygroup: DisplayGroup;
-    overlay: Overlay;
+    overlays: Overlay[];
     dim: string;
     isRendered: boolean;
     pages: Pages;
     constructor(...Arguments: any);
+    addOverlay(overlay: Overlay): void;
     hMenuBar(menuObj: object): void;
     vMenuBar(menuObj: object): void;
 }

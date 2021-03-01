@@ -24,7 +24,8 @@ class DisplayCell {
     coord: Coord;
     htmlBlock: HtmlBlock = undefined;
     displaygroup: DisplayGroup = undefined;
-    overlay: Overlay = undefined;
+    // overlay: Overlay = undefined;
+    overlays: Overlay[] = [];
     dim: string;
     isRendered: boolean = false;
     pages : Pages;
@@ -44,6 +45,7 @@ class DisplayCell {
                                 : `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`
         this.coord = new Coord(this.label);
     }
+    addOverlay(overlay:Overlay){this.overlays.push(overlay)}
     hMenuBar(menuObj:object){
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({onmouseover:hMenuBar(menuObj)})

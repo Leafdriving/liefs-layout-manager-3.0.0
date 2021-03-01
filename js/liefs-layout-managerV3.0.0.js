@@ -437,7 +437,8 @@ class DisplayCell {
     constructor(...Arguments) {
         this.htmlBlock = undefined;
         this.displaygroup = undefined;
-        this.overlay = undefined;
+        // overlay: Overlay = undefined;
+        this.overlays = [];
         this.isRendered = false;
         DisplayCell.instances.push(this);
         mf.applyArguments("DisplayCell", Arguments, DisplayCell.defaults, DisplayCell.argMap, this);
@@ -458,6 +459,7 @@ class DisplayCell {
                 return DisplayCell.instances[key];
         return undefined;
     }
+    addOverlay(overlay) { this.overlays.push(overlay); }
     hMenuBar(menuObj) {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({ onmouseover: hMenuBar(menuObj) });
@@ -608,7 +610,6 @@ class Handler {
     }
     static screensizeToCoord(dislaycell, handlerMargin) {
         let viewport = pf.viewport();
-        // dislaycell.coord.replace(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
         dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
     }
     static update(ArrayofHandlerInstances = Handler.instances, instanceNo = 0, derender = false) {
@@ -647,7 +648,7 @@ class Handler {
         else {
             let htmlBlock = displaycell.htmlBlock;
             let displaygroup = displaycell.displaygroup;
-            let overlay = displaycell.overlay;
+            let overlays = displaycell.overlays;
             if (htmlBlock) {
                 Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup);
             }
@@ -659,8 +660,10 @@ class Handler {
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
-            if (overlay) {
-                overlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+            if (overlays.length) {
+                for (let ovlay of overlays) {
+                    ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+                }
             }
         }
     }
@@ -1179,7 +1182,8 @@ function dragbar(...Arguments) {
     let overlay = new Overlay("DragBar", ...Arguments);
     let newDragBar = overlay.returnObj;
     let parentDisplaycell = newDragBar.parentDisplaycell;
-    parentDisplaycell.overlay = overlay;
+    // parentDisplaycell.overlay = overlay; // remove this line soon
+    parentDisplaycell.addOverlay(overlay);
     return parentDisplaycell;
 }
 Overlay.classes["DragBar"] = DragBar;
@@ -1743,7 +1747,8 @@ function tree(...Arguments) {
     let overlay = new Overlay("Tree", ...Arguments);
     let newTree = overlay.returnObj;
     let displaycell = newTree.parentDisplayCell;
-    displaycell.overlay = overlay;
+    // displaycell.overlay = overlay; // remove this one soon
+    displaycell.addOverlay(overlay);
     return displaycell;
 }
 Overlay.classes["Tree"] = Tree;

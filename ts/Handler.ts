@@ -63,7 +63,6 @@ class Handler {
     }
     static screensizeToCoord(dislaycell:DisplayCell, handlerMargin: number){
         let viewport = pf.viewport();
-        // dislaycell.coord.replace(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
         dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
 
@@ -103,7 +102,7 @@ class Handler {
         else {
             let htmlBlock = displaycell.htmlBlock;
             let displaygroup = displaycell.displaygroup;
-            let overlay = displaycell.overlay;
+            let overlays = displaycell.overlays;
             if (htmlBlock) {
                 Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup)
             }
@@ -118,8 +117,10 @@ class Handler {
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
-            if (overlay){
-                overlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+            if (overlays.length) {
+                for (let ovlay of overlays) {
+                    ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+                }
             }
         }
     }

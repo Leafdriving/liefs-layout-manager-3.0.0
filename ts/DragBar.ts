@@ -78,7 +78,8 @@ function dragbar(...Arguments:any) {
     let overlay=new Overlay("DragBar", ...Arguments);
     let newDragBar = <DragBar>overlay.returnObj;
     let parentDisplaycell = newDragBar.parentDisplaycell;
-    parentDisplaycell.overlay = overlay;
+    // parentDisplaycell.overlay = overlay; // remove this line soon
+    parentDisplaycell.addOverlay(overlay);
     return parentDisplaycell;
 }
 Overlay.classes["DragBar"] = DragBar;
