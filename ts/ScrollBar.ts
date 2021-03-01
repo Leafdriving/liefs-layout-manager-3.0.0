@@ -102,6 +102,7 @@ class ScrollBar {
                                 this.paddle,
                                 this.postPaddle,
                                 (this.ishor) ? this.rightArrow : this.downArrow,
+                                this.label,
                             );
     }
     clickLeftorUp(mouseEvent:MouseEvent){
@@ -134,12 +135,21 @@ class ScrollBar {
         Handler.update();
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+        // console.log(this.label);
+        // console.log(this);
         let dgCoord:Coord = this.displaygroup.coord;
         // calculate outer scrollbar dimensions
-        let x = (this.ishor) ? dgCoord.x : dgCoord.x + dgCoord.width - this.scrollWidth;
-        let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
-        let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
-        let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
+
+        let x = (this.ishor) ? dgCoord.within.x : dgCoord.within.x + dgCoord.within.width - this.scrollWidth;
+        let width = (this.ishor) ? dgCoord.within.width : this.scrollWidth;
+        let y = (this.ishor) ? dgCoord.within.y + dgCoord.within.height - this.scrollWidth : dgCoord.within.y;
+        let height = (this.ishor) ? this.scrollWidth : dgCoord.within.height;
+
+
+        // let x = (this.ishor) ? dgCoord.x : dgCoord.x + dgCoord.width - this.scrollWidth;
+        // let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
+        // let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
+        // let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
 
         this.displaycell.coord.replace(x, y, width, height);
 
@@ -166,6 +176,7 @@ class ScrollBar {
 
         Handler.currentZindex += Handler.zindexIncrement*2;
         this.currentlyRendered = !derender;
+        // console.log(this.displaycell);
         Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
         Handler.currentZindex -= Handler.zindexIncrement*2;
     }

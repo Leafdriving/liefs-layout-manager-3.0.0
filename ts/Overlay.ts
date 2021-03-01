@@ -17,6 +17,7 @@ class Overlay {
 
     constructor(...Arguments: any) {
         Overlay.instances.push(this);
+        // console.log("New Overlay!");
         this.label= `Overlay_${pf.pad_with_zeroes(Overlay.instances.length)}`;
         this.sourceClassName = Arguments.shift();
         this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);

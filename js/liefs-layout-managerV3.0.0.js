@@ -671,10 +671,6 @@ class Handler {
         let cellArraylength = displaygroup.cellArray.length;
         let marginpx = (ishor) ? displaygroup.marginHor * (cellArraylength - 1) : displaygroup.marginVer * (cellArraylength - 1);
         let maxpx = (ishor) ? coord.width - marginpx : coord.height - marginpx;
-        let x = displaygroup.coord.x;
-        let y = displaygroup.coord.y;
-        let width;
-        let height;
         let cellsizepx;
         let totalFixedpx = displaygroup.totalPx();
         let pxForPercent = maxpx - totalFixedpx;
@@ -689,6 +685,13 @@ class Handler {
                 displaygroup.overlay = new Overlay("ScrollBar", `${displaygroup.label}_ScrollBar`, displaygroup, totalFixedpx, maxpx);
             }
             displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, false);
+            let dgCoord = displaygroup.coord;
+            let scrollbar = displaygroup.overlay.returnObj;
+            let scrollWidth = scrollbar.scrollWidth;
+            dgCoord.width -= (ishor) ? 0 : scrollWidth;
+            dgCoord.within.width -= (ishor) ? 0 : scrollWidth;
+            dgCoord.height -= (ishor) ? scrollWidth : 0;
+            dgCoord.within.height -= (ishor) ? scrollWidth : 0;
         }
         else {
             if (overlay) {
@@ -696,6 +699,10 @@ class Handler {
                     displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, true);
             }
         }
+        let x = displaygroup.coord.x;
+        let y = displaygroup.coord.y;
+        let width;
+        let height;
         // apply scrollbar offset
         if (displaygroup.overlay) {
             displaygroup.offset = displaygroup.overlay.returnObj["offset"];
@@ -730,17 +737,7 @@ class Handler {
         let htmlBlock = displaycell.htmlBlock;
         let el = pf.elExists(displaycell.label);
         let alreadyexists = (el) ? true : false;
-        // let clipString:string;
         derender = displaycell.coord.derender(derender);
-        // if(parentDisplaygroup){
-        //     if (parentDisplaygroup.coord.isCoordCompletelyOutside( displaycell.coord )) derender = true;
-        //     else clipString = parentDisplaygroup.coord.clipStyleString( displaycell.coord );
-        // }
-        //console.log here
-        // if (clipString || clip2) console.log(htmlBlock.label,
-        //             (clipString)?clipString:"undefined",
-        //             displaycell.coord.within.clipStyleString( displaycell.coord));
-        /////////////////
         if (derender) {
             if (alreadyexists)
                 el.remove();
@@ -763,7 +760,6 @@ class Handler {
             let attrstring = displaycell.coord.newAsAttributeString(); // + clipString;
             if (el.style.cssText != attrstring)
                 el.style.cssText = attrstring;
-            // if (htmlBlock.tree) htmlBlock.tree.render(displaycell);
         }
     }
     static renderHtmlAttributes(el, htmlblock, id) {
@@ -1097,6 +1093,7 @@ Hold.argMap = {
 class Overlay {
     constructor(...Arguments) {
         Overlay.instances.push(this);
+        // console.log("New Overlay!");
         this.label = `Overlay_${pf.pad_with_zeroes(Overlay.instances.length)}`;
         this.sourceClassName = Arguments.shift();
         this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);
@@ -1231,7 +1228,7 @@ class ScrollBar {
         }));
         this.ishor = this.displaygroup.ishor;
         this.displaycell = h(this.ishor, // note even though I'm using H - id chooses here.
-        (this.ishor) ? this.leftArrow : this.upArrow, this.prePaddle, this.paddle, this.postPaddle, (this.ishor) ? this.rightArrow : this.downArrow);
+        (this.ishor) ? this.leftArrow : this.upArrow, this.prePaddle, this.paddle, this.postPaddle, (this.ishor) ? this.rightArrow : this.downArrow, this.label);
     }
     clickLeftorUp(mouseEvent) {
         this.offset -= this.offsetPixelRatio;
@@ -1269,12 +1266,18 @@ class ScrollBar {
         Handler.update();
     }
     render(displaycell, parentDisplaygroup, index, derender) {
+        // console.log(this.label);
+        // console.log(this);
         let dgCoord = this.displaygroup.coord;
         // calculate outer scrollbar dimensions
-        let x = (this.ishor) ? dgCoord.x : dgCoord.x + dgCoord.width - this.scrollWidth;
-        let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
-        let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
-        let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
+        let x = (this.ishor) ? dgCoord.within.x : dgCoord.within.x + dgCoord.within.width - this.scrollWidth;
+        let width = (this.ishor) ? dgCoord.within.width : this.scrollWidth;
+        let y = (this.ishor) ? dgCoord.within.y + dgCoord.within.height - this.scrollWidth : dgCoord.within.y;
+        let height = (this.ishor) ? this.scrollWidth : dgCoord.within.height;
+        // let x = (this.ishor) ? dgCoord.x : dgCoord.x + dgCoord.width - this.scrollWidth;
+        // let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
+        // let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
+        // let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
         this.displaycell.coord.replace(x, y, width, height);
         // calculate inner scrollbar dimensions
         let preDisplayCell = this.displaycell.displaygroup.cellArray[1];
@@ -1297,6 +1300,7 @@ class ScrollBar {
         postDisplayCell.dim = `${postPercent}%`;
         Handler.currentZindex += Handler.zindexIncrement * 2;
         this.currentlyRendered = !derender;
+        // console.log(this.displaycell);
         Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
         Handler.currentZindex -= Handler.zindexIncrement * 2;
     }

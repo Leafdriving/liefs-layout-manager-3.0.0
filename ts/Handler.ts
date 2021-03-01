@@ -132,10 +132,7 @@ class Handler {
         let cellArraylength = displaygroup.cellArray.length;
         let marginpx = (ishor) ? displaygroup.marginHor*(cellArraylength-1): displaygroup.marginVer*(cellArraylength-1);
         let maxpx:number = (ishor) ? coord.width - marginpx : coord.height - marginpx;
-        let x:number = displaygroup.coord.x;
-        let y:number = displaygroup.coord.y;
-        let width:number;
-        let height:number;
+
         let cellsizepx:number;
 
         let totalFixedpx = displaygroup.totalPx();
@@ -156,6 +153,14 @@ class Handler {
                                                 );
             }
             displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, false);
+            let dgCoord = displaygroup.coord;
+            let scrollbar = <ScrollBar>displaygroup.overlay.returnObj;
+            let scrollWidth = scrollbar.scrollWidth;
+
+            dgCoord.width -= (ishor) ? 0 : scrollWidth;
+            dgCoord.within.width -= (ishor) ? 0 : scrollWidth;
+            dgCoord.height -= (ishor) ? scrollWidth : 0;
+            dgCoord.within.height -= (ishor) ? scrollWidth : 0;
         }
         else {
             if (overlay) {
@@ -163,6 +168,10 @@ class Handler {
                     displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, true);
             }
         }
+        let x:number = displaygroup.coord.x;
+        let y:number = displaygroup.coord.y;
+        let width:number;
+        let height:number;
 
         // apply scrollbar offset
         
@@ -203,20 +212,8 @@ class Handler {
         let htmlBlock = displaycell.htmlBlock;
         let el:HTMLElement = pf.elExists(displaycell.label);
         let alreadyexists:boolean = (el) ? true : false;
-        // let clipString:string;
-
 
         derender = displaycell.coord.derender( derender );
-        // if(parentDisplaygroup){
-        //     if (parentDisplaygroup.coord.isCoordCompletelyOutside( displaycell.coord )) derender = true;
-        //     else clipString = parentDisplaygroup.coord.clipStyleString( displaycell.coord );
-        // }
-
-        //console.log here
-        // if (clipString || clip2) console.log(htmlBlock.label,
-        //             (clipString)?clipString:"undefined",
-        //             displaycell.coord.within.clipStyleString( displaycell.coord));
-        /////////////////
 
         if (derender) {
             if (alreadyexists) el.remove();
@@ -234,7 +231,6 @@ class Handler {
             }
             let attrstring = displaycell.coord.newAsAttributeString() // + clipString;
             if (el.style.cssText != attrstring) el.style.cssText = attrstring;
-            // if (htmlBlock.tree) htmlBlock.tree.render(displaycell);
         }
     }
     static renderHtmlAttributes(el:HTMLElement, htmlblock: HtmlBlock, id:string){

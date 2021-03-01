@@ -6,10 +6,10 @@ css("BlueBG", "background-color:blue;color:white");
 
 
 H("MainHandler", h("MainHor",
-    I("one", "ONE", "BlueBG", "250px"),
+    dragbar(I("one", "ONE", "BlueBG", "250px"), 100, 500),
     v("split",
-        I("two", "TWO", "GreenBG", "100px"),
-        I("three", "THREE", "CyanBG", "100px"),
+        I("two", "TWO", "GreenBG", "400px"),
+        I("three", "THREE", "CyanBG", "400px"),
         "250px"
     ),
     5
