@@ -343,9 +343,9 @@ class HtmlBlock {
             this.attributes = pf.getAttribs(elementWithIdAsLabel, this.attributes);
             elementWithIdAsLabel.remove();
         }
-        if ("Css" in retArgs) {
-            this.css = retArgs["Css"][0].label;
-        }
+        if ("Css" in retArgs)
+            for (let css of retArgs["Css"])
+                this.css = (this.css + " " + css.classname).trim();
         if ("number" in retArgs) {
             let length = retArgs["number"].length;
             if (length == 1) {
@@ -371,7 +371,7 @@ HtmlBlock.defaults = {
     label: function () { return `htmlBlock_${pf.pad_with_zeroes(HtmlBlock.instances.length)}`; },
     innerHTML: " ",
     tag: "DIV",
-    css: " ",
+    css: "",
     dim: ""
 };
 HtmlBlock.argMap = {
@@ -586,6 +586,7 @@ class Handler {
         if (Handler.firstRun) {
             Handler.firstRun = false;
             window.onresize = function () { Handler.update(); };
+            window.onwheel = function (event) { ScrollBar.onWheel(event); };
         }
     }
     static byLabel(label) {
@@ -800,25 +801,35 @@ class Css {
     constructor(...Arguments) {
         Css.instances.push(this);
         mf.applyArguments("Css", Arguments, Css.defaults, Css.argMap, this);
-        if (this.asString == undefined)
-            this.makeString();
-        if (this.asObj == undefined)
-            this.makeObj();
+        if (this.cssObj == undefined) {
+            this.cssObj = this.makeObj();
+            this.css = this.makeString();
+        }
+        if (this.cssHover) {
+            this.cssHoverObj = this.makeObj(this.cssHover);
+            this.cssHover = this.makeString(this.cssHoverObj, "hover");
+        }
+        if (this.cssSelect) {
+            this.cssSelectObj = this.makeObj(this.cssSelect);
+            this.cssSelect = this.makeString(this.cssSelectObj, "", "Selected");
+        }
+        // console.log( JSON.stringify(this.cssObj) )
     }
-    static byLabel(label) {
+    static byLabel(classname) {
         for (let key in Css.instances)
-            if (Css.instances[key].label == label)
+            if (Css.instances[key].classname == classname)
                 return Css.instances[key];
         return undefined;
     }
-    makeString() {
-        this.asString = `${(this.isClassname) ? "." : ""}${this.label} {\n`;
-        for (let key in this.asObj)
-            this.asString += `  ${key}:${this.asObj[key]};\n`;
-        this.asString += "}";
+    makeString(obj = this.cssObj, postfix = "", addToClassName = "") {
+        let returnString = `${(this.isClassname) ? "." : ""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix : ""} {\n`;
+        for (let key in obj)
+            returnString += `  ${key}:${obj[key]};\n`;
+        returnString += "}";
+        return returnString;
     }
-    makeObj() {
-        let str = this.asString;
+    makeObj(str = this.css) {
+        //let str = this.asString;
         let obj = {};
         if (str.indexOf('{') > -1) {
             str = str.split('{')[1];
@@ -834,12 +845,11 @@ class Css {
                 obj[arr[0].trim()] = arr[1].trim();
             }
         }
-        this.asObj = obj;
-        this.makeString();
+        return obj;
     }
-    static byname(label) {
+    static byname(css) {
         for (let cssInstance of Css.instances)
-            if (cssInstance.label == label)
+            if (cssInstance.css == css)
                 return cssInstance;
         return undefined;
     }
@@ -853,7 +863,15 @@ class Css {
         pf.setAttrib(style, "id", Css.elementId);
         let outstring = "\n";
         for (let instance of Css.instances) {
-            outstring += instance.asString + "\n";
+            if (instance.css) {
+                outstring += instance.css + "\n";
+            }
+            if (instance.cssHover) {
+                outstring += instance.cssHover + "\n";
+            }
+            if (instance.cssSelect) {
+                outstring += instance.cssSelect + "\n";
+            }
         }
         style.innerHTML = outstring;
         if (!alreadyexists)
@@ -863,15 +881,20 @@ class Css {
 Css.elementId = "llmStyle";
 Css.instances = [];
 Css.defaults = {
-    label: function () { return `Css_${pf.pad_with_zeroes(Css.instances.length)}`; },
+    css: function () { return `Css_${pf.pad_with_zeroes(Css.instances.length)}`; },
     isClassname: true
 };
 Css.argMap = {
-    string: ["label", "asString"],
+    string: ["classname", "css", "cssHover", "cssSelect"],
     boolean: ["isClassname"]
 };
-new Css("div", "position:absolute;", false);
-function css(label, content) { return new Css(label, content); }
+function css(...Arguments) { return new Css(...Arguments); }
+class DefaultTheme {
+}
+DefaultTheme.advised = new Css("div", "position:absolute;", false);
+// context
+DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+Css.theme = DefaultTheme;
 class Pages {
     constructor(...Arguments) {
         Pages.instances.push(this);
@@ -1158,7 +1181,7 @@ class DragBar {
         let width = (ishor) ? pxsize : pcoord.width;
         let height = (ishor) ? pcoord.height : pxsize;
         dragcell.coord.replace(x, y, width, height, Handler.currentZindex + Handler.zindexIncrement);
-        dragcell.htmlBlock.css = (ishor) ? dragbar.horcss.label : dragbar.vercss.label;
+        dragcell.htmlBlock.css = (ishor) ? dragbar.horcss.classname : dragbar.vercss.classname;
         if (parentDisplaygroup.coord.isCoordCompletelyOutside(dragcell.coord))
             derender = true;
         Handler.renderDisplayCell(dragcell, parentDisplaygroup, undefined, derender);
@@ -1234,14 +1257,14 @@ class ScrollBar {
         this.displaycell = h(this.ishor, // note even though I'm using H - id chooses here.
         (this.ishor) ? this.leftArrow : this.upArrow, this.prePaddle, this.paddle, this.postPaddle, (this.ishor) ? this.rightArrow : this.downArrow, this.label);
     }
-    clickLeftorUp(mouseEvent) {
-        this.offset -= this.offsetPixelRatio;
+    clickLeftorUp(mouseEvent, noTimes = 1) {
+        this.offset -= this.offsetPixelRatio * noTimes;
         if (this.offset < 0)
             this.offset = 0;
         Handler.update();
     }
-    clickRightOrDown(mouseEvent) {
-        this.offset += this.offsetPixelRatio;
+    clickRightOrDown(mouseEvent, noTimes = 1) {
+        this.offset += this.offsetPixelRatio * noTimes;
         if (this.offset > this.maxOffset)
             this.offset = this.maxOffset;
         Handler.update();
@@ -1308,6 +1331,48 @@ class ScrollBar {
         Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
         Handler.currentZindex -= Handler.zindexIncrement * 2;
     }
+    static distOfMouseFromWheel(THIS, event) {
+        let ishor = THIS.displaygroup.ishor;
+        let displaycell = THIS.displaycell;
+        let coord = displaycell.coord;
+        let x = event.clientX;
+        let y = event.clientY;
+        let dist = 0;
+        // console.log(ishor, x, y, coord)
+        if (!ishor) {
+            if (x < coord.x)
+                dist = coord.x - x;
+            if (x > coord.x + coord.width)
+                dist = x - (coord.x + coord.width);
+        }
+        else {
+            if (y < coord.y)
+                dist = coord.y - y;
+            if (y > coord.y + coord.height)
+                dist = y - (coord.y + coord.height);
+        }
+        return dist;
+    }
+    static onWheel(event) {
+        let selectedInstance;
+        let minDist = 100000;
+        let dist;
+        for (let instance of ScrollBar.instances) {
+            if (instance.currentlyRendered) {
+                dist = ScrollBar.distOfMouseFromWheel(instance, event);
+                if (!selectedInstance || dist < minDist) {
+                    minDist = dist;
+                    selectedInstance = instance;
+                }
+            }
+        }
+        if (selectedInstance) {
+            if (event.deltaY > 0)
+                selectedInstance.clickRightOrDown(event, ScrollBar.scrollWheelMult * event.deltaY / 100);
+            if (event.deltaY < 0)
+                selectedInstance.clickLeftorUp(event, -ScrollBar.scrollWheelMult * event.deltaY / 100);
+        }
+    }
 }
 ScrollBar.instances = [];
 ScrollBar.whiteBG = css("whiteBG", "background-color:white;outline: 1px solid black;outline-offset: -1px;");
@@ -1322,6 +1387,7 @@ ScrollBar.argMap = {
     number: ["fixedPixels", "viewingPixels", "scroolWidth"],
     boolean: ["displayAtEnd"]
 };
+ScrollBar.scrollWheelMult = 4;
 Overlay.classes["ScrollBar"] = ScrollBar;
 class Context {
     constructor(...Arguments) {
@@ -1419,8 +1485,8 @@ class Context {
 }
 Context.subOverlapPx = 4;
 Context.instances = [];
-Context.defaultContextCss = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;");
-Context.defaultContextCssHover = css("contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+// static defaultContextCss = css("contxt","background-color:white;color: black;outline-style: solid;outline-width: 1px;");
+// static defaultContextCssHover = css("contxt:hover","background-color:black;color: white;outline-style: solid;outline-width: 1px;");
 Context.defaultMenuBarCss = css("menuBar", "background-color:white;color: black;");
 Context.defaultMenuBarHover = css("menuBar:hover", "background-color:black;color: white;");
 Context.defaultMenuBarNoHoverCss = css("menuBarNoHover", "background-color:white;color: black;");
@@ -1432,7 +1498,7 @@ Context.defaults = {
     label: function () { return `Context_${pf.pad_with_zeroes(Context.instances.length)}`; },
     width: 100,
     cellheight: 25,
-    css: Context.defaultContextCss
+    css: Css.theme.context,
 };
 Context.argMap = {
     string: ["label"],

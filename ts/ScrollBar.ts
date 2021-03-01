@@ -18,6 +18,8 @@ class ScrollBar {
         number: ["fixedPixels", "viewingPixels", "scroolWidth"],
         boolean: ["displayAtEnd"]
     }
+    static scrollWheelMult = 4;
+
     label:string;
     currentlyRendered: boolean;
     ishor: boolean;
@@ -75,7 +77,7 @@ class ScrollBar {
 
         this.prePaddle = I(this.label+"_Pre", "","whiteBG", events({onclick:function(mouseEvent:MouseEvent){THIS.clickPageLeftorUp(mouseEvent)}}));
         this.paddle = I(this.label+"_Paddle", "","blackBG", events({ondrag: { onDown :function(){THIS.offsetAtDrag = THIS.offset},
-                                                            onMove :function(output:object){THIS.dragging(output)},
+                                                                              onMove :function(output:object){THIS.dragging(output)},
                                                            /* onUp: function(output:object){console.log("mouseup");console.log(output)}*/
                                                           }
                         }));
@@ -105,22 +107,22 @@ class ScrollBar {
                                 this.label,
                             );
     }
-    clickLeftorUp(mouseEvent:MouseEvent){
-        this.offset -= this.offsetPixelRatio;
+    clickLeftorUp(mouseEvent:MouseEvent|WheelEvent, noTimes:number=1){
+        this.offset -= this.offsetPixelRatio*noTimes;
         if (this.offset < 0) this.offset = 0;
         Handler.update();
     }
-    clickRightOrDown(mouseEvent:MouseEvent){
-        this.offset += this.offsetPixelRatio;
+    clickRightOrDown(mouseEvent:MouseEvent|WheelEvent, noTimes:number=1){
+        this.offset += this.offsetPixelRatio*noTimes;
         if (this.offset > this.maxOffset) this.offset = this.maxOffset;
         Handler.update();
     }
-    clickPageLeftorUp(mouseEvent:MouseEvent){
+    clickPageLeftorUp(mouseEvent:MouseEvent|WheelEvent){
         this.offset -= this.displayedFixedPx;
         if (this.offset < 0) this.offset = 0;
         Handler.update();
     }
-    clickPageRightOrDown(mouseEvent:MouseEvent){
+    clickPageRightOrDown(mouseEvent:MouseEvent|WheelEvent){
         this.offset += this.displayedFixedPx;
         if (this.offset > this.maxOffset) this.offset = this.maxOffset;
         Handler.update();
@@ -179,6 +181,41 @@ class ScrollBar {
         // console.log(this.displaycell);
         Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
         Handler.currentZindex -= Handler.zindexIncrement*2;
+    }
+    static distOfMouseFromWheel(THIS:ScrollBar, event:WheelEvent) {
+        let ishor = THIS.displaygroup.ishor;
+        let displaycell = THIS.displaycell;
+        let coord = displaycell.coord;
+        let x = event.clientX;
+        let y = event.clientY;
+        let dist:number = 0;
+        // console.log(ishor, x, y, coord)
+        if (!ishor) {
+            if (x < coord.x) dist = coord.x -x;
+            if (x > coord.x + coord.width) dist = x - (coord.x + coord.width)
+        } else {
+            if (y < coord.y) dist = coord.y -y;
+            if (y > coord.y + coord.height) dist = y - (coord.y + coord.height)
+        }
+        return dist;
+    }
+    static onWheel(event:WheelEvent) {
+        let selectedInstance:ScrollBar;
+        let minDist:number = 100000;
+        let dist:number;
+        for (let instance of ScrollBar.instances) {
+            if (instance.currentlyRendered) {
+                dist = ScrollBar.distOfMouseFromWheel(instance, event);
+                if (!selectedInstance || dist < minDist) {
+                    minDist = dist;
+                    selectedInstance = instance;
+                }
+            }
+        }
+        if (selectedInstance) {
+            if (event.deltaY > 0) selectedInstance.clickRightOrDown(event, ScrollBar.scrollWheelMult*event.deltaY/100);
+            if (event.deltaY < 0) selectedInstance.clickLeftorUp(event, -ScrollBar.scrollWheelMult*event.deltaY/100)
+        }
     }
 }
 Overlay.classes["ScrollBar"] = ScrollBar;

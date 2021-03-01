@@ -8,8 +8,8 @@ class Context {
                 return Context.instances[key];
         return undefined;
     }
-    static defaultContextCss = css("contxt","background-color:white;color: black;outline-style: solid;outline-width: 1px;");
-    static defaultContextCssHover = css("contxt:hover","background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+    // static defaultContextCss = css("contxt","background-color:white;color: black;outline-style: solid;outline-width: 1px;");
+    // static defaultContextCssHover = css("contxt:hover","background-color:black;color: white;outline-style: solid;outline-width: 1px;");
     static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
     static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
     static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");
@@ -21,7 +21,7 @@ class Context {
         label : function(){return `Context_${pf.pad_with_zeroes(Context.instances.length)}`},
         width : 100,
         cellheight : 25,
-        css: Context.defaultContextCss
+        css: Css.theme.context, //Context.defaultContextCss
     }
     static argMap = {
         string : ["label"],

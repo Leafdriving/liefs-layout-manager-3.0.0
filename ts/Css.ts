@@ -1,39 +1,61 @@
 class Css {
+    static theme:any // set by theme class
     static elementId="llmStyle";
     static instances:Css[] = [];
-    static byLabel(label:string):Css{
+    static byLabel(classname:string):Css{
         for (let key in Css.instances)
-            if (Css.instances[key].label == label)
+            if (Css.instances[key].classname == classname)
                 return Css.instances[key];
         return undefined;
     }
     static defaults = {
-        label : function(){return `Css_${pf.pad_with_zeroes(Css.instances.length)}`},
+        css : function(){return `Css_${pf.pad_with_zeroes(Css.instances.length)}`},
         isClassname : true
     }
     static argMap = {
-        string : ["label", "asString"],
+        string : ["classname", "css", "cssHover", "cssSelect"],
         boolean : ["isClassname"]
     }
-    label:string;
-    asObj:object;
-    asString:string;
+    classname:string;
+
+    css:string;
+    cssObj:object;
+
+    cssHover: string;
+    cssHoverObj: object;
+
+    cssSelect: string;
+    cssSelectObj: object;
+
     isClassname:boolean;
 
     constructor(...Arguments: any) {
         Css.instances.push(this);
         mf.applyArguments("Css", Arguments, Css.defaults, Css.argMap, this);
-        if (this.asString == undefined) this.makeString();
-        if (this.asObj == undefined) this.makeObj();
+
+        if (this.cssObj == undefined) {
+            this.cssObj = this.makeObj();
+            this.css = this.makeString();
+        }
+        if (this.cssHover) {
+            this.cssHoverObj = this.makeObj(this.cssHover);
+            this.cssHover = this.makeString(this.cssHoverObj, "hover");            
+        }
+        if (this.cssSelect) {
+            this.cssSelectObj = this.makeObj(this.cssSelect);
+            this.cssSelect = this.makeString(this.cssSelectObj, "", "Selected");            
+        }
+        // console.log( JSON.stringify(this.cssObj) )
     }
-    makeString(){
-        this.asString = `${(this.isClassname)?".":""}${this.label} {\n`;
-        for (let key in this.asObj) 
-            this.asString += `  ${key}:${this.asObj[key]};\n`;
-        this.asString += "}"
+    makeString(obj:object = this.cssObj, postfix:string = "", addToClassName=""):string{
+        let returnString:string  = `${(this.isClassname)?".":""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix:""} {\n`;
+        for (let key in obj) 
+            returnString += `  ${key}:${obj[key]};\n`;
+        returnString += "}"
+        return returnString;
     }
-    makeObj(){
-        let str = this.asString;
+    makeObj(str:string = this.css):object {
+        //let str = this.asString;
         let obj = {};
         if (str.indexOf('{') > -1) {
             str = str.split('{')[1];
@@ -49,11 +71,10 @@ class Css {
                 obj[ arr[0].trim() ] = arr[1].trim();
             }
         }
-        this.asObj = obj;
-        this.makeString();
+        return obj;
     }
-    static byname(label:string){
-        for (let cssInstance of Css.instances) if (cssInstance.label == label) return cssInstance;
+    static byname(css:string){
+        for (let cssInstance of Css.instances) if (cssInstance.css == css) return cssInstance;
         return undefined;
     }
     static update() {
@@ -66,11 +87,12 @@ class Css {
         pf.setAttrib(style, "id", Css.elementId);
         let outstring = "\n";
         for (let instance of Css.instances) {
-            outstring += instance.asString + "\n";
+            if (instance.css){ outstring += instance.css + "\n";}
+            if (instance.cssHover){ outstring += instance.cssHover + "\n";}
+            if (instance.cssSelect){ outstring += instance.cssSelect + "\n";}
         }
         style.innerHTML = outstring;
         if (!alreadyexists) document.getElementsByTagName('head')[0].appendChild(style);
     }
 }
-new Css("div","position:absolute;", false);
-function css(label:string, content:string|object){return new Css(label, content);}
+function css(...Arguments:any){return new Css(...Arguments);}

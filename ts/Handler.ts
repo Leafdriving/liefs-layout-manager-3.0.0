@@ -45,6 +45,7 @@ class Handler {
         if (Handler.firstRun) {
             Handler.firstRun = false;
             window.onresize = function() {Handler.update()};
+            window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event)};
         }
     }
     pop(){Handler.pop(this);}

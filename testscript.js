@@ -2,28 +2,31 @@ css("CyanBG", "background-color:cyan;color:white");
 css("RedBG", "background-color:red;color:white");
 css("RedBG:", "background-color:red;color:white");
 css("GreenBG", "background-color:green;color:white;overflow-y:auto");
-css("BlueBG", "background-color:blue;color:white");
+css("BlueBG", "background-color:blue;color:white", "background-color:red;color:white", "background-color:purple;color:white");
 
+// css("redtext", "color:red")
+// css("whitebackground", "background-color:white")
 
-// H("MainHandler", h("MainHor",
-//     dragbar(I("one", "ONE", "BlueBG", "250px"), 100, 500),
-//     v("split",
-//         I("two", "TWO", "GreenBG", "400px"),
-//         I("three", "THREE", "CyanBG", "400px"),
-//         "250px"
-//     ),
-//     5
-//     ),
-//     10
-// )
 
 H("MainHandler", h("MainHor",
-    dragbar(I("one", "hi", "BlueBG", "250px"), 100, 500),
-    tree( I("two", "", "GreenBG", "250px") ),
+    dragbar(I("one", "ONE", "BlueBG", "250px"), 100, 500),
+    v("split",
+        I("two", "TWO", "GreenBG", "400px"),
+        I("three", "THREE", "CyanBG", "400px"),
+        "250px"
+    ),
     5
     ),
     10
 )
+
+// H("MainHandler", h("MainHor",
+//     dragbar(I("one", "hi", "BlueBG", "250px"), 100, 500),
+//     tree( I("two", "", "GreenBG", "250px") ),
+//     5
+//     ),
+//     10
+// )
 
 // H(
 //     h(

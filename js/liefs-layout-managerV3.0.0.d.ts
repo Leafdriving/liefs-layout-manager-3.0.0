@@ -270,28 +270,37 @@ declare class Handler {
 }
 declare function H(...Arguments: any): Handler;
 declare class Css {
+    static theme: any;
     static elementId: string;
     static instances: Css[];
-    static byLabel(label: string): Css;
+    static byLabel(classname: string): Css;
     static defaults: {
-        label: () => string;
+        css: () => string;
         isClassname: boolean;
     };
     static argMap: {
         string: string[];
         boolean: string[];
     };
-    label: string;
-    asObj: object;
-    asString: string;
+    classname: string;
+    css: string;
+    cssObj: object;
+    cssHover: string;
+    cssHoverObj: object;
+    cssSelect: string;
+    cssSelectObj: object;
     isClassname: boolean;
     constructor(...Arguments: any);
-    makeString(): void;
-    makeObj(): void;
-    static byname(label: string): Css;
+    makeString(obj?: object, postfix?: string, addToClassName?: string): string;
+    makeObj(str?: string): object;
+    static byname(css: string): Css;
     static update(): void;
 }
-declare function css(label: string, content: string | object): Css;
+declare function css(...Arguments: any): Css;
+declare class DefaultTheme {
+    static advised: Css;
+    static context: Css;
+}
 declare class Pages {
     static activePages: Pages[];
     static instances: Pages[];
@@ -445,6 +454,7 @@ declare class ScrollBar {
         number: string[];
         boolean: string[];
     };
+    static scrollWheelMult: number;
     label: string;
     currentlyRendered: boolean;
     ishor: boolean;
@@ -470,20 +480,20 @@ declare class ScrollBar {
     displayedFixedPx: number;
     constructor(...Arguments: any);
     build(): void;
-    clickLeftorUp(mouseEvent: MouseEvent): void;
-    clickRightOrDown(mouseEvent: MouseEvent): void;
-    clickPageLeftorUp(mouseEvent: MouseEvent): void;
-    clickPageRightOrDown(mouseEvent: MouseEvent): void;
+    clickLeftorUp(mouseEvent: MouseEvent | WheelEvent, noTimes?: number): void;
+    clickRightOrDown(mouseEvent: MouseEvent | WheelEvent, noTimes?: number): void;
+    clickPageLeftorUp(mouseEvent: MouseEvent | WheelEvent): void;
+    clickPageRightOrDown(mouseEvent: MouseEvent | WheelEvent): void;
     dragging(output: object): void;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static distOfMouseFromWheel(THIS: ScrollBar, event: WheelEvent): number;
+    static onWheel(event: WheelEvent): void;
 }
 declare class Context {
     static lastRendered: Context;
     static subOverlapPx: number;
     static instances: Context[];
     static byLabel(label: string): Context;
-    static defaultContextCss: Css;
-    static defaultContextCssHover: Css;
     static defaultMenuBarCss: Css;
     static defaultMenuBarHover: Css;
     static defaultMenuBarNoHoverCss: Css;
@@ -496,7 +506,7 @@ declare class Context {
         label: () => string;
         width: number;
         cellheight: number;
-        css: Css;
+        css: any;
     };
     static argMap: {
         string: string[];

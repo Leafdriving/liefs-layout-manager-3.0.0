@@ -13,7 +13,7 @@ class HtmlBlock {
         label : function(){return `htmlBlock_${pf.pad_with_zeroes(HtmlBlock.instances.length)}`},
         innerHTML : " ",
         tag: "DIV",
-        css: " ",
+        css: "",
         dim: ""
     }
     static argMap = {
@@ -67,7 +67,10 @@ class HtmlBlock {
             this.attributes = pf.getAttribs(elementWithIdAsLabel, this.attributes);
             elementWithIdAsLabel.remove();
         }
-        if ("Css" in retArgs) {this.css = retArgs["Css"][0].label;}
+        if ("Css" in retArgs) 
+            for (let css of retArgs["Css"]) 
+                this.css = (this.css + " "+  (<Css>css).classname).trim();
+
         if ("number" in retArgs) {
             let length = retArgs["number"].length;
             if (length == 1) {
