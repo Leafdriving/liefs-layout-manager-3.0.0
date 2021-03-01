@@ -68,7 +68,7 @@ class Handler {
     }
 
     static update(ArrayofHandlerInstances:Handler[] = Handler.instances, instanceNo:number = 0, derender:boolean = false){
-        console.clear();
+        // console.clear();
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
@@ -203,18 +203,19 @@ class Handler {
         let htmlBlock = displaycell.htmlBlock;
         let el:HTMLElement = pf.elExists(displaycell.label);
         let alreadyexists:boolean = (el) ? true : false;
-        let clipString:string;
+        // let clipString:string;
 
-        if(parentDisplaygroup){
-            if (parentDisplaygroup.coord.isCoordCompletelyOutside( displaycell.coord )) derender = true;
-            else clipString = parentDisplaygroup.coord.clipStyleString( displaycell.coord );
-        }
-        let clip2 = displaycell.coord.within.clipStyleString( displaycell.coord);
+
+        derender = displaycell.coord.derender( derender );
+        // if(parentDisplaygroup){
+        //     if (parentDisplaygroup.coord.isCoordCompletelyOutside( displaycell.coord )) derender = true;
+        //     else clipString = parentDisplaygroup.coord.clipStyleString( displaycell.coord );
+        // }
 
         //console.log here
-        if (clipString || clip2) console.log(htmlBlock.label,
-                    (clipString)?clipString:"undefined",
-                    displaycell.coord.within.clipStyleString( displaycell.coord));
+        // if (clipString || clip2) console.log(htmlBlock.label,
+        //             (clipString)?clipString:"undefined",
+        //             displaycell.coord.within.clipStyleString( displaycell.coord));
         /////////////////
 
         if (derender) {
@@ -231,9 +232,9 @@ class Handler {
                 htmlBlock.el = el;
                 if (htmlBlock.events) htmlBlock.events.applyToHtmlBlock(htmlBlock);
             }
-            let attrstring = displaycell.coord.asAttributeString() + clipString;
+            let attrstring = displaycell.coord.newAsAttributeString() // + clipString;
             if (el.style.cssText != attrstring) el.style.cssText = attrstring;
-            if (htmlBlock.tree) htmlBlock.tree.render(displaycell);
+            // if (htmlBlock.tree) htmlBlock.tree.render(displaycell);
         }
     }
     static renderHtmlAttributes(el:HTMLElement, htmlblock: HtmlBlock, id:string){

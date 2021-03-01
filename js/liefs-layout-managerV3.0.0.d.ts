@@ -89,11 +89,14 @@ declare class Coord {
     copyWithin(...Arguments: any): void;
     copy(...Arguments: any): void;
     replace(x: number, y: number, width: number, height: number, zindex?: number): void;
-    isCoordCompletelyOutside(sub: Coord | Within): boolean;
-    clipStyleString(sub: Coord | Within): string;
-    static clipStyleString(THIS: Coord | Within, sub: Coord | Within): string;
+    isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
+    derender(derender: boolean): boolean;
+    clipStyleString(COORD: Coord | Within): string;
+    newClipStyleString(WITHIN?: Coord | Within): string;
+    static clipStyleString(WITHIN: Coord | Within, COORD: Coord | Within): string;
     isPointIn(x: number, y: number): boolean;
     asAttributeString(): string;
+    newAsAttributeString(): string;
 }
 /**
  * This Class Holds the HTMLElement
@@ -127,7 +130,6 @@ declare class HtmlBlock {
     marginTop: number;
     marginBottom: number;
     attributes: object;
-    tree: Tree;
     /**
      * Constructor Arguments include:
      *

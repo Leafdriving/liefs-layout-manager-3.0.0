@@ -132,16 +132,16 @@ class Coord {
         if (width != undefined) this.width = width;
         if (height != undefined) this.height = height;
         if (zindex != undefined) this.zindex = zindex;
-        // if (clip != undefined) this.parent = clip;
     }
-    isCoordCompletelyOutside(sub: Coord|Within){
-        return ((sub.x + sub.width < this.x) ||
-                (sub.x > this.x + this.width) ||
-                (sub.y + sub.height < this.y) ||
-                (sub.y > this.y + this.height)) 
+    isCoordCompletelyOutside(WITHIN: Coord|Within = this.within){
+        return ((WITHIN.x + WITHIN.width < this.x) ||
+                (WITHIN.x > this.x + this.width) ||
+                (WITHIN.y + WITHIN.height < this.y) ||
+                (WITHIN.y > this.y + this.height)) 
     }
-    clipStyleString(sub: Coord|Within) {
-        return Coord.clipStyleString(this, sub);
+    derender(derender:boolean) {return derender || this.isCoordCompletelyOutside()}
+    clipStyleString(COORD: Coord|Within) {
+        return Coord.clipStyleString(this, COORD);
         // let returnString:string = "";
         // let left = (sub.x < this.x) ? (this.x-sub.x) : 0;
         // let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
@@ -151,16 +151,26 @@ class Coord {
         //     returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
         // return returnString;
     }
-    static clipStyleString(THIS:Coord|Within, sub: Coord|Within) {
+    newClipStyleString(WITHIN: Coord|Within = this.within) {
+        return Coord.clipStyleString(WITHIN, this);
+    }
+    static clipStyleString(WITHIN:Coord|Within, COORD: Coord|Within) {
         let returnString:string = "";
-        let left = (sub.x < THIS.x) ? (THIS.x-sub.x) : 0;
-        let right = (sub.x + sub.width > THIS.x + THIS.width) ? (sub.x + sub.width - (THIS.x + THIS.width)) : 0;
-        let top = (sub.y < THIS.y) ? (THIS.y - sub.y) : 0;
-        let bottom = (sub.y + sub.height > THIS.y + THIS.height) ? (sub.y + sub.height - (THIS.y + THIS.height)) : 0;
+        let left = (COORD.x < WITHIN.x) ? (WITHIN.x-COORD.x) : 0;
+        let right = (COORD.x + COORD.width > WITHIN.x + WITHIN.width) ? (COORD.x + COORD.width - (WITHIN.x + WITHIN.width)) : 0;
+        let top = (COORD.y < WITHIN.y) ? (WITHIN.y - COORD.y) : 0;
+        let bottom = (COORD.y + COORD.height > WITHIN.y + WITHIN.height) ? (COORD.y + COORD.height - (WITHIN.y + WITHIN.height)) : 0;
         if (left + right + top + bottom > 0)
             returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
         return returnString;
     }
     isPointIn(x:number, y:number): boolean {return (this.x <= x && x <= this.x+this.width && this.y <= y && y <= this.y+this.height)}
-    asAttributeString(){return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; z-index:${this.zindex};`}
+    asAttributeString(){
+        return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; ` + 
+               `z-index:${this.zindex};`;
+    }
+    newAsAttributeString(){
+        return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; ` + 
+               `z-index:${this.zindex};${this.newClipStyleString()}`
+    }
 }

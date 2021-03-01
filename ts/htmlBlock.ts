@@ -36,7 +36,7 @@ class HtmlBlock {
     marginTop : number;
     marginBottom : number;
     attributes:object = {};
-    tree:Tree;
+    // tree:Tree;
     /**
      * Constructor Arguments include:
      * 
