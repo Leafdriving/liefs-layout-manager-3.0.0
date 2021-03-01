@@ -16,6 +16,7 @@ class Css {
         string : ["classname", "css", "cssHover", "cssSelect"],
         boolean : ["isClassname"]
     }
+    static deleteOnFirstRunClassname=".remove";
     classname:string;
 
     css:string;

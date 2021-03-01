@@ -346,6 +346,11 @@ class HtmlBlock {
         if ("Css" in retArgs)
             for (let css of retArgs["Css"])
                 this.css = (this.css + " " + css.classname).trim();
+        if ("string" in retArgs && retArgs.string.length > 3) {
+            // console.log(retArgs.string, this.css);
+            // console.log(this.css + " " + retArgs.string.splice(3).join(' '));
+            this.css += " " + retArgs.string.splice(3).join(' ');
+        }
         if ("number" in retArgs) {
             let length = retArgs["number"].length;
             if (length == 1) {
@@ -585,6 +590,8 @@ class Handler {
         Css.update();
         if (Handler.firstRun) {
             Handler.firstRun = false;
+            for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
+                element.remove();
             window.onresize = function () { Handler.update(); };
             window.onwheel = function (event) { ScrollBar.onWheel(event); };
         }
@@ -888,6 +895,7 @@ Css.argMap = {
     string: ["classname", "css", "cssHover", "cssSelect"],
     boolean: ["isClassname"]
 };
+Css.deleteOnFirstRunClassname = ".remove";
 function css(...Arguments) { return new Css(...Arguments); }
 class DefaultTheme {
 }
@@ -1379,7 +1387,7 @@ ScrollBar.whiteBG = css("whiteBG", "background-color:white;outline: 1px solid bl
 ScrollBar.blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
 ScrollBar.defaults = {
     label: function () { return `ScrollBar_${pf.pad_with_zeroes(ScrollBar.instances.length)}`; },
-    offset: 0, displayAtEnd: true, scrollWidth: 20, currentlyRendered: true, arrowOffset: 5,
+    offset: 0, displayAtEnd: true, scrollWidth: 15, currentlyRendered: true, arrowOffset: 2,
 };
 ScrollBar.argMap = {
     string: ["label"],

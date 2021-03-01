@@ -282,6 +282,7 @@ declare class Css {
         string: string[];
         boolean: string[];
     };
+    static deleteOnFirstRunClassname: string;
     classname: string;
     css: string;
     cssObj: object;

@@ -10,7 +10,7 @@ class ScrollBar {
     static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
     static defaults = {
         label : function(){return `ScrollBar_${pf.pad_with_zeroes(ScrollBar.instances.length)}`},
-        offset : 0, displayAtEnd: true, scrollWidth : 20, currentlyRendered: true, arrowOffset: 5,
+        offset : 0, displayAtEnd: true, scrollWidth : 15, currentlyRendered: true, arrowOffset: 2,
     }
     static argMap = {
         string : ["label"],

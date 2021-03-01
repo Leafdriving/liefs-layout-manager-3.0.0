@@ -71,6 +71,14 @@ class HtmlBlock {
             for (let css of retArgs["Css"]) 
                 this.css = (this.css + " "+  (<Css>css).classname).trim();
 
+        if ("string" in retArgs && retArgs.string.length > 3) {
+            // console.log(retArgs.string, this.css);
+            // console.log(this.css + " " + retArgs.string.splice(3).join(' '));
+            this.css += " " + retArgs.string.splice(3).join(' ')
+            
+        }
+
+
         if ("number" in retArgs) {
             let length = retArgs["number"].length;
             if (length == 1) {

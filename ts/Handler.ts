@@ -44,6 +44,8 @@ class Handler {
         Css.update();
         if (Handler.firstRun) {
             Handler.firstRun = false;
+            for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname)) element.remove();
+            
             window.onresize = function() {Handler.update()};
             window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event)};
         }
