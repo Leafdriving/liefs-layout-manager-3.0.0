@@ -18,6 +18,8 @@ class DisplayCell {
         // number : ["marginLeft", "marginRight", "marginTop", "marginBottom"],
         Pages : ["pages"],
         // DragBar : ["dragbar"]
+        function: ["preRenderCallback", "postRenderCallback"],
+
     }
 
     label:string;
@@ -29,6 +31,8 @@ class DisplayCell {
     dim: string;
     isRendered: boolean = false;
     pages : Pages;
+    preRenderCallback: Function;
+    postRenderCallback: Function;
 
     constructor(...Arguments: any) {
         DisplayCell.instances.push(this);
@@ -43,7 +47,10 @@ class DisplayCell {
             this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
                             : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
                                 : `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`
-        this.coord = new Coord(this.label);
+        if (this.htmlBlock && this.htmlBlock.hideWidth)
+            this.coord = new Coord(this.label, true);
+        else
+            this.coord = new Coord(this.label);
     }
     addOverlay(overlay:Overlay){this.overlays.push(overlay)}
     hMenuBar(menuObj:object){

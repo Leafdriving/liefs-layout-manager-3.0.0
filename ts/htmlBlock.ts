@@ -21,7 +21,8 @@ class HtmlBlock {
         dim : ["dim"],
         Events : ["events"],
         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-        Tree: ["tree"]
+        Tree: ["tree"],
+        boolean: ["hideWidth"],
     }
 
     label:string;
@@ -36,6 +37,7 @@ class HtmlBlock {
     marginTop : number;
     marginBottom : number;
     attributes:object = {};
+    hideWidth: boolean;
     // tree:Tree;
     /**
      * Constructor Arguments include:

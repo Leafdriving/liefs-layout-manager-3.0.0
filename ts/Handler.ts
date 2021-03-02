@@ -23,6 +23,7 @@ class Handler {
     static zindexIncrement:number = 1;
     static handlerZindexIncrement:number = 100;
     static currentZindex:number;
+    static renderAgain:boolean;
 
     label:string;
     rootCell:DisplayCell = undefined;
@@ -43,6 +44,7 @@ class Handler {
         Handler.update(/* [this] */);
         Css.update();
         if (Handler.firstRun) {
+            setTimeout(Handler.update);
             Handler.firstRun = false;
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname)) element.remove();
             
@@ -71,6 +73,7 @@ class Handler {
 
     static update(ArrayofHandlerInstances:Handler[] = Handler.instances, instanceNo:number = 0, derender:boolean = false){
         // console.clear();
+        Handler.renderAgain = false;
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
@@ -86,9 +89,11 @@ class Handler {
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
           }
         if (Pages.activePages.length) Pages.applyOnclick();
+        if (Handler.renderAgain) console.log("REDNDER AGAIN!");
     }
 
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
+        if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         let pages = displaycell.pages;
         if (pages){
             let evalCurrentPage:number = pages.eval();
@@ -126,6 +131,7 @@ class Handler {
                 }
             }
         }
+        if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
     }
 
     static renderDisplayGroup(parentDisplaycell: DisplayCell, derender:boolean) {

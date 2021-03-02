@@ -25,7 +25,8 @@ class Coord {
     };
     static argMap = {
         string : ["label"],
-        number : ["x", "y", "width", "height", "zindex"]
+        number : ["x", "y", "width", "height", "zindex"],
+        boolean : ["hideWidth"]
     };
     static CopyArgMap = {Within : ["Within"],Coord : ["Coord"], boolean:["isRoot"],
                          number : ["x", "y", "width", "height", "zindex"]};
@@ -38,6 +39,7 @@ class Coord {
     zindex: number;
     within: Within = new Within();
     isRoot: boolean;
+    hideWidth: boolean;
 
     constructor(...Arguments: any) {
         Coord.instances.push(this);
@@ -170,7 +172,9 @@ class Coord {
                `z-index:${this.zindex};`;
     }
     newAsAttributeString(){
-        return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; ` + 
-               `z-index:${this.zindex};${this.newClipStyleString()}`
+        return `left: ${this.x}px; top:${this.y}px;`
+         +`${ (this.hideWidth) ? "" : "width:" + this.width + "px; " }`
+         // +`${ "width:" + this.width + "px; " }`
+        +`height:${this.height}px; z-index:${this.zindex};${this.newClipStyleString()}`
     }
 }

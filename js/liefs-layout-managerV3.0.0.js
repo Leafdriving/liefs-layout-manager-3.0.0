@@ -293,8 +293,10 @@ class Coord {
             `z-index:${this.zindex};`;
     }
     newAsAttributeString() {
-        return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; ` +
-            `z-index:${this.zindex};${this.newClipStyleString()}`;
+        return `left: ${this.x}px; top:${this.y}px;`
+            + `${(this.hideWidth) ? "" : "width:" + this.width + "px; "}`
+            // +`${ "width:" + this.width + "px; " }`
+            + `height:${this.height}px; z-index:${this.zindex};${this.newClipStyleString()}`;
     }
 }
 Coord.instances = [];
@@ -304,7 +306,8 @@ Coord.defaults = {
 };
 Coord.argMap = {
     string: ["label"],
-    number: ["x", "y", "width", "height", "zindex"]
+    number: ["x", "y", "width", "height", "zindex"],
+    boolean: ["hideWidth"]
 };
 Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
     number: ["x", "y", "width", "height", "zindex"] };
@@ -384,7 +387,8 @@ HtmlBlock.argMap = {
     dim: ["dim"],
     Events: ["events"],
     number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-    Tree: ["tree"]
+    Tree: ["tree"],
+    boolean: ["hideWidth"],
 };
 function html(...Arguments) {
     let htmlblock = new HtmlBlock("", ...Arguments);
@@ -456,7 +460,10 @@ class DisplayCell {
             this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
                 : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
                     : `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`;
-        this.coord = new Coord(this.label);
+        if (this.htmlBlock && this.htmlBlock.hideWidth)
+            this.coord = new Coord(this.label, true);
+        else
+            this.coord = new Coord(this.label);
     }
     static byLabel(label) {
         for (let key in DisplayCell.instances)
@@ -486,6 +493,8 @@ DisplayCell.argMap = {
     dim: ["dim"],
     // number : ["marginLeft", "marginRight", "marginTop", "marginBottom"],
     Pages: ["pages"],
+    // DragBar : ["dragbar"]
+    function: ["preRenderCallback", "postRenderCallback"],
 };
 function I(...Arguments) {
     let newblock = new HtmlBlock(...Arguments);
@@ -589,6 +598,7 @@ class Handler {
         Handler.update( /* [this] */);
         Css.update();
         if (Handler.firstRun) {
+            setTimeout(Handler.update);
             Handler.firstRun = false;
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
                 element.remove();
@@ -622,6 +632,7 @@ class Handler {
     }
     static update(ArrayofHandlerInstances = Handler.instances, instanceNo = 0, derender = false) {
         // console.clear();
+        Handler.renderAgain = false;
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
@@ -638,8 +649,12 @@ class Handler {
         }
         if (Pages.activePages.length)
             Pages.applyOnclick();
+        if (Handler.renderAgain)
+            console.log("REDNDER AGAIN!");
     }
     static renderDisplayCell(displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
+        if (displaycell.preRenderCallback)
+            displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         let pages = displaycell.pages;
         if (pages) {
             let evalCurrentPage = pages.eval();
@@ -674,6 +689,8 @@ class Handler {
                 }
             }
         }
+        if (displaycell.postRenderCallback)
+            displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
     }
     static renderDisplayGroup(parentDisplaycell, derender) {
         let displaygroup = parentDisplaycell.displaygroup;
@@ -1663,6 +1680,8 @@ class TreeNode {
         this.nodeCellArray = [];
         TreeNode.instances.push(this);
         mf.applyArguments("TreeNode", Arguments, TreeNode.defaults, TreeNode.argMap, this);
+        if (this.labelCell.htmlBlock)
+            this.labelCell.htmlBlock.hideWidth = this.labelCell.coord.hideWidth = true;
     }
     static byLabel(label) {
         for (let key in TreeNode.instances)
@@ -1732,7 +1751,26 @@ class Tree {
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`);
         }
-        this.parentDisplayCell.displaygroup = new DisplayGroup(false);
+        this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootV`, false);
+        // this.parentDisplayCell.preRenderCallback = function(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
+        //     if (!Handler.firstRun) {
+        //         let bounding:object;
+        //         let max=0;
+        //         let x2:number;
+        //         let elements = document.querySelectorAll("[treenode]");
+        //         for (let element of elements) {
+        //             bounding = element.getBoundingClientRect();
+        //             x2 = bounding["x"] + bounding["width"]
+        //             if (x2>max) max=x2;
+        //         }
+        //         // let within = displaycell.coord.within;
+        //         // if (max > (within.x + within.width)){
+        //         //     // console.log(true);
+        //         //     displaycell.coord.within.width = max - within.x;
+        //         // }
+        //         console.log(max, displaycell.coord.x+displaycell.coord.width);
+        //     }
+        // }
         this.buildTreeNode(this.rootTreeNode, this.parentDisplayCell.displaygroup.cellArray);
     }
     static byLabel(label) {
@@ -1775,14 +1813,25 @@ class Tree {
         }
         Handler.update();
     }
-    static temp(cellArray) {
-        for (let cell of cellArray) {
-            console.log(cell.displaygroup.cellArray[2].htmlBlock.innerHTML);
-        }
-    }
+    // static temp(cellArray: DisplayCell[]){
+    //     for(let cell of cellArray){
+    //         console.log(cell.displaygroup.cellArray[2].htmlBlock.innerHTML);
+    //     }
+    // }
+    // buildCallback(node:TreeNode){
+    // console.log(this, node);
+    // console.log(node.horizontalDisplayCell.displaygroup.cellArray[2].htmlBlock.el);
+    // let el=node.horizontalDisplayCell.displaygroup.cellArray[2].htmlBlock.el;
+    // let box = el.getBoundingClientRect();
+    // let x=box.x, width=box.width, x2=x+width;
+    // console.log("");
+    // console.log(x, width, x2, node.horizontalDisplayCell.displaygroup.cellArray[2].coord);
+    // }
     buildTreeNode(node = this.rootTreeNode, cellArray, indent = this.startIndent) {
         let THIS = this;
         let hasChildren = (node.children) ? ((node.children.length) ? true : false) : false;
+        // node.labelCell.postRenderCallback = function(){THIS.buildCallback(node)}
+        node.labelCell.htmlBlock.attributes["treenode"] = "";
         node.horizontalDisplayCell = h(// Horizontal DisplayGroup Containing:
         I(node.label + "_spacer", "", `${indent}px`), // spacer First
         I(node.label + "_svg", // This is the SVG

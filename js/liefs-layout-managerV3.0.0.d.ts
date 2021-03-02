@@ -70,6 +70,7 @@ declare class Coord {
     static argMap: {
         string: string[];
         number: string[];
+        boolean: string[];
     };
     static CopyArgMap: {
         Within: string[];
@@ -85,6 +86,7 @@ declare class Coord {
     zindex: number;
     within: Within;
     isRoot: boolean;
+    hideWidth: boolean;
     constructor(...Arguments: any);
     copyWithin(...Arguments: any): void;
     copy(...Arguments: any): void;
@@ -117,6 +119,7 @@ declare class HtmlBlock {
         Events: string[];
         number: string[];
         Tree: string[];
+        boolean: string[];
     };
     label: string;
     tag: string;
@@ -130,6 +133,7 @@ declare class HtmlBlock {
     marginTop: number;
     marginBottom: number;
     attributes: object;
+    hideWidth: boolean;
     /**
      * Constructor Arguments include:
      *
@@ -181,6 +185,7 @@ declare class DisplayCell {
         DisplayGroup: string[];
         dim: string[];
         Pages: string[];
+        function: string[];
     };
     label: string;
     coord: Coord;
@@ -190,6 +195,8 @@ declare class DisplayCell {
     dim: string;
     isRendered: boolean;
     pages: Pages;
+    preRenderCallback: Function;
+    postRenderCallback: Function;
     constructor(...Arguments: any);
     addOverlay(overlay: Overlay): void;
     hMenuBar(menuObj: object): void;
@@ -251,6 +258,7 @@ declare class Handler {
     static zindexIncrement: number;
     static handlerZindexIncrement: number;
     static currentZindex: number;
+    static renderAgain: boolean;
     label: string;
     rootCell: DisplayCell;
     coord: Coord;
@@ -664,7 +672,6 @@ declare class Tree {
     constructor(...Arguments: any);
     drawSVG(collapsed: boolean): string;
     toggleCollapse(node: TreeNode, mouseEvent: MouseEvent, el: any): void;
-    static temp(cellArray: DisplayCell[]): void;
     buildTreeNode(node: TreeNode, cellArray: DisplayCell[], indent?: number): void;
     render(displaycell: DisplayCell): void;
 }
