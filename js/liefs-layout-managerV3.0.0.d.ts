@@ -54,7 +54,7 @@ declare class Within {
     width: number;
     height: number;
     constructor(...Arguments: any);
-    clipStyleString(sub: Coord | Within): string;
+    clipStyleString(sub: Coord): string;
 }
 declare class Coord {
     static instances: Coord[];
@@ -93,9 +93,9 @@ declare class Coord {
     replace(x: number, y: number, width: number, height: number, zindex?: number): void;
     isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
     derender(derender: boolean): boolean;
-    clipStyleString(COORD: Coord | Within): string;
+    clipStyleString(COORD: Coord): string;
     newClipStyleString(WITHIN?: Coord | Within): string;
-    static clipStyleString(WITHIN: Coord | Within, COORD: Coord | Within): string;
+    static clipStyleString(WITHIN: Coord | Within, COORD: Coord): string;
     isPointIn(x: number, y: number): boolean;
     asAttributeString(): string;
     newAsAttributeString(): string;

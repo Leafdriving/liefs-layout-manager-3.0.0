@@ -7,7 +7,7 @@ class Within{
     constructor(...Arguments: any) {
         mf.applyArguments("Within", Arguments, {}, {number : ["x", "y", "width", "height"]}, this);
     }
-    clipStyleString(sub: Coord|Within){
+    clipStyleString(sub: Coord){
         return Coord.clipStyleString(this, sub);
     }
 }
@@ -142,7 +142,7 @@ class Coord {
                 (WITHIN.y > this.y + this.height)) 
     }
     derender(derender:boolean) {return derender || this.isCoordCompletelyOutside()}
-    clipStyleString(COORD: Coord|Within) {
+    clipStyleString(COORD: Coord) {
         return Coord.clipStyleString(this, COORD);
         // let returnString:string = "";
         // let left = (sub.x < this.x) ? (this.x-sub.x) : 0;
@@ -156,10 +156,16 @@ class Coord {
     newClipStyleString(WITHIN: Coord|Within = this.within) {
         return Coord.clipStyleString(WITHIN, this);
     }
-    static clipStyleString(WITHIN:Coord|Within, COORD: Coord|Within) {
+    static clipStyleString(WITHIN:Coord|Within, COORD: Coord) {
         let returnString:string = "";
         let left = (COORD.x < WITHIN.x) ? (WITHIN.x-COORD.x) : 0;
-        let right = (COORD.x + COORD.width > WITHIN.x + WITHIN.width) ? (COORD.x + COORD.width - (WITHIN.x + WITHIN.width)) : 0;
+        let right:number;
+        if (COORD.hideWidth) {
+            let el = document.getElementById(COORD.label);
+            let bound = el.getBoundingClientRect();
+            right = (COORD.x + bound.width > WITHIN.x + WITHIN.width) ? (COORD.x + bound.width - (WITHIN.x + WITHIN.width)) : 0;
+        } else
+            right = (COORD.x + COORD.width > WITHIN.x + WITHIN.width) ? (COORD.x + COORD.width - (WITHIN.x + WITHIN.width)) : 0;
         let top = (COORD.y < WITHIN.y) ? (WITHIN.y - COORD.y) : 0;
         let bottom = (COORD.y + COORD.height > WITHIN.y + WITHIN.height) ? (COORD.y + COORD.height - (WITHIN.y + WITHIN.height)) : 0;
         if (left + right + top + bottom > 0)

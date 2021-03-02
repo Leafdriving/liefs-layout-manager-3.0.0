@@ -1,6 +1,7 @@
 // CSS
 var bgBlue = css("bgBlue",`background-color:blue;`);
 var bgGreen = css("bgGreen", `background-color:green`);
+var bgRed = css("bgRed", `background-color:red`);
 
 var textWhite = css("textWhite", "color:white");
 var textCenter = css("textCenter", "text-align: center;");
@@ -9,17 +10,17 @@ var cssTitle = css("title", "background-color:blue;color:white;text-align: cente
 
 // Tree
 var TableOfContext = T("TreeTableOfContents", // true,
-   I("Tree_TableOfContents", "Table of Contents"),
+   I("Tree_TableOfContents", "Table of Contents", bgRed),
    [T("Tree_1", // true,
-      I("Tree_1","Introduction"),
+      I("Tree_1","Introduction", bgRed),
       [T("Tree_child1_1", // true,
-         I("Tree_Child1ofChild1","Child1ofChild1")),
+         I("Tree_Child1ofChild1","Child1ofChild1", bgRed)),
       T("Tree_child1_2", // true,
-         I("Tree_Child2ofChild1","Child2ofChild1")),
+         I("Tree_Child2ofChild1","Child2ofChild1", bgRed)),
       ]
    ),
    T("Tree_child2",
-      I("Tree_Child2ofTop","Child2ofTop")
+      I("Tree_Child2ofTop","Child2ofTop", bgRed)
    )]
 )
 

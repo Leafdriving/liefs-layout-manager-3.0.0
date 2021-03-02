@@ -280,7 +280,14 @@ class Coord {
     static clipStyleString(WITHIN, COORD) {
         let returnString = "";
         let left = (COORD.x < WITHIN.x) ? (WITHIN.x - COORD.x) : 0;
-        let right = (COORD.x + COORD.width > WITHIN.x + WITHIN.width) ? (COORD.x + COORD.width - (WITHIN.x + WITHIN.width)) : 0;
+        let right;
+        if (COORD.hideWidth) {
+            let el = document.getElementById(COORD.label);
+            let bound = el.getBoundingClientRect();
+            right = (COORD.x + bound.width > WITHIN.x + WITHIN.width) ? (COORD.x + bound.width - (WITHIN.x + WITHIN.width)) : 0;
+        }
+        else
+            right = (COORD.x + COORD.width > WITHIN.x + WITHIN.width) ? (COORD.x + COORD.width - (WITHIN.x + WITHIN.width)) : 0;
         let top = (COORD.y < WITHIN.y) ? (WITHIN.y - COORD.y) : 0;
         let bottom = (COORD.y + COORD.height > WITHIN.y + WITHIN.height) ? (COORD.y + COORD.height - (WITHIN.y + WITHIN.height)) : 0;
         if (left + right + top + bottom > 0)
@@ -1751,27 +1758,28 @@ class Tree {
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`);
         }
-        this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootV`, false);
-        // this.parentDisplayCell.preRenderCallback = function(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
-        //     if (!Handler.firstRun) {
-        //         let bounding:object;
-        //         let max=0;
-        //         let x2:number;
-        //         let elements = document.querySelectorAll("[treenode]");
-        //         for (let element of elements) {
-        //             bounding = element.getBoundingClientRect();
-        //             x2 = bounding["x"] + bounding["width"]
-        //             if (x2>max) max=x2;
-        //         }
-        //         // let within = displaycell.coord.within;
-        //         // if (max > (within.x + within.width)){
-        //         //     // console.log(true);
-        //         //     displaycell.coord.within.width = max - within.x;
-        //         // }
-        //         console.log(max, displaycell.coord.x+displaycell.coord.width);
-        //     }
-        // }
-        this.buildTreeNode(this.rootTreeNode, this.parentDisplayCell.displaygroup.cellArray);
+        // this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootV`, false);
+        let V = v(`${this.label}_rootV`, "250px");
+        let cellArray = V.displaygroup.cellArray;
+        this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
+        this.parentDisplayCell.preRenderCallback = function (displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
+            if (!Handler.firstRun) {
+                let bounding;
+                let max = 0;
+                let x2;
+                let elements = document.querySelectorAll("[treenode]");
+                for (let element of elements) {
+                    bounding = element.getBoundingClientRect();
+                    x2 = bounding["x"] + bounding["width"];
+                    if (x2 > max)
+                        max = x2;
+                }
+                let current = displaycell.coord.x + displaycell.coord.width;
+                displaycell.displaygroup.cellArray[0].dim = `${(current > max) ? current - 2 : max}px`;
+            }
+        };
+        this.buildTreeNode(this.rootTreeNode, cellArray);
+        // console.log(this.parentDisplayCell)
     }
     static byLabel(label) {
         for (let key in Tree.instances)
