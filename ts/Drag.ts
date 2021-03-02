@@ -38,6 +38,7 @@ class Drag {
             THIS.onDown();
             THIS.isDown = true;
             THIS.mousePos = { x: e.clientX, y: e.clientY };
+            window.addEventListener('selectstart', Drag.disableSelect);
 
             window.onmousemove = function(e:any){
                 THIS.mouseDiff = {x: e.clientX - THIS.mousePos["x"], y: e.clientY - THIS.mousePos["y"]}
@@ -53,7 +54,11 @@ class Drag {
     reset(){
         window.onmousemove = function(){};
         window.onmouseup = function(){};
+        window.removeEventListener('selectstart', Drag.disableSelect);
         this.isDown = false;
+    }
+    static disableSelect(event:MouseEvent) {
+        event.preventDefault();
     }
 }
 

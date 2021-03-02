@@ -1029,6 +1029,7 @@ class Drag {
             THIS.onDown();
             THIS.isDown = true;
             THIS.mousePos = { x: e.clientX, y: e.clientY };
+            window.addEventListener('selectstart', Drag.disableSelect);
             window.onmousemove = function (e) {
                 THIS.mouseDiff = { x: e.clientX - THIS.mousePos["x"], y: e.clientY - THIS.mousePos["y"] };
                 THIS.onMove(THIS.mouseDiff);
@@ -1048,7 +1049,11 @@ class Drag {
     reset() {
         window.onmousemove = function () { };
         window.onmouseup = function () { };
+        window.removeEventListener('selectstart', Drag.disableSelect);
         this.isDown = false;
+    }
+    static disableSelect(event) {
+        event.preventDefault();
     }
 }
 Drag.instances = [];
@@ -1804,7 +1809,7 @@ class Tree {
     toggleCollapse(node, mouseEvent, el) {
         node.collapsed = !node.collapsed;
         node.horizontalDisplayCell.displaygroup.cellArray[1].htmlBlock.innerHTML = this.drawSVG(node.collapsed);
-        let cellArray = this.parentDisplayCell.displaygroup.cellArray;
+        let cellArray = this.parentDisplayCell.displaygroup.cellArray[0].displaygroup.cellArray;
         let index = cellArray.indexOf(node.horizontalDisplayCell);
         // remove from Dom if collapsed
         if (node.collapsed) {
@@ -1844,8 +1849,16 @@ class Tree {
         I(node.label + "_spacer", "", `${indent}px`), // spacer First
         I(node.label + "_svg", // This is the SVG
         (hasChildren) ? this.drawSVG(node.collapsed) : "", `${this.collapseSize}px`, events({ onclick: function (mouseEvent) {
+                mouseEvent.preventDefault();
                 THIS.toggleCollapse(node, mouseEvent, this);
-            } })), node.labelCell, // This is the TreeNode Label
+            },
+            onmousedown: function (mouseEvent) {
+                window.addEventListener('selectstart', Drag.disableSelect);
+            },
+            onmouseup: function (mouseEvent) {
+                window.removeEventListener('selectstart', Drag.disableSelect);
+            }
+        })), node.labelCell, // This is the TreeNode Label
         `${this.cellHeight}px` // Height in pixels of TreeNode
         );
         cellArray.push(node.horizontalDisplayCell);

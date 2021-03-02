@@ -360,6 +360,7 @@ declare class Drag {
     mouseDiff: object;
     constructor(...Arguments: any);
     reset(): void;
+    static disableSelect(event: MouseEvent): void;
 }
 declare class Swipe {
     static swipeDistance: number;

@@ -162,7 +162,7 @@ class Tree {
     toggleCollapse(node:TreeNode, mouseEvent:MouseEvent, el:any) {
         node.collapsed = !node.collapsed;
         node.horizontalDisplayCell.displaygroup.cellArray[1].htmlBlock.innerHTML = this.drawSVG(node.collapsed);
-        let cellArray = this.parentDisplayCell.displaygroup.cellArray;
+        let cellArray = this.parentDisplayCell.displaygroup.cellArray[0].displaygroup.cellArray;
         let index = cellArray.indexOf(node.horizontalDisplayCell);
         // remove from Dom if collapsed
         if (node.collapsed) {
@@ -207,8 +207,15 @@ class Tree {
                 (hasChildren) ? this.drawSVG(node.collapsed) : "",
                 `${this.collapseSize}px`,
                 events({onclick:function(mouseEvent:MouseEvent){        // Event Handler for clicking the SVG
-                    THIS.toggleCollapse(node, mouseEvent, this);
-                }})
+                            mouseEvent.preventDefault();
+                            THIS.toggleCollapse(node, mouseEvent, this);},
+                        onmousedown:function(mouseEvent:MouseEvent){
+                            window.addEventListener('selectstart', Drag.disableSelect);
+                        },
+                        onmouseup:function(mouseEvent:MouseEvent){
+                            window.removeEventListener('selectstart', Drag.disableSelect);
+                        }
+            })
             ),
             node.labelCell,                                             // This is the TreeNode Label
             `${this.cellHeight}px`                                      // Height in pixels of TreeNode
