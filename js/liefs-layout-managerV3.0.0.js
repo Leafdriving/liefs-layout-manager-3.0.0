@@ -643,6 +643,8 @@ class Handler {
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
+            if (handlerInstance.preRenderCallback)
+                handlerInstance.preRenderCallback(handlerInstance);
             if (handlerInstance.coord) {
                 handlerInstance.rootCell.coord.copy(handlerInstance.coord);
             }
@@ -653,6 +655,8 @@ class Handler {
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
+            if (handlerInstance.postRenderCallback)
+                handlerInstance.postRenderCallback(handlerInstance);
         }
         if (Pages.activePages.length)
             Pages.applyOnclick();
@@ -819,7 +823,8 @@ Handler.defaults = {
 Handler.argMap = {
     string: ["label"],
     number: ["handlerMargin"],
-    Coord: ["coord"]
+    Coord: ["coord"],
+    function: ["preRenderCallback", "postRenderCallback"],
 };
 Handler.argCustomTypes = [];
 Handler.handlerZindexStart = 1;
@@ -998,7 +1003,7 @@ Pages.argMap = {
     string: ["label"],
     number: ["currentPage"],
     Function: ["evalFunction"],
-    dim: ["dim"]
+    dim: ["dim"],
 };
 function P(...arguments) {
     let displaycell = new DisplayCell(new Pages(...arguments));
@@ -1694,6 +1699,8 @@ class TreeNode {
         mf.applyArguments("TreeNode", Arguments, TreeNode.defaults, TreeNode.argMap, this);
         if (this.labelCell.htmlBlock)
             this.labelCell.htmlBlock.hideWidth = this.labelCell.coord.hideWidth = true;
+        if (this.labelCell && !this.label)
+            this.label = this.labelCell.label;
     }
     static byLabel(label) {
         for (let key in TreeNode.instances)
@@ -1720,12 +1727,11 @@ class TreeNode {
 }
 TreeNode.instances = [];
 TreeNode.defaults = {
-    label: function () { return `TreeNode_${pf.pad_with_zeroes(TreeNode.instances.length)}`; },
+// label : function(){return `TreeNode_${pf.pad_with_zeroes(TreeNode.instances.length)}`},
 };
 TreeNode.argMap = {
     DisplayCell: ["labelCell"],
     string: ["label"],
-    Props: ["props"],
     Array: ["children"],
     boolean: ["collapsed"]
 };
@@ -1763,8 +1769,7 @@ class Tree {
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`);
         }
-        // this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootV`, false);
-        let V = v(`${this.label}_rootV`, "250px");
+        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim);
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
         this.parentDisplayCell.preRenderCallback = function (displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {

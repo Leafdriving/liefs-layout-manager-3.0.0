@@ -7,20 +7,19 @@ class TreeNode {
         return undefined;
     }
     static defaults = {
-        label : function(){return `TreeNode_${pf.pad_with_zeroes(TreeNode.instances.length)}`},
+        // label : function(){return `TreeNode_${pf.pad_with_zeroes(TreeNode.instances.length)}`},
     }
     static argMap = {
         DisplayCell : ["labelCell"],
         string : ["label"],
-        Props: ["props"],
         Array: ["children"],
         boolean: ["collapsed"]
     }
     label:string;
     collapsed:boolean = false;
     labelCell: DisplayCell;
-    props: Props;
     children:TreeNode[];
+    
     horizontalDisplayCell: DisplayCell;
     nodeCellArray : DisplayCell[] = [];
 
@@ -29,6 +28,7 @@ class TreeNode {
         mf.applyArguments("TreeNode", Arguments, TreeNode.defaults, TreeNode.argMap, this);
         if (this.labelCell.htmlBlock)
             this.labelCell.htmlBlock.hideWidth = this.labelCell.coord.hideWidth = true;
+        if (this.labelCell && !this.label) this.label = this.labelCell.label;
     }
     visibleChildren(noChildren = 0):number {
         if (!this.collapsed && this.children)
@@ -121,8 +121,7 @@ class Tree {
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`)
         }
-        // this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootV`, false);
-        let V = v(`${this.label}_rootV`, "250px");
+        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim);
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
 

@@ -16,7 +16,8 @@ class Handler {
     static argMap = {
         string : ["label"],
         number : ["handlerMargin"],
-        Coord: ["coord"]
+        Coord: ["coord"],
+        function: ["preRenderCallback", "postRenderCallback"],
     }
     static argCustomTypes:Function[] = [];
     static handlerZindexStart:number = 1;
@@ -31,6 +32,9 @@ class Handler {
     cssString: string;
     handlerMargin: number;
     addThisHandlerToStack: boolean;
+    preRenderCallback: Function;
+    postRenderCallback: Function;
+
 
     constructor(...Arguments: any) {
         Handler.instances.push(this);
@@ -77,6 +81,7 @@ class Handler {
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
         for (let handlerInstance of ArrayofHandlerInstances) {
+            if (handlerInstance.preRenderCallback) handlerInstance.preRenderCallback(handlerInstance);
             if (handlerInstance.coord) {
                 handlerInstance.rootCell.coord.copy(handlerInstance.coord);
             }
@@ -87,6 +92,7 @@ class Handler {
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
+            if (handlerInstance.postRenderCallback) handlerInstance.postRenderCallback(handlerInstance);
           }
         if (Pages.activePages.length) Pages.applyOnclick();
         if (Handler.renderAgain) console.log("REDNDER AGAIN!");

@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "outFile" : "js/liefs-layout-managerV3.0.0.js",
+        "outDir" : "js",
+        "declaration" : true,        
+        "allowJs": false,
+        "target" : "es6",
+        "module" :"amd",
+    },
+    "files": [
+        "../ts/PureFunctions.ts",
+        "../ts/Coord.ts",
+        "../ts/htmlBlock.ts",
+        "../ts/Events.ts",
+        "../ts/DisplayCell.ts",
+        "../ts/DisplayGroup.ts",
+        "../ts/Handler.ts",
+        "../ts/Css.ts",
+        "../ts/DefaultTheme.ts",
+        "../ts/Pages.ts",
+        "../ts/Drag.ts",
+        "../ts/Hold.ts",
+        "../ts/Overlay.ts",
+        "../ts/DragBar.ts",
+        "../ts/ScrollBar.ts",
+        "../ts/Context.ts",
+        "../ts/Modal.ts",
+        "../ts/Tree.ts",
+        "ts/manual.ts",
+        // "ts/testscript.ts"
+    ]
+}

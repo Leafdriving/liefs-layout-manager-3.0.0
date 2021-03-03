@@ -252,6 +252,7 @@ declare class Handler {
         string: string[];
         number: string[];
         Coord: string[];
+        function: string[];
     };
     static argCustomTypes: Function[];
     static handlerZindexStart: number;
@@ -265,6 +266,8 @@ declare class Handler {
     cssString: string;
     handlerMargin: number;
     addThisHandlerToStack: boolean;
+    preRenderCallback: Function;
+    postRenderCallback: Function;
     constructor(...Arguments: any);
     pop(): void;
     toTop(): void;
@@ -605,20 +608,16 @@ declare class Modal {
 declare class TreeNode {
     static instances: TreeNode[];
     static byLabel(label: string): TreeNode;
-    static defaults: {
-        label: () => string;
-    };
+    static defaults: {};
     static argMap: {
         DisplayCell: string[];
         string: string[];
-        Props: string[];
         Array: string[];
         boolean: string[];
     };
     label: string;
     collapsed: boolean;
     labelCell: DisplayCell;
-    props: Props;
     children: TreeNode[];
     horizontalDisplayCell: DisplayCell;
     nodeCellArray: DisplayCell[];

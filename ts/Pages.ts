@@ -16,7 +16,8 @@ class Pages {
         string : ["label"],
         number : ["currentPage"],
         Function : ["evalFunction"],
-        dim: ["dim"]
+        dim: ["dim"],
+        // DisplayCell: ["displaycells"] <- but the whole array done in constructor
     }
 
     label:string;
