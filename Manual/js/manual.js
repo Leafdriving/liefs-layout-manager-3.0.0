@@ -8,33 +8,13 @@ var textBlue = css("textBlue", "color:blue");
 var textCenter = css("textCenter", "text-align: center;");
 var textBlack = css("textBlack", "color:black;");
 var cssTitle = css("title", "background-color:blue;color:white;text-align: center;");
-// let TI = function(...Arguments) {
-// }
-var TableOfContents = autoLabelTreenodes("myLabel", TI("Table of Contents", [TI("Introduction"),
-    TI("Part 2"),
-    TI("Part 3", [TI("3a")]),
+// Build Tree
+var printNode = events({ onclick: function (mouseEvent) {
+        console.log(TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML);
+    } });
+var TableOfContents = autoLabelTreenodes("myLabel", TI("Table of Contents", printNode, [TI("Introduction", printNode),
+    TI("Part 2", printNode),
+    TI("Part 3", printNode, [TI("3a", printNode)]),
 ]));
-// T(I("T_", "Table of Contents"),
-//    [T(I("T_1","Introduction"),
-//       [T(I("T_1_1","Child1ofChild1")),
-//        T(I("T_1_2","Child2ofChild1")),
-//       ]),
-//     T(I("T_2","Child2ofTop")),
-//    ]
-// )
-// TI("Table of Contents",
-//     [TI("Introduction"),
-//         [TI("Part 1"),
-//          TI("Part 2"),
-//         ],
-//     ],
-// );
-// let toc =
-// TI("Table of Contents",[
-//    TI("Introduction",[
-//       TI("Child1"),
-//       TI("Child2"),
-//    ]),
-// ])
 // Framework
 H("MainHandler", 2, v("Main Vertical", I("TitleBar", "20px", cssTitle), h("MainBody", 5, tree(dragbar(I("MainTree", "", bgGreen, "250px"), 100, 500), TableOfContents, /* bgRed */ { SVGColor: "black" }), P("BPages", I("MainBody", textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });

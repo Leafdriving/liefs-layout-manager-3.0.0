@@ -118,7 +118,6 @@ declare class HtmlBlock {
         dim: string[];
         Events: string[];
         number: string[];
-        Tree: string[];
         boolean: string[];
     };
     label: string;
@@ -254,6 +253,7 @@ declare class Handler {
         Coord: string[];
         function: string[];
     };
+    static renderNullObjects: boolean;
     static argCustomTypes: Function[];
     static handlerZindexStart: number;
     static zindexIncrement: number;

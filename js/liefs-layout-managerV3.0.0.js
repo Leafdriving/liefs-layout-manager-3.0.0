@@ -391,7 +391,7 @@ HtmlBlock.argMap = {
     dim: ["dim"],
     Events: ["events"],
     number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-    Tree: ["tree"],
+    // Tree: ["tree"],
     boolean: ["hideWidth"],
 };
 function html(...Arguments) {
@@ -774,7 +774,11 @@ class Handler {
         let el = pf.elExists(displaycell.label);
         let alreadyexists = (el) ? true : false;
         derender = displaycell.coord.derender(derender);
-        if (derender) {
+        let isNulDiv = (htmlBlock.css.trim() == "" &&
+            htmlBlock.innerHTML.trim() == "" &&
+            Object.keys(htmlBlock.attributes).length == 0 &&
+            !Handler.renderNullObjects);
+        if (derender || isNulDiv) {
             if (alreadyexists)
                 el.remove();
             htmlBlock.el = undefined;
@@ -823,6 +827,7 @@ Handler.argMap = {
     Coord: ["coord"],
     function: ["preRenderCallback", "postRenderCallback"],
 };
+Handler.renderNullObjects = false;
 Handler.argCustomTypes = [];
 Handler.handlerZindexStart = 1;
 Handler.zindexIncrement = 1;

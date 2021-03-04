@@ -21,7 +21,7 @@ class HtmlBlock {
         dim : ["dim"],
         Events : ["events"],
         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-        Tree: ["tree"],
+        // Tree: ["tree"],
         boolean: ["hideWidth"],
     }
 

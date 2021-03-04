@@ -12,46 +12,21 @@ let textBlack = css("textBlack", "color:black;")
 
 let cssTitle = css("title", "background-color:blue;color:white;text-align: center;")
 
-// let TI = function(...Arguments) {
+// Build Tree
 
-// }
+let printNode = events({onclick:function(mouseEvent:MouseEvent){
+  console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
+}});
 
 let TableOfContents = autoLabelTreenodes("myLabel",
-  TI("Table of Contents",
-      [TI("Introduction"),
-      TI("Part 2"),
-      TI("Part 3", 
-          [TI("3a")]),
+  TI("Table of Contents", printNode,
+      [TI("Introduction", printNode),
+      TI("Part 2", printNode),
+      TI("Part 3", printNode,
+          [TI("3a", printNode)]),
       ],
   )
 )
-
-// T(I("T_", "Table of Contents"),
-//    [T(I("T_1","Introduction"),
-//       [T(I("T_1_1","Child1ofChild1")),
-//        T(I("T_1_2","Child2ofChild1")),
-//       ]),
-//     T(I("T_2","Child2ofTop")),
-//    ]
-// )
-
-// TI("Table of Contents",
-//     [TI("Introduction"),
-//         [TI("Part 1"),
-//          TI("Part 2"),
-//         ],
-//     ],
-// );
-
-
-// let toc =
-// TI("Table of Contents",[
-//    TI("Introduction",[
-//       TI("Child1"),
-//       TI("Child2"),
-//    ]),
-// ])
-
 
 // Framework
 

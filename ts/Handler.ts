@@ -19,6 +19,7 @@ class Handler {
         Coord: ["coord"],
         function: ["preRenderCallback", "postRenderCallback"],
     }
+    static renderNullObjects:boolean = false;
     static argCustomTypes:Function[] = [];
     static handlerZindexStart:number = 1;
     static zindexIncrement:number = 1;
@@ -231,7 +232,12 @@ class Handler {
 
         derender = displaycell.coord.derender( derender );
 
-        if (derender) {
+        let isNulDiv = (htmlBlock.css.trim() == "" &&
+                        htmlBlock.innerHTML.trim() == "" &&
+                        Object.keys( htmlBlock.attributes ).length == 0 &&
+                        !Handler.renderNullObjects)
+
+        if (derender || isNulDiv) {
             if (alreadyexists) el.remove();
             htmlBlock.el = undefined;
         } else {
