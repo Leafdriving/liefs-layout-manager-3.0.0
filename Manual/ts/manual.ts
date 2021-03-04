@@ -14,18 +14,17 @@ let cssTitle = css("title", "background-color:blue;color:white;text-align: cente
 
 // Build Tree
 
-let printNode = events({onclick:function(mouseEvent:MouseEvent){
+let clickTreeItemEvent = events({onclick:function(mouseEvent:MouseEvent){
   console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
 }});
 
-let TableOfContents = autoLabelTreenodes("myLabel",
-  TI("Table of Contents", printNode,
-      [TI("Introduction", printNode),
-      TI("Part 2", printNode),
-      TI("Part 3", printNode,
-          [TI("3a", printNode)]),
-      ],
-  )
+let treeOfNodes:t_ = 
+TI("Table of Contents",
+    [TI("Introduction"),
+    TI("Part 2"),
+    TI("Part 3",
+        [TI("3a")]),
+    ],
 )
 
 // Framework
@@ -34,9 +33,13 @@ H("MainHandler", 2,
   v("Main Vertical",
     I("TitleBar", "20px", cssTitle),
     h("MainBody", 5,
-      tree( dragbar(I("MainTree", "", bgGreen, "250px"),100, 500), TableOfContents, /* bgRed */{SVGColor:"black"} ),
+      tree( "TreeLabel",
+        dragbar(I("MainTree", "", bgGreen, "250px"),100, 500),
+        treeOfNodes,
+        {SVGColor:"black"},
+        clickTreeItemEvent,
+      ),
       P("BPages", I("MainBody", textBlack)),
-      // I("Body", "Body")
     ),
   ),
   {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},

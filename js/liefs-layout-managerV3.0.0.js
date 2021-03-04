@@ -1760,13 +1760,10 @@ Props.argMap = {
 function props(...Arguments) { return new Props(...Arguments); }
 class Tree {
     constructor(...Arguments) {
-        this.css = "";
+        this.css = ""; // default class(es) for tree items.
         Tree.instances.push(this);
         let retArgs = pf.sortArgs(Arguments, "Tree");
         mf.applyArguments("Tree", Arguments, Tree.defaults, Tree.argMap, this);
-        if (!this.rootTreeNode) {
-            this.rootTreeNode = Tree.defaultObj;
-        }
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`);
         }
@@ -1778,6 +1775,13 @@ class Tree {
         let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim);
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
+        if (this.t_instance && !this.rootTreeNode) {
+            // console.log("Froud t_!");
+            this.rootTreeNode = Tree.autoLabelTreenodes(this.label, this.t_instance);
+        }
+        if (!this.rootTreeNode) {
+            this.rootTreeNode = Tree.defaultObj;
+        }
         this.parentDisplayCell.preRenderCallback = function (displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
             if (!Handler.firstRun) {
                 let bounding;
@@ -1851,8 +1855,10 @@ class Tree {
         let THIS = this;
         let hasChildren = (node.children) ? ((node.children.length) ? true : false) : false;
         node.labelCell.htmlBlock.attributes["treenode"] = "";
-        if (!node.labelCell.htmlBlock.css)
-            node.labelCell.htmlBlock.css = this.css;
+        if (!node.labelCell.htmlBlock.css && this.css.trim())
+            node.labelCell.htmlBlock.css = this.css.trim();
+        if (!node.labelCell.htmlBlock.events && this.events)
+            node.labelCell.htmlBlock.events = this.events;
         node.horizontalDisplayCell = h(// Horizontal DisplayGroup Containing:
         I(node.label + "_spacer", "", `${indent}px`), // spacer First
         I(node.label + "_svg", // This is the SVG
@@ -1878,6 +1884,41 @@ class Tree {
         }
     }
     render(displaycell) { }
+    static autoLabelTreenodes(label, rootNode) {
+        Tree.autoLabel(rootNode, label);
+        // console.log(rootNode);
+        return Tree.makeTreeNodes(rootNode);
+    }
+    static autoLabel(tObj, postfix /*="autoTree"*/) {
+        tObj.label = postfix;
+        (tObj.TreeNodeArguments[0]).label = postfix;
+        if (tObj.TreeNodeArguments.length > 1) {
+            let ta = (tObj.TreeNodeArguments[1]);
+            for (let index = 0; index < ta.length; index++) {
+                const t = ta[index];
+                Tree.autoLabel(t, postfix + "_" + index);
+            }
+        }
+    }
+    static makeTreeNodes(node) {
+        let arrayOft_;
+        let returnArray = [];
+        let returnTreeNode;
+        let ii = node.TreeNodeArguments[0];
+        if (node.TreeNodeArguments.length > 1) {
+            arrayOft_ = node.TreeNodeArguments[1];
+            for (const singlet_ of arrayOft_) {
+                returnArray.push(Tree.makeTreeNodes(singlet_));
+            }
+            returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments), returnArray);
+        }
+        else {
+            returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments));
+        }
+        return returnTreeNode;
+    }
+    static t(...Arguments) { return new t_(...Arguments); }
+    static i(...Arguments) { return new i_(...Arguments); }
 }
 Tree.instances = [];
 Tree.defaultObj = T("Tree", I("Tree_TopDisplay", "Top Display"), props(I("Tree_TopDisplay_prop1", "prop1"), I("Tree_TopDisplay_prop2", "prop2")), [T("Tree_child1", I("Tree_Child1ofTop", "Child1ofTop"), // true,       
@@ -1893,7 +1934,9 @@ Tree.argMap = {
     string: ["label"],
     number: ["cellHeight"],
     TreeNode: ["rootTreeNode"],
-    DisplayCell: ["parentDisplayCell"]
+    DisplayCell: ["parentDisplayCell"],
+    Events: ["events"],
+    t_: ["t_instance"],
 };
 function tree(...Arguments) {
     let overlay = new Overlay("Tree", ...Arguments);
@@ -1904,31 +1947,7 @@ function tree(...Arguments) {
     return displaycell;
 }
 Overlay.classes["Tree"] = Tree;
-// function TI(...Arguments:any) /*: TreeNode*/ {
-//     let arg:any;
-//     let arrayInArgs:TreeNode[];
-//     let newT:TreeNode;
-//     for (let index = 0; index < Arguments.length; index++) { // pull array from Arguments
-//         arg = Arguments[index];
-//         if (pf.isArray(arg)) {
-//             arrayInArgs = arg;
-//             Arguments.splice(index, 1);
-//             index -= 1;
-//         }
-//     }
-//     let newI:DisplayCell = I("auto", ...Arguments); // name auto picked up in Tree Constructor.
-//     if (arrayInArgs) newT = T(newI, arrayInArgs);
-//     else newT = T(newI);
-//     return newT
-// }
-class i_ {
-    constructor(...Arguments) { this.Arguments = Arguments; }
-}
-function i(...Arguments) { return new i_(...Arguments); }
-class t_ {
-    constructor(...Arguments) { this.Arguments = Arguments; }
-}
-function t(...Arguments) { return new t_(...Arguments); }
+// this is a messy way to solve a problem...
 function TI(...Arguments) {
     let arg;
     let arrayInArgs;
@@ -1941,208 +1960,16 @@ function TI(...Arguments) {
             index -= 1;
         }
     }
-    let newI = i(/* "auto", */ ...Arguments); // name auto picked up in Tree Constructor.
+    let newI = Tree.i(/* "auto", */ ...Arguments); // name auto picked up in Tree Constructor.
     if (arrayInArgs)
-        newT = t(newI, arrayInArgs);
+        newT = Tree.t(newI, arrayInArgs);
     else
-        newT = t(newI);
+        newT = Tree.t(newI);
     return newT;
 }
-function autoLabel(tObj, postfix /*="autoTree"*/) {
-    tObj.label = postfix;
-    (tObj.Arguments[0]).label = postfix;
-    //(<i_>(tObj.Arguments[0])).Arguments.unshift(postfix)
-    // console.log( (<i_>(tObj.Arguments[0])).Arguments );
-    if (tObj.Arguments.length > 1) {
-        let ta = (tObj.Arguments[1]);
-        for (let index = 0; index < ta.length; index++) {
-            const t = ta[index];
-            autoLabel(t, postfix + "_" + index);
-        }
-    }
+class i_ {
+    constructor(...Arguments) { this.Arguments = Arguments; }
 }
-function autoLabelTreenodes(label, rootNode /* prebuilt */) {
-    autoLabel(rootNode, label);
-    // console.log(rootNode);
-    return makeTreeNodes(rootNode);
+class t_ {
+    constructor(...Arguments) { this.TreeNodeArguments = Arguments; }
 }
-function makeTreeNodes(node) {
-    let arrayOft_;
-    let returnArray = [];
-    let returnTreeNode;
-    let ii = node.Arguments[0];
-    if (node.Arguments.length > 1) {
-        arrayOft_ = node.Arguments[1];
-        for (const singlet_ of arrayOft_) {
-            returnArray.push(makeTreeNodes(singlet_));
-        }
-        returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments), returnArray);
-    }
-    else {
-        returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments));
-    }
-    return returnTreeNode;
-}
-// function autoTreeMaxLevel( tObj:t_){
-//     let max = 1
-//     if (tObj.Arguments.length > 1) {
-//         let temp: number;
-//         for (const iterator of tObj.Arguments[1]) {
-//             temp = autoTreeMaxLevel(iterator) + 1;
-//             if (temp > max) max = temp;
-//         }
-//     }
-//     return max;
-// }
-// function TI(...Arguments:any) /*: TreeNode*/ {
-//     let arg:any;
-//     let arrayInArgs:TreeNode[];
-//     let newT:TreeNode;
-//     for (let index = 0; index < Arguments.length; index++) { // pull array from Arguments
-//         arg = Arguments[index];
-//         if (pf.isArray(arg)) {
-//             arrayInArgs = arg;
-//             Arguments.splice(index, 1);
-//             index -= 1;
-//         }
-//     }
-//     let newI:DisplayCell = I("auto", ...Arguments); // name auto picked up in Tree Constructor.
-//     if (arrayInArgs) newT = T(newI, arrayInArgs);
-//     else newT = T(newI);
-//     return newT
-// }
-// let toc =
-// maketree(
-//  TI("Table of Contents",[
-//    TI("Introduction",[
-//       TI("Child1"),
-//       TI("Child2"),
-//    ]),
-//    TI("EndOfStory",[
-//       TI("Child1"),
-//       TI("Child2"),
-//    ]),
-//  ])
-// )
-// T(I("T_0_1", "Table of Contents"),
-//    [T(I("T_1_1","Introduction"),
-//       [T(I("T_2_1","Child1ofChild1")),
-//        T(I("T_2_2","Child2ofChild1")),
-//       ]),
-//     T(I("T_2","Child2ofTop")),
-//    ]
-// )
-// function TI(...Arguments:any){
-//     let arg:any;
-//     let Array: any[];
-//     let Array2: any[] =[];
-//     let temp:TreeNode;
-//     for (let index in Arguments) {
-//         arg = Arguments[index];
-//         if (pf.isArray(arg)) {
-//             Array = arg;
-//             Arguments.splice(index, 1);
-//         }
-//     }
-//     if (Array) {
-//         for (const element of Array) {
-//             Array2.push( TI(...element) )
-//         }
-//         temp = T( I(...Arguments), Array2)
-//     }
-//     else
-//         temp = T( I(...Arguments))
-//     return temp;
-// }
-// svgCollapsed() : string{
-//     let X = this.collapsePad;
-//     let Y = (this.cellHeight - this.collapseSize)/2 + this.collapsePad;
-//     let XX = this.collapseSize - X;
-//     let YY = Y + this.collapseSize - 2*this.collapsePad;
-//     let XMID = this.collapseSize/2;
-//     let YMID = this.cellHeight/2;
-//     let C = this.SVGColor;
-//     return `<svg height="${this.cellHeight}" width="${this.collapseSize}">
-//         <polygon points="${X},${Y} ${XX},${YMID} ${X},${YY} ${X},${Y}"
-//         style="fill:${C};stroke:${C};stroke-width:1" />
-//         </svg>`;  
-// }
-// svgExpanded() : string{
-//     let X = this.collapsePad;
-//     let Y = (this.cellHeight - this.collapseSize)/2 + this.collapsePad;
-//     let XX = this.collapseSize - X;
-//     let YY = Y + this.collapseSize - 2*this.collapsePad;
-//     let XMID = this.collapseSize/2;
-//     let YMID = this.cellHeight/2;
-//     let C = this.SVGColor;
-//     return `<svg height="${this.cellHeight}" width="${this.collapseSize}">
-//         <polygon points="${X},${Y} ${XX},${Y} ${XMID},${YY} ${X},${Y}"
-//         style="fill:${C};stroke:${C};stroke-width:1" />
-//         </svg>`;  
-// }
-// let CW = this.checkWidth;
-// let CM = this.checkMargin;
-// let CH = this.cellHeight;
-// let X = CM;
-// let Y = (CH-CW)/2 + CM;
-// let XMAX = CW - CM;
-// let YMAX = CH - (CH-CW)/2 - CM;
-// let XMID = CW/2;
-// let YMID = CH/2;
-// let XX = CW;
-// let YY = CH;
-// let C = this.SVGColor;
-// let NodeClosedRoot = `<svg height="${CH}" width="${CW}">
-//     <polygon points="${X},${Y} ${XMAX},${YMID} ${X},${YMAX} ${X},${Y}"
-//     style="fill:${C};stroke:${C};stroke-width:1" />
-//     </svg>`;
-// let NodeClosed = `<svg height="${CH}" width="${CW-CM}">
-//     <polygon points="${X-CM},${Y} ${XMAX-CM},${YMID} ${X-CM},${YMAX} ${X-CM},${Y}"
-//     style="fill:${C};stroke:${C};stroke-width:1" />
-//     </svg>`;            
-// let openSVG = `<svg height="${CH}" width="${CW}">
-//     <polygon points="${X},${Y} ${XMAX},${Y} ${XMID},${YMAX} ${X},${Y}"
-//     style="fill:${C};stroke:${C};stroke-width:1" />
-//     <line x1="${XMID}" y1="${YMAX}" x2="${XMID}" y2="${YY}" style="stroke:${C};stroke-width:2" />
-//     </svg>`;
-// let midSVGn = `<svg height="${CH}" width="${CW}">
-//     <line x1="${XMID}" y1="0" x2="${XMID}" y2="${YY}" style="stroke:${this.SVGColor};stroke-width:2" />
-//     <line x1="${XMID}" y1="${YMID}" x2="${XX}" y2="${YMID}" style="stroke:${this.SVGColor};stroke-width:2" />
-//     </svg>`;
-// let endSVG = `<svg height="${CH}" width="${CW}">
-//     <line x1="${XMID}" y1="0" x2="${XMID}" y2="${YMID}" style="stroke:${this.SVGColor};stroke-width:2" />
-//     <line x1="${XMID}" y1="${YMID}" x2="${XX}" y2="${YMID}" style="stroke:${this.SVGColor};stroke-width:2" />
-//     </svg>`;
-// let dim = `${this.cellHeight}px`;
-// this.parentDisplayCell.displaygroup = new DisplayGroup(false,
-//     // I("tree1","TreeOne", dim),
-//     h( I("",NodeClosedRoot, `${CW}px`), I("tree1","TreeOne"), dim),
-//     h( I("",openSVG, `${CW}px`), I("tree2","TreeTwo"), dim),
-//     h( I("",midSVGn, `${CW}px`), I("",NodeClosed, `${CW-CM}px`), I("tree3","TreeThree"), dim),
-//     h( I("",endSVG, `${CW}px`), I("tree4","TreeFour"), dim),
-//     I("tree5","TreeFive", dim),
-//     I("tree6","TreeSix", dim),
-// );
-// // this.parentDisplayCell = v(this.label);
-// interface Ti {
-//     TI:any[];
-// }
-// function TI(...Arguments:any):Ti { // expects argumetns where I(...arguments)
-//     let returnObj:Ti ={TI:Arguments};
-//     return returnObj;
-// }
-// function maketree(ti:Ti, tiArray:Ti[] = undefined, level=1){  // expects TI , [TI, TI] <-maybe
-//     let label=`T${Tree.instances.length}_${level}`;
-//     let returnValue:any;
-//     let iti:Ti;
-//     let somearray:any[];
-//     let displaycell = I(label, ...(ti.TI));
-//     if (!tiArray) {
-//         returnValue = T(displaycell);
-//     } else {
-//         somearray = [];
-//         for (const iti of tiArray) {
-//         }
-//     }
-//     return returnValue;
-// }

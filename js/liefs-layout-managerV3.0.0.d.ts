@@ -658,6 +658,8 @@ declare class Tree {
         number: string[];
         TreeNode: string[];
         DisplayCell: string[];
+        Events: string[];
+        t_: string[];
     };
     collapseSize: number;
     collapsePad: number;
@@ -669,27 +671,30 @@ declare class Tree {
     cellHeight: number;
     SVGColor: string;
     coord: Coord;
+    t_instance: t_;
     css: string;
+    events: Events;
     constructor(...Arguments: any);
     drawSVG(collapsed: boolean): string;
     toggleCollapse(node: TreeNode, mouseEvent: MouseEvent, el: any): void;
     buildTreeNode(node: TreeNode, cellArray: DisplayCell[], indent?: number): void;
     render(displaycell: DisplayCell): void;
+    static autoLabelTreenodes(label: string, rootNode: t_): TreeNode;
+    static autoLabel(tObj: t_, postfix: string): void;
+    static makeTreeNodes(node: t_): TreeNode;
+    static t(...Arguments: any): t_;
+    static i(...Arguments: any): i_;
 }
 declare function tree(...Arguments: any): DisplayCell;
+declare function TI(...Arguments: any): t_;
 declare class i_ {
     label: string;
     Arguments: any[];
     constructor(...Arguments: any);
 }
-declare function i(...Arguments: any): i_;
 declare class t_ {
     label: string;
-    Arguments: any[];
+    TreeNodeArguments: any[];
+    ItemArguments: any[];
     constructor(...Arguments: any);
 }
-declare function t(...Arguments: any): t_;
-declare function TI(...Arguments: any): t_;
-declare function autoLabel(tObj: t_, postfix: string): void;
-declare function autoLabelTreenodes(label: string, rootNode: t_): TreeNode;
-declare function makeTreeNodes(node: t_): TreeNode;
