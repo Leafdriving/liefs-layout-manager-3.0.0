@@ -1789,11 +1789,6 @@ class Tree {
                 displaycell.displaygroup.cellArray[0].dim = `${(current > max) ? current - 2 : max}px`;
             }
         };
-        if (this.rootTreeNode.label == "auto") {
-            // this.autoLabel();
-            // console.log("At AutoLabel");
-            // console.log(this.rootTreeNode);
-        }
         this.buildTreeNode(this.rootTreeNode, cellArray);
     }
     static byLabel(label) {
@@ -1802,17 +1797,17 @@ class Tree {
                 return Tree.instances[key];
         return undefined;
     }
-    autoLabel(node = this.rootTreeNode, newLabel = `${this.label}`) {
-        // node.label = node.labelCell.label = node.labelCell.htmlBlock.label = newLabel;
-        node.label = newLabel;
-        if (node.labelCell) {
-            node.labelCell.label = newLabel;
-            if (node.labelCell.htmlBlock)
-                node.labelCell.htmlBlock.label = newLabel;
-        }
-        for (const key in node.children)
-            this.autoLabel(node.children[key], `${newLabel}_${key}`);
-    }
+    // autoLabel(node = this.rootTreeNode, newLabel=`${this.label}`){
+    //     // node.label = node.labelCell.label = node.labelCell.htmlBlock.label = newLabel;
+    //     node.label = newLabel;
+    //     if (node.labelCell) {
+    //         node.labelCell.label = newLabel;
+    //         if (node.labelCell.htmlBlock)
+    //             node.labelCell.htmlBlock.label = newLabel;
+    //     }
+    //     for (const key in node.children)
+    //         this.autoLabel(node.children[key], `${newLabel}_${key}`);
+    // }
     drawSVG(collapsed) {
         let X = this.collapsePad;
         let Y = (this.cellHeight - this.collapseSize) / 2 + this.collapsePad;
@@ -1904,6 +1899,31 @@ function tree(...Arguments) {
     return displaycell;
 }
 Overlay.classes["Tree"] = Tree;
+// function TI(...Arguments:any) /*: TreeNode*/ {
+//     let arg:any;
+//     let arrayInArgs:TreeNode[];
+//     let newT:TreeNode;
+//     for (let index = 0; index < Arguments.length; index++) { // pull array from Arguments
+//         arg = Arguments[index];
+//         if (pf.isArray(arg)) {
+//             arrayInArgs = arg;
+//             Arguments.splice(index, 1);
+//             index -= 1;
+//         }
+//     }
+//     let newI:DisplayCell = I("auto", ...Arguments); // name auto picked up in Tree Constructor.
+//     if (arrayInArgs) newT = T(newI, arrayInArgs);
+//     else newT = T(newI);
+//     return newT
+// }
+class i_ {
+    constructor(...Arguments) { this.Arguments = Arguments; }
+}
+function i(...Arguments) { return new i_(...Arguments); }
+class t_ {
+    constructor(...Arguments) { this.Arguments = Arguments; }
+}
+function t(...Arguments) { return new t_(...Arguments); }
 function TI(...Arguments) {
     let arg;
     let arrayInArgs;
@@ -1916,13 +1936,76 @@ function TI(...Arguments) {
             index -= 1;
         }
     }
-    let newI = I("auto", ...Arguments); // name auto picked up in Tree Constructor.
+    let newI = i(/* "auto", */ ...Arguments); // name auto picked up in Tree Constructor.
     if (arrayInArgs)
-        newT = T(newI, arrayInArgs);
+        newT = t(newI, arrayInArgs);
     else
-        newT = T(newI);
+        newT = t(newI);
     return newT;
 }
+function autoLabel(tObj, postfix /*="autoTree"*/) {
+    tObj.label = postfix;
+    (tObj.Arguments[0]).label = postfix;
+    //(<i_>(tObj.Arguments[0])).Arguments.unshift(postfix)
+    // console.log( (<i_>(tObj.Arguments[0])).Arguments );
+    if (tObj.Arguments.length > 1) {
+        let ta = (tObj.Arguments[1]);
+        for (let index = 0; index < ta.length; index++) {
+            const t = ta[index];
+            autoLabel(t, postfix + "_" + index);
+        }
+    }
+}
+function autoLabelTreenodes(label, rootNode /* prebuilt */) {
+    autoLabel(rootNode, label);
+    // console.log(rootNode);
+    return makeTreeNodes(rootNode);
+}
+function makeTreeNodes(node) {
+    let arrayOft_;
+    let returnArray = [];
+    let returnTreeNode;
+    let ii = node.Arguments[0];
+    if (node.Arguments.length > 1) {
+        arrayOft_ = node.Arguments[1];
+        for (const singlet_ of arrayOft_) {
+            returnArray.push(makeTreeNodes(singlet_));
+        }
+        returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments), returnArray);
+    }
+    else {
+        returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments));
+    }
+    return returnTreeNode;
+}
+// function autoTreeMaxLevel( tObj:t_){
+//     let max = 1
+//     if (tObj.Arguments.length > 1) {
+//         let temp: number;
+//         for (const iterator of tObj.Arguments[1]) {
+//             temp = autoTreeMaxLevel(iterator) + 1;
+//             if (temp > max) max = temp;
+//         }
+//     }
+//     return max;
+// }
+// function TI(...Arguments:any) /*: TreeNode*/ {
+//     let arg:any;
+//     let arrayInArgs:TreeNode[];
+//     let newT:TreeNode;
+//     for (let index = 0; index < Arguments.length; index++) { // pull array from Arguments
+//         arg = Arguments[index];
+//         if (pf.isArray(arg)) {
+//             arrayInArgs = arg;
+//             Arguments.splice(index, 1);
+//             index -= 1;
+//         }
+//     }
+//     let newI:DisplayCell = I("auto", ...Arguments); // name auto picked up in Tree Constructor.
+//     if (arrayInArgs) newT = T(newI, arrayInArgs);
+//     else newT = T(newI);
+//     return newT
+// }
 // let toc =
 // maketree(
 //  TI("Table of Contents",[

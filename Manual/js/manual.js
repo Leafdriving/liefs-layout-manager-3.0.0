@@ -10,11 +10,18 @@ var textBlack = css("textBlack", "color:black;");
 var cssTitle = css("title", "background-color:blue;color:white;text-align: center;");
 // let TI = function(...Arguments) {
 // }
-var TableOfContents = T(I("T_", "Table of Contents"), [T(I("T_1", "Introduction"), [T(I("T_1_1", "Child1ofChild1")),
-        T(I("T_1_2", "Child2ofChild1")),
-    ]),
-    T(I("T_2", "Child2ofTop")),
-]);
+var TableOfContents = autoLabelTreenodes("myLabel", TI("Table of Contents", [TI("Introduction"),
+    TI("Part 2"),
+    TI("Part 3", [TI("3a")]),
+]));
+// T(I("T_", "Table of Contents"),
+//    [T(I("T_1","Introduction"),
+//       [T(I("T_1_1","Child1ofChild1")),
+//        T(I("T_1_2","Child2ofChild1")),
+//       ]),
+//     T(I("T_2","Child2ofTop")),
+//    ]
+// )
 // TI("Table of Contents",
 //     [TI("Introduction"),
 //         [TI("Part 1"),
