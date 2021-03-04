@@ -69,17 +69,12 @@ class HtmlBlock {
             this.attributes = pf.getAttribs(elementWithIdAsLabel, this.attributes);
             elementWithIdAsLabel.remove();
         }
-        if ("Css" in retArgs) 
+        if ("Css" in retArgs)
             for (let css of retArgs["Css"]) 
                 this.css = (this.css + " "+  (<Css>css).classname).trim();
 
-        if ("string" in retArgs && retArgs.string.length > 3) {
-            // console.log(retArgs.string, this.css);
-            // console.log(this.css + " " + retArgs.string.splice(3).join(' '));
-            this.css += " " + retArgs.string.splice(3).join(' ')
-            
-        }
-
+        if ("string" in retArgs && retArgs.string.length > 3) 
+            this.css += " " + retArgs.string.splice(3).join(' ');
 
         if ("number" in retArgs) {
             let length = retArgs["number"].length;

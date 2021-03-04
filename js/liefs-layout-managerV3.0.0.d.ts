@@ -669,10 +669,13 @@ declare class Tree {
     cellHeight: number;
     SVGColor: string;
     coord: Coord;
+    css: string;
     constructor(...Arguments: any);
+    autoLabel(node?: TreeNode, newLabel?: string): void;
     drawSVG(collapsed: boolean): string;
     toggleCollapse(node: TreeNode, mouseEvent: MouseEvent, el: any): void;
     buildTreeNode(node: TreeNode, cellArray: DisplayCell[], indent?: number): void;
     render(displaycell: DisplayCell): void;
 }
 declare function tree(...Arguments: any): DisplayCell;
+declare function TI(...Arguments: any): TreeNode;

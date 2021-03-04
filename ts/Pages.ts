@@ -45,12 +45,6 @@ class Pages {
             Handler.update();
         }
     }
-    // removeSelected(pageNumber:number = this.previousPage){
-    //     // console.log("RemoveSelected for Page " + pageNumber);
-    //     // console.log(
-    //     //     document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}']`)
-    //     // );
-    // }
     addSelected(pageNumber:number = this.currentPage){
         let querry = document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}']`);
         let el:Element;

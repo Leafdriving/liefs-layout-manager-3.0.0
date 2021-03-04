@@ -112,15 +112,23 @@ class Tree {
     cellHeight:number;
     SVGColor:string;
     coord: Coord;
+    css:string = "";
 
     constructor(...Arguments: any) {
         Tree.instances.push(this);
+        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Tree");
         mf.applyArguments("Tree", Arguments, Tree.defaults, Tree.argMap, this);
 
         if (!this.rootTreeNode){ this.rootTreeNode = Tree.defaultObj;}
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`)
         }
+        if ("Css" in retArgs) // duplicated!!!!!
+            for (let css of retArgs["Css"]) 
+                this.css = (this.css + " "+  (<Css>css).classname).trim();
+        if ("string" in retArgs && retArgs.string.length > 1)
+            this.css += " " + retArgs.string.splice(1).join(' ');
+
         let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim);
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
@@ -140,9 +148,24 @@ class Tree {
                 displaycell.displaygroup.cellArray[0].dim = `${(current > max) ? current-2 : max}px`;
             }
         }
-
+        if (this.rootTreeNode.label == "auto") {
+            // this.autoLabel();
+            // console.log("At AutoLabel");
+            // console.log(this.rootTreeNode);
+        }
         this.buildTreeNode(this.rootTreeNode, cellArray);
-        // console.log(this.parentDisplayCell)
+    }
+    autoLabel(node = this.rootTreeNode, newLabel=`${this.label}`){
+        // node.label = node.labelCell.label = node.labelCell.htmlBlock.label = newLabel;
+        node.label = newLabel;
+        if (node.labelCell) {
+            node.labelCell.label = newLabel;
+            if (node.labelCell.htmlBlock)
+                node.labelCell.htmlBlock.label = newLabel;
+        }
+        
+        for (const key in node.children)
+            this.autoLabel(node.children[key], `${newLabel}_${key}`);
     }
     drawSVG(collapsed: boolean) : string{
         let X = this.collapsePad;
@@ -179,27 +202,13 @@ class Tree {
         Handler.update();
 
     }
-    // static temp(cellArray: DisplayCell[]){
-    //     for(let cell of cellArray){
-    //         console.log(cell.displaygroup.cellArray[2].htmlBlock.innerHTML);
-    //     }
-    // }
-    // buildCallback(node:TreeNode){
-        // console.log(this, node);
-        // console.log(node.horizontalDisplayCell.displaygroup.cellArray[2].htmlBlock.el);
 
-        // let el=node.horizontalDisplayCell.displaygroup.cellArray[2].htmlBlock.el;
-        // let box = el.getBoundingClientRect();
-        // let x=box.x, width=box.width, x2=x+width;
-        // console.log("");
-        // console.log(x, width, x2, node.horizontalDisplayCell.displaygroup.cellArray[2].coord);
-
-    // }
     buildTreeNode(node:TreeNode = this.rootTreeNode, cellArray: DisplayCell[], indent:number = this.startIndent){
         let THIS = this;
         let hasChildren = (node.children) ? ( (node.children.length) ? true : false) : false;
-        // node.labelCell.postRenderCallback = function(){THIS.buildCallback(node)}
+
         node.labelCell.htmlBlock.attributes["treenode"] = "";
+        if (!node.labelCell.htmlBlock.css) node.labelCell.htmlBlock.css = this.css;
         node.horizontalDisplayCell = h(                                 // Horizontal DisplayGroup Containing:
             I(node.label+"_spacer","",`${indent}px`),                                     // spacer First
             I(node.label+"_svg",                                                       // This is the SVG
@@ -237,6 +246,76 @@ function tree(...Arguments:any){
     return displaycell;
 }
 Overlay.classes["Tree"] = Tree;
+
+function TI(...Arguments:any) /*: TreeNode*/ {
+    let arg:any;
+    let arrayInArgs:TreeNode[];
+    let newT:TreeNode;
+    for (let index = 0; index < Arguments.length; index++) { // pull array from Arguments
+        arg = Arguments[index];
+        if (pf.isArray(arg)) {
+            arrayInArgs = arg;
+            Arguments.splice(index, 1);
+            index -= 1;
+        }
+    }
+    let newI:DisplayCell = I("auto", ...Arguments); // name auto picked up in Tree Constructor.
+    if (arrayInArgs) newT = T(newI, arrayInArgs);
+    else newT = T(newI);
+    return newT
+}
+
+
+
+
+// let toc =
+// maketree(
+//  TI("Table of Contents",[
+//    TI("Introduction",[
+//       TI("Child1"),
+//       TI("Child2"),
+//    ]),
+//    TI("EndOfStory",[
+//       TI("Child1"),
+//       TI("Child2"),
+//    ]),
+//  ])
+// )
+
+// T(I("T_0_1", "Table of Contents"),
+//    [T(I("T_1_1","Introduction"),
+//       [T(I("T_2_1","Child1ofChild1")),
+//        T(I("T_2_2","Child2ofChild1")),
+//       ]),
+//     T(I("T_2","Child2ofTop")),
+//    ]
+// )
+
+// function TI(...Arguments:any){
+//     let arg:any;
+//     let Array: any[];
+//     let Array2: any[] =[];
+//     let temp:TreeNode;
+//     for (let index in Arguments) {
+//         arg = Arguments[index];
+//         if (pf.isArray(arg)) {
+//             Array = arg;
+//             Arguments.splice(index, 1);
+//         }
+//     }
+//     if (Array) {
+//         for (const element of Array) {
+//             Array2.push( TI(...element) )
+//         }
+//         temp = T( I(...Arguments), Array2)
+//     }
+//     else
+//         temp = T( I(...Arguments))
+//     return temp;
+// }
+
+
+
 
     // svgCollapsed() : string{
     //     let X = this.collapsePad;
@@ -313,3 +392,35 @@ Overlay.classes["Tree"] = Tree;
         //     I("tree6","TreeSix", dim),
         // );
         // // this.parentDisplayCell = v(this.label);
+
+
+
+
+        // interface Ti {
+//     TI:any[];
+// }
+
+// function TI(...Arguments:any):Ti { // expects argumetns where I(...arguments)
+//     let returnObj:Ti ={TI:Arguments};
+//     return returnObj;
+// }
+
+// function maketree(ti:Ti, tiArray:Ti[] = undefined, level=1){  // expects TI , [TI, TI] <-maybe
+//     let label=`T${Tree.instances.length}_${level}`;
+//     let returnValue:any;
+//     let iti:Ti;
+//     let somearray:any[];
+
+//     let displaycell = I(label, ...(ti.TI));
+//     if (!tiArray) {
+//         returnValue = T(displaycell);
+//     } else {
+//         somearray = [];
+//         for (const iti of tiArray) {
+            
+//         }
+
+//     }
+    
+//     return returnValue;
+// }
