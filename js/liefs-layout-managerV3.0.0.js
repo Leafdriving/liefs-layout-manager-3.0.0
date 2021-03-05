@@ -995,24 +995,7 @@ class Pages {
         let THIS = this;
         for (let i = 0; i < querry.length; i++) {
             el = (querry[i]);
-            // value = el.getAttribute("pagebutton");
-            // valueArray = value.split("|");
-            // pagename = valueArray[0];
-            // pageNo = valueArray[1];
-            // if (pageNo.charCodeAt(0) < 47 || pageNo.charCodeAt(0) > 57) {
-            //     let newIndex = Pages.byLabel(pagename).indexByName(pageNo);
-            //     if (newIndex == -1) {
-            //         console.log(`Pages.button -> no page called ${pageNo}`);
-            //     }
-            //     pageNo = newIndex.toString();
-            // }
-            el.onclick = function (event) {
-                Tree.onclick.bind(this)(event);
-                // treeOnclick(event);
-            };
-            // if (!el.getAttribute("onclick")) {
-            //     el.setAttribute("onclick", `Pages.setPage('${pagename}',${pageNo});if (HtmlBlock.byLabel(this.id).events) {var doit=HtmlBlock.byLabel(this.id).events.actions.onclick.bind(this);doit(event)}`)
-            // }
+            el.onclick = function (event) { Tree.onclick.bind(this)(event); };
         }
     }
     indexByName(name) {

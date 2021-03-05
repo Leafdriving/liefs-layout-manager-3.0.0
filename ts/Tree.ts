@@ -278,8 +278,8 @@ class Tree {
     }
     static t(...Arguments:any){return new t_(...Arguments)}
     static i(...Arguments:any){return new i_(...Arguments)}
-    static onclick(event:MouseEvent){
-        let el=this as unknown as HTMLElement; // this onclick function is called BOUND to element.
+    static onclick(event:MouseEvent){           //Tree.onclick.bind(this)(event)
+        let el=this as unknown as HTMLElement;  // this onclick function is called BOUND to element.
         let value = el.getAttribute("pagebutton");
         let valueArray = value.split("|");
         let pagename = valueArray[0];
