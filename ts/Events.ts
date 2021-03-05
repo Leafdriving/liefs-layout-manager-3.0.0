@@ -44,5 +44,9 @@ class Events {
             }
         }
     }
+    static do(event:MouseEvent){
+        console.log(event);
+        console.log(this);
+    }
 }
 function events(...arguments:any) {return new Events(...arguments);}

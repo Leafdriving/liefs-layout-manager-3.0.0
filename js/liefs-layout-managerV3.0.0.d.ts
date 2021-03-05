@@ -170,6 +170,7 @@ declare class Events {
     actions: object;
     constructor(...Arguments: any);
     applyToHtmlBlock(htmlblock: HtmlBlock): void;
+    static do(event: MouseEvent): void;
 }
 declare function events(...arguments: any): Events;
 declare class DisplayCell {
@@ -310,7 +311,8 @@ declare class Css {
 }
 declare function css(...Arguments: any): Css;
 declare class DefaultTheme {
-    static advised: Css;
+    static advisedDiv: Css;
+    static advisedBody: Css;
     static context: Css;
 }
 declare class Pages {
@@ -342,6 +344,8 @@ declare class Pages {
     addSelected(pageNumber?: number): void;
     static setPage(label: string, pageNumber: number): void;
     static applyOnclick(): void;
+    indexByName(name: string): number;
+    static button(pagename: string, index: string | number): object;
 }
 declare function P(...arguments: any): DisplayCell;
 declare class Drag {
@@ -684,6 +688,7 @@ declare class Tree {
     static makeTreeNodes(node: t_): TreeNode;
     static t(...Arguments: any): t_;
     static i(...Arguments: any): i_;
+    static onclick(event: MouseEvent): void;
 }
 declare function tree(...Arguments: any): DisplayCell;
 declare function TI(...Arguments: any): t_;

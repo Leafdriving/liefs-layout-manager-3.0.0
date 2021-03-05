@@ -52,8 +52,16 @@ class Pages {
         for (let i = 0; i < querry.length; i++){
             el = querry[i];
             select = el.getAttribute("select");
-            if (select) pf.setAttrib(querry[i],"class", select)
+            if (select) pf.setAttrib(el,"class", select)
+            else {
+                let currentClass = el.getAttribute("class");
+                if( Css.byLabel(currentClass).cssSelect ) {
+                    pf.setAttrib(el, "class", currentClass + "Selected")
+                }
+                
+            }
         }
+        // console.log(el);
     }
     static setPage(label:string, pageNumber:number) {Pages.byLabel(label).setPage(pageNumber)}
     static applyOnclick(){
@@ -61,16 +69,51 @@ class Pages {
         let value:string;
         let valueArray:string[];
         let pagename:string;
-        let pageNo:number;
-        let el:Element;
+        let pageNo:string;
+        let el:HTMLElement;
+        let THIS = this;
         for (let i = 0; i < querry.length; i++){
-            el = querry[i];
-            value = el.getAttribute("pagebutton");
-            valueArray = value.split("|");
-            pagename = valueArray[0];
-            pageNo = parseInt( valueArray[1] );
-            el.setAttribute("onclick", `Pages.setPage('${pagename}',${pageNo})`)
+            el = <HTMLElement>(querry[i]);
+            // value = el.getAttribute("pagebutton");
+            // valueArray = value.split("|");
+            // pagename = valueArray[0];
+            // pageNo = valueArray[1];
+            // if (pageNo.charCodeAt(0) < 47 || pageNo.charCodeAt(0) > 57) {
+            //     let newIndex = Pages.byLabel(pagename).indexByName(pageNo);
+            //     if (newIndex == -1) {
+            //         console.log(`Pages.button -> no page called ${pageNo}`);
+            //     }
+            //     pageNo = newIndex.toString();
+            // }
+            
+            el.onclick = function(event) {
+                Tree.onclick.bind(this)(event);
+                // treeOnclick(event);
+            }
+            // if (!el.getAttribute("onclick")) {
+            //     el.setAttribute("onclick", `Pages.setPage('${pagename}',${pageNo});if (HtmlBlock.byLabel(this.id).events) {var doit=HtmlBlock.byLabel(this.id).events.actions.onclick.bind(this);doit(event)}`)
+            // }
         }
+    }
+    indexByName(name:string): number {
+        for (let index = 0; index < this.displaycells.length; index++) {
+            const displaycell = this.displaycells[index];
+            if (displaycell.label == name) return index;
+        }
+        return -1
+    }
+    static button(pagename:string, index:string|number): object {
+        // let page = Pages.byLabel(pagename);
+        // let newIndex:number
+        // if (typeof(index) == "string") {
+        //     newIndex = page.indexByName(index);
+        //     if (newIndex == -1) {
+        //         console.log(`Pages.button -> no page called ${index}`);
+        //         return {}
+        //     }
+        //     index = newIndex;
+        // }
+        return {attributes : {pagebutton : `${pagename}|${index}`}}
     }
 }
 function P(...arguments:any){

@@ -135,7 +135,7 @@ class Tree {
         if ("string" in retArgs && retArgs.string.length > 1)
             this.css += " " + retArgs.string.splice(1).join(' ');
 
-        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim);
+        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, 2, 2);
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
 
@@ -278,6 +278,19 @@ class Tree {
     }
     static t(...Arguments:any){return new t_(...Arguments)}
     static i(...Arguments:any){return new i_(...Arguments)}
+    static onclick(event:MouseEvent){
+        let el=this as unknown as HTMLElement; // this onclick function is called BOUND to element.
+        let value = el.getAttribute("pagebutton");
+        let valueArray = value.split("|");
+        let pagename = valueArray[0];
+        let pageNo = valueArray[1];
+
+        Pages.setPage( pagename, parseInt(pageNo) );
+        if (HtmlBlock.byLabel(el.id).events) {
+            var doit = HtmlBlock.byLabel(el.id).events.actions["onclick"].bind(el);
+            doit(event);
+        }
+    }
 }
 function tree(...Arguments:any){
     let overlay=new Overlay("Tree", ...Arguments);

@@ -104,7 +104,7 @@ class Handler {
         let pages = displaycell.pages;
         if (pages){
             let evalCurrentPage:number = pages.eval();
-            if (evalCurrentPage != pages.previousPage){
+            if (evalCurrentPage != pages.previousPage){ // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
             }
@@ -112,7 +112,7 @@ class Handler {
             Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, false);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
-            Pages.activePages.push(pages);
+            Pages.activePages.push(pages);  // this cant be good
         }
         else {
             let htmlBlock = displaycell.htmlBlock;
@@ -243,7 +243,7 @@ class Handler {
         } else {
             if (!alreadyexists) el = document.createElement(htmlBlock.tag);
             pf.setAttrib(el, "id", displaycell.label);
-            pf.setAttrib(el, "class", htmlBlock.css);
+            if (htmlBlock.css.trim()) pf.setAttrib(el, "class", htmlBlock.css);
             Handler.renderHtmlAttributes(el, htmlBlock, displaycell.label);
             if (el.innerHTML != htmlBlock.innerHTML) el.innerHTML = htmlBlock.innerHTML;
             if (!alreadyexists) {
@@ -262,6 +262,7 @@ class Handler {
             if (key == "id") value = id;
             pf.setAttrib(el, key, value);
         }
+        pf.setAttrib(el, "llm", "");
     }
 }
 function H(...Arguments: any): Handler {

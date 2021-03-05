@@ -1,5 +1,6 @@
 class DefaultTheme {
-    static advised = new Css("div","position:absolute;", false);
+    static advisedDiv = new Css("div[llm]","position:absolute;", false);
+    static advisedBody = new Css("body","overflow: hidden;", false);
 
 // context
     static context = css("contxt","background-color:white;color: black;outline-style: solid;outline-width: 1px;",

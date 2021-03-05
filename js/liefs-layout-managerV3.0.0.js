@@ -435,6 +435,10 @@ class Events {
             }
         }
     }
+    static do(event) {
+        console.log(event);
+        console.log(this);
+    }
 }
 Events.elementId = "llmEvents";
 Events.instances = [];
@@ -666,7 +670,7 @@ class Handler {
         let pages = displaycell.pages;
         if (pages) {
             let evalCurrentPage = pages.eval();
-            if (evalCurrentPage != pages.previousPage) {
+            if (evalCurrentPage != pages.previousPage) { // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
             }
@@ -674,7 +678,7 @@ class Handler {
             Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, false);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
-            Pages.activePages.push(pages);
+            Pages.activePages.push(pages); // this cant be good
         }
         else {
             let htmlBlock = displaycell.htmlBlock;
@@ -787,7 +791,8 @@ class Handler {
             if (!alreadyexists)
                 el = document.createElement(htmlBlock.tag);
             pf.setAttrib(el, "id", displaycell.label);
-            pf.setAttrib(el, "class", htmlBlock.css);
+            if (htmlBlock.css.trim())
+                pf.setAttrib(el, "class", htmlBlock.css);
             Handler.renderHtmlAttributes(el, htmlBlock, displaycell.label);
             if (el.innerHTML != htmlBlock.innerHTML)
                 el.innerHTML = htmlBlock.innerHTML;
@@ -811,6 +816,7 @@ class Handler {
                 value = id;
             pf.setAttrib(el, key, value);
         }
+        pf.setAttrib(el, "llm", "");
     }
 }
 Handler.handlerMarginDefault = 0;
@@ -930,7 +936,8 @@ Css.deleteOnFirstRunClassname = ".remove";
 function css(...Arguments) { return new Css(...Arguments); }
 class DefaultTheme {
 }
-DefaultTheme.advised = new Css("div", "position:absolute;", false);
+DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false);
+DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
 // context
 DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
 Css.theme = DefaultTheme;
@@ -967,8 +974,15 @@ class Pages {
             el = querry[i];
             select = el.getAttribute("select");
             if (select)
-                pf.setAttrib(querry[i], "class", select);
+                pf.setAttrib(el, "class", select);
+            else {
+                let currentClass = el.getAttribute("class");
+                if (Css.byLabel(currentClass).cssSelect) {
+                    pf.setAttrib(el, "class", currentClass + "Selected");
+                }
+            }
         }
+        // console.log(el);
     }
     static setPage(label, pageNumber) { Pages.byLabel(label).setPage(pageNumber); }
     static applyOnclick() {
@@ -978,14 +992,49 @@ class Pages {
         let pagename;
         let pageNo;
         let el;
+        let THIS = this;
         for (let i = 0; i < querry.length; i++) {
-            el = querry[i];
-            value = el.getAttribute("pagebutton");
-            valueArray = value.split("|");
-            pagename = valueArray[0];
-            pageNo = parseInt(valueArray[1]);
-            el.setAttribute("onclick", `Pages.setPage('${pagename}',${pageNo})`);
+            el = (querry[i]);
+            // value = el.getAttribute("pagebutton");
+            // valueArray = value.split("|");
+            // pagename = valueArray[0];
+            // pageNo = valueArray[1];
+            // if (pageNo.charCodeAt(0) < 47 || pageNo.charCodeAt(0) > 57) {
+            //     let newIndex = Pages.byLabel(pagename).indexByName(pageNo);
+            //     if (newIndex == -1) {
+            //         console.log(`Pages.button -> no page called ${pageNo}`);
+            //     }
+            //     pageNo = newIndex.toString();
+            // }
+            el.onclick = function (event) {
+                Tree.onclick.bind(this)(event);
+                // treeOnclick(event);
+            };
+            // if (!el.getAttribute("onclick")) {
+            //     el.setAttribute("onclick", `Pages.setPage('${pagename}',${pageNo});if (HtmlBlock.byLabel(this.id).events) {var doit=HtmlBlock.byLabel(this.id).events.actions.onclick.bind(this);doit(event)}`)
+            // }
         }
+    }
+    indexByName(name) {
+        for (let index = 0; index < this.displaycells.length; index++) {
+            const displaycell = this.displaycells[index];
+            if (displaycell.label == name)
+                return index;
+        }
+        return -1;
+    }
+    static button(pagename, index) {
+        // let page = Pages.byLabel(pagename);
+        // let newIndex:number
+        // if (typeof(index) == "string") {
+        //     newIndex = page.indexByName(index);
+        //     if (newIndex == -1) {
+        //         console.log(`Pages.button -> no page called ${index}`);
+        //         return {}
+        //     }
+        //     index = newIndex;
+        // }
+        return { attributes: { pagebutton: `${pagename}|${index}` } };
     }
 }
 Pages.activePages = [];
@@ -1772,7 +1821,7 @@ class Tree {
                 this.css = (this.css + " " + css.classname).trim();
         if ("string" in retArgs && retArgs.string.length > 1)
             this.css += " " + retArgs.string.splice(1).join(' ');
-        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim);
+        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, 2, 2);
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
         if (this.t_instance && !this.rootTreeNode) {
@@ -1919,6 +1968,18 @@ class Tree {
     }
     static t(...Arguments) { return new t_(...Arguments); }
     static i(...Arguments) { return new i_(...Arguments); }
+    static onclick(event) {
+        let el = this; // this onclick function is called BOUND to element.
+        let value = el.getAttribute("pagebutton");
+        let valueArray = value.split("|");
+        let pagename = valueArray[0];
+        let pageNo = valueArray[1];
+        Pages.setPage(pagename, parseInt(pageNo));
+        if (HtmlBlock.byLabel(el.id).events) {
+            var doit = HtmlBlock.byLabel(el.id).events.actions["onclick"].bind(el);
+            doit(event);
+        }
+    }
 }
 Tree.instances = [];
 Tree.defaultObj = T("Tree", I("Tree_TopDisplay", "Top Display"), props(I("Tree_TopDisplay_prop1", "prop1"), I("Tree_TopDisplay_prop2", "prop2")), [T("Tree_child1", I("Tree_Child1ofTop", "Child1ofTop"), // true,       
