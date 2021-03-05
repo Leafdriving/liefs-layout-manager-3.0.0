@@ -46,8 +46,7 @@ class Handler {
         if ("DisplayCell" in retArgs) this.rootCell = retArgs["DisplayCell"][0];
         else pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
         if (this.handlerMargin == undefined) this.handlerMargin = Handler.handlerMarginDefault;
-        Handler.update(/* [this] */);
-        Css.update();
+
         if (Handler.firstRun) {
             setTimeout(Handler.update);
             Handler.firstRun = false;
@@ -55,7 +54,11 @@ class Handler {
             
             window.onresize = function() {Handler.update()};
             window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event)};
+            window.addEventListener("popstate", function(event){Pages.popstate(event)})
+            Pages.parseURL();
         }
+        Handler.update(/* [this] */);
+        Css.update();
     }
     pop(){Handler.pop(this);}
     toTop(){ // doesn't work!
@@ -103,16 +106,18 @@ class Handler {
         if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         let pages = displaycell.pages;
         if (pages){
+            Pages.activePages.push(pages);  // this cant be good
             let evalCurrentPage:number = pages.eval();
             if (evalCurrentPage != pages.previousPage){ // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                pages.currentPage = pages.previousPage = evalCurrentPage;
+                Pages.pushHistory();
             }
             pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
             Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, false);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
-            Pages.activePages.push(pages);  // this cant be good
         }
         else {
             let htmlBlock = displaycell.htmlBlock;

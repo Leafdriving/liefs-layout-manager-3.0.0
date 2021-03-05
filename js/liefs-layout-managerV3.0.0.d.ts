@@ -43,6 +43,7 @@ declare class pf {
     static errorReporting(errString: string): void;
     static uis0(num: number): number;
     static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
+    static parseURLParams(url?: string): {};
 }
 declare class Point {
     x: number;
@@ -346,6 +347,9 @@ declare class Pages {
     static applyOnclick(): void;
     indexByName(name: string): number;
     static button(pagename: string, index: string | number): object;
+    static parseURL(url?: string): void;
+    static pushHistory(): void;
+    static popstate(event: PopStateEvent): void;
 }
 declare function P(...arguments: any): DisplayCell;
 declare class Drag {

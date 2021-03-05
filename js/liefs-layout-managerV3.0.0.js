@@ -108,6 +108,20 @@ class pf {
     static uis0(num) { return (num == undefined) ? 0 : num; }
     static concatArray(main, added) { for (let displaycell of added)
         main.push(displaycell); }
+    static parseURLParams(url = window.location.href) {
+        let queryStart = url.indexOf("?") + 1, queryEnd = url.indexOf("#") + 1 || url.length + 1, query = url.slice(queryStart, queryEnd - 1), pairs = query.replace(/\+/g, " ").split("&"), parms = {}, i, n, v, nv;
+        if (query === url || query === "")
+            return;
+        for (i = 0; i < pairs.length; i++) {
+            nv = pairs[i].split("=", 2);
+            n = decodeURIComponent(nv[0]);
+            v = decodeURIComponent(nv[1]);
+            if (!parms.hasOwnProperty(n))
+                parms[n] = [];
+            parms[n].push(nv.length === 2 ? v : null);
+        }
+        return parms;
+    }
 }
 pf.isTypePx = function (it) { if (typeof (it) == "string" && it.substr(-2) == "px")
     return "pixels"; };
@@ -603,8 +617,6 @@ class Handler {
             pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
         if (this.handlerMargin == undefined)
             this.handlerMargin = Handler.handlerMarginDefault;
-        Handler.update( /* [this] */);
-        Css.update();
         if (Handler.firstRun) {
             setTimeout(Handler.update);
             Handler.firstRun = false;
@@ -612,7 +624,11 @@ class Handler {
                 element.remove();
             window.onresize = function () { Handler.update(); };
             window.onwheel = function (event) { ScrollBar.onWheel(event); };
+            window.addEventListener("popstate", function (event) { Pages.popstate(event); });
+            Pages.parseURL();
         }
+        Handler.update( /* [this] */);
+        Css.update();
     }
     static byLabel(label) {
         for (let key in Handler.instances)
@@ -669,16 +685,18 @@ class Handler {
             displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         let pages = displaycell.pages;
         if (pages) {
+            Pages.activePages.push(pages); // this cant be good
             let evalCurrentPage = pages.eval();
             if (evalCurrentPage != pages.previousPage) { // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                pages.currentPage = pages.previousPage = evalCurrentPage;
+                Pages.pushHistory();
             }
             pages.displaycells[evalCurrentPage].coord.copy(displaycell.coord);
             Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, false);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
-            Pages.activePages.push(pages); // this cant be good
         }
         else {
             let htmlBlock = displaycell.htmlBlock;
@@ -961,7 +979,7 @@ class Pages {
     evalCell() { return this.displaycells[this.eval()]; }
     setPage(pageNumber) {
         if (pageNumber != this.currentPage) {
-            this.previousPage = this.currentPage;
+            // this.previousPage = this.currentPage;
             this.currentPage = pageNumber;
             Handler.update();
         }
@@ -1018,6 +1036,36 @@ class Pages {
         //     index = newIndex;
         // }
         return { attributes: { pagebutton: `${pagename}|${index}` } };
+    }
+    static parseURL(url = window.location.href) {
+        let argsObj = pf.parseURLParams(url);
+        if (argsObj)
+            for (let key in argsObj) {
+                let pageInstance = Pages.byLabel(key);
+                if (pageInstance)
+                    pageInstance.currentPage = argsObj[key];
+            }
+    }
+    static pushHistory() {
+        let newUrl = window.location.href.split("?")[0];
+        let prefix = "?";
+        for (const page of Pages.activePages) {
+            if (page.currentPage) {
+                newUrl += `${prefix}${page.label}=${page.currentPage}`;
+                prefix = "&";
+            }
+        }
+        history.pushState(null, null, newUrl);
+        //console.log(newUrl);
+    }
+    static popstate(event) {
+        // history.back();
+        for (let index = 0; index < Pages.activePages.length; index++) {
+            const page = Pages.activePages[index];
+            page.currentPage = 0;
+        }
+        Pages.parseURL();
+        Handler.update();
     }
 }
 Pages.activePages = [];
@@ -1958,7 +2006,7 @@ class Tree {
         let pagename = valueArray[0];
         let pageNo = valueArray[1];
         Pages.setPage(pagename, parseInt(pageNo));
-        if (HtmlBlock.byLabel(el.id).events) {
+        if (HtmlBlock.byLabel(el.id).events && HtmlBlock.byLabel(el.id).events.actions["onclick"]) {
             var doit = HtmlBlock.byLabel(el.id).events.actions["onclick"].bind(el);
             doit(event);
         }

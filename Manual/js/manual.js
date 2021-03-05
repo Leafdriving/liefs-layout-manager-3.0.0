@@ -9,16 +9,17 @@ var bgBlack = css("bgBlack", "background-color:black");
 var textWhite = css("textWhite", "color:white");
 var textBlue = css("textBlue", "color:blue");
 var textCenter = css("textCenter", "text-align: center;");
-var textBlack = css("textBlack", "color:black;");
+var textBlack = css("textBlack", "color:black;overflow-y: auto;");
 var cssTitle = css("title", "background-color:blue;color:white;text-align: center;font-size: 24px;");
+var cssBold = css("bold", "text-decoration: underline;font-weight:bold;background-color: yellow;");
 // Build Tree
 var clickTreeItemEvent = events({ onclick: function (mouseEvent) {
-        console.log(this);
-        console.log(TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML);
+        // console.log(this);
+        // console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
     } });
-var treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutton: "PAGES|0" } }, [TI("Introduction", Pages.button("PAGES", 1)),
+var treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutton: "PAGES|0" } }, [TI("Installation", Pages.button("PAGES", 1)),
     TI("Part 2"),
     TI("Part 3", [TI("3a")]),
 ]);
 // Framework
-H("MainHandler", 2, v("Main Vertical", I("TitleBar", "30px", cssTitle), h("MainBody", 5, tree("TreeLabel", dragbar(I("MainTree", "", bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, cssNode), P("PAGES", I("Welcome", textBlack), I("Introduction", textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+H("MainHandler", 2, v("Main Vertical", I("TitleBar", "30px", cssTitle), h("MainBody", 5, tree("TreeLabel", dragbar(I("MainTree", "", bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, cssNode), P("PAGES", I("Welcome", textBlack), I("Installation", textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });

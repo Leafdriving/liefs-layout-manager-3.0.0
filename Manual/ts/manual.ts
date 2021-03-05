@@ -29,20 +29,22 @@ let bgBlack = css("bgBlack", `background-color:black`);
 let textWhite = css("textWhite", "color:white");
 let textBlue = css("textBlue", "color:blue");
 let textCenter = css("textCenter", "text-align: center;");
-let textBlack = css("textBlack", "color:black;")
+let textBlack = css("textBlack", "color:black;overflow-y: auto;")
 
 let cssTitle = css("title", "background-color:blue;color:white;text-align: center;font-size: 24px;")
+
+let cssBold = css("bold", "text-decoration: underline;font-weight:bold;background-color: yellow;")
 
 // Build Tree
 
 let clickTreeItemEvent = events({onclick:function(mouseEvent:MouseEvent){
-  console.log(this);
-  console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
+  // console.log(this);
+  // console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
 }});
 
 let treeOfNodes:t_ = 
 TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
-    [TI("Introduction", Pages.button("PAGES",1) ),
+    [TI("Installation", Pages.button("PAGES",1) ),
     TI("Part 2"),
     TI("Part 3",
         [TI("3a")]),
@@ -64,7 +66,7 @@ H("MainHandler", 2,
       ),
       P("PAGES",
         I("Welcome", textBlack),
-        I("Introduction", textBlack),
+        I("Installation", textBlack),
       ),
     ),
   ),

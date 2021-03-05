@@ -286,7 +286,7 @@ class Tree {
         let pageNo = valueArray[1];
 
         Pages.setPage( pagename, parseInt(pageNo) );
-        if (HtmlBlock.byLabel(el.id).events) {
+        if (HtmlBlock.byLabel(el.id).events && HtmlBlock.byLabel(el.id).events.actions["onclick"]) {
             var doit = HtmlBlock.byLabel(el.id).events.actions["onclick"].bind(el);
             doit(event);
         }

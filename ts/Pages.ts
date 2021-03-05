@@ -40,7 +40,7 @@ class Pages {
     evalCell(){return this.displaycells[ this.eval() ];}
     setPage(pageNumber:number){
         if (pageNumber != this.currentPage){
-            this.previousPage = this.currentPage;
+            // this.previousPage = this.currentPage;
             this.currentPage = pageNumber;
             Handler.update();
         }
@@ -96,6 +96,35 @@ class Pages {
         //     index = newIndex;
         // }
         return {attributes : {pagebutton : `${pagename}|${index}`}}
+    }
+    static parseURL(url = window.location.href){
+        let argsObj = pf.parseURLParams(url)
+        if (argsObj)
+            for (let key in argsObj) {
+                let pageInstance = Pages.byLabel(key);
+                if (pageInstance)pageInstance.currentPage = argsObj[key];
+            }
+    }
+    static pushHistory(){
+        let newUrl = window.location.href.split("?")[0];
+        let prefix = "?";
+        for (const page of Pages.activePages) {
+            if (page.currentPage){
+                newUrl +=`${prefix}${page.label}=${page.currentPage}`;
+                prefix = "&";
+            }
+        }
+        history.pushState(null, null, newUrl)
+        //console.log(newUrl);
+    }
+    static popstate(event:PopStateEvent){
+        // history.back();
+        for (let index = 0; index < Pages.activePages.length; index++) {
+            const page = Pages.activePages[index];
+            page.currentPage = 0;
+        }
+        Pages.parseURL();
+        Handler.update();
     }
 }
 function P(...arguments:any){

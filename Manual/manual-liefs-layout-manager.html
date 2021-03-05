@@ -7,6 +7,8 @@
    <link href="css/prism.css" rel="stylesheet" />
    <script src="js/prism.js"></script>
    <script src="../js/liefs-layout-managerV3.0.0.js"></script>
+   <!-- <script src="https://raw.githubusercontent.com/Leafdriving/liefs-layout-manager-3.0.0/master/js/liefs-layout-managerV3.0.0.min.js"></script> -->
+   
 </head>
 <body>
     <div class="remove" style="font-size: larger;">Loading...</div>
@@ -15,20 +17,61 @@
       <div id="TitleBar">Liefs-layout-manager&nbsp;&nbsp;&nbsp;The Manual</div>
 
       <div id="Welcome">
-        <div class="h1">Welcome To Liefs-Layout-Manager!</div>
-        <p>Liefs Layout Manager is
-
-        </p>
+<div class="h1">Welcome To Liefs-Layout-Manager!</div><p>
+Liefs Layout Manager is a Javascript Framework (writen in Typescript) that manages the 
+position of 'Div' Elements on a Page.  The position of elements on the page is determined
+by using elements (Classes) of the framework, called by simple functions.</p>
+<p>In essence, It ignores the inheritance of 'div' objects, and places them all on the first
+level of the dom, using a coordinate system. (x, y, width, height) and assigns these values
+in the 'style' tag of the element.</p><p>Most of the 'rules' of the framework are intuitive,
+and easy to learn by Novice, and Experienced Programmers Alike.</p><p>This Manual is written
+under this framework, and includes most of the features.  For example, try re-sizing this window
+to see how the layout changes to fit all sizes.  Try the Dragbar, and tree system, all managed
+by this framework.</p><p>There are TONS of examples included here to see each feature working
+in it's simpleist, to most difficult form.</p><p>Enjoy!</p>
       </div>
 
-      <div id="Introduction">
-        <div class="h1">Introduction!</div>
-        <p>Liefs Layout Manager is
+      <div id="Installation">
+<div class="h1">Installation</div><p>Lief Layout Manager is "installed" by simply adding
+one javascript file to your html file.(index.html probably)</p>
+<p>load <span class="bold">liefs-layout-managerV3.0.0.js</span> or more likely, <span class="bold">liefs-layout-managerV3.0.0.min.js</span></p>
+<p>At time of posting, you can find the file under this repo:<br>
+  <a href="https://github.com/Leafdriving/liefs-layout-manager-3.0.0/">https://github.com/Leafdriving/liefs-layout-manager-3.0.0/</a>
+<br>or to be more percise, this file:<br>
+<a href="https://raw.githubusercontent.com/Leafdriving/liefs-layout-manager-3.0.0/master/js/liefs-layout-managerV3.0.0.js">https://raw.githubusercontent.com/Leafdriving/liefs-layout-manager-3.0.0/master/js/liefs-layout-managerV3.0.0.js</a>
+(Right-click -> save (as))</p>
+<p>This is the basic boilerplate for your code:</p>
+<pre><code class="language-markup">&lt!doctype html>
+&lthtml lang="en">
+  &lthead>
+    &ltmeta charset="utf-8">
+    &lttitle>Your Title&lt/title>
+    &ltscript src="./{Your Path}/liefs-layout-managerV3.0.0.js">&lt/script>
+&lt!--      The above line loads the lief-layout-manager framework        -->
+  &lt/head>
+  &ltbody>
+  &lt!-- Note - on invoking liefs-layout manager, all class="remove" are removed from the dom -->
+  &ltdiv class="remove" style="font-size: larger;">Loading...&lt/div>
+  &lt!-- So until invoked, the user will see the above loading page -->
+  &ltdiv class="remove" style="display:none">
+  &lt!-- This is where you put all 'div' elements that you wish the handler to manage
+        note, they too are removed, and re-introduced to the dom only when needed --> 
+  &lt/div>
 
-        </p>
+  &lt/body>
+&lt/html>
+
+
+&lt!--  Your liefs-layout-manager code MUST come after the body to work! -->
+&ltscript src="{YourPath}/yourFrameworkCode.js">&lt/script>
+&lt!--  by adding a reference  to your framework script-->
+&ltscript>
+H( {some code} ) // invoking a handler like this starts liefs-layout-manager framework
+&lt/script>
+&lt!--  or just adding it to the END of your html -->
+</code></pre>
       </div>
 
-    </div>
 </body>
 </html>
 <script src="js/manual.js"></script>
