@@ -608,7 +608,6 @@ function v(...Arguments) {
 class Handler {
     constructor(...Arguments) {
         this.rootCell = undefined;
-        Handler.instances.push(this);
         let retArgs = pf.sortArgs(Arguments, "Handler");
         mf.applyArguments("Handler", Arguments, Handler.defaults, Handler.argMap, this);
         if ("DisplayCell" in retArgs)
@@ -627,6 +626,8 @@ class Handler {
             window.addEventListener("popstate", function (event) { Pages.popstate(event); });
             Pages.parseURL();
         }
+        if (this.addThisHandlerToStack)
+            Handler.instances.push(this);
         Handler.update( /* [this] */);
         Css.update();
     }
@@ -636,7 +637,7 @@ class Handler {
                 return Handler.instances[key];
         return undefined;
     }
-    pop() { Handler.pop(this); }
+    pop() { return Handler.pop(this); }
     toTop() {
         let index = Handler.instances.indexOf(this);
         Handler.instances.splice(index, 1);
@@ -645,10 +646,13 @@ class Handler {
     }
     static pop(handlerInstance = Handler.instances[Handler.instances.length - 1]) {
         let index = Handler.instances.indexOf(handlerInstance);
+        let poppedInstance = undefined;
         if (index != -1) {
+            poppedInstance = Handler.instances[index];
             Handler.update([handlerInstance], index, true);
             Handler.instances.splice(index, 1);
         }
+        return poppedInstance;
     }
     static screensizeToCoord(dislaycell, handlerMargin) {
         let viewport = pf.viewport();
@@ -850,6 +854,7 @@ Handler.argMap = {
     number: ["handlerMargin"],
     Coord: ["coord"],
     function: ["preRenderCallback", "postRenderCallback"],
+    boolean: ["addThisHandlerToStack"]
 };
 Handler.renderNullObjects = false;
 Handler.argCustomTypes = [];

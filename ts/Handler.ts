@@ -18,6 +18,7 @@ class Handler {
         number : ["handlerMargin"],
         Coord: ["coord"],
         function: ["preRenderCallback", "postRenderCallback"],
+        boolean: ["addThisHandlerToStack"]
     }
     static renderNullObjects:boolean = false;
     static argCustomTypes:Function[] = [];
@@ -38,8 +39,6 @@ class Handler {
 
 
     constructor(...Arguments: any) {
-        Handler.instances.push(this);
-
         let retArgs : ArgsObj = pf.sortArgs(Arguments, "Handler");
         mf.applyArguments("Handler", Arguments, Handler.defaults, Handler.argMap, this);
 
@@ -57,22 +56,26 @@ class Handler {
             window.addEventListener("popstate", function(event){Pages.popstate(event)})
             Pages.parseURL();
         }
+        if (this.addThisHandlerToStack) Handler.instances.push(this);
         Handler.update(/* [this] */);
         Css.update();
     }
-    pop(){Handler.pop(this);}
+    pop():Handler {return Handler.pop(this);}
     toTop(){ // doesn't work!
         let index = Handler.instances.indexOf(this);
         Handler.instances.splice(index, 1);
         Handler.instances.push(this);
         Handler.update();
     }
-    static pop(handlerInstance = Handler.instances[ Handler.instances.length-1 ]){
+    static pop(handlerInstance = Handler.instances[ Handler.instances.length-1 ]): Handler {
         let index = Handler.instances.indexOf(handlerInstance);
+        let poppedInstance:Handler = undefined;
         if (index != -1) {
+            poppedInstance = Handler.instances[index];
             Handler.update([handlerInstance], index, true);
             Handler.instances.splice(index, 1);
         }
+        return poppedInstance;
     }
     static screensizeToCoord(dislaycell:DisplayCell, handlerMargin: number){
         let viewport = pf.viewport();

@@ -254,6 +254,7 @@ declare class Handler {
         number: string[];
         Coord: string[];
         function: string[];
+        boolean: string[];
     };
     static renderNullObjects: boolean;
     static argCustomTypes: Function[];
@@ -271,9 +272,9 @@ declare class Handler {
     preRenderCallback: Function;
     postRenderCallback: Function;
     constructor(...Arguments: any);
-    pop(): void;
+    pop(): Handler;
     toTop(): void;
-    static pop(handlerInstance?: Handler): void;
+    static pop(handlerInstance?: Handler): Handler;
     static screensizeToCoord(dislaycell: DisplayCell, handlerMargin: number): void;
     static update(ArrayofHandlerInstances?: Handler[], instanceNo?: number, derender?: boolean): void;
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
