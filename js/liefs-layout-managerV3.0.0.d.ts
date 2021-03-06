@@ -243,6 +243,7 @@ declare class Handler {
     static handlerMarginDefault: number;
     static firstRun: boolean;
     static instances: Handler[];
+    static activeHandlers: Handler[];
     static byLabel(label: string): Handler;
     static defaults: {
         label: () => string;
@@ -707,4 +708,23 @@ declare class t_ {
     TreeNodeArguments: any[];
     ItemArguments: any[];
     constructor(...Arguments: any);
+}
+declare class Observe {
+    static instances: Observe[];
+    static byLabel(label: string): Observe;
+    static defaults: {
+        label: () => string;
+    };
+    static argMap: {
+        string: string[];
+        HTMLDivElement: string[];
+        DisplayCell: string[];
+    };
+    label: string;
+    el: HTMLDivElement;
+    parentDisplayCell: DisplayCell;
+    constructor(...Arguments: any);
+    pop(): void;
+    static onWheel(event: WheelEvent): void;
+    static update(): void;
 }

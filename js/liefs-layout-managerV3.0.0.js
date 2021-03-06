@@ -622,12 +622,13 @@ class Handler {
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
                 element.remove();
             window.onresize = function () { Handler.update(); };
-            window.onwheel = function (event) { ScrollBar.onWheel(event); };
+            window.onwheel = function (event) { ScrollBar.onWheel(event); Observe.onWheel(event); };
             window.addEventListener("popstate", function (event) { Pages.popstate(event); });
             Pages.parseURL();
         }
         if (this.addThisHandlerToStack)
-            Handler.instances.push(this);
+            Handler.activeHandlers.push(this);
+        Handler.instances.push(this);
         Handler.update( /* [this] */);
         Css.update();
     }
@@ -639,18 +640,18 @@ class Handler {
     }
     pop() { return Handler.pop(this); }
     toTop() {
-        let index = Handler.instances.indexOf(this);
-        Handler.instances.splice(index, 1);
-        Handler.instances.push(this);
+        let index = Handler.activeHandlers.indexOf(this);
+        Handler.activeHandlers.splice(index, 1);
+        Handler.activeHandlers.push(this);
         Handler.update();
     }
-    static pop(handlerInstance = Handler.instances[Handler.instances.length - 1]) {
-        let index = Handler.instances.indexOf(handlerInstance);
+    static pop(handlerInstance = Handler.activeHandlers[Handler.activeHandlers.length - 1]) {
+        let index = Handler.activeHandlers.indexOf(handlerInstance);
         let poppedInstance = undefined;
         if (index != -1) {
-            poppedInstance = Handler.instances[index];
+            poppedInstance = Handler.activeHandlers[index];
             Handler.update([handlerInstance], index, true);
-            Handler.instances.splice(index, 1);
+            Handler.activeHandlers.splice(index, 1);
         }
         return poppedInstance;
     }
@@ -658,8 +659,8 @@ class Handler {
         let viewport = pf.viewport();
         dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
     }
-    static update(ArrayofHandlerInstances = Handler.instances, instanceNo = 0, derender = false) {
-        // console.clear();
+    static update(ArrayofHandlerInstances = Handler.activeHandlers, instanceNo = 0, derender = false) {
+        // console.log("Update Fired");
         Handler.renderAgain = false;
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
@@ -681,6 +682,7 @@ class Handler {
         }
         if (Pages.activePages.length)
             Pages.applyOnclick();
+        Observe.update();
         if (Handler.renderAgain)
             console.log("REDNDER AGAIN!");
     }
@@ -844,8 +846,9 @@ class Handler {
 Handler.handlerMarginDefault = 0;
 Handler.firstRun = true;
 Handler.instances = [];
+Handler.activeHandlers = [];
 Handler.defaults = {
-    label: function () { return `handler_${pf.pad_with_zeroes(Handler.instances.length)}`; },
+    label: function () { return `handler_${pf.pad_with_zeroes(Handler.activeHandlers.length)}`; },
     cssString: " ",
     addThisHandlerToStack: true
 };
@@ -1732,7 +1735,7 @@ class Modal {
         this.handler.pop();
     }
     show() {
-        Handler.instances.push(this.handler);
+        Handler.activeHandlers.push(this.handler);
         Handler.update();
     }
     hide() {
@@ -2070,3 +2073,68 @@ class i_ {
 class t_ {
     constructor(...Arguments) { this.TreeNodeArguments = Arguments; }
 }
+class Observe {
+    constructor(...Arguments) {
+        Observe.instances.push(this);
+        let retArgs = pf.sortArgs(Arguments, "Observe");
+        mf.applyArguments("Observe", Arguments, Observe.defaults, Observe.argMap, this);
+        console.log(`${this.label} Observe Created`);
+        //console.log(this.parentDisplayCell.htmlBlock.el);
+        let THIS = this;
+        // this.parentDisplayCell.htmlBlock.el.onscroll = function(event) {
+        //     let recObj = THIS.el.getBoundingClientRect(); 
+        //     console.log(recObj.x, recObj.y, recObj.width, recObj.height);
+        // }
+    }
+    static byLabel(label) {
+        for (let key in Observe.instances)
+            if (Observe.instances[key].label == label)
+                return Observe.instances[key];
+        return undefined;
+    }
+    pop() {
+        console.log(`Popping Observer ${this.label}`);
+        let index = Observe.instances.indexOf(this);
+        Observe.instances.splice(index, 1);
+    }
+    static onWheel(event) {
+        console.log("Observe Wheel Event Fired!");
+    }
+    static update() {
+        let els = document.querySelectorAll("[parentof]");
+        let activeLabels = [];
+        for (let index = 0; index < els.length; index++) { // loop elements in dom with parentof attribute...
+            let el = els[index];
+            let attribObj = pf.getAttribs(el);
+            let handlerLabel = attribObj["parentof"];
+            let handlerInstance = Handler.byLabel(handlerLabel);
+            if (handlerInstance) { // if matching handler exists,
+                activeLabels.push(handlerLabel);
+                if (!Observe.byLabel(handlerLabel)) { // if not matching Observe instance exists
+                    let parentEl = el.parentElement;
+                    let parentDisplayCell;
+                    while (parentEl && !parentDisplayCell) { // loop until parent matching displaycell found
+                        parentDisplayCell = DisplayCell.byLabel(parentEl.id);
+                        parentEl = parentEl.parentElement;
+                    }
+                    new Observe(handlerLabel, el, parentDisplayCell); // Create Observe Object!
+                }
+            } // else console.log(`Handler "${handlerLabel}" not found`);
+        }
+        for (let index = 0; index < Observe.instances.length; index++) { // now pop any Observers no longer needed
+            const observeInstance = Observe.instances[index];
+            if (activeLabels.indexOf(observeInstance.label) == -1) {
+                observeInstance.pop();
+            }
+        }
+    }
+}
+Observe.instances = [];
+Observe.defaults = {
+    label: function () { return `Observe_${pf.pad_with_zeroes(Observe.instances.length)}`; },
+};
+Observe.argMap = {
+    string: ["label"],
+    HTMLDivElement: ["el"],
+    DisplayCell: ["parentDisplayCell"],
+};

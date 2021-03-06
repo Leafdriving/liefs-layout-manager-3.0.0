@@ -71,4 +71,11 @@ H("MainHandler", 2,
     ),
   ),
   {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
+);
+H("SubHandler",
+    h("SubHor",
+      I("leftside","leftside", bgRed),
+      I("Rightside","rightside", bgBlue),
+    ),
+    false,
 )

@@ -135,7 +135,7 @@ class Modal {
         this.handler.pop();
     }
     show(){
-        Handler.instances.push(this.handler);
+        Handler.activeHandlers.push(this.handler);
         Handler.update();
     }
     hide(){

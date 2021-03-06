@@ -2,6 +2,7 @@ class Handler {
     static handlerMarginDefault=0;
     static firstRun = true;
     static instances:Handler[] = [];
+    static activeHandlers:Handler[] = [];
     static byLabel(label:string):Handler{
         for (let key in Handler.instances)
             if (Handler.instances[key].label == label)
@@ -9,7 +10,7 @@ class Handler {
         return undefined;
     }
     static defaults = {
-        label : function(){return `handler_${pf.pad_with_zeroes(Handler.instances.length)}`},
+        label : function(){return `handler_${pf.pad_with_zeroes(Handler.activeHandlers.length)}`},
         cssString : " ",
         addThisHandlerToStack: true
     }
@@ -52,28 +53,29 @@ class Handler {
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname)) element.remove();
             
             window.onresize = function() {Handler.update()};
-            window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event)};
+            window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);Observe.onWheel(event);};
             window.addEventListener("popstate", function(event){Pages.popstate(event)})
             Pages.parseURL();
         }
-        if (this.addThisHandlerToStack) Handler.instances.push(this);
+        if (this.addThisHandlerToStack) Handler.activeHandlers.push(this);
+        Handler.instances.push(this);
         Handler.update(/* [this] */);
         Css.update();
     }
     pop():Handler {return Handler.pop(this);}
     toTop(){ // doesn't work!
-        let index = Handler.instances.indexOf(this);
-        Handler.instances.splice(index, 1);
-        Handler.instances.push(this);
+        let index = Handler.activeHandlers.indexOf(this);
+        Handler.activeHandlers.splice(index, 1);
+        Handler.activeHandlers.push(this);
         Handler.update();
     }
-    static pop(handlerInstance = Handler.instances[ Handler.instances.length-1 ]): Handler {
-        let index = Handler.instances.indexOf(handlerInstance);
+    static pop(handlerInstance = Handler.activeHandlers[ Handler.activeHandlers.length-1 ]): Handler {
+        let index = Handler.activeHandlers.indexOf(handlerInstance);
         let poppedInstance:Handler = undefined;
         if (index != -1) {
-            poppedInstance = Handler.instances[index];
+            poppedInstance = Handler.activeHandlers[index];
             Handler.update([handlerInstance], index, true);
-            Handler.instances.splice(index, 1);
+            Handler.activeHandlers.splice(index, 1);
         }
         return poppedInstance;
     }
@@ -82,8 +84,8 @@ class Handler {
         dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
 
-    static update(ArrayofHandlerInstances:Handler[] = Handler.instances, instanceNo:number = 0, derender:boolean = false){
-        // console.clear();
+    static update(ArrayofHandlerInstances:Handler[] = Handler.activeHandlers, instanceNo:number = 0, derender:boolean = false){
+        // console.log("Update Fired");
         Handler.renderAgain = false;
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
@@ -102,6 +104,7 @@ class Handler {
             if (handlerInstance.postRenderCallback) handlerInstance.postRenderCallback(handlerInstance);
           }
         if (Pages.activePages.length) Pages.applyOnclick();
+        Observe.update();
         if (Handler.renderAgain) console.log("REDNDER AGAIN!");
     }
 
