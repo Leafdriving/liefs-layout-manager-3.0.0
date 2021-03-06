@@ -47,13 +47,14 @@ class Coord {
     }
     copyWithin(...Arguments:any){
         let possArgs:{x?:number,y?:number,width?:number,height?:number, isRoot?:boolean, Coord?:Coord} = {};
-        let obj:Coord|Within;
+        // let obj:Coord|Within;
         mf.applyArguments("Coord.copyWithin", Arguments, {isRoot: false}, Coord.CopyArgMap, possArgs);
         let isRoot = possArgs.isRoot;
-        if ("Within" in possArgs) obj = possArgs["Within"];
-        if ("Coord" in possArgs) obj = possArgs["Coord"];
+        // if ("Within" in possArgs) obj = possArgs["Within"];
+        // if ("Coord" in possArgs) obj = possArgs["Coord"];
 
         if (possArgs.isRoot) {
+            // console.log( JSON.stringify(this.within) )
             for (let key of ["x", "y", "width", "height"]) {
                 this.within[key] = this[key];
             }

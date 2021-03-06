@@ -12,7 +12,8 @@ class Handler {
     static defaults = {
         label : function(){return `handler_${pf.pad_with_zeroes(Handler.activeHandlers.length)}`},
         cssString : " ",
-        addThisHandlerToStack: true
+        addThisHandlerToStack: true,
+        controlledBySomething: false,
     }
     static argMap = {
         string : ["label"],
@@ -37,6 +38,7 @@ class Handler {
     addThisHandlerToStack: boolean;
     preRenderCallback: Function;
     postRenderCallback: Function;
+    controlledBySomething: boolean;
 
 
     constructor(...Arguments: any) {
@@ -53,7 +55,8 @@ class Handler {
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname)) element.remove();
             
             window.onresize = function() {Handler.update()};
-            window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);Observe.onWheel(event);};
+            window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);};
+            // window.onscroll = function(event:WheelEvent){Observe.onScroll(event);};
             window.addEventListener("popstate", function(event){Pages.popstate(event)})
             Pages.parseURL();
         }
@@ -97,7 +100,10 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);  
             }
-            handlerInstance.rootCell.coord.copyWithin(true);
+            if (handlerInstance.controlledBySomething)
+                handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
+            else 
+                handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
@@ -173,6 +179,7 @@ class Handler {
 
         // this part opens and/or closes the scrollbar overlay
         if (pxForPercent < 0) {
+            // console.log(pxForPercent)
             if (!overlay) {
                 displaygroup.overlay=new Overlay("ScrollBar",
                                                 `${displaygroup.label}_ScrollBar`,

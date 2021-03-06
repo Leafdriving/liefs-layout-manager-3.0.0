@@ -134,8 +134,8 @@ class Tree {
                 this.css = (this.css + " "+  (<Css>css).classname).trim();
         if ("string" in retArgs && retArgs.string.length > 1)
             this.css += " " + retArgs.string.splice(1).join(' ');
-
-        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, 2, 2);
+        // console.log(this.parentDisplayCell)
+        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, 2, 2);  ////////////////////////////////////// check this again!
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
 

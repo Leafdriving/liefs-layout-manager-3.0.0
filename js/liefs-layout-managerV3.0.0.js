@@ -175,14 +175,13 @@ class Coord {
     }
     copyWithin(...Arguments) {
         let possArgs = {};
-        let obj;
+        // let obj:Coord|Within;
         mf.applyArguments("Coord.copyWithin", Arguments, { isRoot: false }, Coord.CopyArgMap, possArgs);
         let isRoot = possArgs.isRoot;
-        if ("Within" in possArgs)
-            obj = possArgs["Within"];
-        if ("Coord" in possArgs)
-            obj = possArgs["Coord"];
+        // if ("Within" in possArgs) obj = possArgs["Within"];
+        // if ("Coord" in possArgs) obj = possArgs["Coord"];
         if (possArgs.isRoot) {
+            // console.log( JSON.stringify(this.within) )
             for (let key of ["x", "y", "width", "height"]) {
                 this.within[key] = this[key];
             }
@@ -622,7 +621,8 @@ class Handler {
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
                 element.remove();
             window.onresize = function () { Handler.update(); };
-            window.onwheel = function (event) { ScrollBar.onWheel(event); Observe.onWheel(event); };
+            window.onwheel = function (event) { ScrollBar.onWheel(event); };
+            // window.onscroll = function(event:WheelEvent){Observe.onScroll(event);};
             window.addEventListener("popstate", function (event) { Pages.popstate(event); });
             Pages.parseURL();
         }
@@ -673,7 +673,10 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
             }
-            handlerInstance.rootCell.coord.copyWithin(true);
+            if (handlerInstance.controlledBySomething)
+                handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
+            else
+                handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
@@ -745,6 +748,7 @@ class Handler {
         let overlay = displaygroup.overlay;
         // this part opens and/or closes the scrollbar overlay
         if (pxForPercent < 0) {
+            // console.log(pxForPercent)
             if (!overlay) {
                 displaygroup.overlay = new Overlay("ScrollBar", `${displaygroup.label}_ScrollBar`, displaygroup, totalFixedpx, maxpx);
             }
@@ -850,7 +854,8 @@ Handler.activeHandlers = [];
 Handler.defaults = {
     label: function () { return `handler_${pf.pad_with_zeroes(Handler.activeHandlers.length)}`; },
     cssString: " ",
-    addThisHandlerToStack: true
+    addThisHandlerToStack: true,
+    controlledBySomething: false,
 };
 Handler.argMap = {
     string: ["label"],
@@ -1860,7 +1865,8 @@ class Tree {
                 this.css = (this.css + " " + css.classname).trim();
         if ("string" in retArgs && retArgs.string.length > 1)
             this.css += " " + retArgs.string.splice(1).join(' ');
-        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, 2, 2);
+        // console.log(this.parentDisplayCell)
+        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, 2, 2); ////////////////////////////////////// check this again!
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
         if (this.t_instance && !this.rootTreeNode) {
@@ -2078,13 +2084,33 @@ class Observe {
         Observe.instances.push(this);
         let retArgs = pf.sortArgs(Arguments, "Observe");
         mf.applyArguments("Observe", Arguments, Observe.defaults, Observe.argMap, this);
-        console.log(`${this.label} Observe Created`);
-        //console.log(this.parentDisplayCell.htmlBlock.el);
-        let THIS = this;
-        // this.parentDisplayCell.htmlBlock.el.onscroll = function(event) {
-        //     let recObj = THIS.el.getBoundingClientRect(); 
-        //     console.log(recObj.x, recObj.y, recObj.width, recObj.height);
-        // }
+        // console.log(`${this.label} Observe Created`);
+        let observerInstance = this;
+        let handler = Handler.byLabel(observerInstance.label);
+        if (!handler.coord)
+            handler.coord = new Coord();
+        // put handler in stack if not there already (push Handler)
+        if (Handler.activeHandlers.indexOf(handler) == -1) {
+            Handler.activeHandlers.push(handler);
+        }
+        this.parentDisplayCell.htmlBlock.el.onscroll = function (event) { Observe.onScroll(event); };
+        handler.controlledBySomething = true;
+        this.parentDisplayCell.postRenderCallback = function (displaycell, parentDisplaygroup = undefined, index = undefined, derender = false) {
+            // console.log(displaycell.coord);
+            let dCoord = displaycell.coord;
+            let handler = Handler.byLabel(observerInstance.label);
+            let hCoord = handler.coord;
+            let bound = observerInstance.el.getBoundingClientRect();
+            // console.log(JSON.stringify(Handler.byLabel(observerInstance.label).coord));
+            hCoord.x = bound.x;
+            hCoord.y = bound.y;
+            hCoord.width = bound.width;
+            hCoord.height = bound.height;
+            hCoord.within.x = dCoord.x;
+            hCoord.within.y = dCoord.y;
+            hCoord.within.width = dCoord.width;
+            hCoord.within.height = dCoord.height;
+        };
     }
     static byLabel(label) {
         for (let key in Observe.instances)
@@ -2092,13 +2118,29 @@ class Observe {
                 return Observe.instances[key];
         return undefined;
     }
+    static onScroll(event) {
+        // console.log("Observe Wheel Event Fired!");
+        for (let index = 0; index < Observe.instances.length; index++) {
+            const observeInstance = Observe.instances[index];
+            observeInstance.parentDisplayCell.postRenderCallback(observeInstance.parentDisplayCell);
+            Handler.update();
+            // setTimeout(function(){ Handler.update(); }, 50);
+            // setTimeout(function(){ Handler.update(); }, 100);
+            // setTimeout(function(){ Handler.update(); }, 200);
+        }
+    }
     pop() {
         console.log(`Popping Observer ${this.label}`);
-        let index = Observe.instances.indexOf(this);
-        Observe.instances.splice(index, 1);
-    }
-    static onWheel(event) {
-        console.log("Observe Wheel Event Fired!");
+        // pop observer
+        let Oindex = Observe.instances.indexOf(this);
+        Observe.instances.splice(Oindex, 1);
+        // pop handler
+        let handler = Handler.byLabel(this.label);
+        let Hindex = Handler.activeHandlers.indexOf(handler);
+        if (Hindex > -1) {
+            Handler.update([handler], 0, true);
+            Handler.activeHandlers.splice(Hindex, 1);
+        }
     }
     static update() {
         let els = document.querySelectorAll("[parentof]");

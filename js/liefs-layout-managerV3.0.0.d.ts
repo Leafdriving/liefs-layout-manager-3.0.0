@@ -249,6 +249,7 @@ declare class Handler {
         label: () => string;
         cssString: string;
         addThisHandlerToStack: boolean;
+        controlledBySomething: boolean;
     };
     static argMap: {
         string: string[];
@@ -272,6 +273,7 @@ declare class Handler {
     addThisHandlerToStack: boolean;
     preRenderCallback: Function;
     postRenderCallback: Function;
+    controlledBySomething: boolean;
     constructor(...Arguments: any);
     pop(): Handler;
     toTop(): void;
@@ -724,7 +726,7 @@ declare class Observe {
     el: HTMLDivElement;
     parentDisplayCell: DisplayCell;
     constructor(...Arguments: any);
+    static onScroll(event: WheelEvent): void;
     pop(): void;
-    static onWheel(event: WheelEvent): void;
     static update(): void;
 }
