@@ -722,6 +722,7 @@ declare class Observe {
         HTMLDivElement: string[];
         DisplayCell: string[];
     };
+    static Os_ScrollbarSize: number;
     label: string;
     el: HTMLDivElement;
     parentDisplayCell: DisplayCell;

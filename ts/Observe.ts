@@ -14,6 +14,7 @@ class Observe {
         HTMLDivElement : ["el"],
         DisplayCell: ["parentDisplayCell"],
     }
+    static Os_ScrollbarSize = 15;
     label:string;
     el: HTMLDivElement;
     parentDisplayCell: DisplayCell;
@@ -35,7 +36,9 @@ class Observe {
 
         this.parentDisplayCell.postRenderCallback = function(displaycell: DisplayCell,
             parentDisplaygroup: DisplayGroup = undefined, index:number = undefined, derender:boolean = false){
-                // console.log(displaycell.coord);
+                // console.log(displaycell.label);
+                // console.log(displaycell.htmlBlock.el.clientHeight, displaycell.htmlBlock.el.scrollHeight);
+                let el = displaycell.htmlBlock.el
                 let dCoord = displaycell.coord;
                 let handler = Handler.byLabel(observerInstance.label);
                 let hCoord = handler.coord;
@@ -48,8 +51,8 @@ class Observe {
 
                 hCoord.within.x=dCoord.x;
                 hCoord.within.y=dCoord.y;
-                hCoord.within.width=dCoord.width;
-                hCoord.within.height=dCoord.height;
+                hCoord.within.width=dCoord.width - ((el.scrollHeight > el.clientHeight) ? Observe.Os_ScrollbarSize : 0 );
+                hCoord.within.height=dCoord.height- ((el.scrollWidth > el.clientWidth) ? Observe.Os_ScrollbarSize : 0 );
             }
     }
     static onScroll(event:WheelEvent) {

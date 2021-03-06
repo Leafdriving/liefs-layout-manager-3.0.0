@@ -2096,7 +2096,9 @@ class Observe {
         this.parentDisplayCell.htmlBlock.el.onscroll = function (event) { Observe.onScroll(event); };
         handler.controlledBySomething = true;
         this.parentDisplayCell.postRenderCallback = function (displaycell, parentDisplaygroup = undefined, index = undefined, derender = false) {
-            // console.log(displaycell.coord);
+            // console.log(displaycell.label);
+            // console.log(displaycell.htmlBlock.el.clientHeight, displaycell.htmlBlock.el.scrollHeight);
+            let el = displaycell.htmlBlock.el;
             let dCoord = displaycell.coord;
             let handler = Handler.byLabel(observerInstance.label);
             let hCoord = handler.coord;
@@ -2108,8 +2110,8 @@ class Observe {
             hCoord.height = bound.height;
             hCoord.within.x = dCoord.x;
             hCoord.within.y = dCoord.y;
-            hCoord.within.width = dCoord.width;
-            hCoord.within.height = dCoord.height;
+            hCoord.within.width = dCoord.width - ((el.scrollHeight > el.clientHeight) ? Observe.Os_ScrollbarSize : 0);
+            hCoord.within.height = dCoord.height - ((el.scrollWidth > el.clientWidth) ? Observe.Os_ScrollbarSize : 0);
         };
     }
     static byLabel(label) {
@@ -2180,3 +2182,4 @@ Observe.argMap = {
     HTMLDivElement: ["el"],
     DisplayCell: ["parentDisplayCell"],
 };
+Observe.Os_ScrollbarSize = 15;
