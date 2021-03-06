@@ -157,7 +157,14 @@ class Tree {
                     if (x2>max) max=x2;
                 }
                 let current = displaycell.coord.x + displaycell.coord.width;
-                displaycell.displaygroup.cellArray[0].dim = `${(current > max) ? current-2 : max}px`;
+                let dx = displaycell.coord.x;
+
+                displaycell.displaygroup.cellArray[0].dim = `${ (current > max) ? current - dx : max - dx}px`;
+
+                // displaycell.displaygroup.cellArray[0].dim = `${(current > max) ? current-2 : max}px`;  ///// BINGO!!!!!!!!!
+
+                // console.log(displaycell.label, displaycell.coord);
+                // console.log(displaycell.displaygroup.cellArray[0].dim)
             }
         }
         this.buildTreeNode(this.rootTreeNode, cellArray);

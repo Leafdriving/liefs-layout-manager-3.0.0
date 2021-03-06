@@ -22,5 +22,5 @@ var treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutt
     TI("Part 3", [TI("3a")]),
 ]);
 // Framework
-H("MainHandler", 2, v("Main Vertical", I("TitleBar", "30px", cssTitle), h("MainBody", 5, tree("TreeLabel", dragbar(I("MainTree", "", bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, cssNode), P("PAGES", I("Welcome", textBlack), I("Installation", textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+H("MainHandler", 4, v("Main Vertical", I("TitleBar", "30px", cssTitle), h("MainBody", 5, tree("TreeLabel", dragbar(I("MainTree", "", bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, cssNode), P("PAGES", I("Welcome", textBlack), I("Installation", textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
 H("SubHandler", h("SubHor", I("leftside", "leftside", bgRed), I("Rightside", "rightside", bgBlue)), false);

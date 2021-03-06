@@ -53,7 +53,7 @@ TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
 
 // Framework
 
-H("MainHandler", 2,
+H("MainHandler", 4,
   v("Main Vertical",
     I("TitleBar", "30px", cssTitle),
     h("MainBody", 5,
