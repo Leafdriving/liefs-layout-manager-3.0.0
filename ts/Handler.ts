@@ -94,7 +94,9 @@ class Handler {
         Handler.renderAgain = false;
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
-        for (let handlerInstance of ArrayofHandlerInstances) {
+        for (let index = 0; index < ArrayofHandlerInstances.length; index++) {
+            let handlerInstance = ArrayofHandlerInstances[index];
+        // for (let handlerInstance of ArrayofHandlerInstances) {
             if (handlerInstance.preRenderCallback) handlerInstance.preRenderCallback(handlerInstance);
             if (handlerInstance.coord) {
                 handlerInstance.rootCell.coord.copy(handlerInstance.coord);
@@ -118,9 +120,10 @@ class Handler {
 
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
         if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
+        if (derender) Observe.derender(displaycell);
         let pages = displaycell.pages;
         if (pages){
-            Pages.activePages.push(pages);  // this cant be good
+            Pages.activePages.push(pages);
             let evalCurrentPage:number = pages.eval();
             if (evalCurrentPage != pages.previousPage){ // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );

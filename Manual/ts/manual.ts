@@ -115,10 +115,6 @@ H("MainHandler", 4,
 );
 H("CBlock_001",
     codeblock("html", "javascript", "css"),
-    // h("SubHor",
-    //   I("leftside","leftside", bgRed),
-    //   I("Rightside","rightside", bgBlue),
-    // ),
     false,
     {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
 )

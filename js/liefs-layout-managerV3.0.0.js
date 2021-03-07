@@ -680,7 +680,9 @@ class Handler {
         Handler.renderAgain = false;
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
-        for (let handlerInstance of ArrayofHandlerInstances) {
+        for (let index = 0; index < ArrayofHandlerInstances.length; index++) {
+            let handlerInstance = ArrayofHandlerInstances[index];
+            // for (let handlerInstance of ArrayofHandlerInstances) {
             if (handlerInstance.preRenderCallback)
                 handlerInstance.preRenderCallback(handlerInstance);
             if (handlerInstance.coord) {
@@ -708,9 +710,11 @@ class Handler {
     static renderDisplayCell(displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
         if (displaycell.preRenderCallback)
             displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
+        if (derender)
+            Observe.derender(displaycell);
         let pages = displaycell.pages;
         if (pages) {
-            Pages.activePages.push(pages); // this cant be good
+            Pages.activePages.push(pages);
             let evalCurrentPage = pages.eval();
             if (evalCurrentPage != pages.previousPage) { // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
@@ -2143,10 +2147,10 @@ class t_ {
 }
 class Observe {
     constructor(...Arguments) {
+        this.derendering = false;
         Observe.instances.push(this);
         let retArgs = pf.sortArgs(Arguments, "Observe");
         mf.applyArguments("Observe", Arguments, Observe.defaults, Observe.argMap, this);
-        // console.log(`${this.label} Observe Created`);
         let observerInstance = this;
         let handler = Handler.byLabel(observerInstance.label);
         if (!handler.coord)
@@ -2158,14 +2162,11 @@ class Observe {
         this.parentDisplayCell.htmlBlock.el.onscroll = function (event) { Observe.onScroll(event); };
         handler.controlledBySomething = true;
         this.parentDisplayCell.postRenderCallback = function (displaycell, parentDisplaygroup = undefined, index = undefined, derender = false) {
-            // console.log(displaycell.label);
-            // console.log(displaycell.htmlBlock.el.clientHeight, displaycell.htmlBlock.el.scrollHeight);
             let el = displaycell.htmlBlock.el;
             let dCoord = displaycell.coord;
             let handler = Handler.byLabel(observerInstance.label);
             let hCoord = handler.coord;
             let bound = observerInstance.el.getBoundingClientRect();
-            // console.log(JSON.stringify(Handler.byLabel(observerInstance.label).coord));
             hCoord.x = bound.x;
             hCoord.y = bound.y;
             hCoord.width = bound.width;
@@ -2175,6 +2176,7 @@ class Observe {
             hCoord.within.width = dCoord.width - ((el.scrollHeight > el.clientHeight) ? Observe.Os_ScrollbarSize : 0);
             hCoord.within.height = dCoord.height - ((el.scrollWidth > el.clientWidth) ? Observe.Os_ScrollbarSize : 0);
         };
+        Handler.update();
     }
     static byLabel(label) {
         for (let key in Observe.instances)
@@ -2182,29 +2184,33 @@ class Observe {
                 return Observe.instances[key];
         return undefined;
     }
+    static derender(displaycell) {
+        let handler;
+        for (let index = 0; index < Observe.instances.length; index++) {
+            let observeInstance = Observe.instances[index];
+            if (observeInstance.parentDisplayCell == displaycell && !observeInstance.derendering) {
+                handler = Handler.byLabel(observeInstance.label);
+                let Hindex = Handler.activeHandlers.indexOf(handler);
+                if (Hindex > -1) {
+                    Handler.activeHandlers.splice(Hindex, 1);
+                }
+                displaycell.postRenderCallback = function () { };
+                observeInstance.derendering = true;
+                Handler.update([handler], 0, true);
+            }
+        }
+    }
     static onScroll(event) {
-        // console.log("Observe Wheel Event Fired!");
         for (let index = 0; index < Observe.instances.length; index++) {
             const observeInstance = Observe.instances[index];
             observeInstance.parentDisplayCell.postRenderCallback(observeInstance.parentDisplayCell);
             Handler.update();
-            // setTimeout(function(){ Handler.update(); }, 50);
-            // setTimeout(function(){ Handler.update(); }, 100);
-            // setTimeout(function(){ Handler.update(); }, 200);
         }
     }
     pop() {
-        console.log(`Popping Observer ${this.label}`);
         // pop observer
         let Oindex = Observe.instances.indexOf(this);
         Observe.instances.splice(Oindex, 1);
-        // pop handler
-        let handler = Handler.byLabel(this.label);
-        let Hindex = Handler.activeHandlers.indexOf(handler);
-        if (Hindex > -1) {
-            Handler.update([handler], 0, true);
-            Handler.activeHandlers.splice(Hindex, 1);
-        }
     }
     static update() {
         let els = document.querySelectorAll("[parentof]");

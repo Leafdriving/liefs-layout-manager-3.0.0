@@ -739,7 +739,9 @@ declare class Observe {
     label: string;
     el: HTMLDivElement;
     parentDisplayCell: DisplayCell;
+    derendering: boolean;
     constructor(...Arguments: any);
+    static derender(displaycell: DisplayCell): void;
     static onScroll(event: WheelEvent): void;
     pop(): void;
     static update(): void;

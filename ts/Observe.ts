@@ -18,12 +18,12 @@ class Observe {
     label:string;
     el: HTMLDivElement;
     parentDisplayCell: DisplayCell;
+    derendering: boolean = false;
 
     constructor(...Arguments: any) {
         Observe.instances.push(this);
         let retArgs : ArgsObj = pf.sortArgs(Arguments, "Observe");
         mf.applyArguments("Observe", Arguments, Observe.defaults, Observe.argMap, this);
-        // console.log(`${this.label} Observe Created`);
         let observerInstance = this;
         let handler = Handler.byLabel(observerInstance.label);
         if (!handler.coord) handler.coord = new Coord();
@@ -36,14 +36,12 @@ class Observe {
 
         this.parentDisplayCell.postRenderCallback = function(displaycell: DisplayCell,
             parentDisplaygroup: DisplayGroup = undefined, index:number = undefined, derender:boolean = false){
-                // console.log(displaycell.label);
-                // console.log(displaycell.htmlBlock.el.clientHeight, displaycell.htmlBlock.el.scrollHeight);
+
                 let el = displaycell.htmlBlock.el
                 let dCoord = displaycell.coord;
                 let handler = Handler.byLabel(observerInstance.label);
                 let hCoord = handler.coord;
                 let bound = observerInstance.el.getBoundingClientRect();
-                // console.log(JSON.stringify(Handler.byLabel(observerInstance.label).coord));
                 hCoord.x=bound.x;
                 hCoord.y=bound.y;
                 hCoord.width=bound.width;
@@ -54,31 +52,35 @@ class Observe {
                 hCoord.within.width=dCoord.width - ((el.scrollHeight > el.clientHeight) ? Observe.Os_ScrollbarSize : 0 );
                 hCoord.within.height=dCoord.height- ((el.scrollWidth > el.clientWidth) ? Observe.Os_ScrollbarSize : 0 );
             }
+        Handler.update()
+    }
+    static derender(displaycell:DisplayCell){
+        let handler:Handler;
+        for (let index = 0; index < Observe.instances.length; index++) {
+            let observeInstance = Observe.instances[index];
+            if (observeInstance.parentDisplayCell == displaycell && !observeInstance.derendering){
+                handler = Handler.byLabel(observeInstance.label);
+                let Hindex = Handler.activeHandlers.indexOf(handler)
+                if (Hindex > -1) {
+                    Handler.activeHandlers.splice(Hindex,1);
+                }
+                displaycell.postRenderCallback = function(){};
+                observeInstance.derendering = true;
+                Handler.update([handler], 0, true);
+            }
+        }
     }
     static onScroll(event:WheelEvent) {
-        // console.log("Observe Wheel Event Fired!");
         for (let index = 0; index < Observe.instances.length; index++) {
             const observeInstance = Observe.instances[index];
             observeInstance.parentDisplayCell.postRenderCallback(observeInstance.parentDisplayCell);
             Handler.update();
-            // setTimeout(function(){ Handler.update(); }, 50);
-            // setTimeout(function(){ Handler.update(); }, 100);
-            // setTimeout(function(){ Handler.update(); }, 200);
-            
         }
     }
     pop(){
-        console.log(`Popping Observer ${this.label}`);
         // pop observer
         let Oindex = Observe.instances.indexOf(this);
         Observe.instances.splice(Oindex, 1);
-        // pop handler
-        let handler = Handler.byLabel(this.label);
-        let Hindex = Handler.activeHandlers.indexOf(handler)
-        if (Hindex > -1) {
-            Handler.update([handler], 0, true);
-            Handler.activeHandlers.splice(Hindex,1);
-        }
     }
 
     static update(){
