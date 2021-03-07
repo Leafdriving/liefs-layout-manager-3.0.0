@@ -35,9 +35,9 @@ class pf {
     static errorHandling(message:string) {
         console.log(`Error Handeling Called\n${message}`);
     }
-    static isTypePx = function(it:any){if (typeof(it) == "string" && it.substr(-2) == "px") return "pixels"}
+    static isTypePx = function(it:any){if (typeof(it) == "string" && it.substr(-2) == "px") return true;return false;}
     static pxAsNumber = function(dim:string){ return +(dim.slice(0, -2));}
-    static isTypePercent = function(it:any){if (typeof(it) == "string" && it.substr(-1) == "%") return "percent"}
+    static isTypePercent = function(it:any){if (typeof(it) == "string" && it.substr(-1) == "%") return true;return false;}
     static percentAsNumber = function(dim:string){ return +(dim.slice(0, -1));}
     static isDim = function(it:any){if ((typeof(it) == "string") && (it.substr(-2) == "px" || it.substr(-1) == "%")) return "dim"}
     static isArray = function(it:any){if (typeof(it) == "object" && Array.isArray(it)) return "Array"}

@@ -22,6 +22,7 @@ class DragBar {
     }
     label:string;
     parentDisplaycell: DisplayCell;
+    parentDisplaygroup: DisplayGroup;
     displaycell: DisplayCell;
     startpos:number;
     min:number;
@@ -42,6 +43,9 @@ class DragBar {
 
         this.displaycell = I(`${this.label}_dragbar`,"",
             events({ondrag: {onDown :function(xmouseDiff:object){
+                                if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
+                                    dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
+                                }
                                 dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplaycell.dim);
                             },
                             onMove :function(xmouseDiff:object){
@@ -56,6 +60,8 @@ class DragBar {
         );
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+        // console.log(parentDisplaygroup);
+        if (!this.parentDisplaygroup) this.parentDisplaygroup = parentDisplaygroup;
         let dragbar:DragBar = this;
         let dragcell:DisplayCell = dragbar.displaycell;
         let ishor:boolean = parentDisplaygroup.ishor;

@@ -7,18 +7,25 @@ css("BlueBG", "background-color:blue;color:white", "background-color:red;color:w
 // css("redtext", "color:red")
 // css("whitebackground", "background-color:white")
 
-
-H("MainHandler", h("MainHor",
-    dragbar(I("one", "ONE", "BlueBG", "250px"), 100, 500),
-    v("split",
-        I("two", "TWO", "GreenBG", "400px"),
-        I("three", "THREE", "CyanBG", "400px"),
-        "250px"
-    ),
-    5
-    ),
-    10
+H("Main",
+    h("HBAR", 5,
+        dragbar(I("One","One", "CyanBG"), 50, 500),
+        I("Two","Two", "RedBG"),
+        I("Three","Four", "GreenBG"),
+    )
 )
+
+// H("MainHandler", h("MainHor",
+//     dragbar(I("one", "ONE", "BlueBG", "250px"), 100, 500),
+//     v("split",
+//         I("two", "TWO", "GreenBG", "400px"),
+//         I("three", "THREE", "CyanBG", "400px"),
+//         "250px"
+//     ),
+//     5
+//     ),
+//     10
+// )
 
 // H("MainHandler", h("MainHor",
 //     dragbar(I("one", "hi", "BlueBG", "250px"), 100, 500),

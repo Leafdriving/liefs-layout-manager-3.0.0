@@ -124,10 +124,10 @@ class pf {
     }
 }
 pf.isTypePx = function (it) { if (typeof (it) == "string" && it.substr(-2) == "px")
-    return "pixels"; };
+    return true; return false; };
 pf.pxAsNumber = function (dim) { return +(dim.slice(0, -2)); };
 pf.isTypePercent = function (it) { if (typeof (it) == "string" && it.substr(-1) == "%")
-    return "percent"; };
+    return true; return false; };
 pf.percentAsNumber = function (dim) { return +(dim.slice(0, -1)); };
 pf.isDim = function (it) { if ((typeof (it) == "string") && (it.substr(-2) == "px" || it.substr(-1) == "%"))
     return "dim"; };
@@ -563,6 +563,20 @@ class DisplayGroup {
                 return DisplayGroup.instances[key];
         return undefined;
     }
+    percentToPx(displaycell /* child in cellarray */) {
+        let percentAsNumber = pf.percentAsNumber(displaycell.dim);
+        let percentLeft = 100 - percentAsNumber;
+        displaycell.dim = `${(this.ishor) ? displaycell.coord.width : displaycell.coord.height}px`;
+        // loop cellarray to add percent where you can
+        for (let index = 0; index < this.cellArray.length; index++) {
+            let cellOfArray = this.cellArray[index];
+            if (pf.isTypePercent(cellOfArray.dim)) {
+                let thisPercent = pf.percentAsNumber(cellOfArray.dim);
+                thisPercent += (thisPercent / percentLeft) * percentAsNumber;
+                cellOfArray.dim = `${thisPercent}%`;
+            }
+        }
+    }
     totalPx() {
         let cellArray = this.cellArray;
         let totalFixedpx = 0;
@@ -641,9 +655,11 @@ class Handler {
     pop() { return Handler.pop(this); }
     toTop() {
         let index = Handler.activeHandlers.indexOf(this);
-        Handler.activeHandlers.splice(index, 1);
-        Handler.activeHandlers.push(this);
-        Handler.update();
+        if (index > -1 && index != Handler.activeHandlers.length - 1) {
+            Handler.activeHandlers.splice(index, 1);
+            Handler.activeHandlers.push(this);
+            Handler.update();
+        }
     }
     static pop(handlerInstance = Handler.activeHandlers[Handler.activeHandlers.length - 1]) {
         let index = Handler.activeHandlers.indexOf(handlerInstance);
@@ -783,7 +799,7 @@ class Handler {
             if (pf.isTypePercent(displaycell.dim)) {
                 DisplayCellPercent = pf.percentAsNumber(displaycell.dim);
                 totalPercent += DisplayCellPercent;
-                if (totalPercent <= 100) {
+                if (totalPercent <= 100.01) {
                     displayCellPx = Math.round(pxForPercent * DisplayCellPercent / 100.0);
                     pxForPercentLeft -= displayCellPx;
                 }
@@ -862,7 +878,7 @@ Handler.argMap = {
     number: ["handlerMargin"],
     Coord: ["coord"],
     function: ["preRenderCallback", "postRenderCallback"],
-    boolean: ["addThisHandlerToStack"]
+    boolean: ["addThisHandlerToStack", "controlledBySomething"]
 };
 Handler.renderNullObjects = false;
 Handler.argCustomTypes = [];
@@ -1280,6 +1296,9 @@ class DragBar {
         mf.applyArguments("DragBar", Arguments, DragBar.defaults, DragBar.argMap, this);
         // this.parentDisplaycell.dragbar = this;
         this.displaycell = I(`${this.label}_dragbar`, "", events({ ondrag: { onDown: function (xmouseDiff) {
+                    if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
+                        dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
+                    }
                     dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplaycell.dim);
                 },
                 onMove: function (xmouseDiff) {
@@ -1301,6 +1320,9 @@ class DragBar {
         return undefined;
     }
     render(displaycell, parentDisplaygroup, index, derender) {
+        // console.log(parentDisplaygroup);
+        if (!this.parentDisplaygroup)
+            this.parentDisplaygroup = parentDisplaygroup;
         let dragbar = this;
         let dragcell = dragbar.displaycell;
         let ishor = parentDisplaygroup.ishor;
@@ -1677,18 +1699,36 @@ class Modal {
             }
             else if (numberOfArgs == 4) {
                 this.coord.replace(numbers[0], numbers[1], numbers[2], numbers[3]);
+                // console.log(pf.viewport())
+                let vp = pf.viewport();
+                // this.coord.copyWithin(0, 0, vp[0], vp[1], true)
+                this.coord.within.x = 0;
+                this.coord.within.y = 0;
+                this.coord.within.width = vp[0];
+                this.coord.within.height = vp[1];
+                // console.log(this.coord)
             }
         }
         else {
             if (!this.coord) {
                 let vp = pf.viewport();
                 this.coord = new Coord(Math.round(vp[0] / 4), Math.round(vp[1] / 4), Math.round(vp[0] / 2), Math.round(vp[1] / 2));
+                this.coord.within.x = 0;
+                this.coord.within.y = 0;
+                this.coord.within.width = vp[0];
+                this.coord.within.height = vp[1];
             }
         }
         if (!this.minWidth)
             this.minWidth = this.coord.width;
         if (!this.minHeight)
             this.minHeight = this.coord.height;
+        if (!this.bodyCell) {
+            this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);
+        }
+        if (this.footerTitle) {
+            this.showFooter = true;
+        }
         this.build();
     }
     static byLabel(label) {
@@ -1697,15 +1737,20 @@ class Modal {
                 return Modal.instances[key];
         return undefined;
     }
+    setContent(html) {
+        this.bodyCell.htmlBlock.innerHTML = html;
+        Handler.update();
+    }
     buildHeader() {
         let THIS = this;
         if (!this.headerCell) {
             this.headerCell = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_headerTitle`, this.headerTitle, Modal.headerCss, events({ ondrag: { onDown: function () { return Modal.startMoveModal(THIS.handler); }, onMove: function (offset) { return Modal.moveModal(THIS.handler, offset); },
-                    onUp: function (offset) { console.log(offset, "up"); }
+                    // onUp: function(offset:object){/*console.log(offset,"up")*/}
+                    // onclick : function(){console.log("clicked")}
                 } })));
             if (this.showClose) {
                 this.headerCell.displaygroup.cellArray.push(I({ innerHTML: `<svg viewPort="0 0 ${this.headerHeight} ${this.headerHeight}" version="1.1"
-                              xmlns="http://www.w3.org/2000/svg">
+                              xmlns="http://www.w3.org/2000/svg" style="width: ${this.headerHeight}px; height: ${this.headerHeight}px;">
                               <line x1="3" y1="${this.headerHeight - 3}" 
                                 x2="${this.headerHeight - 3}" y2="3" 
                                 stroke="black" 
@@ -1723,10 +1768,17 @@ class Modal {
         if (!this.footerCell)
             this.footerCell = h(`${this.label}_footer`, `${this.footerHeight}px`, I(`${this.label}_footerTitle`, this.footerTitle, Modal.footerCss));
     }
+    buildOptions() {
+        if (!this.optionsCell)
+            this.optionsCell = h(`${this.label}_options`, `${this.optionsHeight}px`, I(`${this.label}_okButton`, `<button onclick="Modal.byLabel('${this.label}').hide()" >OK</button>`, Modal.optionsCss));
+    }
     buildFull() {
         this.fullCell = v(this.bodyCell);
         if (this.showHeader) {
             this.fullCell.displaygroup.cellArray.unshift(this.headerCell);
+        }
+        if (this.showOptions) {
+            this.fullCell.displaygroup.cellArray.push(this.optionsCell);
         }
         if (this.showFooter) {
             this.fullCell.displaygroup.cellArray.push(this.footerCell);
@@ -1735,9 +1787,11 @@ class Modal {
     build() {
         this.buildHeader();
         this.buildFooter();
+        this.buildOptions();
         this.buildFull();
-        this.handler = H(v(this.fullCell), this.coord);
-        this.handler.pop();
+        // console.log(JSON.stringify(this.coord));
+        this.handler = H(`${this.label}_h`, v(this.fullCell), this.coord, false);
+        // this.handler.pop();
     }
     show() {
         Handler.activeHandlers.push(this.handler);
@@ -1747,6 +1801,8 @@ class Modal {
         this.handler.pop();
     }
     static startMoveModal(handler) {
+        //console.log("clicked");
+        handler.toTop();
         Modal.x = handler.coord.x;
         Modal.y = handler.coord.y;
         // handler.toTop();
@@ -1773,14 +1829,16 @@ Modal.headerCss = css("HeaderTitle", "background-color:blue;color:white;text-ali
 Modal.footerCss = css("FooterTitle", "background-color:white;color:black;border: 1px solid black;");
 Modal.closeCss = css("Close", "background-color:white;color:black;border: 1px solid black;font-size: 20px;");
 Modal.closeCssHover = css("Close:hover", "background-color:red;color:white;border: 1px solid black;font-size: 20px;");
+Modal.bodyCss = css("ModalBody", "background-color:white;border: 1px solid black;");
+Modal.optionsCss = css("ModalOptions", "background-color:white;border: 1px solid black;display: flex;justify-content: center;align-items: center;");
 Modal.defaults = {
     label: function () { return `Modal_${pf.pad_with_zeroes(Modal.instances.length)}`; },
-    showHeader: true, showFooter: true, resizeable: true, showClose: true,
-    headerHeight: 20, footerHeight: 20, headerTitle: ""
+    showHeader: true, showFooter: false, resizeable: true, showClose: true, showOptions: true,
+    headerHeight: 20, footerHeight: 20, headerTitle: "", innerHTML: "", optionsHeight: 30,
 };
 Modal.argMap = {
-    string: ["label", "headerTitle", "footerTitle"],
-    DisplayCell: ["bodyCell", "headerCell", "footerCell"],
+    string: ["label", "headerTitle", "footerTitle", ["innerHTML"]],
+    DisplayCell: ["bodyCell", "headerCell", "footerCell", "optionsCell"],
     Coord: ["coord"]
 };
 class TreeNode {

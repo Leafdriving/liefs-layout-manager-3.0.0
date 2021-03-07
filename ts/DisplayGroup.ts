@@ -67,6 +67,21 @@ class DisplayGroup {
                 if (displaycell.dim == "") displaycell.dim = newDimValue;
         }
     }
+    percentToPx(displaycell:DisplayCell /* child in cellarray */) : void {
+        let percentAsNumber:number = pf.percentAsNumber(displaycell.dim);
+        let percentLeft = 100 - percentAsNumber;
+        displaycell.dim = `${(this.ishor) ? displaycell.coord.width : displaycell.coord.height}px`;
+        // loop cellarray to add percent where you can
+        for (let index = 0; index < this.cellArray.length; index++) {
+            let cellOfArray = this.cellArray[index];
+            if(pf.isTypePercent(cellOfArray.dim)) {
+                let thisPercent = pf.percentAsNumber(cellOfArray.dim);
+                thisPercent += (thisPercent/percentLeft)*percentAsNumber;
+                cellOfArray.dim = `${thisPercent}%`;
+            }
+        }
+        
+    }
     totalPx():number {
         let cellArray = this.cellArray;
         let totalFixedpx = 0

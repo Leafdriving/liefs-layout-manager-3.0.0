@@ -19,9 +19,9 @@ declare class pf {
     * @returns nothing
     */
     static errorHandling(message: string): void;
-    static isTypePx: (it: any) => string;
+    static isTypePx: (it: any) => boolean;
     static pxAsNumber: (dim: string) => number;
-    static isTypePercent: (it: any) => string;
+    static isTypePercent: (it: any) => boolean;
     static percentAsNumber: (dim: string) => number;
     static isDim: (it: any) => string;
     static isArray: (it: any) => string;
@@ -235,6 +235,7 @@ declare class DisplayGroup {
     renderStartIndex: number;
     renderEndIndex: number;
     constructor(...Arguments: any);
+    percentToPx(displaycell: DisplayCell): void;
     totalPx(): number;
 }
 declare function h(...Arguments: any): DisplayCell;
@@ -447,6 +448,7 @@ declare class DragBar {
     };
     label: string;
     parentDisplaycell: DisplayCell;
+    parentDisplaygroup: DisplayGroup;
     displaycell: DisplayCell;
     startpos: number;
     min: number;
@@ -571,18 +573,23 @@ declare class Modal {
     static footerCss: Css;
     static closeCss: Css;
     static closeCssHover: Css;
+    static bodyCss: Css;
+    static optionsCss: Css;
     static defaults: {
         label: () => string;
         showHeader: boolean;
         showFooter: boolean;
         resizeable: boolean;
         showClose: boolean;
+        showOptions: boolean;
         headerHeight: number;
         footerHeight: number;
         headerTitle: string;
+        innerHTML: string;
+        optionsHeight: number;
     };
     static argMap: {
-        string: string[];
+        string: (string | string[])[];
         DisplayCell: string[];
         Coord: string[];
     };
@@ -595,21 +602,27 @@ declare class Modal {
     headerCell: DisplayCell;
     bodyCell: DisplayCell;
     footerCell: DisplayCell;
+    optionsCell: DisplayCell;
     coord: Coord;
     headerHeight: number;
     footerHeight: number;
+    optionsHeight: number;
     showHeader: boolean;
     showClose: boolean;
     showFooter: boolean;
+    showOptions: boolean;
     resizeable: boolean;
     minWidth: number;
     minHeight: number;
     maxWidth: number;
     maxHeight: number;
     handler: Handler;
+    innerHTML: string;
     constructor(...Arguments: any);
+    setContent(html: string): void;
     buildHeader(): void;
     buildFooter(): void;
+    buildOptions(): void;
     buildFull(): void;
     build(): void;
     show(): void;

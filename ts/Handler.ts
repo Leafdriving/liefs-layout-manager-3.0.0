@@ -20,7 +20,7 @@ class Handler {
         number : ["handlerMargin"],
         Coord: ["coord"],
         function: ["preRenderCallback", "postRenderCallback"],
-        boolean: ["addThisHandlerToStack"]
+        boolean: ["addThisHandlerToStack", "controlledBySomething"]
     }
     static renderNullObjects:boolean = false;
     static argCustomTypes:Function[] = [];
@@ -68,9 +68,11 @@ class Handler {
     pop():Handler {return Handler.pop(this);}
     toTop(){ // doesn't work!
         let index = Handler.activeHandlers.indexOf(this);
-        Handler.activeHandlers.splice(index, 1);
-        Handler.activeHandlers.push(this);
-        Handler.update();
+        if (index > -1 && index != Handler.activeHandlers.length-1){
+            Handler.activeHandlers.splice(index, 1);
+            Handler.activeHandlers.push(this);
+            Handler.update();
+        }
     }
     static pop(handlerInstance = Handler.activeHandlers[ Handler.activeHandlers.length-1 ]): Handler {
         let index = Handler.activeHandlers.indexOf(handlerInstance);
@@ -224,7 +226,7 @@ class Handler {
             if (pf.isTypePercent(displaycell.dim)) {
                 DisplayCellPercent = pf.percentAsNumber(displaycell.dim);
                 totalPercent += DisplayCellPercent;
-                if (totalPercent <= 100) {
+                if (totalPercent <= 100.01) {
                     displayCellPx = Math.round(pxForPercent*DisplayCellPercent/100.0);
                     pxForPercentLeft -= displayCellPx;
                 } else {

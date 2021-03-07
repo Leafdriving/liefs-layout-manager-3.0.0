@@ -1,4 +1,44 @@
 declare var Prism:any;
+
+class CodeBlock {
+  static instances: CodeBlock[] = [];
+  static defaults = {
+    label : function(){return `CBlock_${pf.pad_with_zeroes(CodeBlock.instances.length)}`},
+    height:200,
+  }
+  static argMap = {
+    string : ["html", "javascript", "css"],
+    number : ["height"]
+  }
+
+  label:string;
+  html:string;
+  javascript:string;
+  css:string;
+
+  height:number;
+
+  displaycell: DisplayCell;
+
+  constructor(...Arguments:any){
+    CodeBlock.instances.push(this);
+    mf.applyArguments("CodeBlock", Arguments, CodeBlock.defaults, CodeBlock.argMap, this);
+    this.build();
+  }
+  build(){
+    this.displaycell =
+    h(`${this.label}_h`, `${this.height}`,
+      I(`${this.label}_html`,`<pre><code class="language-markup">${this.html}</code></pre>`),
+      I(`${this.label}_javascript`,`<pre><code class="language-javascript">${this.javascript}</code></pre>`),
+      I(`${this.label}_css`,`<pre><code class="language-css">${this.css}</code></pre>`),
+    );
+  }
+}
+function codeblock(...Arguments:any){
+  let cb = new CodeBlock(...Arguments);
+  return cb.displaycell;
+}
+
 // CSS
 
 new Css("h1",`border: 2px solid #1C6EA4;
@@ -71,11 +111,14 @@ H("MainHandler", 4,
     ),
   ),
   {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
+  //false,
 );
-H("SubHandler",
-    h("SubHor",
-      I("leftside","leftside", bgRed),
-      I("Rightside","rightside", bgBlue),
-    ),
+H("CBlock_001",
+    codeblock("html", "javascript", "css"),
+    // h("SubHor",
+    //   I("leftside","leftside", bgRed),
+    //   I("Rightside","rightside", bgBlue),
+    // ),
     false,
+    {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
 )
