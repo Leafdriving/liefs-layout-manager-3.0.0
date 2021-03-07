@@ -49,8 +49,10 @@ class Observe {
 
                 hCoord.within.x=dCoord.x;
                 hCoord.within.y=dCoord.y;
+
                 hCoord.within.width=dCoord.width - ((el.scrollHeight > el.clientHeight) ? Observe.Os_ScrollbarSize : 0 );
                 hCoord.within.height=dCoord.height- ((el.scrollWidth > el.clientWidth) ? Observe.Os_ScrollbarSize : 0 );
+
             }
         Handler.update()
     }
@@ -67,6 +69,8 @@ class Observe {
                 displaycell.postRenderCallback = function(){};
                 observeInstance.derendering = true;
                 Handler.update([handler], 0, true);
+                let Oindex = Observe.instances.indexOf(observeInstance);
+                Observe.instances.splice(Oindex, 1);
             }
         }
     }
@@ -77,12 +81,6 @@ class Observe {
             Handler.update();
         }
     }
-    pop(){
-        // pop observer
-        let Oindex = Observe.instances.indexOf(this);
-        Observe.instances.splice(Oindex, 1);
-    }
-
     static update(){
         let els:NodeListOf<Element> =  document.querySelectorAll("[parentof]");
         let activeLabels:string[] = [];
@@ -104,11 +102,11 @@ class Observe {
                 }
             } // else console.log(`Handler "${handlerLabel}" not found`);
         }
-        for (let index = 0; index < Observe.instances.length; index++) {  // now pop any Observers no longer needed
-            const observeInstance = Observe.instances[index];
-            if (activeLabels.indexOf(observeInstance.label) == -1) {
-                observeInstance.pop();
-            }
-        }
+        // for (let index = 0; index < Observe.instances.length; index++) {  // now pop any Observers no longer needed
+        //     const observeInstance = Observe.instances[index];
+        //     if (activeLabels.indexOf(observeInstance.label) == -1) {
+        //         observeInstance.pop();
+        //     }
+        // }
     }
 }

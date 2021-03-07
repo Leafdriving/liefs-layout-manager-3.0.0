@@ -743,6 +743,5 @@ declare class Observe {
     constructor(...Arguments: any);
     static derender(displaycell: DisplayCell): void;
     static onScroll(event: WheelEvent): void;
-    pop(): void;
     static update(): void;
 }
