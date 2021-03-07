@@ -177,6 +177,7 @@ declare function events(...arguments: any): Events;
 declare class DisplayCell {
     static instances: DisplayCell[];
     static byLabel(label: string): DisplayCell;
+    static minDisplayGroupSize: number;
     static defaults: {
         dim: string;
     };
@@ -198,6 +199,7 @@ declare class DisplayCell {
     pages: Pages;
     preRenderCallback: Function;
     postRenderCallback: Function;
+    minDisplayGroupSize: number;
     constructor(...Arguments: any);
     addOverlay(overlay: Overlay): void;
     hMenuBar(menuObj: object): void;
@@ -232,8 +234,6 @@ declare class DisplayGroup {
     dim: string;
     overlay: Overlay;
     offset: number;
-    renderStartIndex: number;
-    renderEndIndex: number;
     constructor(...Arguments: any);
     percentToPx(displaycell: DisplayCell): void;
     totalPx(): number;
@@ -482,6 +482,7 @@ declare class ScrollBar {
         boolean: string[];
     };
     static scrollWheelMult: number;
+    static triggerDistance: number;
     label: string;
     currentlyRendered: boolean;
     ishor: boolean;
@@ -494,6 +495,7 @@ declare class ScrollBar {
     maxOffset: number;
     offsetAtDrag: number;
     offsetPixelRatio: number;
+    parentDisplaygroup: DisplayGroup;
     displaygroup: DisplayGroup;
     displaycell: DisplayCell;
     leftArrow: DisplayCell;
@@ -739,7 +741,6 @@ declare class Observe {
     label: string;
     el: HTMLDivElement;
     parentDisplayCell: DisplayCell;
-    derendering: boolean;
     constructor(...Arguments: any);
     static derender(displaycell: DisplayCell): void;
     static onScroll(event: WheelEvent): void;

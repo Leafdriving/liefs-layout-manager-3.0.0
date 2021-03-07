@@ -6,6 +6,7 @@ class DisplayCell {
                 return DisplayCell.instances[key];
         return undefined;
     }
+    static minDisplayGroupSize = 100;
     static defaults = {
         // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
         dim : ""
@@ -19,7 +20,6 @@ class DisplayCell {
         Pages : ["pages"],
         // DragBar : ["dragbar"]
         function: ["preRenderCallback", "postRenderCallback"],
-
     }
 
     label:string;
@@ -33,6 +33,7 @@ class DisplayCell {
     pages : Pages;
     preRenderCallback: Function;
     postRenderCallback: Function;
+    minDisplayGroupSize: number;
 
     constructor(...Arguments: any) {
         DisplayCell.instances.push(this);

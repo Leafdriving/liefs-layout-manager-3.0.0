@@ -503,6 +503,7 @@ class DisplayCell {
     }
 }
 DisplayCell.instances = [];
+DisplayCell.minDisplayGroupSize = 100;
 DisplayCell.defaults = {
     // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
     dim: ""
@@ -522,6 +523,9 @@ function I(...Arguments) {
     return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
 }
 class DisplayGroup {
+    // minimumCellSize:number;
+    // renderStartIndex:number;
+    // renderEndIndex:number;
     constructor(...Arguments) {
         this.cellArray = [];
         this.htmlBlock = undefined;
@@ -597,6 +601,7 @@ DisplayGroup.defaults = {
     ishor: true,
     marginHor: DisplayGroup.defaultMargins,
     marginVer: DisplayGroup.defaultMargins,
+    // minimumCellSize : 300,
 };
 DisplayGroup.argMap = {
     string: ["label"],
@@ -1455,6 +1460,8 @@ class ScrollBar {
     render(displaycell, parentDisplaygroup, index, derender) {
         // console.log(this.label);
         // console.log(this);
+        if (!this.parentDisplaygroup)
+            this.parentDisplaygroup = parentDisplaygroup;
         let dgCoord = this.displaygroup.coord;
         // calculate outer scrollbar dimensions
         let x = (this.ishor) ? dgCoord.within.x : dgCoord.within.x + dgCoord.within.width - this.scrollWidth;
@@ -1519,10 +1526,13 @@ class ScrollBar {
         let dist;
         for (let instance of ScrollBar.instances) {
             if (instance.currentlyRendered) {
-                dist = ScrollBar.distOfMouseFromWheel(instance, event);
-                if (!selectedInstance || dist < minDist) {
-                    minDist = dist;
-                    selectedInstance = instance;
+                if (instance.parentDisplaygroup.coord.isPointIn(event.clientX, event.clientY)
+                    || instance.displaycell.coord.isPointIn(event.clientX, event.clientY)) {
+                    dist = ScrollBar.distOfMouseFromWheel(instance, event);
+                    if (!selectedInstance || dist < minDist) {
+                        minDist = dist;
+                        selectedInstance = instance;
+                    }
                 }
             }
         }
@@ -1548,6 +1558,7 @@ ScrollBar.argMap = {
     boolean: ["displayAtEnd"]
 };
 ScrollBar.scrollWheelMult = 4;
+ScrollBar.triggerDistance = 40;
 Overlay.classes["ScrollBar"] = ScrollBar;
 class Context {
     constructor(...Arguments) {
@@ -2146,8 +2157,8 @@ class t_ {
     constructor(...Arguments) { this.TreeNodeArguments = Arguments; }
 }
 class Observe {
+    // derendering: boolean = false;
     constructor(...Arguments) {
-        this.derendering = false;
         Observe.instances.push(this);
         let retArgs = pf.sortArgs(Arguments, "Observe");
         mf.applyArguments("Observe", Arguments, Observe.defaults, Observe.argMap, this);
@@ -2188,14 +2199,14 @@ class Observe {
         let handler;
         for (let index = 0; index < Observe.instances.length; index++) {
             let observeInstance = Observe.instances[index];
-            if (observeInstance.parentDisplayCell == displaycell && !observeInstance.derendering) {
+            if (observeInstance.parentDisplayCell == displaycell) {
                 handler = Handler.byLabel(observeInstance.label);
                 let Hindex = Handler.activeHandlers.indexOf(handler);
                 if (Hindex > -1) {
                     Handler.activeHandlers.splice(Hindex, 1);
                 }
                 displaycell.postRenderCallback = function () { };
-                observeInstance.derendering = true;
+                // observeInstance.derendering = true;
                 Handler.update([handler], 0, true);
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);

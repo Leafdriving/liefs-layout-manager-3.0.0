@@ -18,7 +18,7 @@ class Observe {
     label:string;
     el: HTMLDivElement;
     parentDisplayCell: DisplayCell;
-    derendering: boolean = false;
+    // derendering: boolean = false;
 
     constructor(...Arguments: any) {
         Observe.instances.push(this);
@@ -60,14 +60,14 @@ class Observe {
         let handler:Handler;
         for (let index = 0; index < Observe.instances.length; index++) {
             let observeInstance = Observe.instances[index];
-            if (observeInstance.parentDisplayCell == displaycell && !observeInstance.derendering){
+            if (observeInstance.parentDisplayCell == displaycell){
                 handler = Handler.byLabel(observeInstance.label);
                 let Hindex = Handler.activeHandlers.indexOf(handler)
                 if (Hindex > -1) {
                     Handler.activeHandlers.splice(Hindex,1);
                 }
                 displaycell.postRenderCallback = function(){};
-                observeInstance.derendering = true;
+                // observeInstance.derendering = true;
                 Handler.update([handler], 0, true);
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);

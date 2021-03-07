@@ -19,6 +19,7 @@ class ScrollBar {
         boolean: ["displayAtEnd"]
     }
     static scrollWheelMult = 4;
+    static triggerDistance = 40;
 
     label:string;
     currentlyRendered: boolean;
@@ -34,6 +35,7 @@ class ScrollBar {
     offsetAtDrag: number;
     offsetPixelRatio: number;
 
+    parentDisplaygroup: DisplayGroup;
     displaygroup: DisplayGroup;
 
     displaycell: DisplayCell;
@@ -139,6 +141,7 @@ class ScrollBar {
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         // console.log(this.label);
         // console.log(this);
+        if (!this.parentDisplaygroup) this.parentDisplaygroup = parentDisplaygroup;
         let dgCoord:Coord = this.displaygroup.coord;
         // calculate outer scrollbar dimensions
 
@@ -205,10 +208,13 @@ class ScrollBar {
         let dist:number;
         for (let instance of ScrollBar.instances) {
             if (instance.currentlyRendered) {
-                dist = ScrollBar.distOfMouseFromWheel(instance, event);
-                if (!selectedInstance || dist < minDist) {
-                    minDist = dist;
-                    selectedInstance = instance;
+                if (instance.parentDisplaygroup.coord.isPointIn(event.clientX, event.clientY)
+                    ||instance.displaycell.coord.isPointIn(event.clientX, event.clientY)) {
+                    dist = ScrollBar.distOfMouseFromWheel(instance, event);
+                    if (!selectedInstance || dist < minDist) {
+                        minDist = dist;
+                        selectedInstance = instance;
+                    }
                 }
             }
         }

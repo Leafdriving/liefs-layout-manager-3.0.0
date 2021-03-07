@@ -12,6 +12,7 @@ class DisplayGroup {
         ishor: true,
         marginHor : DisplayGroup.defaultMargins,
         marginVer : DisplayGroup.defaultMargins,
+        // minimumCellSize : 300,
     }
     static argMap = {
         string : ["label"],
@@ -32,9 +33,10 @@ class DisplayGroup {
     dim:string;
     overlay: Overlay = undefined;
     offset:number; //used by overlay
+    // minimumCellSize:number;
 
-    renderStartIndex:number;
-    renderEndIndex:number;
+    // renderStartIndex:number;
+    // renderEndIndex:number;
 
     constructor(...Arguments: any) {
         DisplayGroup.instances.push(this);
