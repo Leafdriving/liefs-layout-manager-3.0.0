@@ -38,6 +38,7 @@ class HtmlBlock {
     marginBottom : number;
     attributes:object = {};
     hideWidth: boolean;
+    minDisplayGroupSize: number;
     // tree:Tree;
     /**
      * Constructor Arguments include:

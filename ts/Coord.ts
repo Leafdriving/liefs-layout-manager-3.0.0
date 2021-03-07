@@ -11,6 +11,7 @@ class Within{
         return Coord.clipStyleString(this, sub);
     }
 }
+interface Offset {x:number;y:number;width:number;height:number}
 class Coord {
     static instances:Coord[] = [];
     static byLabel(label:string):Coord{
@@ -32,29 +33,40 @@ class Coord {
                          number : ["x", "y", "width", "height", "zindex"]};
 
     label:string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+
+    x_: number;
+    get x() {return this.x_ + ((this.offset) ? this.offset.x : 0);}
+    set x(x) {this.x_ = x}
+    y_: number;
+    get y() {return this.y_ + ((this.offset) ? this.offset.y : 0);}
+    set y(y) {this.y_ = y}
+    width_: number;
+    get width() {return this.width_ + ((this.offset) ? this.offset.width : 0);}
+    set width(width) {this.width_ = width}
+    height_: number;
+    get height() {return this.height_ + ((this.offset) ? this.offset.height : 0);}
+    set height(height) {this.height_ = height}
+
     zindex: number;
     within: Within = new Within();
     isRoot: boolean;
     hideWidth: boolean;
+    offset: Offset;
 
     constructor(...Arguments: any) {
         Coord.instances.push(this);
         mf.applyArguments("Coord", Arguments, Coord.defaults, Coord.argMap, this);
     }
+    setOffset(x=0, y=0, width=0, height=0){
+        if (x==0 && y==0 && width ==0 && height == 0) this.offset = undefined;
+        else this.offset = {x, y, width, height};
+    }
     copyWithin(...Arguments:any){
         let possArgs:{x?:number,y?:number,width?:number,height?:number, isRoot?:boolean, Coord?:Coord} = {};
-        // let obj:Coord|Within;
         mf.applyArguments("Coord.copyWithin", Arguments, {isRoot: false}, Coord.CopyArgMap, possArgs);
         let isRoot = possArgs.isRoot;
-        // if ("Within" in possArgs) obj = possArgs["Within"];
-        // if ("Coord" in possArgs) obj = possArgs["Coord"];
 
         if (possArgs.isRoot) {
-            // console.log( JSON.stringify(this.within) )
             for (let key of ["x", "y", "width", "height"]) {
                 this.within[key] = this[key];
             }
@@ -78,16 +90,6 @@ class Coord {
                 console.log("Boo");
             }
         }
-
-        // let x2= this.x + this.width;
-        // let y2= this.y + this.height;
-        // let wx2 = this.within.x + this.within.width;
-        // let wy2 = this.within.y + this.within.height;
-
-        // if (!this.label.includes("ScrollBar")){
-        //     console.log(`${this.label}\n${JSON.stringify(possArgs)}\nx=${this.x}\t x2=${x2}\t\t wx=${this.within.x}\t wx2=${wx2}\n`+
-        //             `y=${this.y}\t y2=${y2}\t\t wy=${this.within.y}\t wy2=${wy2}`);
-        // }
     }
     copy(...Arguments:any){
         // if no object, x, width, y, height, zindex
@@ -113,22 +115,8 @@ class Coord {
         this.height = (obj) ? obj.height - (possArgs.top + possArgs.bottom)
                            : ( (possArgs.height) ? possArgs.height : this.height );
         this.zindex = ("zindex" in possArgs) ? possArgs.zindex : Handler.currentZindex;
-        // this.zindex = ("Coord" in possArgs) 
-        //             ? possArgs.Coord.zindex + ( (possArgs.left==0 && possArgs.right==0 && possArgs.top==0 && possArgs.bottom==0) 
-        //                                   ? 0 : Handler.handlerZindexIncrement )
-        //             : ( (possArgs.zindex) ? possArgs.zindex : this.zindex);
-
-        // console.log("Copy");
-        // console.log(this); ////////////////////////////
     }
-    // copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
-    //     this.x = fromCoord.x +left;
-    //     this.y = fromCoord.y + top;
-    //     this.width = fromCoord.width - (left + right);
-    //     this.height = fromCoord.height - (top + bottom);
-    //     this.zindex = fromCoord.zindex + ((left==0 && right==0 && top==0 && bottom==0) ? 0 : Handler.handlerZindexIncrement);
-    //     if (this.within.x == undefined) this.copyWithin();
-    // }
+
     replace(x:number, y:number, width:number, height:number, zindex:number = undefined) {
         if (x != undefined) this.x = x;
         if (y != undefined)this.y = y;
@@ -145,14 +133,6 @@ class Coord {
     derender(derender:boolean) {return derender || this.isCoordCompletelyOutside()}
     clipStyleString(COORD: Coord) {
         return Coord.clipStyleString(this, COORD);
-        // let returnString:string = "";
-        // let left = (sub.x < this.x) ? (this.x-sub.x) : 0;
-        // let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
-        // let top = (sub.y < this.y) ? (this.y - sub.y) : 0;
-        // let bottom = (sub.y + sub.height > this.y + this.height) ? (sub.y + sub.height - (this.y + this.height)) : 0;
-        // if (left + right + top + bottom > 0)
-        //     returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
-        // return returnString;
     }
     newClipStyleString(WITHIN: Coord|Within = this.within) {
         return Coord.clipStyleString(WITHIN, this);
@@ -181,7 +161,6 @@ class Coord {
     newAsAttributeString(){
         return `left: ${this.x}px; top:${this.y}px;`
          +`${ (this.hideWidth) ? "" : "width:" + this.width + "px; " }`
-         // +`${ "width:" + this.width + "px; " }`
-        +`height:${this.height}px; z-index:${this.zindex};${this.newClipStyleString()}`
+        +`height:${this.height}px; z-index:${this.zindex + ((this.offset) ? 1 : 0)};${this.newClipStyleString()}`
     }
 }

@@ -98,12 +98,14 @@ class DisplayGroup {
     }
 }
 function h(...Arguments: any){
-    let displaycell = new DisplayCell(new DisplayGroup(...Arguments) );
-    if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
-    return displaycell;
+    return new DisplayCell( new DisplayGroup(...Arguments) )
+    // let displaycell = new DisplayCell(new DisplayGroup(...Arguments) );
+    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
+    // return displaycell;
 }
 function v(...Arguments: any){
-    let displaycell = new DisplayCell(new DisplayGroup(false, ...Arguments) );
-    if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
-    return displaycell;
+    return new DisplayCell( new DisplayGroup(false, ...Arguments) );
+    // let displaycell = new DisplayCell(new DisplayGroup(false, ...Arguments) );
+    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
+    // return displaycell;
 }

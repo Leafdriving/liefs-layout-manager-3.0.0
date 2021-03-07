@@ -6,7 +6,7 @@ class DisplayCell {
                 return DisplayCell.instances[key];
         return undefined;
     }
-    static minDisplayGroupSize = 100;
+    static minDisplayGroupSize = 100; // copied from htmlblock
     static defaults = {
         // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
         dim : ""
@@ -16,24 +16,37 @@ class DisplayCell {
         HtmlBlock : ["htmlBlock"],
         DisplayGroup: ["displaygroup"],
         dim : ["dim"],
-        // number : ["marginLeft", "marginRight", "marginTop", "marginBottom"],
         Pages : ["pages"],
-        // DragBar : ["dragbar"]
         function: ["preRenderCallback", "postRenderCallback"],
     }
 
     label:string;
     coord: Coord;
-    htmlBlock: HtmlBlock = undefined;
-    displaygroup: DisplayGroup = undefined;
-    // overlay: Overlay = undefined;
+
+    htmlBlock_ : HtmlBlock = undefined;
+    get htmlBlock(): HtmlBlock {return this.htmlBlock_;}
+    set htmlBlock(htmlblock) {
+        this.htmlBlock_ = htmlblock;
+        if (this.htmlBlock_.dim) this.dim = this.htmlBlock_.dim;
+        if (this.htmlBlock_.minDisplayGroupSize) this.minDisplayGroupSize = this.htmlBlock_.minDisplayGroupSize;
+    }
+    displaygroup_: DisplayGroup = undefined;
+    get displaygroup(): DisplayGroup {return this.displaygroup_}
+    set displaygroup(displaygroup) {
+        this.displaygroup_ = displaygroup;
+        if (this.displaygroup_.dim) this.dim = this.displaygroup_.dim;
+    }
+
     overlays: Overlay[] = [];
     dim: string;
     isRendered: boolean = false;
     pages : Pages;
     preRenderCallback: Function;
     postRenderCallback: Function;
-    minDisplayGroupSize: number;
+    minDisplayGroupSize_: number;
+    get minDisplayGroupSize(): number {return (this.minDisplayGroupSize_) ? this.minDisplayGroupSize_ : DisplayCell.minDisplayGroupSize;}
+    set minDisplayGroupSize(size) {this.minDisplayGroupSize = size}
+
 
     constructor(...Arguments: any) {
         DisplayCell.instances.push(this);
@@ -64,6 +77,7 @@ class DisplayCell {
     }
 }
 function I(...Arguments:any) : DisplayCell {
-    let newblock = new HtmlBlock(...Arguments);
-    return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
+    return new DisplayCell( new HtmlBlock(...Arguments) )
+    // let newblock = new HtmlBlock(...Arguments);
+    // return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
 }

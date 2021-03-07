@@ -15,7 +15,7 @@ var CodeBlock = /** @class */ (function () {
     }
     CodeBlock.prototype.build = function () {
         this.displaycell =
-            h(this.label + "_h", "" + this.height, I(this.label + "_html", "<pre><code class=\"language-markup\">" + this.html + "</code></pre>"), I(this.label + "_javascript", "<pre><code class=\"language-javascript\">" + this.javascript + "</code></pre>"), I(this.label + "_css", "<pre><code class=\"language-css\">" + this.css + "</code></pre>"));
+            h(this.label + "_h", "" + this.height, 2, I(this.label + "_html", "<pre><code class=\"language-markup\">" + this.html + "</code></pre>"), I(this.label + "_javascript", "<pre><code class=\"language-javascript\">" + this.javascript + "</code></pre>"), I(this.label + "_css", "<pre><code class=\"language-css\">" + this.css + "</code></pre>"));
     };
     CodeBlock.instances = [];
     CodeBlock.defaults = {

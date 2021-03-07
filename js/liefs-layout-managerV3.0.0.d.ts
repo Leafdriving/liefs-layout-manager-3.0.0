@@ -57,6 +57,12 @@ declare class Within {
     constructor(...Arguments: any);
     clipStyleString(sub: Coord): string;
 }
+interface Offset {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
 declare class Coord {
     static instances: Coord[];
     static byLabel(label: string): Coord;
@@ -80,15 +86,25 @@ declare class Coord {
         number: string[];
     };
     label: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+    x_: number;
+    get x(): number;
+    set x(x: number);
+    y_: number;
+    get y(): number;
+    set y(y: number);
+    width_: number;
+    get width(): number;
+    set width(width: number);
+    height_: number;
+    get height(): number;
+    set height(height: number);
     zindex: number;
     within: Within;
     isRoot: boolean;
     hideWidth: boolean;
+    offset: Offset;
     constructor(...Arguments: any);
+    setOffset(x?: number, y?: number, width?: number, height?: number): void;
     copyWithin(...Arguments: any): void;
     copy(...Arguments: any): void;
     replace(x: number, y: number, width: number, height: number, zindex?: number): void;
@@ -134,6 +150,7 @@ declare class HtmlBlock {
     marginBottom: number;
     attributes: object;
     hideWidth: boolean;
+    minDisplayGroupSize: number;
     /**
      * Constructor Arguments include:
      *
@@ -191,15 +208,21 @@ declare class DisplayCell {
     };
     label: string;
     coord: Coord;
-    htmlBlock: HtmlBlock;
-    displaygroup: DisplayGroup;
+    htmlBlock_: HtmlBlock;
+    get htmlBlock(): HtmlBlock;
+    set htmlBlock(htmlblock: HtmlBlock);
+    displaygroup_: DisplayGroup;
+    get displaygroup(): DisplayGroup;
+    set displaygroup(displaygroup: DisplayGroup);
     overlays: Overlay[];
     dim: string;
     isRendered: boolean;
     pages: Pages;
     preRenderCallback: Function;
     postRenderCallback: Function;
-    minDisplayGroupSize: number;
+    minDisplayGroupSize_: number;
+    get minDisplayGroupSize(): number;
+    set minDisplayGroupSize(size: number);
     constructor(...Arguments: any);
     addOverlay(overlay: Overlay): void;
     hMenuBar(menuObj: object): void;

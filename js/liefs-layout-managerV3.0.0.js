@@ -173,15 +173,25 @@ class Coord {
                 return Coord.instances[key];
         return undefined;
     }
+    get x() { return this.x_ + ((this.offset) ? this.offset.x : 0); }
+    set x(x) { this.x_ = x; }
+    get y() { return this.y_ + ((this.offset) ? this.offset.y : 0); }
+    set y(y) { this.y_ = y; }
+    get width() { return this.width_ + ((this.offset) ? this.offset.width : 0); }
+    set width(width) { this.width_ = width; }
+    get height() { return this.height_ + ((this.offset) ? this.offset.height : 0); }
+    set height(height) { this.height_ = height; }
+    setOffset(x = 0, y = 0, width = 0, height = 0) {
+        if (x == 0 && y == 0 && width == 0 && height == 0)
+            this.offset = undefined;
+        else
+            this.offset = { x, y, width, height };
+    }
     copyWithin(...Arguments) {
         let possArgs = {};
-        // let obj:Coord|Within;
         mf.applyArguments("Coord.copyWithin", Arguments, { isRoot: false }, Coord.CopyArgMap, possArgs);
         let isRoot = possArgs.isRoot;
-        // if ("Within" in possArgs) obj = possArgs["Within"];
-        // if ("Coord" in possArgs) obj = possArgs["Coord"];
         if (possArgs.isRoot) {
-            // console.log( JSON.stringify(this.within) )
             for (let key of ["x", "y", "width", "height"]) {
                 this.within[key] = this[key];
             }
@@ -207,14 +217,6 @@ class Coord {
                 console.log("Boo");
             }
         }
-        // let x2= this.x + this.width;
-        // let y2= this.y + this.height;
-        // let wx2 = this.within.x + this.within.width;
-        // let wy2 = this.within.y + this.within.height;
-        // if (!this.label.includes("ScrollBar")){
-        //     console.log(`${this.label}\n${JSON.stringify(possArgs)}\nx=${this.x}\t x2=${x2}\t\t wx=${this.within.x}\t wx2=${wx2}\n`+
-        //             `y=${this.y}\t y2=${y2}\t\t wy=${this.within.y}\t wy2=${wy2}`);
-        // }
     }
     copy(...Arguments) {
         // if no object, x, width, y, height, zindex
@@ -242,21 +244,7 @@ class Coord {
         this.height = (obj) ? obj.height - (possArgs.top + possArgs.bottom)
             : ((possArgs.height) ? possArgs.height : this.height);
         this.zindex = ("zindex" in possArgs) ? possArgs.zindex : Handler.currentZindex;
-        // this.zindex = ("Coord" in possArgs) 
-        //             ? possArgs.Coord.zindex + ( (possArgs.left==0 && possArgs.right==0 && possArgs.top==0 && possArgs.bottom==0) 
-        //                                   ? 0 : Handler.handlerZindexIncrement )
-        //             : ( (possArgs.zindex) ? possArgs.zindex : this.zindex);
-        // console.log("Copy");
-        // console.log(this); ////////////////////////////
     }
-    // copy(fromCoord: Coord, left:number=0, top:number=0, right:number=0, bottom:number=0) {
-    //     this.x = fromCoord.x +left;
-    //     this.y = fromCoord.y + top;
-    //     this.width = fromCoord.width - (left + right);
-    //     this.height = fromCoord.height - (top + bottom);
-    //     this.zindex = fromCoord.zindex + ((left==0 && right==0 && top==0 && bottom==0) ? 0 : Handler.handlerZindexIncrement);
-    //     if (this.within.x == undefined) this.copyWithin();
-    // }
     replace(x, y, width, height, zindex = undefined) {
         if (x != undefined)
             this.x = x;
@@ -278,14 +266,6 @@ class Coord {
     derender(derender) { return derender || this.isCoordCompletelyOutside(); }
     clipStyleString(COORD) {
         return Coord.clipStyleString(this, COORD);
-        // let returnString:string = "";
-        // let left = (sub.x < this.x) ? (this.x-sub.x) : 0;
-        // let right = (sub.x + sub.width > this.x + this.width) ? (sub.x + sub.width - (this.x + this.width)) : 0;
-        // let top = (sub.y < this.y) ? (this.y - sub.y) : 0;
-        // let bottom = (sub.y + sub.height > this.y + this.height) ? (sub.y + sub.height - (this.y + this.height)) : 0;
-        // if (left + right + top + bottom > 0)
-        //     returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
-        // return returnString;
     }
     newClipStyleString(WITHIN = this.within) {
         return Coord.clipStyleString(WITHIN, this);
@@ -315,8 +295,7 @@ class Coord {
     newAsAttributeString() {
         return `left: ${this.x}px; top:${this.y}px;`
             + `${(this.hideWidth) ? "" : "width:" + this.width + "px; "}`
-            // +`${ "width:" + this.width + "px; " }`
-            + `height:${this.height}px; z-index:${this.zindex};${this.newClipStyleString()}`;
+            + `height:${this.height}px; z-index:${this.zindex + ((this.offset) ? 1 : 0)};${this.newClipStyleString()}`;
     }
 }
 Coord.instances = [];
@@ -465,9 +444,8 @@ Events.argMap = {
 function events(...arguments) { return new Events(...arguments); }
 class DisplayCell {
     constructor(...Arguments) {
-        this.htmlBlock = undefined;
-        this.displaygroup = undefined;
-        // overlay: Overlay = undefined;
+        this.htmlBlock_ = undefined;
+        this.displaygroup_ = undefined;
         this.overlays = [];
         this.isRendered = false;
         DisplayCell.instances.push(this);
@@ -492,6 +470,22 @@ class DisplayCell {
                 return DisplayCell.instances[key];
         return undefined;
     }
+    get htmlBlock() { return this.htmlBlock_; }
+    set htmlBlock(htmlblock) {
+        this.htmlBlock_ = htmlblock;
+        if (this.htmlBlock_.dim)
+            this.dim = this.htmlBlock_.dim;
+        if (this.htmlBlock_.minDisplayGroupSize)
+            this.minDisplayGroupSize = this.htmlBlock_.minDisplayGroupSize;
+    }
+    get displaygroup() { return this.displaygroup_; }
+    set displaygroup(displaygroup) {
+        this.displaygroup_ = displaygroup;
+        if (this.displaygroup_.dim)
+            this.dim = this.displaygroup_.dim;
+    }
+    get minDisplayGroupSize() { return (this.minDisplayGroupSize_) ? this.minDisplayGroupSize_ : DisplayCell.minDisplayGroupSize; }
+    set minDisplayGroupSize(size) { this.minDisplayGroupSize = size; }
     addOverlay(overlay) { this.overlays.push(overlay); }
     hMenuBar(menuObj) {
         menuObj["launchcell"] = this;
@@ -503,7 +497,7 @@ class DisplayCell {
     }
 }
 DisplayCell.instances = [];
-DisplayCell.minDisplayGroupSize = 100;
+DisplayCell.minDisplayGroupSize = 100; // copied from htmlblock
 DisplayCell.defaults = {
     // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
     dim: ""
@@ -513,14 +507,13 @@ DisplayCell.argMap = {
     HtmlBlock: ["htmlBlock"],
     DisplayGroup: ["displaygroup"],
     dim: ["dim"],
-    // number : ["marginLeft", "marginRight", "marginTop", "marginBottom"],
     Pages: ["pages"],
-    // DragBar : ["dragbar"]
     function: ["preRenderCallback", "postRenderCallback"],
 };
 function I(...Arguments) {
-    let newblock = new HtmlBlock(...Arguments);
-    return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
+    return new DisplayCell(new HtmlBlock(...Arguments));
+    // let newblock = new HtmlBlock(...Arguments);
+    // return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
 }
 class DisplayGroup {
     // minimumCellSize:number;
@@ -612,16 +605,16 @@ DisplayGroup.argMap = {
 };
 DisplayGroup.argCustomTypes = [];
 function h(...Arguments) {
-    let displaycell = new DisplayCell(new DisplayGroup(...Arguments));
-    if (displaycell.displaygroup.dim)
-        displaycell.dim = displaycell.displaygroup.dim;
-    return displaycell;
+    return new DisplayCell(new DisplayGroup(...Arguments));
+    // let displaycell = new DisplayCell(new DisplayGroup(...Arguments) );
+    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
+    // return displaycell;
 }
 function v(...Arguments) {
-    let displaycell = new DisplayCell(new DisplayGroup(false, ...Arguments));
-    if (displaycell.displaygroup.dim)
-        displaycell.dim = displaycell.displaygroup.dim;
-    return displaycell;
+    return new DisplayCell(new DisplayGroup(false, ...Arguments));
+    // let displaycell = new DisplayCell(new DisplayGroup(false, ...Arguments) );
+    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
+    // return displaycell;
 }
 class Handler {
     constructor(...Arguments) {
