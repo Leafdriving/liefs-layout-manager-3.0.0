@@ -105,6 +105,7 @@ declare class Coord {
     offset: Offset;
     constructor(...Arguments: any);
     setOffset(x?: number, y?: number, width?: number, height?: number): void;
+    copyWithin(...Arguments: any): void;
     copy(...Arguments: any): void;
     replace(x: number, y: number, width: number, height: number, zindex?: number): void;
     isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
