@@ -195,37 +195,35 @@ class Coord {
         else
             this.offset = { x, y, width, height };
     }
-    copyWithin(...Arguments) {
-        let possArgs = {};
-        mf.applyArguments("Coord.copyWithin", Arguments, { isRoot: false }, Coord.CopyArgMap, possArgs);
-        let isRoot = possArgs.isRoot;
-        if (possArgs.isRoot) {
-            for (let key of ["x", "y", "width", "height"]) {
-                this.within[key] = this[key];
-            }
-        }
-        else {
-            if ("Coord" in possArgs) {
-                let coord = possArgs.Coord;
-                for (let key of ["x", "y", "width", "height"]) {
-                    this.within[key] = coord.within[key];
-                }
-                let x = this.x, y = this.y, width = this.width, height = this.height, x2 = x + width, y2 = y + height;
-                let wx = this.within.x, wy = this.within.y, wwidth = this.within.width, wheight = this.within.height, wx2 = wx + wwidth, wy2 = wy + wheight;
-                let bx = (x > wx) ? x : wx;
-                let sx2 = (x2 < wx2) ? x2 : wx2;
-                let by = (y > wy) ? y : wy;
-                let sy2 = (y2 < wy2) ? y2 : wy2;
-                this.within.x = bx;
-                this.within.width = sx2 - bx;
-                this.within.y = by;
-                this.within.height = sy2 - by;
-            }
-            else {
-                console.log("Boo");
-            }
-        }
-    }
+    // copyWithin(...Arguments:any){
+    //     let possArgs:{x?:number,y?:number,width?:number,height?:number, isRoot?:boolean, Coord?:Coord} = {};
+    //     mf.applyArguments("Coord.copyWithin", Arguments, {isRoot: false}, Coord.CopyArgMap, possArgs);
+    //     let isRoot = possArgs.isRoot;
+    //     if (possArgs.isRoot) {
+    //         for (let key of ["x", "y", "width", "height"]) {
+    //             this.within[key] = this[key];
+    //         }
+    //     } else {
+    //         if ("Coord" in possArgs) {
+    //             let coord = possArgs.Coord
+    //             for (let key of ["x", "y", "width", "height"]) {
+    //                 this.within[key] = coord.within[key];
+    //             }
+    //             let x=this.x, y=this.y, width=this.width, height=this.height, x2=x+width, y2=y+height;
+    //             let wx=this.within.x, wy=this.within.y, wwidth=this.within.width, wheight=this.within.height, wx2=wx+wwidth, wy2=wy+wheight;
+    //             let bx = (x > wx) ? x : wx;
+    //             let sx2 = (x2 < wx2) ? x2 : wx2;
+    //             let by = (y > wy) ? y : wy;
+    //             let sy2 = (y2 < wy2) ? y2 : wy2;
+    //             this.within.x = bx;
+    //             this.within.width = sx2-bx;
+    //             this.within.y = by;
+    //             this.within.height = sy2-by;
+    //         } else {
+    //             console.log("Boo");
+    //         }
+    //     }
+    // }
     copy(...Arguments) {
         // if no object, x, width, y, height, zindex
         // if object left, top, right, bottom, zindex
