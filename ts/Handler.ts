@@ -119,6 +119,11 @@ class Handler {
     }
 
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
+        // if (displaycell.label == "Example01_javascript") {
+        //     let co = displaycell.coord
+        //     console.log(`base    x= ${co.x} y= ${co.y} width = ${co.width} height = ${co.height}`);
+        //     console.log(`within  x= ${co.within.x} y= ${co.within.y} width = ${co.within.width} height = ${co.within.height}`);
+        // }
         if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         if (derender) Observe.derender(displaycell);
         let pages = displaycell.pages;
@@ -315,8 +320,15 @@ class Handler {
         let htmlBlock = displaycell.htmlBlock;
         let el:HTMLElement = pf.elExists(displaycell.label);
         let alreadyexists:boolean = (el) ? true : false;
+        // if (htmlBlock.label == "Example01_javascript"){
+        //     console.log(htmlBlock);
+        //     console.log("Already Exists: "+alreadyexists)
+        // }
 
+        // let derenderPre = derender;
         derender = displaycell.coord.derender( derender );
+        // if (derenderPre == false && derender == true)
+        //      console.log(displaycell.label + "out of zone", displaycell.coord);
 
         let isNulDiv = (htmlBlock.css.trim() == "" &&
                         htmlBlock.innerHTML.trim() == "" &&
@@ -325,7 +337,7 @@ class Handler {
 
         if (derender || isNulDiv) {
             if (alreadyexists) el.remove();
-            htmlBlock.el = undefined;
+            // htmlBlock.el = undefined;
         } else {
             if (!alreadyexists) el = document.createElement(htmlBlock.tag);
             pf.setAttrib(el, "id", displaycell.label);

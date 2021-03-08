@@ -17,6 +17,10 @@ class CodeBlock {
   javascriptForEval:string;
   css:string;
 
+  htmlDisplayCell: DisplayCell;
+  javascriptDisplayCell: DisplayCell;
+  evalDisplayCell: DisplayCell;
+
   height:number;
 
   displaycell: DisplayCell;
@@ -42,30 +46,46 @@ class CodeBlock {
   this.build();
   }
   build(){
+    this.htmlDisplayCell = 
+      v(`${this.label}_v1`,
+        I(`${this.label}_html_label`,`HTML`, "20px", centerText),
+        I(`${this.label}_html`,`<pre><code class="language-markup">${this.html}</code></pre>`),
+      );
+    this.javascriptDisplayCell = 
+      v(`${this.label}_v2`,
+        I(`${this.label}_javascript_label`,`Javascript`, "20px", centerText),
+        I(`${this.label}_javascript`,`<pre><code class="language-javascript">${this.javascript}</code></pre>`),
+      );
+    this.evalDisplayCell =
+      v(`${this.label}_v3`,
+        I(`${this.label}_output_label`,`Rendered`, "20px", centerText),
+        eval(this.javascriptForEval),
+      );
+    let all3 =
+      h(`${this.label}_h`, `${this.height}`, 2,
+        this.htmlDisplayCell,
+        this.javascriptDisplayCell,
+        this.evalDisplayCell,
+      );
+
     this.displaycell =
     v(`${this.label}_v0`,
       h(`${this.label}_buttons`, "20px", 4,
-        I(`${this.label}_b1`,"<button>Show all 3 Inline</button>", centerButton),
-        I(`${this.label}_b2`,"<button>Show Html Only</button>", centerButton),
-        I(`${this.label}_b3`,"<button>Show Javascript Only</button>", centerButton),
-        I(`${this.label}_b4`,"<button>Show Rendered Only</button>", centerButton),
+        I(`${this.label}_b1`,"Show all 3 Inline", centerButton , Pages.button(`${this.label}_pages`, 0) ),
+        I(`${this.label}_b2`,"Show Html Only", centerButton, Pages.button(`${this.label}_pages`, 1)),
+        I(`${this.label}_b3`,"Show Javascript Only", centerButton, Pages.button(`${this.label}_pages`, 2)),
+        I(`${this.label}_b4`,"Show Rendered Only", centerButton, Pages.button(`${this.label}_pages`, 3)),
       ),
-      h(`${this.label}_h`, `${this.height}`, 2,
-        v(`${this.label}_v1`,
-          I(`${this.label}_html_label`,`HTML`, "20px", centerText),
-          I(`${this.label}_html`,`<pre><code class="language-markup">${this.html}</code></pre>`),
-        ),
 
-        v(`${this.label}_v2`,
-          I(`${this.label}_javascript_label`,`Javascript`, "20px", centerText),
-          I(`${this.label}_javascript`,`<pre><code class="language-javascript">${this.javascript}</code></pre>`),
-        ),
-        v(`${this.label}_v3`,
-          I(`${this.label}_output_label`,`Rendered`, "20px", centerText),
-          eval(this.javascriptForEval),
-          // I(`${this.label}_output`,`OUTPUT`),
-        ),
-      ),
+      P(`${this.label}_pages`, // 3,
+        all3,
+        this.htmlDisplayCell,
+        this.javascriptDisplayCell,
+        this.evalDisplayCell
+      )
+
+
+      // all3,
     );
   }
 }
@@ -111,7 +131,14 @@ let cssTitle = css("title", "background-color:blue;color:white;text-align: cente
 let cssBold = css("bold", "text-decoration: underline;font-weight:bold;background-color: yellow;")
 
 let centerText = css("centerText", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: blue;color:white;font-weight: bold;`);
-let centerButton = css("centerButton", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: pink;color:white;font-weight: bold;`);
+let centerButton = css("centerButton",
+`display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #ADD8E6;`
++`color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
+`display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #839ae6;`
++`color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
+`display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #4D4DFF;`
++`color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`
+);
 
 // Build Tree
 
