@@ -6,7 +6,7 @@ class DisplayCell {
                 return DisplayCell.instances[key];
         return undefined;
     }
-    static minDisplayGroupSize = 100; // copied from htmlblock
+    static minDisplayGroupSize = 200; // copied from htmlblock
     static defaults = {
         // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
         dim : ""

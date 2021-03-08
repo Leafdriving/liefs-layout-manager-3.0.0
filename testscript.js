@@ -10,7 +10,7 @@ css("BlueBG", "background-color:blue;color:white", "background-color:red;color:w
 H("Main",
     h("HBAR", 5,
         dragbar(I("One","One", "CyanBG"), 50, 500),
-        I("Two","Two", "RedBG"),
+        I("Two","Two", "RedBG", "20%"),
         I("Three","Four", "GreenBG"),
     )
 )

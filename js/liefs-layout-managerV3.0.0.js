@@ -54,7 +54,15 @@ class pf {
         return returnObject;
     }
     static ifObjectMergeWithDefaults(retArgs, defaults) {
-        return ("object" in retArgs) ? pf.mergeObjects(defaults, retArgs["object"][0]) : defaults;
+        if ("object" in retArgs) {
+            let returnObj = defaults;
+            for (let key in retArgs["object"]) {
+                returnObj = pf.mergeObjects(returnObj, retArgs["object"][key]);
+            }
+            return returnObj;
+        }
+        return defaults;
+        // return ("object" in retArgs) ? pf.mergeObjects(defaults, retArgs["object"][0]) : defaults;
     }
     static sortArgs(Args, // 1st argument is a list of args.
     label = "unlabeled", // 2nd argument is a debug label
@@ -497,7 +505,7 @@ class DisplayCell {
     }
 }
 DisplayCell.instances = [];
-DisplayCell.minDisplayGroupSize = 100; // copied from htmlblock
+DisplayCell.minDisplayGroupSize = 200; // copied from htmlblock
 DisplayCell.defaults = {
     // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
     dim: ""
@@ -574,7 +582,7 @@ class DisplayGroup {
             }
         }
     }
-    totalPx() {
+    totalPx(addMin = false) {
         let cellArray = this.cellArray;
         let totalFixedpx = 0;
         for (let displaycell of cellArray) {
@@ -583,6 +591,8 @@ class DisplayGroup {
             }
             if (pf.isTypePx(displaycell.dim))
                 totalFixedpx += pf.pxAsNumber(displaycell.dim);
+            else if (addMin)
+                totalFixedpx += displaycell.minDisplayGroupSize;
         }
         return totalFixedpx;
     }
@@ -764,6 +774,65 @@ class Handler {
         let displayCellPx;
         let pxForPercentLeft = pxForPercent;
         let overlay = displaygroup.overlay;
+        // create dim array;
+        // let isValid = true;
+        let dimArray = [];
+        // let dimArrayTotal = 0;
+        // create dim array - Initialize.
+        for (let index = 0; index < cellArraylength; index++) {
+            let displaycell = displaygroup.cellArray[index];
+            let dim = displaycell.dim;
+            let min = ((pf.isTypePx(displaycell.dim)) ? pf.pxAsNumber(displaycell.dim) : displaycell.minDisplayGroupSize);
+            let px = (pf.isTypePx(displaycell.dim) ? pf.pxAsNumber(displaycell.dim) : pf.percentAsNumber(displaycell.dim) * pxForPercent / 100);
+            // dimArrayTotal += px;            
+            dimArray.push({ dim, min, px });
+        }
+        // loop until all % are worked out
+        let percentReballancingRequired;
+        let dimArrayTotal;
+        do {
+            // If % less than min... assign it min
+            percentReballancingRequired = false;
+            let fixedPixels = 0;
+            dimArrayTotal = 0;
+            for (let index = 0; index < dimArray.length; index++) {
+                let dimObj = dimArray[index];
+                if (dimObj.px < dimObj.min) {
+                    dimObj.px = dimObj.min;
+                    dimObj.dim = `${dimObj.px}px`;
+                    percentReballancingRequired = true;
+                }
+                fixedPixels += (pf.isTypePx(dimObj.dim) ? dimObj.px : 0);
+                dimArrayTotal += dimObj.px;
+            }
+            let px4Percent = maxpx - fixedPixels; // key
+            console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`);
+            // console.log(maxpx, fixedPixels, px4Percent)
+            // if min was assigned - rebalance
+            if (percentReballancingRequired) {
+                let currentPercent = 0;
+                // calculate total percent (so less than 100)
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        currentPercent += pf.percentAsNumber(dimObj.dim);
+                    }
+                }
+                let mult = 100 / currentPercent;
+                // and apply the difference over this code.
+                dimArrayTotal = 0;
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        dimObj.dim = `${pf.percentAsNumber(dimObj.dim) * mult}%`;
+                        dimObj.px = pf.percentAsNumber(dimObj.dim) * px4Percent / 100;
+                        console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`);
+                    }
+                    dimArrayTotal += dimObj.px;
+                }
+            }
+        } while (percentReballancingRequired);
+        console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
         // this part opens and/or closes the scrollbar overlay
         if (pxForPercent < 0) {
             // console.log(pxForPercent)
@@ -819,6 +888,7 @@ class Handler {
             y += (ishor) ? 0 : height + displaygroup.marginVer;
         }
     }
+    // static createDimArray(){}
     static renderHtmlBlock(displaycell, derender = false, parentDisplaygroup) {
         let htmlBlock = displaycell.htmlBlock;
         let el = pf.elExists(displaycell.label);

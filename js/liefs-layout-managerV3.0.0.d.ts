@@ -259,7 +259,7 @@ declare class DisplayGroup {
     offset: number;
     constructor(...Arguments: any);
     percentToPx(displaycell: DisplayCell): void;
-    totalPx(): number;
+    totalPx(addMin?: boolean): number;
 }
 declare function h(...Arguments: any): DisplayCell;
 declare function v(...Arguments: any): DisplayCell;

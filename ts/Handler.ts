@@ -182,6 +182,68 @@ class Handler {
         let pxForPercentLeft:number = pxForPercent;
         let overlay = displaygroup.overlay;
 
+        // create dim array;
+        // let isValid = true;
+        let dimArray:{dim:string, min:number, px:number}[] = [];
+        // let dimArrayTotal = 0;
+
+        // create dim array - Initialize.
+        for (let index = 0; index < cellArraylength; index++) {
+            let displaycell:DisplayCell = displaygroup.cellArray[index];
+            let dim = displaycell.dim;
+            let min = ((pf.isTypePx(displaycell.dim)) ? pf.pxAsNumber(displaycell.dim) : displaycell.minDisplayGroupSize)
+            let px = (pf.isTypePx(displaycell.dim) ? pf.pxAsNumber(displaycell.dim) : pf.percentAsNumber(displaycell.dim) * pxForPercent / 100);
+            // dimArrayTotal += px;            
+            dimArray.push({dim,min,px});   
+        }
+            // loop until all % are worked out
+        let percentReballancingRequired:boolean;
+        let dimArrayTotal: number;
+        do {
+            // If % less than min... assign it min
+            percentReballancingRequired = false;
+            let fixedPixels = 0;
+            dimArrayTotal = 0;
+            for (let index=0 ; index < dimArray.length; index++) {  
+                let dimObj = dimArray[index];
+                if (dimObj.px < dimObj.min) {
+                    dimObj.px = dimObj.min;
+                    dimObj.dim = `${dimObj.px}px`;
+                    percentReballancingRequired = true;
+                }
+                fixedPixels += ( pf.isTypePx(dimObj.dim) ? dimObj.px : 0 );
+                dimArrayTotal += dimObj.px;
+            }
+            let px4Percent:number = maxpx - fixedPixels;  // key
+            console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`)
+            // console.log(maxpx, fixedPixels, px4Percent)
+            // if min was assigned - rebalance
+            if (percentReballancingRequired) {
+                let currentPercent = 0;
+                // calculate total percent (so less than 100)
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        currentPercent += pf.percentAsNumber(dimObj.dim);
+                    }
+                }
+                let mult = 100/currentPercent;
+                // and apply the difference over this code.
+                dimArrayTotal = 0;
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        dimObj.dim = `${pf.percentAsNumber(dimObj.dim) * mult}%`;
+                        dimObj.px = pf.percentAsNumber(dimObj.dim)* px4Percent / 100;
+                        console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`)
+                    }
+                    dimArrayTotal += dimObj.px;
+                }
+            }
+        } while (percentReballancingRequired);
+        console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
+
+
         // this part opens and/or closes the scrollbar overlay
         if (pxForPercent < 0) {
             // console.log(pxForPercent)
@@ -248,6 +310,7 @@ class Handler {
             y += (ishor) ? 0 : height+displaygroup.marginVer;
         }
     }
+    // static createDimArray(){}
     static renderHtmlBlock(displaycell:DisplayCell, derender=false, parentDisplaygroup:DisplayGroup){
         let htmlBlock = displaycell.htmlBlock;
         let el:HTMLElement = pf.elExists(displaycell.label);

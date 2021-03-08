@@ -77,7 +77,16 @@ class pf {
         return returnObject;
     }
     static ifObjectMergeWithDefaults(retArgs:ArgsObj, defaults: object) : object{
-        return ("object" in retArgs) ? pf.mergeObjects(defaults, retArgs["object"][0]) : defaults;
+        if ("object" in retArgs) {
+            let returnObj = defaults;
+            for (let key in retArgs["object"]) {
+                returnObj = pf.mergeObjects(returnObj, retArgs["object"][key])
+            }
+            return returnObj;
+        }
+        return defaults;
+        
+        // return ("object" in retArgs) ? pf.mergeObjects(defaults, retArgs["object"][0]) : defaults;
     }
     static mergeObjects = function (startObj: object, AddObj: object){
         let returnObject: object = {};

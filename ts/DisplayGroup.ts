@@ -84,7 +84,7 @@ class DisplayGroup {
         }
         
     }
-    totalPx():number {
+    totalPx(addMin = false):number {
         let cellArray = this.cellArray;
         let totalFixedpx = 0
         for (let displaycell of cellArray) {
@@ -93,6 +93,8 @@ class DisplayGroup {
             }
             if ( pf.isTypePx(displaycell.dim) ) 
                 totalFixedpx += pf.pxAsNumber(displaycell.dim);
+            else if (addMin)
+                totalFixedpx += displaycell.minDisplayGroupSize;
         }
         return totalFixedpx;
     }
