@@ -7,13 +7,14 @@ class CodeBlock {
     height:200,
   }
   static argMap = {
-    string : ["html", "javascript", "css"],
+    string : ["label", "html", "javascriptForEval", "css"],
     number : ["height"]
   }
 
   label:string;
   html:string;
   javascript:string;
+  javascriptForEval:string;
   css:string;
 
   height:number;
@@ -23,14 +24,48 @@ class CodeBlock {
   constructor(...Arguments:any){
     CodeBlock.instances.push(this);
     mf.applyArguments("CodeBlock", Arguments, CodeBlock.defaults, CodeBlock.argMap, this);
-    this.build();
+    this.javascript = `H("${this.label}_handler",  // opens a handler (Starts Liefs-layout-manager)
+  ${this.javascriptForEval.replace(/\n/g, "\n  ")}
+)`;
+    var elem = document.createElement('div');
+    elem.innerHTML = this.html.replace(/\n/g, "\n  ");
+    document.body.appendChild(elem);
+    this.html = `&lthtml lang="en">
+  &lthead>&ltmeta charset="utf-8">&lttitle>My title&lt/title>
+  &ltscript src="../js/liefs-layout-managerV3.0.0.js">&lt/script>
+  &lt/head>
+  &ltbody>
+  ${this.html.replace(/\n/g, "\n  ").replace(/</g, "&lt")}
+  &lt/body>
+&lt/html>`;
+
+  this.build();
   }
   build(){
     this.displaycell =
-    h(`${this.label}_h`, `${this.height}`, 2,
-      I(`${this.label}_html`,`<pre><code class="language-markup">${this.html}</code></pre>`),
-      I(`${this.label}_javascript`,`<pre><code class="language-javascript">${this.javascript}</code></pre>`),
-      I(`${this.label}_css`,`<pre><code class="language-css">${this.css}</code></pre>`),
+    v(`${this.label}_v0`,
+      h(`${this.label}_buttons`, "20px", 4,
+        I(`${this.label}_b1`,"<button>Show all 3 Inline</button>", centerButton),
+        I(`${this.label}_b2`,"<button>Show Html Only</button>", centerButton),
+        I(`${this.label}_b3`,"<button>Show Javascript Only</button>", centerButton),
+        I(`${this.label}_b4`,"<button>Show Rendered Only</button>", centerButton),
+      ),
+      h(`${this.label}_h`, `${this.height}`, 2,
+        v(`${this.label}_v1`,
+          I(`${this.label}_html_label`,`HTML`, "20px", centerText),
+          I(`${this.label}_html`,`<pre><code class="language-markup">${this.html}</code></pre>`),
+        ),
+
+        v(`${this.label}_v2`,
+          I(`${this.label}_javascript_label`,`Javascript`, "20px", centerText),
+          I(`${this.label}_javascript`,`<pre><code class="language-javascript">${this.javascript}</code></pre>`),
+        ),
+        v(`${this.label}_v3`,
+          I(`${this.label}_output_label`,`Rendered`, "20px", centerText),
+          eval(this.javascriptForEval),
+          // I(`${this.label}_output`,`OUTPUT`),
+        ),
+      ),
     );
   }
 }
@@ -75,6 +110,9 @@ let cssTitle = css("title", "background-color:blue;color:white;text-align: cente
 
 let cssBold = css("bold", "text-decoration: underline;font-weight:bold;background-color: yellow;")
 
+let centerText = css("centerText", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: blue;color:white;font-weight: bold;`);
+let centerButton = css("centerButton", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: pink;color:white;font-weight: bold;`);
+
 // Build Tree
 
 let clickTreeItemEvent = events({onclick:function(mouseEvent:MouseEvent){
@@ -113,8 +151,12 @@ H("MainHandler", 4,
   {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
   //false,
 );
-H("CBlock_001",
-    codeblock("html", "javascript", "css"),
+H("Example01",
+    codeblock("Example01", `<!-- Nothing Here -->`, `h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
+  I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+  I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+)`),
+    //I("phew", "phew"),
     false,
     {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
 )

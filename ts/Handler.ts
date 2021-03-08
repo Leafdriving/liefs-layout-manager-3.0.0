@@ -215,7 +215,7 @@ class Handler {
                 dimArrayTotal += dimObj.px;
             }
             let px4Percent:number = maxpx - fixedPixels;  // key
-            console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`)
+            //console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`)
             // console.log(maxpx, fixedPixels, px4Percent)
             // if min was assigned - rebalance
             if (percentReballancingRequired) {
@@ -235,13 +235,13 @@ class Handler {
                     if (pf.isTypePercent(dimObj.dim)) {
                         dimObj.dim = `${pf.percentAsNumber(dimObj.dim) * mult}%`;
                         dimObj.px = pf.percentAsNumber(dimObj.dim)* px4Percent / 100;
-                        console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`)
+                        //console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`)
                     }
                     dimArrayTotal += dimObj.px;
                 }
             }
         } while (percentReballancingRequired);
-        console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
+        //console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
 
 
         // this part opens and/or closes the scrollbar overlay
