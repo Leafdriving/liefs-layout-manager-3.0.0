@@ -165,6 +165,7 @@ class Handler {
                 }
             }
         }
+        // if (derender) displaycell.coord.within.reset();
         if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
     }
 

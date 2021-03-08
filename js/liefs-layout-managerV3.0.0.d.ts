@@ -56,6 +56,7 @@ declare class Within {
     height: number;
     constructor(...Arguments: any);
     clipStyleString(sub: Coord): string;
+    reset(): void;
 }
 interface Offset {
     x: number;

@@ -168,6 +168,8 @@ class Within {
     clipStyleString(sub) {
         return Coord.clipStyleString(this, sub);
     }
+    reset() { this.x = this.y = this.width = this.height = undefined; }
+    ;
 }
 class Coord {
     constructor(...Arguments) {
@@ -232,10 +234,8 @@ class Coord {
         let possArgs = {};
         let obj;
         mf.applyArguments("Coord.copy", Arguments, {}, Coord.CopyArgMap, possArgs);
-        // console.log("Copy",possArgs); //////////////////
-        if ("Within" in possArgs)
-            obj = possArgs.Within;
-        else if ("Coord" in possArgs) {
+        /*if ("Within" in possArgs) obj = possArgs.Within;
+        else*/ if ("Coord" in possArgs) {
             obj = possArgs.Coord;
             this.within = possArgs.Coord.within;
         }
@@ -761,6 +761,7 @@ class Handler {
                 }
             }
         }
+        // if (derender) displaycell.coord.within.reset();
         if (displaycell.postRenderCallback)
             displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
     }

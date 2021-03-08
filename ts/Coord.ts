@@ -10,6 +10,7 @@ class Within{
     clipStyleString(sub: Coord){
         return Coord.clipStyleString(this, sub);
     }
+    reset(){this.x = this.y = this.width = this.height = undefined};
 }
 interface Offset {x:number;y:number;width:number;height:number}
 class Coord {
@@ -99,9 +100,9 @@ class Coord {
                Within?:Within,Coord?:Coord} = {};
         let obj:Coord|Within;
         mf.applyArguments("Coord.copy", Arguments, {}, Coord.CopyArgMap, possArgs);
-        // console.log("Copy",possArgs); //////////////////
-        if ("Within" in possArgs) obj = possArgs.Within;
-        else if ("Coord" in possArgs) {
+
+        /*if ("Within" in possArgs) obj = possArgs.Within;
+        else*/ if ("Coord" in possArgs) {
             obj = possArgs.Coord;
             this.within = possArgs.Coord.within;
         }

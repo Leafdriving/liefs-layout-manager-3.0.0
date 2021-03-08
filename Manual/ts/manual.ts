@@ -62,15 +62,15 @@ class CodeBlock {
         eval(this.javascriptForEval),
       );
     let all3 =
-      h(`${this.label}_h`, `${this.height}`, 2,
+      h(`${this.label}_h`, `${this.height}`, 5,
         this.htmlDisplayCell,
         this.javascriptDisplayCell,
-        this.evalDisplayCell,
+        dragbar(this.evalDisplayCell, 200, 800),
       );
 
     this.displaycell =
     v(`${this.label}_v0`,
-      h(`${this.label}_buttons`, "20px", 4,
+      h(`${this.label}_buttons`, "25px", 4,
         I(`${this.label}_b1`,"Show all 3 Inline", centerButton , Pages.button(`${this.label}_pages`, 0) ),
         I(`${this.label}_b2`,"Show Html Only", centerButton, Pages.button(`${this.label}_pages`, 1)),
         I(`${this.label}_b3`,"Show Javascript Only", centerButton, Pages.button(`${this.label}_pages`, 2)),
@@ -133,9 +133,9 @@ let cssBold = css("bold", "text-decoration: underline;font-weight:bold;backgroun
 let centerText = css("centerText", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: blue;color:white;font-weight: bold;`);
 let centerButton = css("centerButton",
 `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #ADD8E6;`
-+`color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
++`color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
 `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #839ae6;`
-+`color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
++`color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
 `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #4D4DFF;`
 +`color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`
 );
