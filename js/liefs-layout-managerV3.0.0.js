@@ -2337,7 +2337,7 @@ class Observe {
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);
                 Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true);
-                console.log("Derendered!", handler.rootCell);
+                // console.log("Derendered!",handler.rootCell)
                 // Handler.update([handler], 0, true);
             }
         }

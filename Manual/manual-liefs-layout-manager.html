@@ -28,7 +28,23 @@ and easy to learn by Novice, and Experienced Programmers Alike. This Manual is w
 under this framework, and includes most of the features.  For example, try re-sizing this window
 to see how the layout changes to fit all sizes.  Try the Dragbar, and tree system, all managed
 by this framework.  There are TONS of examples included here to see each feature working
-in it's simpleist, to most difficult form. Enjoy!</p>
+in it's simpleist, to most difficult form.</p>
+<p>This framework only has 'divs' in the DOM that are viewed!  If a 'div' isn't currently
+  desired on the screen, then it is REMOVED from the dom, and re-instroduces when required. For
+example, THIS MANUAL is loaded as one page but if you check the dom (Chrome Dev Tools F12)
+you will see it is CLEAN - with only the 'div's viewed existing in the DOM.</p>
+<p>Liefs Layout Manager is a CLIENT SIDE framework.  It simply organizes 'div's on the screen.
+  What you put in the 'div's is up to you.  It could be used for:</p>
+<ul>
+  <li>Making a Web Page</li>
+  <li>Making a Web Application</li>
+  <li>UI for Electron projects</li>
+  <li>In conjunction with other framworks</li>
+</ul><p>
+This framework is designed to work WITH your code, and only enhances your abilities.
+All other layout systems work in conjunction with this one.  The only restriction is
+you can't use the 'style' inline attribute for liefs-layout-manager divs. (but you can for child divs)
+this is because the mapping system overrides these values with "left: ; top: ; width: ; height: ; zindex: " attributes.</p>
 <div class="h1">Starting Point - Two Items (divs) in a horizontal container</div><br><br>
 <div parentof="Example01" 
   style="margin-left: 5px;width: -moz-calc(100% - 5px);width: -webkit-calc(100% - 5px);width: calc(100% - 5px);height:323px;background-color: rgb(193, 243, 191)"></div>
@@ -37,10 +53,7 @@ added here, like usual (see later), however in this example, all 'div's are crea
 in the I() function</p>
 <p><span style="text-decoration: underline;">javascript file:</span> this code reads: Start a Handler (big H) with a horizontal container (small h) with two Items (Big I).
   In this case, we also added the css right here!</p>
-<p>This is the basic structure for working with this framework!
-  Now try resizing this page (width) - and see how it dynamically changes to match the changing screen size!
-  The black vertical bar(s) on the screen (is/are) called "DragBars" (wide screen will show 3 - narrow 1)
-</p>
+<p>This is the basic structure for working with this framework!</p>
       </div>
 
       <div id="Installation">
@@ -53,7 +66,7 @@ one javascript file to your html file.(index.html probably)</p>
 <a href="https://raw.githubusercontent.com/Leafdriving/liefs-layout-manager-3.0.0/master/js/liefs-layout-managerV3.0.0.js">https://raw.githubusercontent.com/Leafdriving/liefs-layout-manager-3.0.0/master/js/liefs-layout-managerV3.0.0.js</a>
 (Right-click -> save (as))</p>
 <p>This is the basic boilerplate for your code:</p>
-<pre><code class="language-markup">&lt!doctype html>
+<pre><code class="language-markup" style="font-size: medium;">&lt!doctype html>
 &lthtml lang="en">
   &lthead>
     &ltmeta charset="utf-8">
@@ -79,8 +92,7 @@ one javascript file to your html file.(index.html probably)</p>
 &lt!--  by adding a reference  to your framework script-->
 &ltscript>
 H( {some code} ) // invoking a handler like this starts liefs-layout-manager framework
-&lt/script>
-&lt!--  or just adding it to the END of your html -->
+&lt/script>    &lt!--  or just adding it to the END of your html -->
 </code></pre>
       </div>
 

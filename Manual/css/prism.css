@@ -18,7 +18,7 @@ pre[class*="language-"] {
 	word-spacing: normal;
 	word-break: normal;
 	word-wrap: normal;
-	line-height: 1.5;
+	line-height: 1.25;
 
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
@@ -39,7 +39,7 @@ pre[class*="language-"] {
 
 pre[class*="language-"],
 :not(pre) > code[class*="language-"] {
-	background: hsl(30, 20%, 25%);
+	background: hsl(178, 94%, 6%);
 }
 
 /* Code blocks */
@@ -66,7 +66,7 @@ pre[class*="language-"] {
 .token.prolog,
 .token.doctype,
 .token.cdata {
-	color: hsl(30, 20%, 50%);
+	color: hsl(242, 10%, 48%);
 }
 
 .token.punctuation {
