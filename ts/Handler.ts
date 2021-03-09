@@ -129,7 +129,7 @@ class Handler {
         if (derender) Observe.derender(displaycell);
         let pages = displaycell.pages;
         if (pages){
-            Pages.activePages.push(pages);
+            if (!derender) Pages.activePages.push(pages);
             let evalCurrentPage:number = pages.eval();
             if (evalCurrentPage != pages.previousPage){ // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
@@ -138,7 +138,7 @@ class Handler {
                 Pages.pushHistory();
             }
             pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
-            Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, false);
+            Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
         }

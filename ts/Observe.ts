@@ -68,9 +68,15 @@ class Observe {
                 }
                 displaycell.postRenderCallback = function(){};
                 // observeInstance.derendering = true;
-                Handler.update([handler], 0, true);
+                // console.log("Observe Derender!", handler.rootCell)
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);
+
+                Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true)
+                console.log("Derendered!",handler.rootCell)
+
+                // Handler.update([handler], 0, true);
+ 
             }
         }
     }

@@ -776,7 +776,8 @@ class Handler {
             Observe.derender(displaycell);
         let pages = displaycell.pages;
         if (pages) {
-            Pages.activePages.push(pages);
+            if (!derender)
+                Pages.activePages.push(pages);
             let evalCurrentPage = pages.eval();
             if (evalCurrentPage != pages.previousPage) { // derender old page here
                 pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
@@ -785,7 +786,7 @@ class Handler {
                 Pages.pushHistory();
             }
             pages.displaycells[evalCurrentPage].coord.copy(displaycell.coord);
-            Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, false);
+            Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
         }
@@ -2332,9 +2333,12 @@ class Observe {
                 }
                 displaycell.postRenderCallback = function () { };
                 // observeInstance.derendering = true;
-                Handler.update([handler], 0, true);
+                // console.log("Observe Derender!", handler.rootCell)
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);
+                Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true);
+                console.log("Derendered!", handler.rootCell);
+                // Handler.update([handler], 0, true);
             }
         }
     }
