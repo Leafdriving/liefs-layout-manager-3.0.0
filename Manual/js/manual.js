@@ -19,18 +19,37 @@ var CodeBlock = /** @class */ (function () {
         this.build();
     }
     CodeBlock.prototype.build = function () {
+        var htmlLabel = I(this.label + "_html_label", "HTML", "20px", centerText);
+        var htmlBody = I(this.label + "_html", "<pre><code class=\"language-markup\">" + this.html + "</code></pre>");
         this.htmlDisplayCell =
-            v(this.label + "_v1", I(this.label + "_html_label", "HTML", "20px", centerText), I(this.label + "_html", "<pre><code class=\"language-markup\">" + this.html + "</code></pre>"));
+            v(this.label + "_v1", "37.5%", htmlLabel, htmlBody);
+        var DBhtmlDisplayCell = dragbar(v(this.label + "_v1_DB", "37.5%", htmlLabel, htmlBody), 200, 600);
         this.javascriptDisplayCell =
-            v(this.label + "_v2", I(this.label + "_javascript_label", "Javascript", "20px", centerText), I(this.label + "_javascript", "<pre><code class=\"language-javascript\">" + this.javascript + "</code></pre>"));
+            v(this.label + "_v2", "37.5%", I(this.label + "_javascript_label", "Javascript", "20px", centerText), I(this.label + "_javascript", "<pre><code class=\"language-javascript\">" + this.javascript + "</code></pre>"));
+        var EvalLabel = I(this.label + "_output_label", "Rendered", "20px", centerText);
+        var EvalJS = eval(this.javascriptForEval);
         this.evalDisplayCell =
-            v(this.label + "_v3", I(this.label + "_output_label", "Rendered", "20px", centerText), eval(this.javascriptForEval));
-        var all3 = h(this.label + "_h", "" + this.height, 5, dragbar(this.htmlDisplayCell, 200, 800), this.javascriptDisplayCell, dragbar(this.evalDisplayCell, 200, 800));
-        this.displaycell =
-            v(this.label + "_v0", h(this.label + "_buttons", "25px", 4, I(this.label + "_b1", "Show all 3 Inline", centerButton, Pages.button(this.label + "_pages", 0)), I(this.label + "_b2", "Show Html Only", centerButton, Pages.button(this.label + "_pages", 1)), I(this.label + "_b3", "Show Javascript Only", centerButton, Pages.button(this.label + "_pages", 2)), I(this.label + "_b4", "Show Rendered Only", centerButton, Pages.button(this.label + "_pages", 3))), P(this.label + "_pages", // 3,
-            all3, this.htmlDisplayCell, this.javascriptDisplayCell, this.evalDisplayCell)
-            // all3,
-            );
+            v(this.label + "_v3", "25%", EvalLabel, EvalJS);
+        var DBevalDisplayCell = dragbar(v(this.label + "_v3", "25%", EvalLabel, EvalJS), 200, 600);
+        var all3 = h(this.label + "_h", "" + this.height, 5, DBhtmlDisplayCell, this.javascriptDisplayCell, DBevalDisplayCell);
+        var H_I_I_I = h(this.label + "_buttons", "25px", 5, I(this.label + "_b2", "Show Html Only", centerButton, Pages.button(this.label + "_inner", 0)), I(this.label + "_b3", "Show Javascript Only", centerButton, Pages.button(this.label + "_inner", 1)), I(this.label + "_b4", "Show Rendered Only", centerButton, Pages.button(this.label + "_inner", 2)));
+        var P_4Items = P(this.label + "_inner", // 3,
+        this.htmlDisplayCell, this.javascriptDisplayCell, this.evalDisplayCell, all3);
+        // let P_3Items = P(`${this.label}_inner2`, // 3,
+        //   this.htmlDisplayCell,
+        //   this.javascriptDisplayCell,
+        //   this.evalDisplayCell,
+        // );
+        var displaycell1 = v(this.label + "_v0", 2, I(this.label + "_b1", "Show all 3 Inline", centerButton, Pages.button(this.label + "_inner", 3), "25px"), H_I_I_I, P_4Items);
+        var displaycell2 = v(this.label + "_v0_2", 2, H_I_I_I, P_4Items);
+        this.displaycell = P(this.label + "_TopPage", displaycell1, displaycell2, function (thisPages) {
+            var displaycell = thisPages.displaycells[thisPages.currentPage];
+            var returnValue = (displaycell.coord.width > 1300) ? 0 : 1;
+            var refPage = Pages.byLabel(this.label.slice(0, -8) + "_inner");
+            if (returnValue == 1 && refPage.currentPage == 3)
+                refPage.currentPage = 0;
+            return returnValue;
+        });
     };
     CodeBlock.instances = [];
     CodeBlock.defaults = {
@@ -68,7 +87,7 @@ var cssBold = css("bold", "text-decoration: underline;font-weight:bold;backgroun
 var centerText = css("centerText", "display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: blue;color:white;font-weight: bold;");
 var centerButton = css("centerButton", "display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #ADD8E6;"
     + "color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;", "display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #839ae6;"
-    + "color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;", "display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #4D4DFF;"
+    + "color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;cursor:pointer;", "display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #4D4DFF;"
     + "color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;");
 // Build Tree
 var clickTreeItemEvent = events({ onclick: function (mouseEvent) {

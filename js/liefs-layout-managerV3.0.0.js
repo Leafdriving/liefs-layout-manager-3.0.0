@@ -1241,7 +1241,7 @@ Pages.defaults = {
 Pages.argMap = {
     string: ["label"],
     number: ["currentPage"],
-    Function: ["evalFunction"],
+    function: ["evalFunction"],
     dim: ["dim"],
     // DisplayCell: ["displaycells"] <- but the whole array done in constructor
 };

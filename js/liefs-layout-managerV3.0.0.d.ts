@@ -359,7 +359,7 @@ declare class Pages {
     static argMap: {
         string: string[];
         number: string[];
-        Function: string[];
+        function: string[];
         dim: string[];
     };
     label: string;
