@@ -1,13 +1,37 @@
 declare var Prism:any;
 
 class CodeBlock {
+  static byLabel(label:string):CodeBlock{
+    for (let key in CodeBlock.instances)
+        if (CodeBlock.instances[key].label == label)
+            return CodeBlock.instances[key];
+    return undefined;
+}
+  static download(filename:string, text:string) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+  
+    element.style.display = 'none';
+    document.body.appendChild(element);
+  
+    element.click();
+  
+    document.body.removeChild(element);
+  }
+  static downloadfile(el:Element) {
+    el = el.parentElement;
+    let label = el.id.slice(0, -3);
+    let codeblock = CodeBlock.byLabel(label)
+    CodeBlock.download(label+".html", codeblock.html.replace(/&lt/g, "<")+"\n<script>\n"+codeblock.javascript+"</script>");
+  }
   static instances: CodeBlock[] = [];
   static defaults = {
     label : function(){return `CBlock_${pf.pad_with_zeroes(CodeBlock.instances.length)}`},
     height:200,
   }
   static argMap = {
-    string : ["label", "html", "javascriptForEval", "css"],
+    string : ["label", "html", "javascriptForEval", "discription"],
     number : ["height"]
   }
 
@@ -16,7 +40,7 @@ class CodeBlock {
   javascript:string;
   javascriptForEval:string;
   css:string;
-
+  discription: string
   htmlDisplayCell: DisplayCell;
   javascriptDisplayCell: DisplayCell;
   evalDisplayCell: DisplayCell;
@@ -35,8 +59,8 @@ class CodeBlock {
     elem.innerHTML = this.html.replace(/\n/g, "\n  ");
     document.body.appendChild(elem);
     this.html = `&lthtml lang="en">
-  &lthead>&ltmeta charset="utf-8">&lttitle>My title&lt/title>
-  &ltscript src="../js/liefs-layout-managerV3.0.0.js">&lt/script>
+  &lthead>&ltmeta charset="utf-8">&lttitle>liefs-layout-manager ${this.label}&lt/title>
+  &ltscript src="../../js/liefs-layout-managerV3.0.0.js">&lt/script>
   &lt/head>
   &ltbody>
   ${this.html.replace(/\n/g, "\n  ").replace(/</g, "&lt")}
@@ -46,6 +70,7 @@ class CodeBlock {
   this.build();
   }
   build(){
+    let THIS = this;
     let htmlLabel = I(`${this.label}_html_label`,`HTML`, "20px", centerText);
     let htmlBody = I(`${this.label}_html`,`<pre><code class="language-markup">${this.html}</code></pre>`);
     this.htmlDisplayCell = 
@@ -86,36 +111,42 @@ class CodeBlock {
       );
 
     let H_I_I_I = h(`${this.label}_buttons`, "25px", 5,
-      I(`${this.label}_b2`,"Show Html Only", centerButton, Pages.button(`${this.label}_inner`, 0)),
-      I(`${this.label}_b3`,"Show Javascript Only", centerButton, Pages.button(`${this.label}_inner`, 1)),
-      I(`${this.label}_b4`,"Show Rendered Only", centerButton, Pages.button(`${this.label}_inner`, 2)),
+      I(`${this.label}_b2`,`Show Html Only <button onclick="CodeBlock.downloadfile(this)">Download</button>`, centerButton, Pages.button(`${this.label}_inner`, 1)),
+      I(`${this.label}_b3`,"Show Javascript Only", centerButton, Pages.button(`${this.label}_inner`, 2)),
+      I(`${this.label}_b4`,"Show Rendered Only", centerButton, Pages.button(`${this.label}_inner`, 3)),
     );
 
-    let P_4Items = P(`${this.label}_inner`, // 3,
+    let P_4Items = P(`${this.label}_inner`,
+      all3,
       this.htmlDisplayCell,
       this.javascriptDisplayCell,
       this.evalDisplayCell,
-      all3,
     );
 
-    // let P_3Items = P(`${this.label}_inner2`, // 3,
-    //   this.htmlDisplayCell,
-    //   this.javascriptDisplayCell,
-    //   this.evalDisplayCell,
-    // );
+    // let title = I(`${this.label}_title`,this.label +" - " + this.discription, h1, "30px")
 
+    let launch = I(`${this.label}_launch`,"Launch in new Tab - (then view-source!)", "25px", centerButton, events({onclick: function(){
+        Object.assign(document.createElement('a'), {
+          target: '_blank',
+          href: `./Examples/${THIS.label}.html`,
+        }).click();
+    }}));
 
     let displaycell1 =
     v(`${this.label}_v0`, 2,
-      I(`${this.label}_b1`,"Show all 3 Inline", centerButton , Pages.button(`${this.label}_inner`, 3), "25px" ),
+      // title,
+      I(`${this.label}_b1`,"Show all 3 Inline", centerButton , Pages.button(`${this.label}_inner`, 0), "25px" ),
       H_I_I_I,
       P_4Items,
+      launch,
     );
 
     let displaycell2 =
     v(`${this.label}_v0_2`, 2,
+      // title,
       H_I_I_I,
       P_4Items,
+      launch,
     );
 
     this.displaycell = P(`${this.label}_TopPage`,
@@ -124,8 +155,13 @@ class CodeBlock {
       function(thisPages:Pages):number {
         let displaycell = thisPages.displaycells[thisPages.currentPage];
         let returnValue = (displaycell.coord.width > 1300) ? 0 : 1;
-        let refPage = Pages.byLabel(this.label.slice(0, -8)+"_inner")
-        if (returnValue == 1 && refPage.currentPage == 3) refPage.currentPage = 0;
+        if (returnValue != thisPages.currentPage) {
+          let refPage = Pages.byLabel(this.label.slice(0, -8)+"_inner");
+          refPage.currentPage = (returnValue) ? ((refPage.currentPage == 0) ? 1:refPage.currentPage) : 0;
+        }
+        //console.log(returnValue == thisPages.currentPage)
+        // console.log(returnValue,refPage.currentPage)
+        // if (!Handler.firstRun && returnValue == 1 && refPage.currentPage == 0) refPage.currentPage = 3;
         return returnValue;
       }
     )
@@ -140,7 +176,7 @@ function codeblock(...Arguments:any){
 
 // CSS
 
-new Css("h1",`border: 2px solid #1C6EA4;
+let h1 = new Css("h1",`border: 2px solid #1C6EA4;
               border-radius: 10px;
               background: #D1F5F3;
               -webkit-box-shadow: 3px 6px 7px -1px #000000; 
@@ -151,7 +187,7 @@ new Css("h1",`border: 2px solid #1C6EA4;
               padding-right: 5px;
               font-size: 24px;
               display: inline-block;`);
-new Css("p",`text-indent: 30px;
+let p = new Css("p",`text-indent: 30px;
              margin-left: 10px;
              font-size: 18px;`, false);
               
@@ -175,6 +211,7 @@ let cssTitle = css("title", "background-color:blue;color:white;text-align: cente
 let cssBold = css("bold", "text-decoration: underline;font-weight:bold;background-color: yellow;")
 
 let centerText = css("centerText", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: blue;color:white;font-weight: bold;`);
+let leftText = css("leftText", `font-size: 25px;background-color: #ADD8E6;color:black;font-weight: bold;`);
 let centerButton = css("centerButton",
 `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #ADD8E6;`
 +`color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
@@ -223,10 +260,12 @@ H("MainHandler", 4,
   //false,
 );
 H("Example01",
-    codeblock("Example01", `<!-- Nothing Here -->`, `h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
+    codeblock("Example01", `<!-- Nothing Here -->`,
+              `h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
   I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
   I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
-)`),
+)`,
+    ),
     //I("phew", "phew"),
     false,
     {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},

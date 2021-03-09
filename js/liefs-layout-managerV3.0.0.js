@@ -1124,7 +1124,7 @@ DefaultTheme.context = css("contxt", "background-color:white;color: black;outlin
 Css.theme = DefaultTheme;
 class Pages {
     constructor(...Arguments) {
-        Pages.instances.push(this);
+        Pages.instances.unshift(this);
         let retArgs = pf.sortArgs(Arguments, "Pages");
         mf.applyArguments("Pages", Arguments, Pages.defaults, Pages.argMap, this);
         if (retArgs["DisplayCell"])

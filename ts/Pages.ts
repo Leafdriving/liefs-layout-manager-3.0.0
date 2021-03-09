@@ -28,7 +28,7 @@ class Pages {
     dim:string;
 
     constructor(...Arguments: any) {
-        Pages.instances.push(this);
+        Pages.instances.unshift(this);
         let retArgs : ArgsObj = pf.sortArgs(Arguments, "Pages");
         mf.applyArguments("Pages", Arguments, Pages.defaults, Pages.argMap, this);
         if (retArgs["DisplayCell"])
