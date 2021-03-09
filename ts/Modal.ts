@@ -69,9 +69,9 @@ class Modal {
                 height=numbers[1];
                 x = (vp[0] - width)/2;
                 y = (vp[1] - height)/2;
-                this.coord.replace(x, y, width, height);
+                this.coord.assign(x, y, width, height);
             } else if (numberOfArgs == 4) {
-                this.coord.replace(numbers[0], numbers[1], numbers[2], numbers[3]);
+                this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3]);
                 // console.log(pf.viewport())
                 let vp = pf.viewport();
                 // this.coord.copyWithin(0, 0, vp[0], vp[1], true)

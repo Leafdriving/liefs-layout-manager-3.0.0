@@ -25,7 +25,7 @@ var CodeBlock = /** @class */ (function () {
             v(this.label + "_v2", I(this.label + "_javascript_label", "Javascript", "20px", centerText), I(this.label + "_javascript", "<pre><code class=\"language-javascript\">" + this.javascript + "</code></pre>"));
         this.evalDisplayCell =
             v(this.label + "_v3", I(this.label + "_output_label", "Rendered", "20px", centerText), eval(this.javascriptForEval));
-        var all3 = h(this.label + "_h", "" + this.height, 5, this.htmlDisplayCell, this.javascriptDisplayCell, dragbar(this.evalDisplayCell, 200, 800));
+        var all3 = h(this.label + "_h", "" + this.height, 5, dragbar(this.htmlDisplayCell, 200, 800), this.javascriptDisplayCell, dragbar(this.evalDisplayCell, 200, 800));
         this.displaycell =
             v(this.label + "_v0", h(this.label + "_buttons", "25px", 4, I(this.label + "_b1", "Show all 3 Inline", centerButton, Pages.button(this.label + "_pages", 0)), I(this.label + "_b2", "Show Html Only", centerButton, Pages.button(this.label + "_pages", 1)), I(this.label + "_b3", "Show Javascript Only", centerButton, Pages.button(this.label + "_pages", 2)), I(this.label + "_b4", "Show Rendered Only", centerButton, Pages.button(this.label + "_pages", 3))), P(this.label + "_pages", // 3,
             all3, this.htmlDisplayCell, this.javascriptDisplayCell, this.evalDisplayCell)

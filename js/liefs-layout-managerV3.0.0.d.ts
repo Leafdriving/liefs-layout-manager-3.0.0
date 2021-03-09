@@ -106,9 +106,10 @@ declare class Coord {
     offset: Offset;
     constructor(...Arguments: any);
     setOffset(x?: number, y?: number, width?: number, height?: number): void;
-    copyWithin(...Arguments: any): void;
-    copy(...Arguments: any): void;
-    replace(x: number, y: number, width: number, height: number, zindex?: number): void;
+    cropWithin(within?: Coord | Within): void;
+    applyMargins(left: number, top: number, right: number, bottom: number): void;
+    assign(x?: any, y?: any, width?: any, height?: any, wx?: any, wy?: any, wwidth?: any, wheight?: any, zindex?: any): void;
+    copy(fromCoord: Coord): void;
     isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
     derender(derender: boolean): boolean;
     clipStyleString(COORD: Coord): string;

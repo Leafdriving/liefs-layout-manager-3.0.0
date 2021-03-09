@@ -74,7 +74,7 @@ class DragBar {
         let y:number= (ishor) ? pcoord.y : ((isLast)? pcoord.y-pxsize:pcoord.y+pcoord.height);
         let width:number = (ishor) ? pxsize : pcoord.width;
         let height:number = (ishor) ? pcoord.height : pxsize;
-        dragcell.coord.replace(x, y, width, height, Handler.currentZindex + Handler.zindexIncrement);
+        dragcell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex + Handler.zindexIncrement);
         dragcell.htmlBlock.css = (ishor) ? dragbar.horcss.classname : dragbar.vercss.classname;
         if (parentDisplaygroup.coord.isCoordCompletelyOutside( dragcell.coord )) derender = true;
         Handler.renderDisplayCell(dragcell, parentDisplaygroup, undefined, derender)

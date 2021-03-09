@@ -156,7 +156,7 @@ class ScrollBar {
         // let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
         // let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
 
-        this.displaycell.coord.replace(x, y, width, height);
+        this.displaycell.coord.assign(x, y, width, height);
 
         // calculate inner scrollbar dimensions
         let preDisplayCell = this.displaycell.displaygroup.cellArray[1];

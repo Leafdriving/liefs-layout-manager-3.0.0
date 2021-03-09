@@ -63,7 +63,7 @@ class CodeBlock {
       );
     let all3 =
       h(`${this.label}_h`, `${this.height}`, 5,
-        this.htmlDisplayCell,
+        dragbar(this.htmlDisplayCell, 200, 800),
         this.javascriptDisplayCell,
         dragbar(this.evalDisplayCell, 200, 800),
       );

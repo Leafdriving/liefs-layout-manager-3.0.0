@@ -86,7 +86,9 @@ class Handler {
     }
     static screensizeToCoord(dislaycell:DisplayCell, handlerMargin: number){
         let viewport = pf.viewport();
-        dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
+        dislaycell.coord.assign(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2,
+                                handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2,Handler.currentZindex);
+        //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
 
     static update(ArrayofHandlerInstances:Handler[] = Handler.activeHandlers, instanceNo:number = 0, derender:boolean = false){
@@ -96,7 +98,6 @@ class Handler {
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
         for (let index = 0; index < ArrayofHandlerInstances.length; index++) {
             let handlerInstance = ArrayofHandlerInstances[index];
-        // for (let handlerInstance of ArrayofHandlerInstances) {
             if (handlerInstance.preRenderCallback) handlerInstance.preRenderCallback(handlerInstance);
             if (handlerInstance.coord) {
                 handlerInstance.rootCell.coord.copy(handlerInstance.coord);
@@ -104,10 +105,10 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);  
             }
-            if (handlerInstance.controlledBySomething)
-                handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
-            else 
-                handlerInstance.rootCell.coord.copyWithin(true);
+            // if (handlerInstance.controlledBySomething)
+            //     handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
+            // else 
+            //     handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
@@ -152,10 +153,10 @@ class Handler {
                 displaygroup.coord.copy(displaycell.coord);
                 if (displaygroup && htmlBlock) {
                     Handler.currentZindex += Handler.zindexIncrement;
-                    displaygroup.coord.copy(displaycell.coord, pf.uis0(htmlBlock.marginLeft),
-                                                            pf.uis0(htmlBlock.marginTop),
-                                                            pf.uis0(htmlBlock.marginRight),
-                                                            pf.uis0(htmlBlock.marginBottom))
+                    displaycell.coord.applyMargins( pf.uis0(htmlBlock.marginLeft),
+                                                    pf.uis0(htmlBlock.marginTop),
+                                                    pf.uis0(htmlBlock.marginRight),
+                                                    pf.uis0(htmlBlock.marginBottom));
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
@@ -307,8 +308,9 @@ class Handler {
             cellsizepx = (pf.isTypePx(displaycell.dim)) ? (pf.pxAsNumber(displaycell.dim)) : displayCellPx;
             width = (ishor) ? cellsizepx : coord.width;
             height = (ishor) ? coord.height : cellsizepx;
-            displaycell.coord.replace(x, y, width, height, Handler.currentZindex);
-            displaycell.coord.copyWithin( displaygroup.coord );
+
+            displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
+            displaycell.coord.cropWithin( displaygroup.coord.within );
 
             Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
             

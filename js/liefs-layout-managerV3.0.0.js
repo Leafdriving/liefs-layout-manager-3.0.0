@@ -197,63 +197,64 @@ class Coord {
         else
             this.offset = { x, y, width, height };
     }
-    copyWithin(...Arguments) {
-        let possArgs = {};
-        mf.applyArguments("Coord.copyWithin", Arguments, { isRoot: false }, Coord.CopyArgMap, possArgs);
-        let isRoot = possArgs.isRoot;
-        if (possArgs.isRoot) {
-            for (let key of ["x", "y", "width", "height"]) {
-                this.within[key] = this[key];
-            }
-        }
-        else {
-            if ("Coord" in possArgs) {
-                let coord = possArgs.Coord;
-                for (let key of ["x", "y", "width", "height"]) {
-                    this.within[key] = coord.within[key];
-                }
-                let x = this.x, y = this.y, width = this.width, height = this.height, x2 = x + width, y2 = y + height;
-                let wx = this.within.x, wy = this.within.y, wwidth = this.within.width, wheight = this.within.height, wx2 = wx + wwidth, wy2 = wy + wheight;
-                let bx = (x > wx) ? x : wx;
-                let sx2 = (x2 < wx2) ? x2 : wx2;
-                let by = (y > wy) ? y : wy;
-                let sy2 = (y2 < wy2) ? y2 : wy2;
-                this.within.x = bx;
-                this.within.width = sx2 - bx;
-                this.within.y = by;
-                this.within.height = sy2 - by;
-            }
-            else {
-                console.log("Boo");
-            }
-        }
+    // setWithin(within:Coord|Within){
+    //     this.within.x = within.x;
+    //     this.within.y = within.y;
+    //     this.within.width = within.width;
+    //     this.within.height = within.height
+    // }
+    cropWithin(within = this.within) {
+        let x = this.x, y = this.y, width = this.width, height = this.height, x2 = x + width, y2 = y + height;
+        let wx = within.x, wy = within.y, wwidth = within.width, wheight = within.height, wx2 = wx + wwidth, wy2 = wy + wheight;
+        let bx = (x > wx) ? x : wx;
+        let sx2 = (x2 < wx2) ? x2 : wx2;
+        let by = (y > wy) ? y : wy;
+        let sy2 = (y2 < wy2) ? y2 : wy2;
+        this.within.x = bx;
+        this.within.width = sx2 - bx;
+        this.within.y = by;
+        this.within.height = sy2 - by;
     }
-    copy(...Arguments) {
-        // if no object, x, width, y, height, zindex
-        // if object left, top, right, bottom, zindex
-        let possArgs = {};
-        let obj;
-        mf.applyArguments("Coord.copy", Arguments, {}, Coord.CopyArgMap, possArgs);
-        /*if ("Within" in possArgs) obj = possArgs.Within;
-        else*/ if ("Coord" in possArgs) {
-            obj = possArgs.Coord;
-            this.within = possArgs.Coord.within;
-        }
-        if (obj) {
-            possArgs.left = (possArgs.x) ? possArgs.x : 0;
-            possArgs.top = (possArgs.y) ? possArgs.y : 0;
-            possArgs.right = (possArgs.width) ? possArgs.width : 0;
-            possArgs.bottom = (possArgs.height) ? possArgs.height : 0;
-        }
-        this.x = (obj) ? obj.x + possArgs.left : (("x" in possArgs) ? possArgs.x : this.x);
-        this.y = (obj) ? obj.y + possArgs.top : (("y" in possArgs) ? possArgs.y : this.y);
-        this.width = (obj) ? obj.width - (possArgs.left + possArgs.right)
-            : ((possArgs.width) ? possArgs.width : this.width);
-        this.height = (obj) ? obj.height - (possArgs.top + possArgs.bottom)
-            : ((possArgs.height) ? possArgs.height : this.height);
-        this.zindex = ("zindex" in possArgs) ? possArgs.zindex : Handler.currentZindex;
+    // copyWithin(...Arguments:any){
+    //     let possArgs:{x?:number,y?:number,width?:number,height?:number, isRoot?:boolean, Coord?:Coord} = {};
+    //     mf.applyArguments("Coord.copyWithin", Arguments, {isRoot: false}, Coord.CopyArgMap, possArgs);
+    //     let isRoot = possArgs.isRoot;
+    //     if (possArgs.isRoot) {
+    //         for (let key of ["x", "y", "width", "height"]) {
+    //             this.within[key] = this[key];
+    //         }
+    //     } else {
+    //         if ("Coord" in possArgs) {
+    //             let coord = possArgs.Coord
+    //             for (let key of ["x", "y", "width", "height"]) {
+    //                 this.within[key] = coord.within[key];
+    //             }
+    //             let x=this.x, y=this.y, width=this.width, height=this.height, x2=x+width, y2=y+height;
+    //             let wx=this.within.x, wy=this.within.y, wwidth=this.within.width, wheight=this.within.height, wx2=wx+wwidth, wy2=wy+wheight;
+    //             let bx = (x > wx) ? x : wx;
+    //             let sx2 = (x2 < wx2) ? x2 : wx2;
+    //             let by = (y > wy) ? y : wy;
+    //             let sy2 = (y2 < wy2) ? y2 : wy2;
+    //             this.within.x = bx;
+    //             this.within.width = sx2-bx;
+    //             this.within.y = by;
+    //             this.within.height = sy2-by;
+    //         } else {
+    //             console.log("Boo");
+    //         }
+    //     }
+    // }
+    applyMargins(left, top, right, bottom) {
+        this.x += left;
+        this.within.x += left;
+        this.y += top;
+        this.within.y += top;
+        this.width -= (left + right);
+        this.within.width -= (left + right);
+        this.height -= (top + bottom);
+        this.within.height -= (top + bottom);
     }
-    replace(x, y, width, height, zindex = undefined) {
+    assign(x = undefined, y = undefined, width = undefined, height = undefined, wx = undefined, wy = undefined, wwidth = undefined, wheight = undefined, zindex = undefined) {
         if (x != undefined)
             this.x = x;
         if (y != undefined)
@@ -262,9 +263,57 @@ class Coord {
             this.width = width;
         if (height != undefined)
             this.height = height;
+        if (wx != undefined)
+            this.within.x = wx;
+        if (wy != undefined)
+            this.within.y = wy;
+        if (wwidth != undefined)
+            this.within.width = wwidth;
+        if (wheight != undefined)
+            this.within.height = wheight;
         if (zindex != undefined)
             this.zindex = zindex;
     }
+    copy(fromCoord) {
+        this.x = fromCoord.x;
+        this.y = fromCoord.y;
+        this.width = fromCoord.width;
+        this.height = fromCoord.height;
+        this.zindex = fromCoord.zindex;
+        this.within.x = fromCoord.within.x;
+        this.within.y = fromCoord.within.y;
+        this.within.width = fromCoord.within.width;
+        this.within.height = fromCoord.within.height;
+    }
+    // // if no object, x, width, y, height, zindex
+    // // if object left, top, right, bottom, zindex
+    // let possArgs:{x?:number,y?:number,width?:number,height?:number,zindex?:number,
+    //        left?:number,right?:number,top?:number,bottom?:number,
+    //        Within?:Within,Coord?:Coord} = {};
+    // let obj:Coord;
+    // mf.applyArguments("Coord.copy", Arguments, {}, Coord.CopyArgMap, possArgs);
+    // /*if ("Within" in possArgs) obj = possArgs.Within;
+    // else*/ if ("Coord" in possArgs) {
+    //     obj = possArgs.Coord;
+    //     this.within = possArgs.Coord.within;
+    // }
+    // if (obj) {possArgs.left = (possArgs.x) ? possArgs.x : 0; possArgs.top = (possArgs.y) ? possArgs.y : 0;
+    //           possArgs.right = (possArgs.width) ? possArgs.width : 0;possArgs.bottom= (possArgs.height) ? possArgs.height : 0
+    // }
+    // this.x = (obj) ? obj.x + possArgs.left : (("x" in possArgs) ? possArgs.x : this.x);
+    // this.y = (obj) ? obj.y + possArgs.top  : (("y" in possArgs) ? possArgs.y : this.y);
+    // this.width = (obj) ? obj.width - (possArgs.left + possArgs.right)
+    //                    : ( (possArgs.width) ? possArgs.width : this.width );
+    // this.height = (obj) ? obj.height - (possArgs.top + possArgs.bottom)
+    //                    : ( (possArgs.height) ? possArgs.height : this.height );
+    // this.zindex = ("zindex" in possArgs) ? possArgs.zindex : Handler.currentZindex;
+    // replace(x:number, y:number, width:number, height:number, zindex:number = undefined) {
+    //     if (x != undefined) this.x = x;
+    //     if (y != undefined)this.y = y;
+    //     if (width != undefined) this.width = width;
+    //     if (height != undefined) this.height = height;
+    //     if (zindex != undefined) this.zindex = zindex;
+    // }
     isCoordCompletelyOutside(WITHIN = this.within) {
         return ((WITHIN.x + WITHIN.width < this.x) ||
             (WITHIN.x > this.x + this.width) ||
@@ -681,7 +730,8 @@ class Handler {
     }
     static screensizeToCoord(dislaycell, handlerMargin) {
         let viewport = pf.viewport();
-        dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
+        dislaycell.coord.assign(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
+        //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
     static update(ArrayofHandlerInstances = Handler.activeHandlers, instanceNo = 0, derender = false) {
         // console.log("Update Fired");
@@ -690,7 +740,6 @@ class Handler {
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
         for (let index = 0; index < ArrayofHandlerInstances.length; index++) {
             let handlerInstance = ArrayofHandlerInstances[index];
-            // for (let handlerInstance of ArrayofHandlerInstances) {
             if (handlerInstance.preRenderCallback)
                 handlerInstance.preRenderCallback(handlerInstance);
             if (handlerInstance.coord) {
@@ -699,10 +748,10 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
             }
-            if (handlerInstance.controlledBySomething)
-                handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
-            else
-                handlerInstance.rootCell.coord.copyWithin(true);
+            // if (handlerInstance.controlledBySomething)
+            //     handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
+            // else 
+            //     handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
@@ -751,7 +800,7 @@ class Handler {
                 displaygroup.coord.copy(displaycell.coord);
                 if (displaygroup && htmlBlock) {
                     Handler.currentZindex += Handler.zindexIncrement;
-                    displaygroup.coord.copy(displaycell.coord, pf.uis0(htmlBlock.marginLeft), pf.uis0(htmlBlock.marginTop), pf.uis0(htmlBlock.marginRight), pf.uis0(htmlBlock.marginBottom));
+                    displaycell.coord.applyMargins(pf.uis0(htmlBlock.marginLeft), pf.uis0(htmlBlock.marginTop), pf.uis0(htmlBlock.marginRight), pf.uis0(htmlBlock.marginBottom));
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
@@ -887,8 +936,8 @@ class Handler {
             cellsizepx = (pf.isTypePx(displaycell.dim)) ? (pf.pxAsNumber(displaycell.dim)) : displayCellPx;
             width = (ishor) ? cellsizepx : coord.width;
             height = (ishor) ? coord.height : cellsizepx;
-            displaycell.coord.replace(x, y, width, height, Handler.currentZindex);
-            displaycell.coord.copyWithin(displaygroup.coord);
+            displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
+            displaycell.coord.cropWithin(displaygroup.coord.within);
             Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
             x += (ishor) ? width + displaygroup.marginHor : 0;
             y += (ishor) ? 0 : height + displaygroup.marginVer;
@@ -1420,7 +1469,7 @@ class DragBar {
         let y = (ishor) ? pcoord.y : ((isLast) ? pcoord.y - pxsize : pcoord.y + pcoord.height);
         let width = (ishor) ? pxsize : pcoord.width;
         let height = (ishor) ? pcoord.height : pxsize;
-        dragcell.coord.replace(x, y, width, height, Handler.currentZindex + Handler.zindexIncrement);
+        dragcell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex + Handler.zindexIncrement);
         dragcell.htmlBlock.css = (ishor) ? dragbar.horcss.classname : dragbar.vercss.classname;
         if (parentDisplaygroup.coord.isCoordCompletelyOutside(dragcell.coord))
             derender = true;
@@ -1548,7 +1597,7 @@ class ScrollBar {
         // let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
         // let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
         // let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
-        this.displaycell.coord.replace(x, y, width, height);
+        this.displaycell.coord.assign(x, y, width, height);
         // calculate inner scrollbar dimensions
         let preDisplayCell = this.displaycell.displaygroup.cellArray[1];
         let paddleDisplayCell = this.displaycell.displaygroup.cellArray[2];
@@ -1719,7 +1768,7 @@ class Context {
             x = mouseEvent.clientX - Context.subOverlapPx;
             y = mouseEvent.clientY - Context.subOverlapPx;
         }
-        this.coord.replace(x, y, this.width, this.height);
+        this.coord.assign(x, y, this.width, this.height);
         this.handler = H(this.displaycell, this.coord);
         let THIS = this;
         window.onmousemove = function (mouseEvent) { THIS.managePop(mouseEvent); };
@@ -1786,10 +1835,10 @@ class Modal {
                 height = numbers[1];
                 x = (vp[0] - width) / 2;
                 y = (vp[1] - height) / 2;
-                this.coord.replace(x, y, width, height);
+                this.coord.assign(x, y, width, height);
             }
             else if (numberOfArgs == 4) {
-                this.coord.replace(numbers[0], numbers[1], numbers[2], numbers[3]);
+                this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3]);
                 // console.log(pf.viewport())
                 let vp = pf.viewport();
                 // this.coord.copyWithin(0, 0, vp[0], vp[1], true)
