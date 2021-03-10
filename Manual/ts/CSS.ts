@@ -17,7 +17,6 @@ class CSS {
                                         width: -moz-calc(100% - 5px);
                                         width: -webkit-calc(100% - 5px);
                                         width: calc(100% - 5px);
-                                        height:323px;
                                         background-color: rgb(193, 243, 191)`)
     static inset = new Css("inset",`box-shadow: 2px 2px 5px black inset;
                                     margin: 20px;
@@ -34,6 +33,8 @@ class CSS {
                                 padding-right: 5px;
                                 cursor: pointer;`,
                                     `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`,)
+    static menuButton = css("menuButton",`background-color:blue;fill: white;`,
+                                        `cursor:pointer;background-color:white;fill: blue;`)
 
     static bgBlue = css("bgBlue",`background-color:blue;`);
     static bgGreen = css("bgGreen", `background-color:green`);
@@ -78,7 +79,7 @@ class CSS {
                                         align-items: center;
                                         justify-content: center;
                                         font-size: 20px;
-                                        ackground-color: #839ae6;
+                                        background-color: #839ae6;
                                         color:black;
                                         font-weight: bold;
                                         border-radius: 10px 10px 0px 0px;
@@ -91,4 +92,11 @@ class CSS {
                                             color:white;
                                             font-weight: bold;
                                             border-radius: 10px 10px 0px 0px;`);
-}
+    static menu_SVG(size:number = 50, color:string = "white"){ 
+            return `<svg width="${size}" height="${size}" viewBox="-20 0 532 512" xmlns="http://www.w3.org/2000/svg">
+    <path d="m464.883 64.267h-417.766c-25.98 0-47.117 21.136-47.117 47.149 0 25.98 21.137 47.117 47.117 47.117h417.766c25.98 0 47.117-21.137 47.117-47.117 0-26.013-21.137-47.149-47.117-47.149z"/>
+    <path d="m464.883 208.867h-417.766c-25.98 0-47.117 21.136-47.117 47.149 0 25.98 21.137 47.117 47.117 47.117h417.766c25.98 0 47.117-21.137 47.117-47.117 0-26.013-21.137-47.149-47.117-47.149z"/>
+    <path d="m464.883 353.467h-417.766c-25.98 0-47.117 21.137-47.117 47.149 0 25.98 21.137 47.117 47.117 47.117h417.766c25.98 0 47.117-21.137 47.117-47.117 0-26.012-21.137-47.149-47.117-47.149z"/>
+</svg>`;
+    }
+} // style="fill:${color};stroke:${color};stroke-width:1" 

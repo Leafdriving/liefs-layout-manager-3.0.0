@@ -1,5 +1,12 @@
 class CSS {
-}
+    static menu_SVG(size = 50, color = "white") {
+        return `<svg width="${size}" height="${size}" viewBox="-20 0 532 512" xmlns="http://www.w3.org/2000/svg">
+    <path d="m464.883 64.267h-417.766c-25.98 0-47.117 21.136-47.117 47.149 0 25.98 21.137 47.117 47.117 47.117h417.766c25.98 0 47.117-21.137 47.117-47.117 0-26.013-21.137-47.149-47.117-47.149z"/>
+    <path d="m464.883 208.867h-417.766c-25.98 0-47.117 21.136-47.117 47.149 0 25.98 21.137 47.117 47.117 47.117h417.766c25.98 0 47.117-21.137 47.117-47.117 0-26.013-21.137-47.149-47.117-47.149z"/>
+    <path d="m464.883 353.467h-417.766c-25.98 0-47.117 21.137-47.117 47.149 0 25.98 21.137 47.117 47.117 47.117h417.766c25.98 0 47.117-21.137 47.117-47.117 0-26.012-21.137-47.149-47.117-47.149z"/>
+</svg>`;
+    }
+} // style="fill:${color};stroke:${color};stroke-width:1" 
 CSS.h1 = new Css("h1", `border: 2px solid #1C6EA4;
                 border-radius: 10px;
                 background: #D1F5F3;
@@ -18,7 +25,6 @@ CSS.codeblock = css("codeblock", `margin-left: 5px;
                                         width: -moz-calc(100% - 5px);
                                         width: -webkit-calc(100% - 5px);
                                         width: calc(100% - 5px);
-                                        height:323px;
                                         background-color: rgb(193, 243, 191)`);
 CSS.inset = new Css("inset", `box-shadow: 2px 2px 5px black inset;
                                     margin: 20px;
@@ -32,6 +38,7 @@ CSS.cssNode = css("cssNode", `background-color:#edf9fa;
                                 padding-left: 5px;
                                 padding-right: 5px;
                                 cursor: pointer;`, `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`);
+CSS.menuButton = css("menuButton", `background-color:blue;fill: white;`, `cursor:pointer;background-color:white;fill: blue;`);
 CSS.bgBlue = css("bgBlue", `background-color:blue;`);
 CSS.bgGreen = css("bgGreen", `background-color:green`);
 CSS.bgRed = css("bgRed", `background-color:red`);
@@ -70,7 +77,7 @@ CSS.centerButton = css("centerButton", `display: flex;
                                         align-items: center;
                                         justify-content: center;
                                         font-size: 20px;
-                                        ackground-color: #839ae6;
+                                        background-color: #839ae6;
                                         color:black;
                                         font-weight: bold;
                                         border-radius: 10px 10px 0px 0px;
@@ -87,19 +94,19 @@ class CodeBlock {
         CodeBlock.instances.push(this);
         mf.applyArguments("CodeBlock", Arguments, CodeBlock.defaults, CodeBlock.argMap, this);
         this.javascript = `H("${this.label}_handler",  // opens a handler (Starts Liefs-layout-manager)
-    ${this.javascriptForEval.replace(/\n/g, "\n  ")}
-  )`;
+${this.javascriptForEval}
+)`;
         var elem = document.createElement('div');
-        elem.innerHTML = this.html.replace(/\n/g, "\n  ");
+        elem.innerHTML = this.html;
         document.body.appendChild(elem);
         this.html = `&lthtml lang="en">
-    &lthead>&ltmeta charset="utf-8">&lttitle>liefs-layout-manager ${this.label}&lt/title>
-    &ltscript src="../../js/liefs-layout-managerV3.0.0.js">&lt/script>
-    &lt/head>
-    &ltbody>
-    ${this.html.replace(/\n/g, "\n  ").replace(/</g, "&lt")}
-    &lt/body>
-  &lt/html>`;
+  &lthead>&ltmeta charset="utf-8">&lttitle>liefs-layout-manager ${this.label}&lt/title>
+  &ltscript src="../../js/liefs-layout-managerV3.0.0.js">&lt/script>
+  ${(this.css) ? "&ltstyle>\n" + this.css + "\n&lt/style>\n" : ""}&lt/head>
+  &ltbody>
+${this.html.replace(/</g, "&lt")}
+  &lt/body>
+&lt/html>`;
         this.build();
     }
     static byLabel(label) {
@@ -173,7 +180,7 @@ CodeBlock.defaults = {
     height: 200,
 };
 CodeBlock.argMap = {
-    string: ["label", "html", "javascriptForEval", "discription"],
+    string: ["label", "html", "javascriptForEval", "css"],
     number: ["height"]
 };
 function codeblock(...Arguments) {
@@ -191,13 +198,23 @@ let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutt
     TI("Part 3", [TI("3a")]),
 ]);
 // Framework
-H("MainHandler", 4, v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode), P("PAGES", I("Welcome", CSS.textBlack), I("Installation", CSS.textBlack), I("TheBasics", CSS.textBlack), I("BasicsDisplayCell", CSS.textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
-H("Example01", codeblock("Example01", `<!-- Nothing Here in this example -->`, `h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
-  I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
-  I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
-)`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
-H("Example01a", codeblock("Example01a", `<div id="Example01_a">one</div>
-  <div id="Example01_b">two</div>`, `h("Example01a",  // create Horizontal DisplayGroup (In DisplayCell)
-  I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
-  I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
-)`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+let MainPages = P("PAGES", I("Welcome", CSS.textBlack), I("Installation", CSS.textBlack), I("TheBasics", CSS.textBlack), I("BasicsDisplayCell", CSS.textBlack));
+let LargeScreen = v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode), MainPages));
+let SmallScreen = v("Small_v", h("Small_h", "40px", I("MenuButton", CSS.menu_SVG(40), "40px", CSS.menuButton), I("TitleBar2", CSS.cssTitle)), MainPages);
+let sizeFunction = function (thisPages) {
+    let [x, y] = pf.viewport();
+    // if (returnValue != thisPages.currentPage) {}
+    return (x > 920) ? 0 : 1;
+};
+H("MainHandler", 4, P("MainSizer", LargeScreen, SmallScreen, sizeFunction), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+H("Example01", codeblock("Example01", `<!-- Nothing Here in this example -->`, `  h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
+    I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+    I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+  )`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+css("#Example01_a", "background-color: green", false);
+css("#Example01_b", "background-color: cyan", false);
+H("Example01a", codeblock("Example01a", `    <div id="Example01_a">one</div>
+    <div id="Example01_b">two</div>`, `  h("Example01a",  // create Horizontal DisplayGroup (In DisplayCell)
+    I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
+    I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
+  )`, `#Example01_a {background-color: green}\n#Example01_b {background-color: cyan}`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });

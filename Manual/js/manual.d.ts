@@ -4,6 +4,7 @@ declare class CSS {
     static codeblock: Css;
     static inset: Css;
     static cssNode: Css;
+    static menuButton: Css;
     static bgBlue: Css;
     static bgGreen: Css;
     static bgRed: Css;
@@ -18,6 +19,7 @@ declare class CSS {
     static centerText: Css;
     static leftText: Css;
     static centerButton: Css;
+    static menu_SVG(size?: number, color?: string): string;
 }
 declare class CodeBlock {
     static byLabel(label: string): CodeBlock;
@@ -37,7 +39,6 @@ declare class CodeBlock {
     javascript: string;
     javascriptForEval: string;
     css: string;
-    discription: string;
     htmlDisplayCell: DisplayCell;
     javascriptDisplayCell: DisplayCell;
     evalDisplayCell: DisplayCell;
@@ -50,3 +51,7 @@ declare function codeblock(...Arguments: any): DisplayCell;
 declare var Prism: any;
 declare let clickTreeItemEvent: Events;
 declare let treeOfNodes: t_;
+declare let MainPages: DisplayCell;
+declare let LargeScreen: DisplayCell;
+declare let SmallScreen: DisplayCell;
+declare let sizeFunction: (thisPages: Pages) => number;

@@ -15,6 +15,7 @@
     <div class="remove" style="display:none">
 
       <div id="TitleBar">Liefs-layout-manager&nbsp;&nbsp;&nbsp;The Manual</div>
+      <div id="TitleBar2">Liefs-layout-manager&nbsp;&nbsp;&nbsp;The Manual</div>
 
       <div id="Welcome">
 <div class="h1">Welcome To Liefs-Layout-Manager!</div><p>
@@ -46,7 +47,7 @@ All other layout systems work in conjunction with this one.  The only restrictio
 you can't use the 'style' inline attribute for liefs-layout-manager divs. (but you can for child divs)
 this is because the mapping system overrides these values with "left: ; top: ; width: ; height: ; zindex: " attributes.</p>
 <div class="h1">Starting Point - Two Items (divs) in a horizontal container</div><br><br>
-<div parentof="Example01" class="codeblock"></div>
+<div parentof="Example01" class="codeblock" style="height:323px;"></div>
 <p><span style="text-decoration: underline;">html file:</span> simply link to liefs-layout-manager! your 'div' elemnts can be
 added here, like usual (see later), however in this example, all 'div's are created in the Javascript File, as the 2nd string argument
 in the I() function</p>
@@ -122,9 +123,12 @@ H( {some code} ) // invoking a handler like this starts liefs-layout-manager fra
 </p>
 <p>All Objects in Liefs-layout-manager MUST have a label. If one is not specified, it will be automaticaly Generated.</p>
 <p>Both CSS and 'Div' elements can OPTIONALLY be added in either the HTML file, OR the javascript part/file.</p>
-<div parentof="Example01" class="codeblock"></div>
+<div class="h1">Elements & Css in Javascript</div><br><br>
+<div parentof="Example01" class="codeblock" style="height:323px;"></div>
 <p>We COULD just keep the html and the css like we normally do, like this:</p>
-<div parentof="Example01a" class="codeblock"></div>
+<div class="h1">Elements & Css in HTML</div><br><br>
+<div parentof="Example01a" class="codeblock" style="height:400px;"></div>
+<br><br><br>
     </div>
 
 
@@ -135,7 +139,6 @@ H( {some code} ) // invoking a handler like this starts liefs-layout-manager fra
 </p>
 <p>In our simplest example here, we have programmed everything in Javascript:</p>
     </div>
-
 </body>
 </html>
 <script src="js/manual.js"></script>

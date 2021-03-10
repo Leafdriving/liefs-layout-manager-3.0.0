@@ -29,7 +29,7 @@ class CodeBlock {
       height:200,
     }
     static argMap = {
-      string : ["label", "html", "javascriptForEval", "discription"],
+      string : ["label", "html", "javascriptForEval", "css"],
       number : ["height"]
     }
   
@@ -38,7 +38,6 @@ class CodeBlock {
     javascript:string;
     javascriptForEval:string;
     css:string;
-    discription: string
     htmlDisplayCell: DisplayCell;
     javascriptDisplayCell: DisplayCell;
     evalDisplayCell: DisplayCell;
@@ -51,19 +50,19 @@ class CodeBlock {
       CodeBlock.instances.push(this);
       mf.applyArguments("CodeBlock", Arguments, CodeBlock.defaults, CodeBlock.argMap, this);
       this.javascript = `H("${this.label}_handler",  // opens a handler (Starts Liefs-layout-manager)
-    ${this.javascriptForEval.replace(/\n/g, "\n  ")}
-  )`;
+${this.javascriptForEval}
+)`;
       var elem = document.createElement('div');
-      elem.innerHTML = this.html.replace(/\n/g, "\n  ");
+      elem.innerHTML = this.html;
       document.body.appendChild(elem);
       this.html = `&lthtml lang="en">
-    &lthead>&ltmeta charset="utf-8">&lttitle>liefs-layout-manager ${this.label}&lt/title>
-    &ltscript src="../../js/liefs-layout-managerV3.0.0.js">&lt/script>
-    &lt/head>
-    &ltbody>
-    ${this.html.replace(/\n/g, "\n  ").replace(/</g, "&lt")}
-    &lt/body>
-  &lt/html>`;
+  &lthead>&ltmeta charset="utf-8">&lttitle>liefs-layout-manager ${this.label}&lt/title>
+  &ltscript src="../../js/liefs-layout-managerV3.0.0.js">&lt/script>
+  ${(this.css) ? "&ltstyle>\n" + this.css + "\n&lt/style>\n" :""}&lt/head>
+  &ltbody>
+${this.html.replace(/</g, "&lt")}
+  &lt/body>
+&lt/html>`;
   
     this.build();
     }
