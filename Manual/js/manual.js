@@ -197,10 +197,21 @@ let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutt
     ]),
     TI("Part 3", [TI("3a")]),
 ]);
+let mainTree = tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode);
 // Framework
 let MainPages = P("PAGES", I("Welcome", CSS.textBlack), I("Installation", CSS.textBlack), I("TheBasics", CSS.textBlack), I("BasicsDisplayCell", CSS.textBlack));
-let LargeScreen = v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode), MainPages));
-let SmallScreen = v("Small_v", h("Small_h", "40px", I("MenuButton", CSS.menu_SVG(40), "40px", CSS.menuButton), I("TitleBar2", CSS.cssTitle)), MainPages);
+let LargeScreen = v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, mainTree, MainPages));
+let MenuSvgSize = 40;
+let SmallScreen = v("Small_v", h("Small_h", `${MenuSvgSize}px`, I("MenuButton", CSS.menu_SVG(MenuSvgSize), `${MenuSvgSize}px`, CSS.menuButton, events({
+    onclick: function () {
+        if (Handler.activeHandlers.indexOf(slideMenu) == -1) {
+            Handler.activeHandlers.push(slideMenu);
+            Handler.update();
+        }
+        else
+            slideMenu.pop();
+    }
+})), I("TitleBar2", CSS.cssTitle)), MainPages);
 let sizeFunction = function (thisPages) {
     let [x, y] = pf.viewport();
     // if (returnValue != thisPages.currentPage) {}
@@ -218,3 +229,4 @@ H("Example01a", codeblock("Example01a", `    <div id="Example01_a">one</div>
     I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
     I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
   )`, `#Example01_a {background-color: green}\n#Example01_b {background-color: cyan}`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+let slideMenu = H("SlideMenu", v("slide_v", I(`${MenuSvgSize}px`), h("slide_h", I("smallMenu", "SmallMenu", "280px", CSS.bgBlack), I())), false);

@@ -19,6 +19,15 @@ TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
     ],
 )
 
+let mainTree =
+tree( "TOC",
+  dragbar(I("MainTree", "", CSS.bgGreen, "300px"),100, 500),
+  treeOfNodes,
+  {SVGColor:"black"},
+  clickTreeItemEvent,
+  CSS.cssNode,
+)
+
 // Framework
 
 let MainPages = P("PAGES",
@@ -32,26 +41,26 @@ let LargeScreen =
 v("Main Vertical",
   I("TitleBar", "30px", CSS.cssTitle),
   h("MainBody", 5,
-    tree( "TOC",
-      dragbar(I("MainTree", "", CSS.bgGreen, "300px"),100, 500),
-      treeOfNodes,
-      {SVGColor:"black"},
-      clickTreeItemEvent,
-      CSS.cssNode,
-    ),
+    mainTree,
     MainPages,
   ),
 )
+let MenuSvgSize = 40;
 let SmallScreen =
 v("Small_v",
-  h("Small_h", "40px",
-    I("MenuButton", CSS.menu_SVG(40) , "40px", CSS.menuButton),
+  h("Small_h", `${MenuSvgSize}px`,
+    I("MenuButton", CSS.menu_SVG(MenuSvgSize) , `${MenuSvgSize}px`, CSS.menuButton, events({
+      onclick:function(){
+              if (Handler.activeHandlers.indexOf(slideMenu) == -1) {
+                Handler.activeHandlers.push(slideMenu);
+                Handler.update();
+              }
+              else slideMenu.pop();
+      }})),
     I("TitleBar2", CSS.cssTitle),
   ),
   MainPages,
 )
-
-
 
 let sizeFunction = function(thisPages:Pages):number {
   let [x, y] = pf.viewport();
@@ -91,4 +100,15 @@ H("Example01a",
     ),
     false,
     {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
+)
+let slideMenu =
+H("SlideMenu",
+  v("slide_v",
+    I(`${MenuSvgSize}px`),
+    h("slide_h",
+      I("smallMenu","SmallMenu", "280px", CSS.bgBlack),
+      I(),
+    )
+  ),
+  false,
 )
