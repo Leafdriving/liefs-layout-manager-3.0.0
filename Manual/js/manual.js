@@ -30,6 +30,7 @@ CSS.inset = new Css("inset", `box-shadow: 2px 2px 5px black inset;
                                     margin: 20px;
                                     display: inline;
                                     padding: 10px;`);
+CSS.slideTree = css("slideTree", `background-color: black;color:white;font-size: 20px;display: flex; justify-content: center;align-items: center;`, `background-color: white;color:black;`);
 CSS.cssNode = css("cssNode", `background-color:#edf9fa;
                                     border-radius: 5px;
                                     padding-left: 5px;
@@ -198,6 +199,7 @@ let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutt
     TI("Part 3", [TI("3a")]),
 ]);
 let mainTree = tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode);
+let slideTree = tree("TOC_slide", I("SlideTree", "", CSS.bgBlack, "350px"), treeOfNodes, { SVGColor: "white" }, CSS.slideTree, 35, events({ onclick: function () { slideMenu.pop(); } }));
 // Framework
 let MainPages = P("PAGES", I("Welcome", CSS.textBlack), I("Installation", CSS.textBlack), I("TheBasics", CSS.textBlack), I("BasicsDisplayCell", CSS.textBlack));
 let LargeScreen = v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, mainTree, MainPages));
@@ -214,6 +216,8 @@ let SmallScreen = v("Small_v", h("Small_h", `${MenuSvgSize}px`, I("MenuButton", 
 })), I("TitleBar2", CSS.cssTitle)), MainPages);
 let sizeFunction = function (thisPages) {
     let [x, y] = pf.viewport();
+    if (x > 920)
+        slideMenu.pop();
     // if (returnValue != thisPages.currentPage) {}
     return (x > 920) ? 0 : 1;
 };
@@ -229,4 +233,4 @@ H("Example01a", codeblock("Example01a", `    <div id="Example01_a">one</div>
     I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
     I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
   )`, `#Example01_a {background-color: green}\n#Example01_b {background-color: cyan}`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
-let slideMenu = H("SlideMenu", v("slide_v", I(`${MenuSvgSize}px`), h("slide_h", I("smallMenu", "SmallMenu", "280px", CSS.bgBlack), I())), false);
+let slideMenu = H("SlideMenu", v("slide_v", I(`${MenuSvgSize}px`), h("slide_h", slideTree, I())), false);

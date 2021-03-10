@@ -28,6 +28,15 @@ tree( "TOC",
   CSS.cssNode,
 )
 
+let slideTree =
+tree( "TOC_slide",
+  I("SlideTree", "", CSS.bgBlack, "350px"),
+  treeOfNodes,
+  {SVGColor:"white"},
+  CSS.slideTree,
+  35,
+  events({onclick:function(){slideMenu.pop()}})
+)
 // Framework
 
 let MainPages = P("PAGES",
@@ -64,6 +73,7 @@ v("Small_v",
 
 let sizeFunction = function(thisPages:Pages):number {
   let [x, y] = pf.viewport();
+  if (x > 920) slideMenu.pop();
   // if (returnValue != thisPages.currentPage) {}
   return (x > 920) ? 0 : 1;
 }
@@ -106,7 +116,7 @@ H("SlideMenu",
   v("slide_v",
     I(`${MenuSvgSize}px`),
     h("slide_h",
-      I("smallMenu","SmallMenu", "280px", CSS.bgBlack),
+      slideTree,
       I(),
     )
   ),

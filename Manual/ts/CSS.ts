@@ -22,7 +22,9 @@ class CSS {
                                     margin: 20px;
                                     display: inline;
                                     padding: 10px;`)                
-
+    static slideTree = css("slideTree",
+    `background-color: black;color:white;font-size: 20px;display: flex; justify-content: center;align-items: center;`,
+    `background-color: white;color:black;`);
     static cssNode = css("cssNode",`background-color:#edf9fa;
                                     border-radius: 5px;
                                     padding-left: 5px;

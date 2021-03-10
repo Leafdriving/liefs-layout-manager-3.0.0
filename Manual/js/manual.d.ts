@@ -3,6 +3,7 @@ declare class CSS {
     static p: Css;
     static codeblock: Css;
     static inset: Css;
+    static slideTree: Css;
     static cssNode: Css;
     static menuButton: Css;
     static bgBlue: Css;
@@ -52,6 +53,7 @@ declare var Prism: any;
 declare let clickTreeItemEvent: Events;
 declare let treeOfNodes: t_;
 declare let mainTree: DisplayCell;
+declare let slideTree: DisplayCell;
 declare let MainPages: DisplayCell;
 declare let LargeScreen: DisplayCell;
 declare let MenuSvgSize: number;
