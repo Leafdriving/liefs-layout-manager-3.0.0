@@ -13,11 +13,27 @@ class CSS {
     static p = new Css("p",`text-indent: 30px;
                 margin-left: 10px;
                 font-size: 18px;`, false);
-                
+    static codeblock = css("codeblock", `margin-left: 5px;
+                                        width: -moz-calc(100% - 5px);
+                                        width: -webkit-calc(100% - 5px);
+                                        width: calc(100% - 5px);
+                                        height:323px;
+                                        background-color: rgb(193, 243, 191)`)
+    static inset = new Css("inset",`box-shadow: 2px 2px 5px black inset;
+                                    margin: 20px;
+                                    display: inline;
+                                    padding: 10px;`)                
 
-    static cssNode = css("cssNode",`background-color:#edf9fa;border-radius: 5px;padding-left: 5px;padding-right: 5px;`,
-                                `background-color:#eaeda6;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`,
-                                `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`,)
+    static cssNode = css("cssNode",`background-color:#edf9fa;
+                                    border-radius: 5px;
+                                    padding-left: 5px;
+                                    padding-right: 5px;`,
+                                `background-color:#eaeda6;
+                                border-radius: 5px;
+                                padding-left: 5px;
+                                padding-right: 5px;
+                                cursor: pointer;`,
+                                    `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`,)
 
     static bgBlue = css("bgBlue",`background-color:blue;`);
     static bgGreen = css("bgGreen", `background-color:green`);
@@ -26,21 +42,53 @@ class CSS {
 
     static textWhite = css("textWhite", "color:white");
     static textBlue = css("textBlue", "color:blue");
+    static textBlueLink = css("textBlueLink", "color:blue;cursor: pointer;");
     static textCenter = css("textCenter", "text-align: center;");
     static textBlack = css("textBlack", "color:black;overflow-y: auto;font-size: 20px;")
 
-    static cssTitle = css("title", "background-color:blue;color:white;text-align: center;font-size: 24px;")
+    static cssTitle = css("title", `background-color:blue;
+                                    color:white;
+                                    text-align: center;
+                                    font-size: 24px;`)
 
-    static cssBold = css("bold", "text-decoration: underline;font-weight:bold;background-color: yellow;")
+    static cssBold = css("bold",    `text-decoration: underline;
+                                    font-weight:bold;
+                                    background-color: yellow;`)
 
-    static centerText = css("centerText", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: blue;color:white;font-weight: bold;`);
-    static leftText = css("leftText", `font-size: 25px;background-color: #ADD8E6;color:black;font-weight: bold;`);
-    static centerButton = css("centerButton",
-    `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #ADD8E6;`
-    +`color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;`,
-    `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #839ae6;`
-    +`color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;cursor:pointer;`,
-    `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #4D4DFF;`
-    +`color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`
-);
+    static centerText = css("centerText", `display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-size: 20px;
+                                            background-color: blue;
+                                            color:white;
+                                            font-weight: bold;`);
+    static leftText = css("leftText", `font-size: 25px;
+                                        background-color: #ADD8E6;
+                                        color:black;
+                                        font-weight: bold;`);
+    static centerButton = css("centerButton",`display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-size: 20px;
+                                            background-color: #ADD8E6;
+                                            color:black;
+                                            font-weight: bold;
+                                            border-radius: 10px 10px 0px 0px;`,
+                                        `display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 20px;
+                                        ackground-color: #839ae6;
+                                        color:black;
+                                        font-weight: bold;
+                                        border-radius: 10px 10px 0px 0px;
+                                        cursor:pointer;`,
+                                            `display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-size: 20px;
+                                            background-color: #4D4DFF;
+                                            color:white;
+                                            font-weight: bold;
+                                            border-radius: 10px 10px 0px 0px;`);
 }

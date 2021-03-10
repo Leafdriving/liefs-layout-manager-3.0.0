@@ -46,8 +46,7 @@ All other layout systems work in conjunction with this one.  The only restrictio
 you can't use the 'style' inline attribute for liefs-layout-manager divs. (but you can for child divs)
 this is because the mapping system overrides these values with "left: ; top: ; width: ; height: ; zindex: " attributes.</p>
 <div class="h1">Starting Point - Two Items (divs) in a horizontal container</div><br><br>
-<div parentof="Example01" 
-  style="margin-left: 5px;width: -moz-calc(100% - 5px);width: -webkit-calc(100% - 5px);width: calc(100% - 5px);height:323px;background-color: rgb(193, 243, 191)"></div>
+<div parentof="Example01" class="codeblock"></div>
 <p><span style="text-decoration: underline;">html file:</span> simply link to liefs-layout-manager! your 'div' elemnts can be
 added here, like usual (see later), however in this example, all 'div's are created in the Javascript File, as the 2nd string argument
 in the I() function</p>
@@ -56,15 +55,28 @@ in the I() function</p>
 <p>This is the basic structure for working with this framework!</p>
       </div>
 
+
+
+
+
+
       <div id="Installation">
 <div class="h1">Installation</div><p>Lief Layout Manager is "installed" by simply adding
 one javascript file to your html file.(index.html probably)</p>
-<p>load <span class="bold">liefs-layout-managerV3.0.0.js</span> or more likely, <span class="bold">liefs-layout-managerV3.0.0.min.js</span></p>
+
 <p>At time of posting, you can find the file under this repo:<br>
-  <a href="https://github.com/Leafdriving/liefs-layout-manager-3.0.0/">https://github.com/Leafdriving/liefs-layout-manager-3.0.0/</a>
-<br>or to be more percise, this file:<br>
-<a href="https://raw.githubusercontent.com/Leafdriving/liefs-layout-manager-3.0.0/master/js/liefs-layout-managerV3.0.0.js">https://raw.githubusercontent.com/Leafdriving/liefs-layout-manager-3.0.0/master/js/liefs-layout-managerV3.0.0.js</a>
-(Right-click -> save (as))</p>
+  <div class="inset">
+    <a href="https://github.com/Leafdriving/liefs-layout-manager-3.0.0/">https://github.com/Leafdriving/liefs-layout-manager-3.0.0/</a>
+  </div><br><br>
+  <p>If you just wish to add one link to your html file (No Cors Error):</p>
+  <div class="inset">
+    <a href="https://leafdriving.github.io/js/liefs-layout-managerV3.0.0.js">https://leafdriving.github.io/js/liefs-layout-managerV3.0.0.js</a>
+  </div><br><p>(Right-click -> save (as)) or just link to this file directly.</p>
+  <p>If you wish to use npm, you can install it like this:</p>
+  <div class="inset">
+    npm install liefs-layout-manager --save    
+  </div><br><br>
+</p>
 <p>This is the basic boilerplate for your code:</p>
 <pre><code class="language-markup" style="font-size: medium;">&lt!doctype html>
 &lthtml lang="en">
@@ -95,6 +107,34 @@ H( {some code} ) // invoking a handler like this starts liefs-layout-manager fra
 &lt/script>    &lt!--  or just adding it to the END of your html -->
 </code></pre>
       </div>
+
+
+    <div id="TheBasics">
+<div class="h1">Basics Of Liefs Layout Manager</div>
+<p>Liefs Layout Manager is basically an Object Tree, just like all file systems.</p>
+<p>Terms</p>
+<p>
+  <ul>
+    <li><span class="textBlueLink">DisplayCell</span> : All nodes of the tree are contained within a DisplayCell</li>
+    <li><span class="textBlueLink">DisplayGroup</span> : Holds an array of DisplayCells (Children) within a DisplayCell</li>
+    <li><span class="textBlueLink">Handler</span> : Holds the "root" DisplayCell, and renders the result to the screen</li>
+  </ul>
+</p>
+<p>All Objects in Liefs-layout-manager MUST have a label. If one is not specified, it will be automaticaly Generated.</p>
+<p>Both CSS and 'Div' elements can OPTIONALLY be added in either the HTML file, OR the javascript part/file.</p>
+<div parentof="Example01" class="codeblock"></div>
+<p>We COULD just keep the html and the css like we normally do, like this:</p>
+<div parentof="Example01a" class="codeblock"></div>
+    </div>
+
+
+    <div id="BasicsDisplayCell">
+<div class="h1">The Basics Of DisplayCell</div>
+<p>DisplayCell is an object that acts as a node in rendering your display.  It has is own position (x, y, width, height),
+  optionally children (more display cells), and optionally a htmlBlock (basically the 'div' element should one be rendered)
+</p>
+<p>In our simplest example here, we have programmed everything in Javascript:</p>
+    </div>
 
 </body>
 </html>

@@ -1,3 +1,9 @@
+declare class FunctionStack {
+    static instanceObj: {};
+    static push(label: string, function_: Function): void;
+    static function(label: string): (...Arguments: any) => void;
+    static pop(label: string): void;
+}
 interface ArgsObj {
     [type: string]: any[];
 }

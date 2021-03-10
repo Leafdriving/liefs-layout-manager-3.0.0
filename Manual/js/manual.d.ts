@@ -1,6 +1,8 @@
 declare class CSS {
     static h1: Css;
     static p: Css;
+    static codeblock: Css;
+    static inset: Css;
     static cssNode: Css;
     static bgBlue: Css;
     static bgGreen: Css;
@@ -8,6 +10,7 @@ declare class CSS {
     static bgBlack: Css;
     static textWhite: Css;
     static textBlue: Css;
+    static textBlueLink: Css;
     static textCenter: Css;
     static textBlack: Css;
     static cssTitle: Css;

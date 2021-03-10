@@ -8,6 +8,7 @@
         "module" :"amd",
     },
     "files": [
+        "ts/FunctionStack.ts",        
         "ts/PureFunctions.ts",
         "ts/Coord.ts",
         "ts/htmlBlock.ts",

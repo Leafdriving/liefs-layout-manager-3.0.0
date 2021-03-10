@@ -14,23 +14,74 @@ CSS.h1 = new Css("h1", `border: 2px solid #1C6EA4;
 CSS.p = new Css("p", `text-indent: 30px;
                 margin-left: 10px;
                 font-size: 18px;`, false);
-CSS.cssNode = css("cssNode", `background-color:#edf9fa;border-radius: 5px;padding-left: 5px;padding-right: 5px;`, `background-color:#eaeda6;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`, `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`);
+CSS.codeblock = css("codeblock", `margin-left: 5px;
+                                        width: -moz-calc(100% - 5px);
+                                        width: -webkit-calc(100% - 5px);
+                                        width: calc(100% - 5px);
+                                        height:323px;
+                                        background-color: rgb(193, 243, 191)`);
+CSS.inset = new Css("inset", `box-shadow: 2px 2px 5px black inset;
+                                    margin: 20px;
+                                    display: inline;
+                                    padding: 10px;`);
+CSS.cssNode = css("cssNode", `background-color:#edf9fa;
+                                    border-radius: 5px;
+                                    padding-left: 5px;
+                                    padding-right: 5px;`, `background-color:#eaeda6;
+                                border-radius: 5px;
+                                padding-left: 5px;
+                                padding-right: 5px;
+                                cursor: pointer;`, `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`);
 CSS.bgBlue = css("bgBlue", `background-color:blue;`);
 CSS.bgGreen = css("bgGreen", `background-color:green`);
 CSS.bgRed = css("bgRed", `background-color:red`);
 CSS.bgBlack = css("bgBlack", `background-color:black`);
 CSS.textWhite = css("textWhite", "color:white");
 CSS.textBlue = css("textBlue", "color:blue");
+CSS.textBlueLink = css("textBlueLink", "color:blue;cursor: pointer;");
 CSS.textCenter = css("textCenter", "text-align: center;");
 CSS.textBlack = css("textBlack", "color:black;overflow-y: auto;font-size: 20px;");
-CSS.cssTitle = css("title", "background-color:blue;color:white;text-align: center;font-size: 24px;");
-CSS.cssBold = css("bold", "text-decoration: underline;font-weight:bold;background-color: yellow;");
-CSS.centerText = css("centerText", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: blue;color:white;font-weight: bold;`);
-CSS.leftText = css("leftText", `font-size: 25px;background-color: #ADD8E6;color:black;font-weight: bold;`);
-CSS.centerButton = css("centerButton", `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #ADD8E6;`
-    + `color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;`, `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #839ae6;`
-    + `color:black;font-weight: bold;border-radius: 10px 10px 0px 0px;cursor:pointer;`, `display: flex;align-items: center;justify-content: center;font-size: 20px;background-color: #4D4DFF;`
-    + `color:white;font-weight: bold;border-radius: 10px 10px 0px 0px;`);
+CSS.cssTitle = css("title", `background-color:blue;
+                                    color:white;
+                                    text-align: center;
+                                    font-size: 24px;`);
+CSS.cssBold = css("bold", `text-decoration: underline;
+                                    font-weight:bold;
+                                    background-color: yellow;`);
+CSS.centerText = css("centerText", `display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-size: 20px;
+                                            background-color: blue;
+                                            color:white;
+                                            font-weight: bold;`);
+CSS.leftText = css("leftText", `font-size: 25px;
+                                        background-color: #ADD8E6;
+                                        color:black;
+                                        font-weight: bold;`);
+CSS.centerButton = css("centerButton", `display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-size: 20px;
+                                            background-color: #ADD8E6;
+                                            color:black;
+                                            font-weight: bold;
+                                            border-radius: 10px 10px 0px 0px;`, `display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-size: 20px;
+                                        ackground-color: #839ae6;
+                                        color:black;
+                                        font-weight: bold;
+                                        border-radius: 10px 10px 0px 0px;
+                                        cursor:pointer;`, `display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            font-size: 20px;
+                                            background-color: #4D4DFF;
+                                            color:white;
+                                            font-weight: bold;
+                                            border-radius: 10px 10px 0px 0px;`);
 class CodeBlock {
     constructor(...Arguments) {
         CodeBlock.instances.push(this);
@@ -135,12 +186,18 @@ let clickTreeItemEvent = events({ onclick: function (mouseEvent) {
         // console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
     } });
 let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutton: "PAGES|0" } }, [TI("Installation", Pages.button("PAGES", 1)),
-    TI("Part 2"),
+    TI("The Basics", Pages.button("PAGES", 2), [TI("DisplayCell", Pages.button("PAGES", 3))
+    ]),
     TI("Part 3", [TI("3a")]),
 ]);
 // Framework
-H("MainHandler", 4, v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode), P("PAGES", I("Welcome", CSS.textBlack), I("Installation", CSS.textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+H("MainHandler", 4, v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode), P("PAGES", I("Welcome", CSS.textBlack), I("Installation", CSS.textBlack), I("TheBasics", CSS.textBlack), I("BasicsDisplayCell", CSS.textBlack)))), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
 H("Example01", codeblock("Example01", `<!-- Nothing Here in this example -->`, `h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
   I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
   I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+)`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+H("Example01a", codeblock("Example01a", `<div id="Example01_a">one</div>
+  <div id="Example01_b">two</div>`, `h("Example01a",  // create Horizontal DisplayGroup (In DisplayCell)
+  I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
+  I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
 )`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });

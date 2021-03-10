@@ -10,7 +10,10 @@ let clickTreeItemEvent = events({onclick:function(mouseEvent:MouseEvent){
 let treeOfNodes:t_ = 
 TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
     [TI("Installation", Pages.button("PAGES",1) ),
-    TI("Part 2"),
+    TI("The Basics", Pages.button("PAGES",2),
+        [TI("DisplayCell", Pages.button("PAGES",3))
+        ]
+    ),
     TI("Part 3",
         [TI("3a")]),
     ],
@@ -32,6 +35,8 @@ H("MainHandler", 4,
       P("PAGES",
         I("Welcome", CSS.textBlack),
         I("Installation", CSS.textBlack),
+        I("TheBasics", CSS.textBlack),
+        I("BasicsDisplayCell", CSS.textBlack),
       ),
     ),
   ),
@@ -43,6 +48,17 @@ H("Example01",
               `h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
   I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
   I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+)`,
+    ),
+    false,
+    {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
+)
+H("Example01a",
+    codeblock("Example01a", `<div id="Example01_a">one</div>
+  <div id="Example01_b">two</div>`,
+              `h("Example01a",  // create Horizontal DisplayGroup (In DisplayCell)
+  I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
+  I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
 )`,
     ),
     false,

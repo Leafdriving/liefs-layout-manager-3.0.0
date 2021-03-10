@@ -34,7 +34,10 @@ class Observe {
         this.parentDisplayCell.htmlBlock.el.onscroll = function(event:WheelEvent){Observe.onScroll(event);};
         handler.controlledBySomething = true;
 
-        this.parentDisplayCell.postRenderCallback = function(displaycell: DisplayCell,
+        if (!this.parentDisplayCell.postRenderCallback)
+            this.parentDisplayCell.postRenderCallback = FunctionStack.function(this.parentDisplayCell.label);
+
+        FunctionStack.push(this.parentDisplayCell.label, function(displaycell: DisplayCell,
             parentDisplaygroup: DisplayGroup = undefined, index:number = undefined, derender:boolean = false){
 
                 let el = displaycell.htmlBlock.el
@@ -53,11 +56,12 @@ class Observe {
                 hCoord.within.width=dCoord.width - ((el.scrollHeight > el.clientHeight) ? Observe.Os_ScrollbarSize : 0 );
                 hCoord.within.height=dCoord.height- ((el.scrollWidth > el.clientWidth) ? Observe.Os_ScrollbarSize : 0 );
 
-            }
+            });
         Handler.update()
     }
     static derender(displaycell:DisplayCell){
         let handler:Handler;
+        // 
         for (let index = 0; index < Observe.instances.length; index++) {
             let observeInstance = Observe.instances[index];
             if (observeInstance.parentDisplayCell == displaycell){
@@ -66,19 +70,13 @@ class Observe {
                 if (Hindex > -1) {
                     Handler.activeHandlers.splice(Hindex,1);
                 }
-                displaycell.postRenderCallback = function(){};
-                // observeInstance.derendering = true;
-                // console.log("Observe Derender!", handler.rootCell)
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);
-
                 Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true)
-                // console.log("Derendered!",handler.rootCell)
-
-                // Handler.update([handler], 0, true);
- 
+                index -= 1;
             }
         }
+        FunctionStack.pop(displaycell.label);
     }
     static onScroll(event:WheelEvent) {
         for (let index = 0; index < Observe.instances.length; index++) {
