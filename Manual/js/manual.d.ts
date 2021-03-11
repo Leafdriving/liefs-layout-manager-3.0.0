@@ -4,6 +4,7 @@ declare class CSS {
     static p: Css;
     static codeblock: Css;
     static inset: Css;
+    static insetLarge: Css;
     static slideTree: Css;
     static cssNode: Css;
     static menuButton: Css;
@@ -11,6 +12,9 @@ declare class CSS {
     static bgGreen: Css;
     static bgRed: Css;
     static bgBlack: Css;
+    static bgLBlue: Css;
+    static bgLBlue2: Css;
+    static outline: Css;
     static textWhite: Css;
     static textBlue: Css;
     static textBlueLink: Css;
@@ -52,11 +56,11 @@ declare class CodeBlock {
 declare function codeblock(...Arguments: any): DisplayCell;
 declare var Prism: any;
 declare let clickTreeItemEvent: Events;
+declare function header(label: string, index: number, size?: number): DisplayCell;
+declare let MainPages: DisplayCell;
 declare let treeOfNodes: t_;
 declare let mainTree: DisplayCell;
 declare let slideTree: DisplayCell;
-declare function header(label: string, index: number, size?: number): DisplayCell;
-declare let MainPages: DisplayCell;
 declare let LargeScreen: DisplayCell;
 declare let MenuSvgSize: number;
 declare let SmallScreen: DisplayCell;

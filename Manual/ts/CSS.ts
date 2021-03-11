@@ -12,14 +12,12 @@ class CSS {
                 font-size: 24px;
                 display: inline-block;`);
     static h1h = new Css("h1h",`border: 2px solid #1C6EA4;
+                padding-left : 6px;
                 border-radius: 10px;
                 background: #D1F5F3;
                 -webkit-box-shadow: 3px 6px 7px -1px #000000; 
                 box-shadow: 3px 6px 7px -1px #000000;
-                padding-left: 5px;
-                padding-bottom: 3px;
-                padding-top: -3px;
-                font-size: 24px;`,`background: blue;color:white;cursor:pointer`);                
+                font-size: 24px;`,`background: #42aaf5;cursor:pointer`);                
     static p = new Css("p",`text-indent: 30px;
                 margin-left: 10px;
                 font-size: 18px;`, false);
@@ -31,20 +29,35 @@ class CSS {
     static inset = new Css("inset",`box-shadow: 2px 2px 5px black inset;
                                     margin: 20px;
                                     display: inline;
-                                    padding: 10px;`)                
+                                    padding: 10px;`);
+    static insetLarge = new Css("insetLarge",`box-shadow: 2px 2px 5px black inset;
+                                              font-size: 24px;
+                                              padding-left: 16px;
+                                              padding-top : 2px;
+                                              padding-bottom : 2px;
+                                              background: #42aaf5;
+                                              color: black;`);
     static slideTree = css("slideTree",
     `background-color: black;color:white;font-size: 20px;display: flex; justify-content: center;align-items: center;`,
     `background-color: white;color:black;`);
-    static cssNode = css("cssNode",`background-color:#edf9fa;
+    static cssNode = css("cssNode",`background-color:#D1F5F3;
                                     border-radius: 5px;
+                                    border: 1px solid #1C6EA4;
+                                    padding-top: -2px;
+                                    padding-left : 5px;
+                                    padding-right : 5px;
+                                    -webkit-box-shadow: 2px 3px 2px -1px #000000; 
+                                    box-shadow: 2px 3px 2px -1px #000000;
+                                    font-size: 18px;`,
+                                `background: #42aaf5;cursor:pointer`,
+                                    `box-shadow: 2px 2px 5px black inset;
+                                    background: #42aaf5;
+                                    margin-top: 2px;
                                     padding-left: 5px;
-                                    padding-right: 5px;`,
-                                `background-color:#eaeda6;
-                                border-radius: 5px;
-                                padding-left: 5px;
-                                padding-right: 5px;
-                                cursor: pointer;`,
-                                    `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`,)
+                                    padding-right:5px;
+                                    padding-bottom: 1px;
+                                    color: black;
+                                    font-size: 18px;`,)
     static menuButton = css("menuButton",`background-color:blue;fill: white;`,
                                         `cursor:pointer;background-color:white;fill: blue;`)
 
@@ -52,6 +65,11 @@ class CSS {
     static bgGreen = css("bgGreen", `background-color:green`);
     static bgRed = css("bgRed", `background-color:red`);
     static bgBlack = css("bgBlack", `background-color:black`);
+    static bgLBlue = css("bgLBlue","background: #D1F5F3");
+    static bgLBlue2 = css("bgLBlue2","background: #f5fbff");
+    static outline = css("outline",`outline: 1px solid black;
+                                    display:inline`);
+    
 
     static textWhite = css("textWhite", "color:white");
     static textBlue = css("textBlue", "color:blue");

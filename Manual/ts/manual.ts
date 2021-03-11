@@ -7,6 +7,29 @@ let clickTreeItemEvent = events({onclick:function(mouseEvent:MouseEvent){
   // console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
 }});
 
+function header(label:string, index:number, size=120){
+  let noPages = 4;
+  return v(`${label}_v`, 5,
+    I("1px"),
+    h(`${label}_h`, "25px", 15,
+      I("1px"),
+      I(`${label}_label`, label, CSS.insetLarge, `${size}px`),
+      I(),
+      I(`${label}_prev`,"Previous Page", CSS.h1h ,"145px", Pages.button("PAGES", (index <= 0) ? 0 : index-1)),
+      I(`${label}_next`,"Next Page", CSS.h1h,"110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)),
+      I("15px")
+    ),
+    I(label, CSS.textBlack),
+  )
+  }
+let MainPages = P("PAGES",
+  header("Welcome", 0),
+    header("Installation", 1),
+    header("The Basics", 2),
+      header("HTML vs Javascript", 3, 200),
+      header("Basics - DisplayCell", 4, 210),
+  )
+
 let treeOfNodes:t_ = 
 TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
     [TI("Installation", Pages.button("PAGES",1) ),
@@ -21,11 +44,12 @@ TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
 
 let mainTree =
 tree( "TOC",
-  dragbar(I("MainTree", "", CSS.bgGreen, "300px"),100, 500),
+  dragbar(I("MainTree", "", CSS.bgLBlue2, "300px"),100, 500),
   treeOfNodes,
   {SVGColor:"black"},
   clickTreeItemEvent,
   CSS.cssNode,
+  20, 4,
 )
 
 let slideTree =
@@ -39,28 +63,7 @@ tree( "TOC_slide",
 )
 // Framework
                                                         //// pages Here.
-function header(label:string, index:number, size=120){
-let noPages = 4;
-return v(`${label}_v`, 5,
-  I("1px"),
-  h(`${label}_h`, "25px", 15,
-    I("1px"),
-    I(`${label}_label`, label, CSS.h1, `${size}px`),
-    I(),
-    I(`${label}_prev`,"Previous Page", CSS.h1h ,"145px", Pages.button("PAGES", (index <= 0) ? 0 : index-1)),
-    I(`${label}_next`,"Next Page", CSS.h1h,"110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)),
-    I("15px")
-  ),
-  I(label, CSS.textBlack),
-)
-}
-let MainPages = P("PAGES",
-header("Welcome", 0),
-  header("Installation", 1),
-  header("The Basics", 2),
-    header("HTML vs Javascript", 3, 200),
-    header("Basics - DisplayCell", 4, 210),
-)
+
 
 let LargeScreen =
 v("Main Vertical",

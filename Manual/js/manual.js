@@ -20,14 +20,12 @@ CSS.h1 = new Css("h1", `border: 2px solid #1C6EA4;
                 font-size: 24px;
                 display: inline-block;`);
 CSS.h1h = new Css("h1h", `border: 2px solid #1C6EA4;
+                padding-left : 6px;
                 border-radius: 10px;
                 background: #D1F5F3;
                 -webkit-box-shadow: 3px 6px 7px -1px #000000; 
                 box-shadow: 3px 6px 7px -1px #000000;
-                padding-left: 5px;
-                padding-bottom: 3px;
-                padding-top: -3px;
-                font-size: 24px;`, `background: blue;color:white;cursor:pointer`);
+                font-size: 24px;`, `background: #42aaf5;cursor:pointer`);
 CSS.p = new Css("p", `text-indent: 30px;
                 margin-left: 10px;
                 font-size: 18px;`, false);
@@ -40,20 +38,39 @@ CSS.inset = new Css("inset", `box-shadow: 2px 2px 5px black inset;
                                     margin: 20px;
                                     display: inline;
                                     padding: 10px;`);
+CSS.insetLarge = new Css("insetLarge", `box-shadow: 2px 2px 5px black inset;
+                                              font-size: 24px;
+                                              padding-left: 16px;
+                                              padding-top : 2px;
+                                              padding-bottom : 2px;
+                                              background: #42aaf5;
+                                              color: black;`);
 CSS.slideTree = css("slideTree", `background-color: black;color:white;font-size: 20px;display: flex; justify-content: center;align-items: center;`, `background-color: white;color:black;`);
-CSS.cssNode = css("cssNode", `background-color:#edf9fa;
+CSS.cssNode = css("cssNode", `background-color:#D1F5F3;
                                     border-radius: 5px;
+                                    border: 1px solid #1C6EA4;
+                                    padding-top: -2px;
+                                    padding-left : 5px;
+                                    padding-right : 5px;
+                                    -webkit-box-shadow: 2px 3px 2px -1px #000000; 
+                                    box-shadow: 2px 3px 2px -1px #000000;
+                                    font-size: 18px;`, `background: #42aaf5;cursor:pointer`, `box-shadow: 2px 2px 5px black inset;
+                                    background: #42aaf5;
+                                    margin-top: 2px;
                                     padding-left: 5px;
-                                    padding-right: 5px;`, `background-color:#eaeda6;
-                                border-radius: 5px;
-                                padding-left: 5px;
-                                padding-right: 5px;
-                                cursor: pointer;`, `background-color:#f7ebeb;border-radius: 5px;padding-left: 5px;padding-right: 5px;cursor: pointer;`);
+                                    padding-right:5px;
+                                    padding-bottom: 1px;
+                                    color: black;
+                                    font-size: 18px;`);
 CSS.menuButton = css("menuButton", `background-color:blue;fill: white;`, `cursor:pointer;background-color:white;fill: blue;`);
 CSS.bgBlue = css("bgBlue", `background-color:blue;`);
 CSS.bgGreen = css("bgGreen", `background-color:green`);
 CSS.bgRed = css("bgRed", `background-color:red`);
 CSS.bgBlack = css("bgBlack", `background-color:black`);
+CSS.bgLBlue = css("bgLBlue", "background: #D1F5F3");
+CSS.bgLBlue2 = css("bgLBlue2", "background: #f5fbff");
+CSS.outline = css("outline", `outline: 1px solid black;
+                                    display:inline`);
 CSS.textWhite = css("textWhite", "color:white");
 CSS.textBlue = css("textBlue", "color:blue");
 CSS.textBlueLink = css("textBlueLink", "color:blue;cursor: pointer;");
@@ -203,20 +220,20 @@ let clickTreeItemEvent = events({ onclick: function (mouseEvent) {
         // console.log(this);
         // console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
     } });
+function header(label, index, size = 120) {
+    let noPages = 4;
+    return v(`${label}_v`, 5, I("1px"), h(`${label}_h`, "25px", 15, I("1px"), I(`${label}_label`, label, CSS.insetLarge, `${size}px`), I(), I(`${label}_prev`, "Previous Page", CSS.h1h, "145px", Pages.button("PAGES", (index <= 0) ? 0 : index - 1)), I(`${label}_next`, "Next Page", CSS.h1h, "110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)), I("15px")), I(label, CSS.textBlack));
+}
+let MainPages = P("PAGES", header("Welcome", 0), header("Installation", 1), header("The Basics", 2), header("HTML vs Javascript", 3, 200), header("Basics - DisplayCell", 4, 210));
 let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutton: "PAGES|0" } }, [TI("Installation", Pages.button("PAGES", 1)),
     TI("The Basics", Pages.button("PAGES", 2), [TI("HTML vs Javascript", Pages.button("PAGES", 3)),
         TI("DisplayCell", Pages.button("PAGES", 4))]),
     TI("Part 3", [TI("3a")]),
 ]);
-let mainTree = tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode);
+let mainTree = tree("TOC", dragbar(I("MainTree", "", CSS.bgLBlue2, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode, 20, 4);
 let slideTree = tree("TOC_slide", I("SlideTree", "", CSS.bgBlack, "350px"), treeOfNodes, { SVGColor: "white" }, CSS.slideTree, 35, events({ onclick: function () { slideMenu.pop(); } }));
 // Framework
 //// pages Here.
-function header(label, index, size = 120) {
-    let noPages = 4;
-    return v(`${label}_v`, 5, I("1px"), h(`${label}_h`, "25px", 15, I("1px"), I(`${label}_label`, label, CSS.h1, `${size}px`), I(), I(`${label}_prev`, "Previous Page", CSS.h1h, "145px", Pages.button("PAGES", (index <= 0) ? 0 : index - 1)), I(`${label}_next`, "Next Page", CSS.h1h, "110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)), I("15px")), I(label, CSS.textBlack));
-}
-let MainPages = P("PAGES", header("Welcome", 0), header("Installation", 1), header("The Basics", 2), header("HTML vs Javascript", 3, 200), header("Basics - DisplayCell", 4, 210));
 let LargeScreen = v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, mainTree, MainPages));
 let MenuSvgSize = 40;
 let SmallScreen = v("Small_v", h("Small_h", `${MenuSvgSize}px`, I("MenuButton", CSS.menu_SVG(MenuSvgSize), `${MenuSvgSize}px`, CSS.menuButton, events({

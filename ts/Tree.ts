@@ -95,10 +95,11 @@ class Tree {
     static defaults = {
         label : function(){return `Tree_${pf.pad_with_zeroes(Tree.instances.length)}`},
         cellHeight:20, SVGColor:"white", startIndent: 0, indent : 10, collapsePad: 4, collapseSize: 16,
+        margin: 2,
     }
     static argMap = {
         string : ["label"],
-        number : ["cellHeight"],
+        number : ["cellHeight", "margin"],
         TreeNode : ["rootTreeNode"],
         DisplayCell : ["parentDisplayCell"],
         Events : ["events"],
@@ -115,6 +116,7 @@ class Tree {
     SVGColor:string;
     coord: Coord;
     t_instance: t_;
+    margin: number;
 
     css:string = ""; // default class(es) for tree items.
     events: Events; // default events for tree items.
@@ -135,7 +137,7 @@ class Tree {
         if ("string" in retArgs && retArgs.string.length > 1)
             this.css += " " + retArgs.string.splice(1).join(' ');
         // console.log(this.parentDisplayCell)
-        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, 2, 2);  ////////////////////////////////////// check this again!
+        let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, this.margin, this.margin);  ////////////////////////////////////// check this again!
         let cellArray = V.displaygroup.cellArray;
         this.parentDisplayCell.displaygroup = new DisplayGroup(`${this.label}_rootH`, V);
 

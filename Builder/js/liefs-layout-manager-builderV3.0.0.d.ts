@@ -779,3 +779,13 @@ declare class Observe {
     static onScroll(event: WheelEvent): void;
     static update(): void;
 }
+declare class bCss {
+    static bgGreen: Css;
+    static bgBlue: Css;
+    static bgCyan: Css;
+    static menuItem: Css;
+    static menuSpace: Css;
+}
+declare class Builder {
+    constructor();
+}
