@@ -1,5 +1,6 @@
 declare class CSS {
     static h1: Css;
+    static h1h: Css;
     static p: Css;
     static codeblock: Css;
     static inset: Css;
@@ -54,9 +55,10 @@ declare let clickTreeItemEvent: Events;
 declare let treeOfNodes: t_;
 declare let mainTree: DisplayCell;
 declare let slideTree: DisplayCell;
+declare function header(label: string, index: number, size?: number): DisplayCell;
 declare let MainPages: DisplayCell;
 declare let LargeScreen: DisplayCell;
 declare let MenuSvgSize: number;
 declare let SmallScreen: DisplayCell;
-declare let sizeFunction: (thisPages: Pages) => number;
 declare let slideMenu: Handler;
+declare let sizeFunction: (thisPages: Pages) => number;

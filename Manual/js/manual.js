@@ -7,17 +7,27 @@ class CSS {
 </svg>`;
     }
 } // style="fill:${color};stroke:${color};stroke-width:1" 
+// static header = new Css("header",`position: sticky;top: 0;`);
 CSS.h1 = new Css("h1", `border: 2px solid #1C6EA4;
+                border-radius: 10px;
+                background: #D1F5F3;
+                -webkit-box-shadow: 3px 6px 7px -1px #000000 inset; 
+                box-shadow: 3px 6px 4px -1px #000000 inset;
+                padding-left: 8px;
+                padding-right: 5px;
+                padding-top: 5px;
+                margin-top : -1px;
+                font-size: 24px;
+                display: inline-block;`);
+CSS.h1h = new Css("h1h", `border: 2px solid #1C6EA4;
                 border-radius: 10px;
                 background: #D1F5F3;
                 -webkit-box-shadow: 3px 6px 7px -1px #000000; 
                 box-shadow: 3px 6px 7px -1px #000000;
-                margin-left: 10px;
-                margin-top: 10px;
                 padding-left: 5px;
-                padding-right: 5px;
-                font-size: 24px;
-                display: inline-block;`);
+                padding-bottom: 3px;
+                padding-top: -3px;
+                font-size: 24px;`, `background: blue;color:white;cursor:pointer`);
 CSS.p = new Css("p", `text-indent: 30px;
                 margin-left: 10px;
                 font-size: 18px;`, false);
@@ -194,14 +204,19 @@ let clickTreeItemEvent = events({ onclick: function (mouseEvent) {
         // console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
     } });
 let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutton: "PAGES|0" } }, [TI("Installation", Pages.button("PAGES", 1)),
-    TI("The Basics", Pages.button("PAGES", 2), [TI("DisplayCell", Pages.button("PAGES", 3))
-    ]),
+    TI("The Basics", Pages.button("PAGES", 2), [TI("HTML vs Javascript", Pages.button("PAGES", 3)),
+        TI("DisplayCell", Pages.button("PAGES", 4))]),
     TI("Part 3", [TI("3a")]),
 ]);
 let mainTree = tree("TOC", dragbar(I("MainTree", "", CSS.bgGreen, "300px"), 100, 500), treeOfNodes, { SVGColor: "black" }, clickTreeItemEvent, CSS.cssNode);
 let slideTree = tree("TOC_slide", I("SlideTree", "", CSS.bgBlack, "350px"), treeOfNodes, { SVGColor: "white" }, CSS.slideTree, 35, events({ onclick: function () { slideMenu.pop(); } }));
 // Framework
-let MainPages = P("PAGES", I("Welcome", CSS.textBlack), I("Installation", CSS.textBlack), I("TheBasics", CSS.textBlack), I("BasicsDisplayCell", CSS.textBlack));
+//// pages Here.
+function header(label, index, size = 120) {
+    let noPages = 4;
+    return v(`${label}_v`, 5, I("1px"), h(`${label}_h`, "25px", 15, I("1px"), I(`${label}_label`, label, CSS.h1, `${size}px`), I(), I(`${label}_prev`, "Previous Page", CSS.h1h, "145px", Pages.button("PAGES", (index <= 0) ? 0 : index - 1)), I(`${label}_next`, "Next Page", CSS.h1h, "110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)), I("15px")), I(label, CSS.textBlack));
+}
+let MainPages = P("PAGES", header("Welcome", 0), header("Installation", 1), header("The Basics", 2), header("HTML vs Javascript", 3, 200), header("Basics - DisplayCell", 4, 210));
 let LargeScreen = v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("MainBody", 5, mainTree, MainPages));
 let MenuSvgSize = 40;
 let SmallScreen = v("Small_v", h("Small_h", `${MenuSvgSize}px`, I("MenuButton", CSS.menu_SVG(MenuSvgSize), `${MenuSvgSize}px`, CSS.menuButton, events({
@@ -214,6 +229,7 @@ let SmallScreen = v("Small_v", h("Small_h", `${MenuSvgSize}px`, I("MenuButton", 
             slideMenu.pop();
     }
 })), I("TitleBar2", CSS.cssTitle)), MainPages);
+let slideMenu = H("SlideMenu", v("slide_v", I(`${MenuSvgSize}px`), h("slide_h", slideTree, I())), false);
 let sizeFunction = function (thisPages) {
     let [x, y] = pf.viewport();
     if (x > 920)
@@ -233,4 +249,3 @@ H("Example01a", codeblock("Example01a", `    <div id="Example01_a">one</div>
     I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
     I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
   )`, `#Example01_a {background-color: green}\n#Example01_b {background-color: cyan}`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
-let slideMenu = H("SlideMenu", v("slide_v", I(`${MenuSvgSize}px`), h("slide_h", slideTree, I())), false);

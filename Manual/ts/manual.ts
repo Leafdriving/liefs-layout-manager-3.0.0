@@ -11,8 +11,8 @@ let treeOfNodes:t_ =
 TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
     [TI("Installation", Pages.button("PAGES",1) ),
     TI("The Basics", Pages.button("PAGES",2),
-        [TI("DisplayCell", Pages.button("PAGES",3))
-        ]
+        [TI("HTML vs Javascript", Pages.button("PAGES",3)),
+        TI("DisplayCell", Pages.button("PAGES",4))]
     ),
     TI("Part 3",
         [TI("3a")]),
@@ -38,12 +38,28 @@ tree( "TOC_slide",
   events({onclick:function(){slideMenu.pop()}})
 )
 // Framework
-
+                                                        //// pages Here.
+function header(label:string, index:number, size=120){
+let noPages = 4;
+return v(`${label}_v`, 5,
+  I("1px"),
+  h(`${label}_h`, "25px", 15,
+    I("1px"),
+    I(`${label}_label`, label, CSS.h1, `${size}px`),
+    I(),
+    I(`${label}_prev`,"Previous Page", CSS.h1h ,"145px", Pages.button("PAGES", (index <= 0) ? 0 : index-1)),
+    I(`${label}_next`,"Next Page", CSS.h1h,"110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)),
+    I("15px")
+  ),
+  I(label, CSS.textBlack),
+)
+}
 let MainPages = P("PAGES",
-  I("Welcome", CSS.textBlack),
-  I("Installation", CSS.textBlack),
-  I("TheBasics", CSS.textBlack),
-  I("BasicsDisplayCell", CSS.textBlack),
+header("Welcome", 0),
+  header("Installation", 1),
+  header("The Basics", 2),
+    header("HTML vs Javascript", 3, 200),
+    header("Basics - DisplayCell", 4, 210),
 )
 
 let LargeScreen =
@@ -69,6 +85,17 @@ v("Small_v",
     I("TitleBar2", CSS.cssTitle),
   ),
   MainPages,
+)
+let slideMenu =
+H("SlideMenu",
+  v("slide_v",
+    I(`${MenuSvgSize}px`),
+    h("slide_h",
+      slideTree,
+      I(),
+    )
+  ),
+  false,
 )
 
 let sizeFunction = function(thisPages:Pages):number {
@@ -111,14 +138,4 @@ H("Example01a",
     false,
     {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
 )
-let slideMenu =
-H("SlideMenu",
-  v("slide_v",
-    I(`${MenuSvgSize}px`),
-    h("slide_h",
-      slideTree,
-      I(),
-    )
-  ),
-  false,
-)
+

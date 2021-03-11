@@ -165,8 +165,9 @@ ${this.html.replace(/</g, "&lt")}
         }
       )
     }
-  }
-  function codeblock(...Arguments:any){
-    let cb = new CodeBlock(...Arguments);
-    return cb.displaycell;
-  }
+}
+function codeblock(...Arguments:any){
+  let cb = new CodeBlock(...Arguments);
+  return cb.displaycell;
+}
+
