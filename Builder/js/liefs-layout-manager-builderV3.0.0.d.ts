@@ -788,4 +788,9 @@ declare class bCss {
 }
 declare class Builder {
     constructor();
+    static updateTree(handler: Handler): void;
+    static DC(displaycell: DisplayCell): void;
+    static HB(htmlblock: HtmlBlock): void;
+    static DG(displaygroup: DisplayGroup): void;
+    static PG(pages: Pages): void;
 }

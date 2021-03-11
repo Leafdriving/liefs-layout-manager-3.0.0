@@ -2425,10 +2425,55 @@ bCss.menuSpace = css("menuspace", `background: white;
 class Builder {
     constructor() {
     }
+    static updateTree(handler) {
+        console.log("Updating Tree");
+        console.group("Handler: " + handler.label);
+        Builder.DC(handler.rootCell);
+        console.groupEnd();
+    }
+    static DC(displaycell) {
+        console.group("DisplayCell: " + displaycell.label);
+        if (displaycell.htmlBlock)
+            Builder.HB(displaycell.htmlBlock);
+        if (displaycell.displaygroup)
+            Builder.DG(displaycell.displaygroup);
+        if (displaycell.pages)
+            Builder.PG(displaycell.pages);
+        console.groupEnd();
+    }
+    static HB(htmlblock) {
+        console.log("HtmlBlock: " + htmlblock.label);
+    }
+    static DG(displaygroup) {
+        console.group("DisplayGroup: " + displaygroup.label);
+        for (let index = 0; index < displaygroup.cellArray.length; index++) {
+            const displaycell = displaygroup.cellArray[index];
+            Builder.DC(displaycell);
+        }
+        console.groupEnd();
+    }
+    static PG(pages) {
+        console.group(pages.label);
+        for (let index = 0; index < pages.displaycells.length; index++) {
+            Builder.DC(pages.displaycells[index]);
+        }
+        console.groupEnd();
+    }
 }
+// let treeOfNodes:t_ = 
+// TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
+//     [TI("Installation", Pages.button("PAGES",1) ),
+//     TI("The Basics", Pages.button("PAGES",2),
+//         [TI("HTML vs Javascript", Pages.button("PAGES",3)),
+//         TI("DisplayCell", Pages.button("PAGES",4))]
+//     ),
+//     TI("Part 3",
+//         [TI("3a")]),
+//     ],
+// )
 window.onload = function () {
-    let clientHandler = H("Client Window", I("Client_Main", "Client Main"), false, new Coord());
-    let mainBodyDisplayCell = I("Main_body");
+    let clientHandler = H("Client Window", I("Client_Main", "Client Main"), false, new Coord(), function () { Builder.updateTree(Handler.byLabel("Main Window")); });
+    let mainBodyDisplayCell = I("Main_body", bCss.menuItem);
     mainBodyDisplayCell.postRenderCallback =
         function (displaycell, displaygroup, index, derender) {
             Handler.byLabel("Client Window").coord.copy(displaycell.coord);
