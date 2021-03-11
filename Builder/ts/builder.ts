@@ -8,11 +8,11 @@ class Builder {
       console.groupEnd();
     }
     static DC(displaycell:DisplayCell) {
-      console.group("DisplayCell: " + displaycell.label);
+      // console.group("DisplayCell: " + displaycell.label);
       if (displaycell.htmlBlock) Builder.HB(displaycell.htmlBlock);
       if (displaycell.displaygroup) Builder.DG(displaycell.displaygroup);
       if (displaycell.pages) Builder.PG(displaycell.pages);
-      console.groupEnd()
+      // console.groupEnd()
     }
     static HB(htmlblock:HtmlBlock) {
       console.log("HtmlBlock: " + htmlblock.label);
@@ -51,12 +51,7 @@ class Builder {
 
 window.onload = function(){
 
-let clientHandler = H("Client Window",
-  I("Client_Main","Client Main"),
-  false,
-  new Coord(),
-  function(){Builder.updateTree(Handler.byLabel("Main Window"))}
-)
+
 
 let mainBodyDisplayCell = I("Main_body", bCss.menuItem);
 mainBodyDisplayCell.postRenderCallback = 
@@ -78,7 +73,12 @@ let mainHandler = H("Main Window", 4,
     )
   )
 )
-Handler.activeHandlers.push(clientHandler);
+let clientHandler = H("Client Window",
+  I("Client_Main","Client Main"),
+  // false,
+  new Coord(),
+  function(){Builder.updateTree(Handler.byLabel("Main Window"))}
+)
 
 
 

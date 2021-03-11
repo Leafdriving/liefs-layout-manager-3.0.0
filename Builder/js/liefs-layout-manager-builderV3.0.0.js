@@ -2432,14 +2432,14 @@ class Builder {
         console.groupEnd();
     }
     static DC(displaycell) {
-        console.group("DisplayCell: " + displaycell.label);
+        // console.group("DisplayCell: " + displaycell.label);
         if (displaycell.htmlBlock)
             Builder.HB(displaycell.htmlBlock);
         if (displaycell.displaygroup)
             Builder.DG(displaycell.displaygroup);
         if (displaycell.pages)
             Builder.PG(displaycell.pages);
-        console.groupEnd();
+        // console.groupEnd()
     }
     static HB(htmlblock) {
         console.log("HtmlBlock: " + htmlblock.label);
