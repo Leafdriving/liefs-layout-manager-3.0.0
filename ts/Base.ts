@@ -123,21 +123,21 @@ class Base {
     }
 }
 
-class Test extends Base {
-    static labelNo = 0;
-    static instances:Test[] = [];
-    static activeInstances:Test[] = [];
-    static defaults = {
-        tag: "DIV",
-    }
-    static argMap = {
-        string : ["label", "innerHTML", "css"],
-        number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-    }
-    // retArgs:ArgsObj;   // <- this will appear
-    constructor(...Arguments:any){
-        super();this.buildBase(...Arguments);
+// class Test extends Base {
+//     static labelNo = 0;
+//     static instances:Test[] = [];
+//     static activeInstances:Test[] = [];
+//     static defaults = {
+//         tag: "DIV",
+//     }
+//     static argMap = {
+//         string : ["label", "innerHTML", "css"],
+//         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+//     }
+//     // retArgs:ArgsObj;   // <- this will appear
+//     constructor(...Arguments:any){
+//         super();this.buildBase(...Arguments);
 
-        Test.makeLabel(this);
-    }
-}
+//         Test.makeLabel(this);
+//     }
+// }

@@ -1,16 +1,9 @@
-class Handler {
+class Handler extends Base {
     static handlerMarginDefault=0;
     static firstRun = true;
     static instances:Handler[] = [];
     static activeHandlers:Handler[] = [];
-    static byLabel(label:string):Handler{
-        for (let key in Handler.instances)
-            if (Handler.instances[key].label == label)
-                return Handler.instances[key];
-        return undefined;
-    }
     static defaults = {
-        label : function(){return `handler_${pf.pad_with_zeroes(Handler.activeHandlers.length)}`},
         cssString : " ",
         addThisHandlerToStack: true,
         controlledBySomething: false,
@@ -20,7 +13,7 @@ class Handler {
         number : ["handlerMargin"],
         Coord: ["coord"],
         function: ["preRenderCallback", "postRenderCallback"],
-        boolean: ["addThisHandlerToStack", "controlledBySomething"]
+        boolean: ["addThisHandlerToStack"]
     }
     static renderNullObjects:boolean = false;
     static argCustomTypes:Function[] = [];
@@ -38,14 +31,12 @@ class Handler {
     addThisHandlerToStack: boolean;
     preRenderCallback: Function;
     postRenderCallback: Function;
-    controlledBySomething: boolean;
 
 
     constructor(...Arguments: any) {
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Handler");
-        mf.applyArguments("Handler", Arguments, Handler.defaults, Handler.argMap, this);
+        super();this.buildBase(...Arguments);
 
-        if ("DisplayCell" in retArgs) this.rootCell = retArgs["DisplayCell"][0];
+        if ("DisplayCell" in this.retArgs) this.rootCell = this.retArgs["DisplayCell"][0];
         else pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
         if (this.handlerMargin == undefined) this.handlerMargin = Handler.handlerMarginDefault;
 
@@ -56,12 +47,11 @@ class Handler {
             
             window.onresize = function() {Handler.update()};
             window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);};
-            // window.onscroll = function(event:WheelEvent){Observe.onScroll(event);};
             window.addEventListener("popstate", function(event){Pages.popstate(event)})
             Pages.parseURL();
         }
         if (this.addThisHandlerToStack) Handler.activeHandlers.push(this);
-        Handler.instances.push(this);
+        Handler.makeLabel(this);
         Handler.update(/* [this] */);
         Css.update();
     }
@@ -105,10 +95,6 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);  
             }
-            // if (handlerInstance.controlledBySomething)
-            //     handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
-            // else 
-            //     handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
@@ -120,11 +106,6 @@ class Handler {
     }
 
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
-        // if (displaycell.label == "Example01_javascript") {
-        //     let co = displaycell.coord
-        //     console.log(`base    x= ${co.x} y= ${co.y} width = ${co.width} height = ${co.height}`);
-        //     console.log(`within  x= ${co.within.x} y= ${co.within.y} width = ${co.within.width} height = ${co.within.height}`);
-        // }
         if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         if (derender) Observe.derender(displaycell);
         let pages = displaycell.pages;

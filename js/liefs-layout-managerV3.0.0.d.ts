@@ -22,19 +22,6 @@ declare class Base {
     static buildBase(THIS: any, ...Arguments: any): void;
     static makeLabel(instance: any): void;
 }
-declare class Test extends Base {
-    static labelNo: number;
-    static instances: Test[];
-    static activeInstances: Test[];
-    static defaults: {
-        tag: string;
-    };
-    static argMap: {
-        string: string[];
-        number: string[];
-    };
-    constructor(...Arguments: any);
-}
 declare class FunctionStack {
     static instanceObj: {};
     static push(label: string, function_: Function): void;
@@ -284,14 +271,12 @@ declare class DisplayGroup extends Base {
 }
 declare function h(...Arguments: any): DisplayCell;
 declare function v(...Arguments: any): DisplayCell;
-declare class Handler {
+declare class Handler extends Base {
     static handlerMarginDefault: number;
     static firstRun: boolean;
     static instances: Handler[];
     static activeHandlers: Handler[];
-    static byLabel(label: string): Handler;
     static defaults: {
-        label: () => string;
         cssString: string;
         addThisHandlerToStack: boolean;
         controlledBySomething: boolean;
@@ -318,7 +303,6 @@ declare class Handler {
     addThisHandlerToStack: boolean;
     preRenderCallback: Function;
     postRenderCallback: Function;
-    controlledBySomething: boolean;
     constructor(...Arguments: any);
     pop(): Handler;
     toTop(): void;
