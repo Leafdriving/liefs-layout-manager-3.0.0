@@ -1,18 +1,11 @@
-class DisplayGroup {
+class DisplayGroup extends Base {
     static defaultMargins=0;
     static instances:DisplayGroup[] = [];
-    static byLabel(label:string):DisplayGroup{
-        for (let key in DisplayGroup.instances)
-            if (DisplayGroup.instances[key].label == label)
-                return DisplayGroup.instances[key];
-        return undefined;
-    }
+    static activeInstances:DisplayGroup[] = [];
     static defaults = {
-        label : function(){return `DisplayGroup_${pf.pad_with_zeroes(DisplayGroup.instances.length)}`},
         ishor: true,
         marginHor : DisplayGroup.defaultMargins,
         marginVer : DisplayGroup.defaultMargins,
-        // minimumCellSize : 300,
     }
     static argMap = {
         string : ["label"],
@@ -39,18 +32,16 @@ class DisplayGroup {
     // renderEndIndex:number;
 
     constructor(...Arguments: any) {
-        DisplayGroup.instances.push(this);
+        super();this.buildBase(...Arguments);
 
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "DisplayGroup");
-        mf.applyArguments("DisplayGroup", Arguments, DisplayGroup.defaults, DisplayGroup.argMap, this);
-        if ("DisplayCell" in retArgs) this.cellArray = retArgs["DisplayCell"];
-        if ("HtmlBlock" in retArgs) {
-            this.htmlBlock = retArgs["HtmlBlock"][0];
+        if ("DisplayCell" in this.retArgs) this.cellArray = this.retArgs["DisplayCell"];
+        if ("HtmlBlock" in this.retArgs) {
+            this.htmlBlock = this.retArgs["HtmlBlock"][0];
         }
-        if ("Array" in retArgs) this.cellArray = retArgs["Array"][0];
+        if ("Array" in this.retArgs) this.cellArray = this.retArgs["Array"][0];
 
-        if (("number" in retArgs) && retArgs["number"].length == 1) 
-            this.marginVer = this.marginHor = retArgs["number"][0];
+        if (("number" in this.retArgs) && this.retArgs["number"].length == 1) 
+            this.marginVer = this.marginHor = this.retArgs["number"][0];
 
         this.coord = new Coord(this.label);
         // Fill In Dim Values
@@ -68,6 +59,7 @@ class DisplayGroup {
             for (let displaycell of this.cellArray)
                 if (displaycell.dim == "") displaycell.dim = newDimValue;
         }
+        DisplayGroup.makeLabel(this);
     }
     percentToPx(displaycell:DisplayCell /* child in cellarray */) : void {
         let percentAsNumber:number = pf.percentAsNumber(displaycell.dim);

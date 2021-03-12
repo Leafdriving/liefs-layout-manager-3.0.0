@@ -1,14 +1,7 @@
-class Drag {
+class Drag extends Base {
     static instances:Drag[] = [];
-    static byLabel(label:string):Drag{
-        for (let key in Drag.instances)
-            if (Drag.instances[key].label == label)
-                return Drag.instances[key];
-        return undefined;
-    }
-    static defaults = {
-        label : function(){return `Drag_${pf.pad_with_zeroes(Drag.instances.length)}`},
-    }
+    static activeInstances:Drag[] = [];
+    static defaults = {}
     static argMap = {
         string : ["label"],
     }
@@ -22,16 +15,14 @@ class Drag {
     mouseDiff:object;
 
     constructor(...Arguments: any) {
-        Drag.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Drag");
-        mf.applyArguments("Drag", Arguments, Drag.defaults, Drag.argMap, this);
+        super();this.buildBase(...Arguments);
 
-        if ("Array" in retArgs) {
-            let array=retArgs["Array"][0];
+        if ("Array" in this.retArgs) {
+            let array=this.retArgs["Array"][0];
             this.onDown = array[0]; this.onMove = array[1];this.onUp = array[2];
         }
-        if ("HTMLDivElement" in retArgs) {
-            this.el = retArgs["HTMLDivElement"][0];
+        if ("HTMLDivElement" in this.retArgs) {
+            this.el = this.retArgs["HTMLDivElement"][0];
         }
         let THIS = this;
         this.el.onmousedown = function(e:any){
@@ -50,6 +41,7 @@ class Drag {
                 THIS.onUp(THIS.mouseDiff);
             }
         }
+        Drag.makeLabel(this);
     }
     reset(){
         window.onmousemove = function(){};
@@ -62,12 +54,12 @@ class Drag {
     }
 }
 
-class Swipe {
+class Swipe extends Base {
     static swipeDistance = 50;
     static elementId="llmSwipe";
     static instances:Swipe[] = [];
+    static activeInstances:Swipe[] = [];
     static defaults = {
-        label : function(){return `Swipe_Instance_${pf.pad_with_zeroes(Swipe.instances.length)}`},
         swipeDistance : Swipe.swipeDistance
     }
     static argMap = {
@@ -78,11 +70,8 @@ class Swipe {
     swipeDistance: number;
 
     constructor(...Arguments: any) {
-        Swipe.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Swipe");
-        let updatedDefaults : Object = pf.ifObjectMergeWithDefaults(retArgs, Swipe.defaults);
-        let retArgsMapped : Object = pf.retArgsMapped(retArgs, updatedDefaults, Swipe.argMap);
-        mf.modifyClassProperties(retArgsMapped, this);
+        super();this.buildBase(...Arguments);
+        Swipe.makeLabel(this);
     }
 }
 function swipe(...Arguments:any){

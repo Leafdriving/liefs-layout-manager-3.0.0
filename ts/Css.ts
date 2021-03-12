@@ -1,7 +1,9 @@
-class Css {
+class Css extends Base {
     static theme:any // set by theme class
     static elementId="llmStyle";
     static instances:Css[] = [];
+    static activeInstances:Css[] = [];
+
     static byLabel(classname:string):Css{
         for (let key in Css.instances)
             if (Css.instances[key].classname == classname)
@@ -31,8 +33,7 @@ class Css {
     isClassname:boolean;
 
     constructor(...Arguments: any) {
-        Css.instances.push(this);
-        mf.applyArguments("Css", Arguments, Css.defaults, Css.argMap, this);
+        super();this.buildBase(...Arguments);
 
         if (this.cssObj == undefined) {
             this.cssObj = this.makeObj();
@@ -46,7 +47,6 @@ class Css {
             this.cssSelectObj = this.makeObj(this.cssSelect);
             this.cssSelect = this.makeString(this.cssSelectObj, "", "Selected");            
         }
-        // console.log( JSON.stringify(this.cssObj) )
     }
     makeString(obj:object = this.cssObj, postfix:string = "", addToClassName=""):string{
         let returnString:string  = `${(this.isClassname)?".":""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix:""} {\n`;

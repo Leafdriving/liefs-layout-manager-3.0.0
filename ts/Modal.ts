@@ -1,11 +1,7 @@
-class Modal {
+class Modal extends Base {
     static instances:Modal[] = [];
-    static byLabel(label:string):Modal{
-        for (let key in Modal.instances)
-            if (Modal.instances[key].label == label)
-                return Modal.instances[key];
-        return undefined;
-    }
+    static activeInstances:Modal[] = [];
+
     static headerCss:Css = css("HeaderTitle","background-color:blue;color:white;text-align: center;border: 1px solid black;cursor: -webkit-grab; cursor: grab;")
     static footerCss:Css = css("FooterTitle","background-color:white;color:black;border: 1px solid black;");
     static closeCss:Css = css("Close","background-color:white;color:black;border: 1px solid black;font-size: 20px;");
@@ -13,12 +9,11 @@ class Modal {
     static bodyCss:Css = css("ModalBody","background-color:white;border: 1px solid black;");
     static optionsCss:Css = css("ModalOptions","background-color:white;border: 1px solid black;display: flex;justify-content: center;align-items: center;");
     static defaults = {
-        label : function(){return `Modal_${pf.pad_with_zeroes(Modal.instances.length)}`},
         showHeader : true, showFooter: false, resizeable : true, showClose: true, showOptions: true,
         headerHeight: 20, footerHeight : 20, headerTitle:"", innerHTML:"", optionsHeight: 30,
     }
     static argMap = {
-        string : ["label", "headerTitle", "footerTitle", ["innerHTML"]],
+        string : ["label", "headerTitle", "footerTitle", ["innerHTML"]], /// this can't be right!!!!!!!!!!!!!!!!!!!!!!!!!
         DisplayCell: ["bodyCell", "headerCell", "footerCell", "optionsCell"],
         Coord: ["coord"]
     }
@@ -54,13 +49,11 @@ class Modal {
     innerHTML:string;
 
     constructor(...Arguments: any) {
-        Modal.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Modal");
-        mf.applyArguments("Modal", Arguments, Modal.defaults, Modal.argMap, this);
+        super();this.buildBase(...Arguments);
         
-        if ("number" in retArgs){
+        if ("number" in this.retArgs){
             if (!this.coord) this.coord = new Coord();
-            let numbers = retArgs["number"]
+            let numbers = this.retArgs["number"]
             let numberOfArgs = numbers.length;
             let x:number, y:number, width:number, height:number;
             if (numberOfArgs == 2) {
@@ -97,6 +90,7 @@ class Modal {
             this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);
         }
         if (this.footerTitle){this.showFooter = true}
+        Modal.makeLabel(this);
         this.build();
     }
     setContent(html:string){

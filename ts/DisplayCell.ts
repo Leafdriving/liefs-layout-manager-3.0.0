@@ -1,14 +1,8 @@
-class DisplayCell {
+class DisplayCell extends Base {
     static instances:DisplayCell[] = [];
-    static byLabel(label:string):DisplayCell{
-        for (let key in DisplayCell.instances)
-            if (DisplayCell.instances[key].label == label)
-                return DisplayCell.instances[key];
-        return undefined;
-    }
+    static activeInstances:DisplayCell[] = [];
     static minDisplayGroupSize = 200; // copied from htmlblock
     static defaults = {
-        // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
         dim : ""
     }
     static argMap = {
@@ -49,8 +43,7 @@ class DisplayCell {
 
 
     constructor(...Arguments: any) {
-        DisplayCell.instances.push(this);
-        mf.applyArguments("DisplayCell", Arguments, DisplayCell.defaults, DisplayCell.argMap, this);
+        super();this.buildBase(...Arguments);
 
         if (this.displaygroup && this.displaygroup.htmlBlock) {
             this.htmlBlock = this.displaygroup.htmlBlock;
@@ -60,11 +53,12 @@ class DisplayCell {
         if (!this.label)
             this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
                             : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
-                                : `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`
+                                : undefined
         if (this.htmlBlock && this.htmlBlock.hideWidth)
             this.coord = new Coord(this.label, true);
         else
             this.coord = new Coord(this.label);
+        DisplayCell.makeLabel(this);
     }
     addOverlay(overlay:Overlay){this.overlays.push(overlay)}
     hMenuBar(menuObj:object){

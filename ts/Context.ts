@@ -1,15 +1,9 @@
-class Context {
+class Context extends Base {
     static lastRendered: Context;
     static subOverlapPx = 4;
     static instances:Context[] = [];
-    static byLabel(label:string):Context{
-        for (let key in Context.instances)
-            if (Context.instances[key].label == label)
-                return Context.instances[key];
-        return undefined;
-    }
-    // static defaultContextCss = css("contxt","background-color:white;color: black;outline-style: solid;outline-width: 1px;");
-    // static defaultContextCssHover = css("contxt:hover","background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+    static activeInstances:Context[] = [];
+
     static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
     static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
     static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");
@@ -18,7 +12,6 @@ class Context {
                          three:function(){console.log("three")},
                         }
     static defaults = {
-        label : function(){return `Context_${pf.pad_with_zeroes(Context.instances.length)}`},
         width : 100,
         cellheight : 25,
         css: Css.theme.context, //Context.defaultContextCss
@@ -43,10 +36,11 @@ class Context {
     parentContext:Context;
 
     constructor(...Arguments: any) {
-        Context.instances.push(this);
-        mf.applyArguments("Context", Arguments, Context.defaults, Context.argMap, this);
+        super();this.buildBase(...Arguments);
+
         if (!this.menuObj) this.menuObj = Context.defaultObj;
         this.height = Object.keys(this.menuObj).length*this.cellheight;
+        Context.makeLabel(this);
         this.buildCell();
     }
     buildCell(){

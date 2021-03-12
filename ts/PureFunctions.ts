@@ -167,3 +167,4 @@ class pf {
         return parms;
     }
 }
+Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];

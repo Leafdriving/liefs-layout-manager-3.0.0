@@ -1,15 +1,10 @@
-class ScrollBar {
+class ScrollBar extends Base {
     static instances:ScrollBar[] = [];
-    static byLabel(label:string):ScrollBar{
-        for (let key in ScrollBar.instances)
-            if (ScrollBar.instances[key].label == label)
-                return ScrollBar.instances[key];
-        return undefined;
-    }
+    static activeInstances:ScrollBar[] = [];
+    
     static whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
     static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
     static defaults = {
-        label : function(){return `ScrollBar_${pf.pad_with_zeroes(ScrollBar.instances.length)}`},
         offset : 0, displayAtEnd: true, scrollWidth : 15, currentlyRendered: true, arrowOffset: 2,
     }
     static argMap = {
@@ -51,8 +46,9 @@ class ScrollBar {
     
 
     constructor(...Arguments: any) {
-        ScrollBar.instances.push(this);
-        mf.applyArguments("ScrollBar", Arguments, ScrollBar.defaults, ScrollBar.argMap, this);
+        super();this.buildBase(...Arguments);
+        
+        ScrollBar.makeLabel(this);
         this.build();
     }
     build(){

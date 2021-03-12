@@ -1,3 +1,40 @@
+declare class BaseF {
+    static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
+    static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
+    static argumentsByType(Args: any[], // 1st argument is a list of args.
+    customTypes?: Function[]): ArgsObj;
+    static modifyClassProperties(argobj: object, targetobject: object): void;
+    static mergeObjects: (startObj: object, AddObj: object) => object;
+}
+declare class Base {
+    static defaultIsChecks: any;
+    static byLabel(label: string): any;
+    static pop(instance: any, fromInstances?: boolean): void;
+    static push(instance: any, toActive?: boolean): void;
+    static deactivate(instance: any): void;
+    static activate(instance: any): void;
+    static stringOrObject(instance: any): any;
+    static defaults: object;
+    static argMap: object;
+    retArgs: ArgsObj;
+    constructor();
+    buildBase(...Arguments: any): void;
+    static buildBase(THIS: any, ...Arguments: any): void;
+    static makeLabel(instance: any): void;
+}
+declare class Test extends Base {
+    static labelNo: number;
+    static instances: Test[];
+    static activeInstances: Test[];
+    static defaults: {
+        tag: string;
+    };
+    static argMap: {
+        string: string[];
+        number: string[];
+    };
+    constructor(...Arguments: any);
+}
 declare class FunctionStack {
     static instanceObj: {};
     static push(label: string, function_: Function): void;
@@ -70,11 +107,10 @@ interface Offset {
     width: number;
     height: number;
 }
-declare class Coord {
+declare class Coord extends Base {
     static instances: Coord[];
-    static byLabel(label: string): Coord;
+    static activeInstances: Coord[];
     static defaults: {
-        label: () => string;
         x: number;
         y: number;
         width: number;
@@ -128,11 +164,10 @@ declare class Coord {
 /**
  * This Class Holds the HTMLElement
  */
-declare class HtmlBlock {
+declare class HtmlBlock extends Base {
     static instances: HtmlBlock[];
-    static byLabel(label: string): HtmlBlock;
+    static activeInstances: HtmlBlock[];
     static defaults: {
-        label: () => string;
         innerHTML: string;
         tag: string;
         css: string;
@@ -162,14 +197,12 @@ declare class HtmlBlock {
     constructor(...Arguments: any);
 }
 declare function html(...Arguments: any): HtmlBlock;
-declare class Events {
+declare class Events extends Base {
     static elementId: string;
     static instances: Events[];
-    static byLabel(label: string): Events;
+    static activeInstances: Events[];
     static history: string[];
-    static defaults: {
-        label: () => string;
-    };
+    static defaults: {};
     static argMap: {
         string: string[];
     };
@@ -180,9 +213,9 @@ declare class Events {
     static do(event: MouseEvent): void;
 }
 declare function events(...arguments: any): Events;
-declare class DisplayCell {
+declare class DisplayCell extends Base {
     static instances: DisplayCell[];
-    static byLabel(label: string): DisplayCell;
+    static activeInstances: DisplayCell[];
     static minDisplayGroupSize: number;
     static defaults: {
         dim: string;
@@ -218,12 +251,11 @@ declare class DisplayCell {
     vMenuBar(menuObj: object): void;
 }
 declare function I(...Arguments: any): DisplayCell;
-declare class DisplayGroup {
+declare class DisplayGroup extends Base {
     static defaultMargins: number;
     static instances: DisplayGroup[];
-    static byLabel(label: string): DisplayGroup;
+    static activeInstances: DisplayGroup[];
     static defaults: {
-        label: () => string;
         ishor: boolean;
         marginHor: number;
         marginVer: number;
@@ -299,10 +331,11 @@ declare class Handler {
     static renderHtmlAttributes(el: HTMLElement, htmlblock: HtmlBlock, id: string): void;
 }
 declare function H(...Arguments: any): Handler;
-declare class Css {
+declare class Css extends Base {
     static theme: any;
     static elementId: string;
     static instances: Css[];
+    static activeInstances: Css[];
     static byLabel(classname: string): Css;
     static defaults: {
         css: () => string;
@@ -333,12 +366,11 @@ declare class DefaultTheme {
     static advisedBody: Css;
     static context: Css;
 }
-declare class Pages {
+declare class Pages extends Base {
     static activePages: Pages[];
     static instances: Pages[];
-    static byLabel(label: string, source?: Pages[]): Pages;
+    static activeInstances: Pages[];
     static defaults: {
-        label: () => string;
         currentPage: number;
         previousPage: number;
         evalFunction: (thisPages: Pages) => number;
@@ -369,12 +401,10 @@ declare class Pages {
     static popstate(event: PopStateEvent): void;
 }
 declare function P(...arguments: any): DisplayCell;
-declare class Drag {
+declare class Drag extends Base {
     static instances: Drag[];
-    static byLabel(label: string): Drag;
-    static defaults: {
-        label: () => string;
-    };
+    static activeInstances: Drag[];
+    static defaults: {};
     static argMap: {
         string: string[];
     };
@@ -390,12 +420,12 @@ declare class Drag {
     reset(): void;
     static disableSelect(event: MouseEvent): void;
 }
-declare class Swipe {
+declare class Swipe extends Base {
     static swipeDistance: number;
     static elementId: string;
     static instances: Swipe[];
+    static activeInstances: Swipe[];
     static defaults: {
-        label: () => string;
         swipeDistance: number;
     };
     static argMap: {
@@ -407,11 +437,10 @@ declare class Swipe {
     constructor(...Arguments: any);
 }
 declare function swipe(...Arguments: any): object;
-declare class Hold {
+declare class Hold extends Base {
     static instances: Hold[];
-    static byLabel(label: string): Hold;
+    static activeInstances: Hold[];
     static defaults: {
-        label: () => string;
         startTime: number;
         repeatTime: number;
         doOnclick: boolean;
@@ -442,13 +471,12 @@ declare class Overlay {
     constructor(...Arguments: any);
     renderOverlay(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
-declare class DragBar {
+declare class DragBar extends Base {
     static horCss: Css;
     static verCss: Css;
     static instances: DragBar[];
-    static byLabel(label: string): DragBar;
+    static activeInstances: DragBar[];
     static defaults: {
-        label: () => string;
         horcss: Css;
         vercss: Css;
     };
@@ -474,13 +502,12 @@ declare class DragBar {
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function dragbar(...Arguments: any): DisplayCell;
-declare class ScrollBar {
+declare class ScrollBar extends Base {
     static instances: ScrollBar[];
-    static byLabel(label: string): ScrollBar;
+    static activeInstances: ScrollBar[];
     static whiteBG: Css;
     static blackBG: Css;
     static defaults: {
-        label: () => string;
         offset: number;
         displayAtEnd: boolean;
         scrollWidth: number;
@@ -530,11 +557,11 @@ declare class ScrollBar {
     static distOfMouseFromWheel(THIS: ScrollBar, event: WheelEvent): number;
     static onWheel(event: WheelEvent): void;
 }
-declare class Context {
+declare class Context extends Base {
     static lastRendered: Context;
     static subOverlapPx: number;
     static instances: Context[];
-    static byLabel(label: string): Context;
+    static activeInstances: Context[];
     static defaultMenuBarCss: Css;
     static defaultMenuBarHover: Css;
     static defaultMenuBarNoHoverCss: Css;
@@ -544,7 +571,6 @@ declare class Context {
         three: () => void;
     };
     static defaults: {
-        label: () => string;
         width: number;
         cellheight: number;
         css: any;
@@ -580,9 +606,9 @@ declare class Context {
 declare let context: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
 declare let hMenuBar: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
 declare let vMenuBar: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
-declare class Modal {
+declare class Modal extends Base {
     static instances: Modal[];
-    static byLabel(label: string): Modal;
+    static activeInstances: Modal[];
     static headerCss: Css;
     static footerCss: Css;
     static closeCss: Css;
@@ -590,7 +616,6 @@ declare class Modal {
     static bodyCss: Css;
     static optionsCss: Css;
     static defaults: {
-        label: () => string;
         showHeader: boolean;
         showFooter: boolean;
         resizeable: boolean;
@@ -644,9 +669,9 @@ declare class Modal {
     static startMoveModal(handler: Handler): void;
     static moveModal(handler: Handler, offset: object): void;
 }
-declare class TreeNode {
+declare class TreeNode extends Base {
     static instances: TreeNode[];
-    static byLabel(label: string): TreeNode;
+    static activeInstances: TreeNode[];
     static defaults: {};
     static argMap: {
         DisplayCell: string[];
@@ -665,26 +690,11 @@ declare class TreeNode {
     addDisplayCells(newCellArray?: DisplayCell[], isFirst?: boolean): DisplayCell[];
 }
 declare function T(...Arguments: any): TreeNode;
-declare class Props {
-    static instances: Props[];
-    static byLabel(label: string): Props;
-    static defaults: {
-        label: () => string;
-    };
-    static argMap: {
-        string: string[];
-    };
-    label: string;
-    cellArray: DisplayCell[];
-    constructor(...Arguments: any);
-}
-declare function props(...Arguments: any): Props;
-declare class Tree {
+declare class Tree extends Base {
     static instances: Tree[];
-    static byLabel(label: string): Tree;
+    static activeInstances: Tree[];
     static defaultObj: TreeNode;
     static defaults: {
-        label: () => string;
         cellHeight: number;
         SVGColor: string;
         startIndent: number;
@@ -740,12 +750,10 @@ declare class t_ {
     ItemArguments: any[];
     constructor(...Arguments: any);
 }
-declare class Observe {
+declare class Observe extends Base {
     static instances: Observe[];
-    static byLabel(label: string): Observe;
-    static defaults: {
-        label: () => string;
-    };
+    static activeInstances: Observe[];
+    static defaults: {};
     static argMap: {
         string: string[];
         HTMLDivElement: string[];
@@ -759,41 +767,4 @@ declare class Observe {
     static derender(displaycell: DisplayCell): void;
     static onScroll(event: WheelEvent): void;
     static update(): void;
-}
-declare class BaseF {
-    static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
-    static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
-    static argumentsByType(Args: any[], // 1st argument is a list of args.
-    customTypes?: Function[]): ArgsObj;
-    static modifyClassProperties(argobj: object, targetobject: object): void;
-    static mergeObjects: (startObj: object, AddObj: object) => object;
-}
-declare class Base {
-    static defaultIsChecks: ((it: any) => any)[];
-    static byLabel(label: string): any;
-    static pop(instance: any, fromInstances?: boolean): void;
-    static push(instance: any, toActive?: boolean): void;
-    static deactivate(instance: any): void;
-    static activate(instance: any): void;
-    static stringOrObject(instance: any): any;
-    static defaults: object;
-    static argMap: object;
-    retArgs: ArgsObj;
-    constructor();
-    build(...Arguments: any): void;
-    static build(THIS: any, ...Arguments: any): void;
-    static makeLabel(instance: any): void;
-}
-declare class Test extends Base {
-    static labelNo: number;
-    static instances: Test[];
-    static activeInstances: Test[];
-    static defaults: {
-        tag: string;
-    };
-    static argMap: {
-        string: string[];
-        number: string[];
-    };
-    constructor(...Arguments: any);
 }

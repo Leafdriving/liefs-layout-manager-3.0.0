@@ -13,16 +13,11 @@ class Within{
     reset(){this.x = this.y = this.width = this.height = undefined};
 }
 interface Offset {x:number;y:number;width:number;height:number}
-class Coord {
+class Coord extends Base {
     static instances:Coord[] = [];
-    static byLabel(label:string):Coord{
-        for (let key in Coord.instances)
-            if (Coord.instances[key].label == label)
-                return Coord.instances[key];
-        return undefined;
-    }
+    static activeInstances:Coord[] = [];
+
     static defaults = {
-        label : function(){return `Coord_${pf.pad_with_zeroes(Coord.instances.length)}`},
         x : 0, y : 0, width : 0, height: 0, zindex: 0
     };
     static argMap = {
@@ -55,19 +50,14 @@ class Coord {
     offset: Offset;
 
     constructor(...Arguments: any) {
-        Coord.instances.push(this);
-        mf.applyArguments("Coord", Arguments, Coord.defaults, Coord.argMap, this);
+        super();this.buildBase(...Arguments);
+        
+        Coord.makeLabel(this);
     }
     setOffset(x=0, y=0, width=0, height=0){
         if (x==0 && y==0 && width ==0 && height == 0) this.offset = undefined;
         else this.offset = {x, y, width, height};
     }
-    // setWithin(within:Coord|Within){
-    //     this.within.x = within.x;
-    //     this.within.y = within.y;
-    //     this.within.width = within.width;
-    //     this.within.height = within.height
-    // }
     cropWithin(within:Coord|Within = this.within){
         let x=this.x, y=this.y, width=this.width, height=this.height, x2=x+width, y2=y+height;
         let wx=within.x, wy=within.y, wwidth=within.width, wheight=within.height, wx2=wx+wwidth, wy2=wy+wheight;

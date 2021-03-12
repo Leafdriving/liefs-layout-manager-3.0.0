@@ -1,13 +1,7 @@
-class TreeNode {
+class TreeNode extends Base {
     static instances:TreeNode[] = [];
-    static byLabel(label:string):TreeNode{
-        for (let key in TreeNode.instances)
-            if (TreeNode.instances[key].label == label)
-                return TreeNode.instances[key];
-        return undefined;
-    }
+    static activeInstances:TreeNode[] = [];
     static defaults = {
-        // label : function(){return `TreeNode_${pf.pad_with_zeroes(TreeNode.instances.length)}`},
     }
     static argMap = {
         DisplayCell : ["labelCell"],
@@ -24,8 +18,8 @@ class TreeNode {
     nodeCellArray : DisplayCell[] = [];
 
     constructor(...Arguments: any) {
-        TreeNode.instances.push(this);
-        mf.applyArguments("TreeNode", Arguments, TreeNode.defaults, TreeNode.argMap, this);
+        super();this.buildBase(...Arguments);
+
         if (this.labelCell.htmlBlock)
             this.labelCell.htmlBlock.hideWidth = this.labelCell.coord.hideWidth = true;
         if (this.labelCell && !this.label) this.label = this.labelCell.label;
@@ -48,43 +42,11 @@ class TreeNode {
 }
 function T(...Arguments:any){return new TreeNode(...Arguments)}
 
-class Props {
-    static instances:Props[] = [];
-    static byLabel(label:string):Props{
-        for (let key in Props.instances)
-            if (Props.instances[key].label == label)
-                return Props.instances[key];
-        return undefined;
-    }
-    static defaults = {
-        label : function(){return `Prop_${pf.pad_with_zeroes(Props.instances.length)}`},
-    }
-    static argMap = {
-        string : ["label"],
-    }
-    label:string;
-    cellArray: DisplayCell[];
-    constructor(...Arguments: any) {
-        Props.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Prop");
-        mf.applyArguments("Prop", Arguments, Props.defaults, Props.argMap, this);
-        if ("DisplayCell" in retArgs) this.cellArray = retArgs["DisplayCell"];
-    }
-}
-function props(...Arguments:any) {return new Props(...Arguments);}
-
-
-class Tree {
+class Tree extends Base {
     static instances:Tree[] = [];
-    static byLabel(label:string):Tree{
-        for (let key in Tree.instances)
-            if (Tree.instances[key].label == label)
-                return Tree.instances[key];
-        return undefined;
-    }
+    static activeInstances:Tree[] = [];
     static defaultObj = T("Tree",
         I("Tree_TopDisplay", "Top Display"),
-        props(I("Tree_TopDisplay_prop1", "prop1"), I("Tree_TopDisplay_prop2", "prop2")),
         [ T( "Tree_child1", I("Tree_Child1ofTop","Child1ofTop"), // true,       
             [ T("Tree_child1_1", I("Tree_Child1ofChild1","Child1ofChild1") ),
               T("Tree_child1_2", I("Tree_Child2ofChild1","Child2ofChild1") )
@@ -93,7 +55,6 @@ class Tree {
           T( "Tree_child2", I("Tree_Child2ofTop","Child2ofTop") )]
     )
     static defaults = {
-        label : function(){return `Tree_${pf.pad_with_zeroes(Tree.instances.length)}`},
         cellHeight:20, SVGColor:"white", startIndent: 0, indent : 10, collapsePad: 4, collapseSize: 16,
         margin: 2,
     }
@@ -122,20 +83,17 @@ class Tree {
     events: Events; // default events for tree items.
 
     constructor(...Arguments: any) {
-        Tree.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Tree");
-        mf.applyArguments("Tree", Arguments, Tree.defaults, Tree.argMap, this);
-
+        super();this.buildBase(...Arguments);
 
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`)
         }
 
-        if ("Css" in retArgs) // duplicated!!!!!
-            for (let css of retArgs["Css"]) 
+        if ("Css" in this.retArgs) // duplicated!!!!!
+            for (let css of this.retArgs["Css"]) 
                 this.css = (this.css + " "+  (<Css>css).classname).trim();
-        if ("string" in retArgs && retArgs.string.length > 1)
-            this.css += " " + retArgs.string.splice(1).join(' ');
+        if ("string" in this.retArgs && this.retArgs.string.length > 1)
+            this.css += " " + this.retArgs.string.splice(1).join(' ');
         // console.log(this.parentDisplayCell)
         let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, this.margin, this.margin);  ////////////////////////////////////// check this again!
         let cellArray = V.displaygroup.cellArray;
@@ -169,6 +127,7 @@ class Tree {
                 // console.log(displaycell.displaygroup.cellArray[0].dim)
             }
         }
+        Tree.makeLabel(this);
         this.buildTreeNode(this.rootTreeNode, cellArray);
     }
     // autoLabel(node = this.rootTreeNode, newLabel=`${this.label}`){

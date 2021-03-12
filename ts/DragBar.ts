@@ -1,18 +1,11 @@
-class DragBar {
+class DragBar extends Base {
     static horCss = css("db_hor","background-color:black;cursor: ew-resize;");
     static verCss = css("db_ver","background-color:black;cursor: ns-resize;");
     static instances:DragBar[] = [];
-    static byLabel(label:string):DragBar{
-        for (let key in DragBar.instances)
-            if (DragBar.instances[key].label == label)
-                return DragBar.instances[key];
-        return undefined;
-    }
+    static activeInstances:DragBar[] = [];
     static defaults = {
-        label : function(){return `DragBar_${pf.pad_with_zeroes(DragBar.instances.length)}`},
         horcss : DragBar.horCss,
         vercss : DragBar.verCss
-
     }
     static argMap = {
         string : ["label"],
@@ -34,12 +27,8 @@ class DragBar {
     isLast:boolean;
 
     constructor(...Arguments: any) {
+        super();this.buildBase(...Arguments);
         let dragbar=this;
-        let parentDisplaycell = this.parentDisplaycell;
-        DragBar.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "DragBar");
-        mf.applyArguments("DragBar", Arguments, DragBar.defaults, DragBar.argMap, this);
-        // this.parentDisplaycell.dragbar = this;
 
         this.displaycell = I(`${this.label}_dragbar`,"",
             events({ondrag: {onDown :function(xmouseDiff:object){
@@ -58,6 +47,7 @@ class DragBar {
                             // onUp: function(ouxmouseDifftput:object){}
                      } }),
         );
+        DragBar.makeLabel(this);
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         // console.log(parentDisplaygroup);

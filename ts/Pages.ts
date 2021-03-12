@@ -1,14 +1,9 @@
-class Pages {
+class Pages extends Base {
     static activePages:Pages[] = [];
     static instances:Pages[] = [];
-    static byLabel(label:string, source=Pages.instances):Pages{
-        for (let key in Pages.instances)
-            if (Pages.instances[key].label == label)
-                return Pages.instances[key];
-        return undefined;
-    }
+    static activeInstances:Pages[] = [];
+
     static defaults = {
-        label : function(){return `Pages_${pf.pad_with_zeroes(Pages.instances.length)}`},
         currentPage : 0, previousPage : 0,
         evalFunction : function(thisPages:Pages):number {return thisPages.currentPage}
     }
@@ -28,13 +23,15 @@ class Pages {
     dim:string;
 
     constructor(...Arguments: any) {
+        super();this.buildBase(...Arguments);
+        Pages.pop(this);
         Pages.instances.unshift(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Pages");
-        mf.applyArguments("Pages", Arguments, Pages.defaults, Pages.argMap, this);
-        if (retArgs["DisplayCell"])
-            this.displaycells = retArgs["DisplayCell"];
+
+        if (this.retArgs["DisplayCell"])
+            this.displaycells = this.retArgs["DisplayCell"];
         else
             pf.errorHandling("Pages Requires at least one DisplayCells");
+        Pages.makeLabel(this);
     }
     eval(){return this.evalFunction(this)}
     evalCell(){return this.displaycells[ this.eval() ];}

@@ -8,6 +8,7 @@
         "module" :"amd",
     },
     "files": [
+        "ts/Base.ts",
         "ts/FunctionStack.ts",        
         "ts/PureFunctions.ts",
         "ts/Coord.ts",
@@ -28,7 +29,7 @@
         "ts/Modal.ts",
         "ts/Tree.ts",
         "ts/Observe.ts",
-        "ts/Base.ts"
+
         // "ts/testscript.ts"
     ]
 }

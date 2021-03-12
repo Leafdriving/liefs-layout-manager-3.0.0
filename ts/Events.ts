@@ -1,16 +1,10 @@
-//interface Action { [key: string]: Function; }
-class Events {
+
+class Events extends Base {
     static elementId="llmEvents";
     static instances:Events[] = [];
-    static byLabel(label:string):Events{
-        for (let key in Events.instances)
-            if (Events.instances[key].label == label)
-                return Events.instances[key];
-        return undefined;
-    }
+    static activeInstances:Events[] = [];
     static history:string[] = [];
     static defaults = {
-        label : function(){return `Events_${pf.pad_with_zeroes(Events.instances.length)}`},
     }
     static argMap = {
         string : ["label"]
@@ -19,15 +13,14 @@ class Events {
     actions: object;
 
     constructor(...Arguments: any) {
-        Events.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Events");
+        super();
+        let retArgs : ArgsObj = BaseF.argumentsByType(Arguments);
         if ("object" in retArgs) {
             this.actions = retArgs["object"][0];
             delete retArgs["object"];
         }
-        let updatedDefaults : Object = pf.ifObjectMergeWithDefaults(retArgs, Events.defaults);
-        let retArgsMapped : Object = pf.retArgsMapped(retArgs, updatedDefaults, Events.argMap);
-        mf.modifyClassProperties(retArgsMapped, this);
+        this.buildBase(...Arguments);
+        Events.makeLabel(this);
     }
     applyToHtmlBlock(htmlblock:HtmlBlock){
         let el:HTMLElement = htmlblock.el;

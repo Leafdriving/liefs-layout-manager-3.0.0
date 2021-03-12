@@ -1,13 +1,7 @@
-class Observe {
+class Observe extends Base {
     static instances:Observe[] = [];
-    static byLabel(label:string):Observe{
-        for (let key in Observe.instances)
-            if (Observe.instances[key].label == label)
-                return Observe.instances[key];
-        return undefined;
-    }
+    static activeInstances:Observe[] = [];
     static defaults = {
-        label : function(){return `Observe_${pf.pad_with_zeroes(Observe.instances.length)}`},
     }
     static argMap = {
         string : ["label"],
@@ -21,9 +15,8 @@ class Observe {
     // derendering: boolean = false;
 
     constructor(...Arguments: any) {
-        Observe.instances.push(this);
-        let retArgs : ArgsObj = pf.sortArgs(Arguments, "Observe");
-        mf.applyArguments("Observe", Arguments, Observe.defaults, Observe.argMap, this);
+        super();this.buildBase(...Arguments);
+
         let observerInstance = this;
         let handler = Handler.byLabel(observerInstance.label);
         if (!handler.coord) handler.coord = new Coord();
@@ -37,6 +30,7 @@ class Observe {
         if (!this.parentDisplayCell.postRenderCallback)
             this.parentDisplayCell.postRenderCallback = FunctionStack.function(this.parentDisplayCell.label);
 
+        Observe.makeLabel(this);
         FunctionStack.push(this.parentDisplayCell.label, function(displaycell: DisplayCell,
             parentDisplaygroup: DisplayGroup = undefined, index:number = undefined, derender:boolean = false){
 

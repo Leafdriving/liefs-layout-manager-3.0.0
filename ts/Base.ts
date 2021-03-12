@@ -3,7 +3,7 @@ class BaseF {
         if ("object" in THIS.retArgs) {
             let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
             for (let key in THIS.retArgs["object"]) 
-                returnObj = CLASS.mergeObjects(returnObj, THIS.retArgs["object"][key])
+                returnObj = BaseF.mergeObjects(returnObj, THIS.retArgs["object"][key])
             return returnObj;
         }
         return CLASS.defaults;
@@ -55,7 +55,7 @@ class BaseF {
     };
 }
 class Base {
-    static defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
+    static defaultIsChecks:any // = [pf.isArray, pf.isObjectAClass, pf.isDim];
     // static instances:any[] = [];
     // static activeInstances:any[] = [];
 
@@ -100,8 +100,8 @@ class Base {
 
     constructor(){
     }
-    build(...Arguments:any){this.constructor["build"](this, ...Arguments);}
-    static build(THIS:any, ...Arguments:any){
+    buildBase(...Arguments:any){this.constructor["buildBase"](this, ...Arguments);}
+    static buildBase(THIS:any, ...Arguments:any){
         let CLASS = this;
         if (CLASS["labelNo"] == undefined) CLASS["labelNo"] = 0;
         if (CLASS["defaults"] == undefined) CLASS["defaults"] = {};
@@ -116,7 +116,7 @@ class Base {
     }
     static makeLabel(instance:any){
         let CLASS = this;
-        if (instance["label"] == undefined){
+        if (instance["label"] == undefined || instance["label"].trim() == ""){
             CLASS["labelNo"] += 1;
             instance["label"] = `${CLASS.name}_${CLASS["labelNo"]}`
         }
@@ -136,7 +136,7 @@ class Test extends Base {
     }
     // retArgs:ArgsObj;   // <- this will appear
     constructor(...Arguments:any){
-        super();this.build(...Arguments);
+        super();this.buildBase(...Arguments);
 
         Test.makeLabel(this);
     }
