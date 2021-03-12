@@ -39,26 +39,7 @@ class HtmlBlock {
     attributes:object = {};
     hideWidth: boolean;
     minDisplayGroupSize: number;
-    // tree:Tree;
-    /**
-     * Constructor Arguments include:
-     * 
-     *  label:string;[first string argument]
-     *  innerHTML:string;[second string argument]
-     *  tag:string;
-     *  dim:string;
-     * 
-     *  events: Events;
-     *  el:HTMLElement;
-     * 
-     *  marginLeft : number;
-     *  marginRight : number;
-     *  marginTop : number;
-     *  marginBottom : number;
-     * 
-     * 
-     * css:string - generated Argument of Class Css
-     */
+
     constructor(...Arguments: any) {
         HtmlBlock.instances.push(this);
         let retArgs : ArgsObj = pf.sortArgs(Arguments, "HtmlBlock");

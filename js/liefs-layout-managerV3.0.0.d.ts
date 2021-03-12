@@ -159,25 +159,6 @@ declare class HtmlBlock {
     attributes: object;
     hideWidth: boolean;
     minDisplayGroupSize: number;
-    /**
-     * Constructor Arguments include:
-     *
-     *  label:string;[first string argument]
-     *  innerHTML:string;[second string argument]
-     *  tag:string;
-     *  dim:string;
-     *
-     *  events: Events;
-     *  el:HTMLElement;
-     *
-     *  marginLeft : number;
-     *  marginRight : number;
-     *  marginTop : number;
-     *  marginBottom : number;
-     *
-     *
-     * css:string - generated Argument of Class Css
-     */
     constructor(...Arguments: any);
 }
 declare function html(...Arguments: any): HtmlBlock;
@@ -778,4 +759,39 @@ declare class Observe {
     static derender(displaycell: DisplayCell): void;
     static onScroll(event: WheelEvent): void;
     static update(): void;
+}
+declare class Base {
+    static defaultIsChecks: ((it: any) => any)[];
+    static byLabel(label: string): any;
+    static pop(instance: any, fromInstances?: boolean): void;
+    static push(instance: any, toActive?: boolean): void;
+    static deactivate(instance: any): void;
+    static activate(instance: any): void;
+    static stringOrObject(instance: any): any;
+    static defaults: object;
+    static argMap: object;
+    retArgs: ArgsObj;
+    constructor();
+    build(...Arguments: any): void;
+    static build(THIS: any, ...Arguments: any): void;
+    static ifObjectMergeWithDefaults(THIS: any): object;
+    static retArgsMapped(updatedDefaults: object, THIS: any): object;
+    static argumentsByType(Args: any[], // 1st argument is a list of args.
+    customTypes?: Function[]): ArgsObj;
+    static modifyClassProperties(argobj: object, targetobject: object): void;
+    static mergeObjects: (startObj: object, AddObj: object) => object;
+    static makeLabel(instance: any): void;
+}
+declare class Test extends Base {
+    static labelNo: number;
+    static instances: Test[];
+    static activeInstances: Test[];
+    static defaults: {
+        tag: string;
+    };
+    static argMap: {
+        string: string[];
+        number: string[];
+    };
+    constructor(...Arguments: any);
 }

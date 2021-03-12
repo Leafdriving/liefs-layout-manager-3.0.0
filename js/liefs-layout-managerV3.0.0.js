@@ -388,26 +388,6 @@ Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
  * This Class Holds the HTMLElement
  */
 class HtmlBlock {
-    // tree:Tree;
-    /**
-     * Constructor Arguments include:
-     *
-     *  label:string;[first string argument]
-     *  innerHTML:string;[second string argument]
-     *  tag:string;
-     *  dim:string;
-     *
-     *  events: Events;
-     *  el:HTMLElement;
-     *
-     *  marginLeft : number;
-     *  marginRight : number;
-     *  marginTop : number;
-     *  marginBottom : number;
-     *
-     *
-     * css:string - generated Argument of Class Css
-     */
     constructor(...Arguments) {
         this.attributes = {};
         HtmlBlock.instances.push(this);
@@ -2406,3 +2386,156 @@ Observe.argMap = {
     DisplayCell: ["parentDisplayCell"],
 };
 Observe.Os_ScrollbarSize = 15;
+class Base {
+    constructor() {
+    }
+    // static instances:any[] = [];
+    // static activeInstances:any[] = [];
+    static byLabel(label) {
+        let CLASS = this;
+        for (let key in CLASS["instances"])
+            if (CLASS["instances"][key].label == label)
+                return CLASS["instances"][key];
+        return undefined;
+    }
+    static pop(instance, fromInstances = false) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        CLASS.deactivate(instance);
+        if (fromInstances) {
+            let index = CLASS["instances"].indexOf(instance);
+            if (index != -1)
+                CLASS["instances"].splice(index, 1);
+        }
+    }
+    static push(instance, toActive = false) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        CLASS.pop(instance, true); // if pushing same, remove previous
+        CLASS["instances"].push(instance);
+        if (toActive)
+            CLASS["activeInstances"].push(instance);
+    }
+    static deactivate(instance) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        let index = CLASS["activeInstances"].indexOf(instance);
+        if (index != -1)
+            CLASS["activeInstances"].splice(index, 1);
+    }
+    static activate(instance) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        CLASS.deactivate(instance);
+        CLASS["activeInstances"].push(instance);
+    }
+    static stringOrObject(instance) {
+        if (typeof (instance) == "string")
+            instance = this.byLabel(instance);
+        return instance;
+    }
+    build(...Arguments) { this.constructor["build"](this, ...Arguments); }
+    static build(THIS, ...Arguments) {
+        let CLASS = this;
+        if (CLASS["labelNo"] == undefined)
+            CLASS["labelNo"] = 0;
+        if (CLASS["defaults"] == undefined)
+            CLASS["defaults"] = {};
+        if (CLASS["argMap"] == undefined)
+            CLASS["argMap"] = {};
+        if (CLASS["instances"] == undefined)
+            CLASS["instances"] = [];
+        if (CLASS["activeInstances"] == undefined)
+            CLASS["activeInstances"] = [];
+        CLASS.push(THIS);
+        THIS.retArgs = CLASS.argumentsByType(Arguments);
+        let updatedDefaults = CLASS.ifObjectMergeWithDefaults(THIS);
+        let retArgsMapped = CLASS.retArgsMapped(updatedDefaults, THIS);
+        CLASS.modifyClassProperties(retArgsMapped, THIS);
+    }
+    static ifObjectMergeWithDefaults(THIS) {
+        let CLASS = this;
+        if ("object" in THIS.retArgs) {
+            let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
+            for (let key in THIS.retArgs["object"])
+                returnObj = CLASS.mergeObjects(returnObj, THIS.retArgs["object"][key]);
+            return returnObj;
+        }
+        return CLASS.defaults;
+    }
+    static retArgsMapped(updatedDefaults, THIS) {
+        let CLASS = this;
+        let returnObject = {};
+        let indexNo;
+        for (let i in updatedDefaults)
+            returnObject[i] = updatedDefaults[i];
+        for (let typeName in THIS.retArgs) {
+            if (typeName in CLASS.argMap) {
+                indexNo = 0;
+                while (indexNo < THIS.retArgs[typeName].length &&
+                    indexNo < CLASS.argMap[typeName].length) {
+                    returnObject[CLASS.argMap[typeName][indexNo]] = THIS.retArgs[typeName][indexNo];
+                    indexNo++;
+                }
+            }
+        }
+        return returnObject;
+    }
+    static argumentsByType(Args, // 1st argument is a list of args.
+    customTypes = []) {
+        customTypes = customTypes.concat(Base.defaultIsChecks); // assumed these are included.
+        let returnArray = {};
+        let valueType;
+        let returnValue;
+        for (let value of Args) {
+            valueType = typeof (value); // evaluate type
+            for (let checkFunction of customTypes) { // check if it is a custom Type
+                returnValue = checkFunction(value);
+                if (returnValue)
+                    valueType = returnValue;
+            }
+            if (!(valueType in returnArray))
+                returnArray[valueType] = []; // If type doesn't exist, add empty array
+            returnArray[valueType].push(value); // Assign Type Value
+        }
+        return returnArray;
+    }
+    static modifyClassProperties(argobj, targetobject) {
+        for (let key of Object.keys(argobj))
+            targetobject[key] = argobj[key];
+    }
+    static makeLabel(instance) {
+        let CLASS = this;
+        if (instance["label"] == undefined) {
+            CLASS["labelNo"] += 1;
+            instance["label"] = `${CLASS.name}_${CLASS["labelNo"]}`;
+        }
+    }
+}
+Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
+Base.mergeObjects = function (startObj, AddObj) {
+    let returnObject = {};
+    for (let i in startObj)
+        returnObject[i] = startObj[i];
+    for (let j in AddObj)
+        returnObject[j] = AddObj[j];
+    return returnObject;
+};
+class Test extends Base {
+    // retArgs:ArgsObj;   // <- this will appear
+    constructor(...Arguments) {
+        super();
+        this.build(...Arguments);
+        Test.makeLabel(this);
+    }
+}
+Test.labelNo = 0;
+Test.instances = [];
+Test.activeInstances = [];
+Test.defaults = {
+    tag: "DIV",
+};
+Test.argMap = {
+    string: ["label", "innerHTML", "css"],
+    number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+};
