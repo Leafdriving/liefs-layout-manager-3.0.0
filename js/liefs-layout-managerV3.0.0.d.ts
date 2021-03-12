@@ -275,7 +275,7 @@ declare class Handler extends Base {
     static handlerMarginDefault: number;
     static firstRun: boolean;
     static instances: Handler[];
-    static activeHandlers: Handler[];
+    static activeInstances: Handler[];
     static defaults: {
         cssString: string;
         addThisHandlerToStack: boolean;

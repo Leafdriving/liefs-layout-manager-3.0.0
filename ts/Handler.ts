@@ -2,7 +2,7 @@ class Handler extends Base {
     static handlerMarginDefault=0;
     static firstRun = true;
     static instances:Handler[] = [];
-    static activeHandlers:Handler[] = [];
+    static activeInstances:Handler[] = [];
     static defaults = {
         cssString : " ",
         addThisHandlerToStack: true,
@@ -50,27 +50,29 @@ class Handler extends Base {
             window.addEventListener("popstate", function(event){Pages.popstate(event)})
             Pages.parseURL();
         }
-        if (this.addThisHandlerToStack) Handler.activeHandlers.push(this);
+        if (this.addThisHandlerToStack) {
+            Handler.activeInstances.push(this);
+        }
         Handler.makeLabel(this);
         Handler.update(/* [this] */);
         Css.update();
     }
     pop():Handler {return Handler.pop(this);}
     toTop(){ // doesn't work!
-        let index = Handler.activeHandlers.indexOf(this);
-        if (index > -1 && index != Handler.activeHandlers.length-1){
-            Handler.activeHandlers.splice(index, 1);
-            Handler.activeHandlers.push(this);
+        let index = Handler.activeInstances.indexOf(this);
+        if (index > -1 && index != Handler.activeInstances.length-1){
+            Handler.activeInstances.splice(index, 1);
+            Handler.activeInstances.push(this);
             Handler.update();
         }
     }
-    static pop(handlerInstance = Handler.activeHandlers[ Handler.activeHandlers.length-1 ]): Handler {
-        let index = Handler.activeHandlers.indexOf(handlerInstance);
+    static pop(handlerInstance = Handler.activeInstances[ Handler.activeInstances.length-1 ]): Handler {
+        let index = Handler.activeInstances.indexOf(handlerInstance);
         let poppedInstance:Handler = undefined;
         if (index != -1) {
-            poppedInstance = Handler.activeHandlers[index];
+            poppedInstance = Handler.activeInstances[index];
             Handler.update([handlerInstance], index, true);
-            Handler.activeHandlers.splice(index, 1);
+            Handler.activeInstances.splice(index, 1);
         }
         return poppedInstance;
     }
@@ -81,7 +83,7 @@ class Handler extends Base {
         //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
 
-    static update(ArrayofHandlerInstances:Handler[] = Handler.activeHandlers, instanceNo:number = 0, derender:boolean = false){
+    static update(ArrayofHandlerInstances:Handler[] = Handler.activeInstances, instanceNo:number = 0, derender:boolean = false){
         // console.log("Update Fired");
         Handler.renderAgain = false;
         Pages.activePages = [];

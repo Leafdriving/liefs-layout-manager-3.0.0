@@ -2,35 +2,38 @@ class Builder {
     constructor(){
     }
     static updateTree(handler:Handler){
+      let returnString = `TI("${handler.label}", [\n`;
       console.log("Updating Tree");
-      console.group("Handler: " + handler.label);
-      Builder.DC(handler.rootCell);
-      console.groupEnd();
+      returnString += Builder.DC(handler.rootCell, "\t");
+      returnString += "])"
+      return returnString;
     }
-    static DC(displaycell:DisplayCell) {
-      // console.group("DisplayCell: " + displaycell.label);
-      if (displaycell.htmlBlock) Builder.HB(displaycell.htmlBlock);
-      if (displaycell.displaygroup) Builder.DG(displaycell.displaygroup);
-      if (displaycell.pages) Builder.PG(displaycell.pages);
-      // console.groupEnd()
+    static DC(displaycell:DisplayCell, indent:string) {
+      let returnString = "";
+      if (displaycell.htmlBlock) returnString += Builder.HB(displaycell.htmlBlock, indent);
+      if (displaycell.displaygroup) returnString += Builder.DG(displaycell.displaygroup, indent);
+      return returnString;
     }
-    static HB(htmlblock:HtmlBlock) {
-      console.log("HtmlBlock: " + htmlblock.label);
+    static HB(htmlblock:HtmlBlock, indent:string) {
+      return indent + `TI("${htmlblock.label}"),\n`
     }
-    static DG(displaygroup: DisplayGroup){
-      console.group("DisplayGroup: " + displaygroup.label);
+    static DG(displaygroup: DisplayGroup, indent:string){
+      let returnString = indent + `TI("${displaygroup.label}", [\n`
       for (let index = 0; index < displaygroup.cellArray.length; index++) {
         const displaycell = displaygroup.cellArray[index];
-        Builder.DC(displaycell);
+        returnString += Builder.DC(displaycell, indent + "\t")
       }
-      console.groupEnd();
+      returnString += indent + `]),\n`
+      return returnString;
     }
-    static PG(pages:Pages) {
-      console.group(pages.label);
+    static PG(pages:Pages, indent:string) {
+      let returnString = indent + `TI("${pages.label}", [\n`
       for (let index = 0; index < pages.displaycells.length; index++) {
-        Builder.DC(pages.displaycells[index]);
+        const displaycell = pages.displaycells[index];
+        returnString += Builder.DC(displaycell, indent + "\t")
       }
-      console.groupEnd();
+      returnString += indent + `])\n`
+      return returnString
     }
 }
 
@@ -53,11 +56,21 @@ window.onload = function(){
 
 
 
-let mainBodyDisplayCell = I("Main_body", bCss.menuItem);
+let mainBodyDisplayCell = I("Main_body");
 mainBodyDisplayCell.postRenderCallback = 
   function(displaycell: DisplayCell, displaygroup:DisplayGroup, index:number, derender:boolean) {
     Handler.byLabel("Client Window").coord.copy(displaycell.coord);
   }
+
+
+let clientHandler = H("Client Window",
+  I("Client_Main","Client Main"),
+  false,
+  new Coord(),
+  function(){
+    console.log(  Builder.updateTree(Handler.byLabel("Main Window"))   );
+  }
+);
 
 let mainHandler = H("Main Window", 4,
   v("Main_v",
@@ -72,13 +85,10 @@ let mainHandler = H("Main Window", 4,
       mainBodyDisplayCell
     )
   )
-)
-let clientHandler = H("Client Window",
-  I("Client_Main","Client Main"),
-  // false,
-  new Coord(),
-  function(){Builder.updateTree(Handler.byLabel("Main Window"))}
-)
+);
+Handler.activate(clientHandler);
+
+
 
 
 

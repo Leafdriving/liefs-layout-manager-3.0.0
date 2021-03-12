@@ -238,8 +238,8 @@ let LargeScreen = v("Main Vertical", I("TitleBar", "30px", CSS.cssTitle), h("Mai
 let MenuSvgSize = 40;
 let SmallScreen = v("Small_v", h("Small_h", `${MenuSvgSize}px`, I("MenuButton", CSS.menu_SVG(MenuSvgSize), `${MenuSvgSize}px`, CSS.menuButton, events({
     onclick: function () {
-        if (Handler.activeHandlers.indexOf(slideMenu) == -1) {
-            Handler.activeHandlers.push(slideMenu);
+        if (Handler.activeInstances.indexOf(slideMenu) == -1) {
+            Handler.activeInstances.push(slideMenu);
             Handler.update();
         }
         else

@@ -21,8 +21,8 @@ class Observe extends Base {
         let handler = Handler.byLabel(observerInstance.label);
         if (!handler.coord) handler.coord = new Coord();
         // put handler in stack if not there already (push Handler)
-        if (Handler.activeHandlers.indexOf(handler) == -1){
-            Handler.activeHandlers.push(handler);
+        if (Handler.activeInstances.indexOf(handler) == -1){
+            Handler.activeInstances.push(handler);
         }
         this.parentDisplayCell.htmlBlock.el.onscroll = function(event:WheelEvent){Observe.onScroll(event);};
         handler.controlledBySomething = true;
@@ -60,9 +60,9 @@ class Observe extends Base {
             let observeInstance = Observe.instances[index];
             if (observeInstance.parentDisplayCell == displaycell){
                 handler = Handler.byLabel(observeInstance.label);
-                let Hindex = Handler.activeHandlers.indexOf(handler)
+                let Hindex = Handler.activeInstances.indexOf(handler)
                 if (Hindex > -1) {
-                    Handler.activeHandlers.splice(Hindex,1);
+                    Handler.activeInstances.splice(Hindex,1);
                 }
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);

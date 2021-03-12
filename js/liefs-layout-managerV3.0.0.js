@@ -805,28 +805,29 @@ class Handler extends Base {
             window.addEventListener("popstate", function (event) { Pages.popstate(event); });
             Pages.parseURL();
         }
-        if (this.addThisHandlerToStack)
-            Handler.activeHandlers.push(this);
+        if (this.addThisHandlerToStack) {
+            Handler.activeInstances.push(this);
+        }
         Handler.makeLabel(this);
         Handler.update( /* [this] */);
         Css.update();
     }
     pop() { return Handler.pop(this); }
     toTop() {
-        let index = Handler.activeHandlers.indexOf(this);
-        if (index > -1 && index != Handler.activeHandlers.length - 1) {
-            Handler.activeHandlers.splice(index, 1);
-            Handler.activeHandlers.push(this);
+        let index = Handler.activeInstances.indexOf(this);
+        if (index > -1 && index != Handler.activeInstances.length - 1) {
+            Handler.activeInstances.splice(index, 1);
+            Handler.activeInstances.push(this);
             Handler.update();
         }
     }
-    static pop(handlerInstance = Handler.activeHandlers[Handler.activeHandlers.length - 1]) {
-        let index = Handler.activeHandlers.indexOf(handlerInstance);
+    static pop(handlerInstance = Handler.activeInstances[Handler.activeInstances.length - 1]) {
+        let index = Handler.activeInstances.indexOf(handlerInstance);
         let poppedInstance = undefined;
         if (index != -1) {
-            poppedInstance = Handler.activeHandlers[index];
+            poppedInstance = Handler.activeInstances[index];
             Handler.update([handlerInstance], index, true);
-            Handler.activeHandlers.splice(index, 1);
+            Handler.activeInstances.splice(index, 1);
         }
         return poppedInstance;
     }
@@ -835,7 +836,7 @@ class Handler extends Base {
         dislaycell.coord.assign(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
         //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
-    static update(ArrayofHandlerInstances = Handler.activeHandlers, instanceNo = 0, derender = false) {
+    static update(ArrayofHandlerInstances = Handler.activeInstances, instanceNo = 0, derender = false) {
         // console.log("Update Fired");
         Handler.renderAgain = false;
         Pages.activePages = [];
@@ -1094,7 +1095,7 @@ class Handler extends Base {
 Handler.handlerMarginDefault = 0;
 Handler.firstRun = true;
 Handler.instances = [];
-Handler.activeHandlers = [];
+Handler.activeInstances = [];
 Handler.defaults = {
     cssString: " ",
     addThisHandlerToStack: true,
@@ -1982,7 +1983,7 @@ class Modal extends Base {
         // this.handler.pop();
     }
     show() {
-        Handler.activeHandlers.push(this.handler);
+        Handler.activeInstances.push(this.handler);
         Handler.update();
     }
     hide() {
@@ -2304,8 +2305,8 @@ class Observe extends Base {
         if (!handler.coord)
             handler.coord = new Coord();
         // put handler in stack if not there already (push Handler)
-        if (Handler.activeHandlers.indexOf(handler) == -1) {
-            Handler.activeHandlers.push(handler);
+        if (Handler.activeInstances.indexOf(handler) == -1) {
+            Handler.activeInstances.push(handler);
         }
         this.parentDisplayCell.htmlBlock.el.onscroll = function (event) { Observe.onScroll(event); };
         handler.controlledBySomething = true;
@@ -2336,9 +2337,9 @@ class Observe extends Base {
             let observeInstance = Observe.instances[index];
             if (observeInstance.parentDisplayCell == displaycell) {
                 handler = Handler.byLabel(observeInstance.label);
-                let Hindex = Handler.activeHandlers.indexOf(handler);
+                let Hindex = Handler.activeInstances.indexOf(handler);
                 if (Hindex > -1) {
-                    Handler.activeHandlers.splice(Hindex, 1);
+                    Handler.activeInstances.splice(Hindex, 1);
                 }
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);

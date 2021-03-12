@@ -167,7 +167,7 @@ class Modal extends Base {
         // this.handler.pop();
     }
     show(){
-        Handler.activeHandlers.push(this.handler);
+        Handler.activeInstances.push(this.handler);
         Handler.update();
     }
     hide(){

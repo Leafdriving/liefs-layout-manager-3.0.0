@@ -1,3 +1,154 @@
+class BaseF {
+    static ifObjectMergeWithDefaults(THIS, CLASS) {
+        if ("object" in THIS.retArgs) {
+            let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
+            for (let key in THIS.retArgs["object"])
+                returnObj = BaseF.mergeObjects(returnObj, THIS.retArgs["object"][key]);
+            return returnObj;
+        }
+        return CLASS.defaults;
+    }
+    static retArgsMapped(updatedDefaults, THIS, CLASS) {
+        let returnObject = {};
+        let indexNo;
+        for (let i in updatedDefaults)
+            returnObject[i] = updatedDefaults[i];
+        for (let typeName in THIS.retArgs) {
+            if (typeName in CLASS.argMap) {
+                indexNo = 0;
+                while (indexNo < THIS.retArgs[typeName].length &&
+                    indexNo < CLASS.argMap[typeName].length) {
+                    returnObject[CLASS.argMap[typeName][indexNo]] = THIS.retArgs[typeName][indexNo];
+                    indexNo++;
+                }
+            }
+        }
+        return returnObject;
+    }
+    static argumentsByType(Args, // 1st argument is a list of args.
+    customTypes = []) {
+        customTypes = customTypes.concat(Base.defaultIsChecks); // assumed these are included.
+        let returnArray = {};
+        let valueType;
+        let returnValue;
+        for (let value of Args) {
+            valueType = typeof (value); // evaluate type
+            for (let checkFunction of customTypes) { // check if it is a custom Type
+                returnValue = checkFunction(value);
+                if (returnValue)
+                    valueType = returnValue;
+            }
+            if (!(valueType in returnArray))
+                returnArray[valueType] = []; // If type doesn't exist, add empty array
+            returnArray[valueType].push(value); // Assign Type Value
+        }
+        return returnArray;
+    }
+    static modifyClassProperties(argobj, targetobject) {
+        for (let key of Object.keys(argobj))
+            targetobject[key] = argobj[key];
+    }
+}
+BaseF.mergeObjects = function (startObj, AddObj) {
+    let returnObject = {};
+    for (let i in startObj)
+        returnObject[i] = startObj[i];
+    for (let j in AddObj)
+        returnObject[j] = AddObj[j];
+    return returnObject;
+};
+class Base {
+    constructor() {
+    }
+    // static instances:any[] = [];
+    // static activeInstances:any[] = [];
+    static byLabel(label) {
+        let CLASS = this;
+        for (let key in CLASS["instances"])
+            if (CLASS["instances"][key].label == label)
+                return CLASS["instances"][key];
+        return undefined;
+    }
+    static pop(instance, fromInstances = false) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        CLASS.deactivate(instance);
+        if (fromInstances) {
+            let index = CLASS["instances"].indexOf(instance);
+            if (index != -1)
+                CLASS["instances"].splice(index, 1);
+        }
+    }
+    static push(instance, toActive = false) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        CLASS.pop(instance, true); // if pushing same, remove previous
+        CLASS["instances"].push(instance);
+        if (toActive)
+            CLASS["activeInstances"].push(instance);
+    }
+    static deactivate(instance) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        let index = CLASS["activeInstances"].indexOf(instance);
+        if (index != -1)
+            CLASS["activeInstances"].splice(index, 1);
+    }
+    static activate(instance) {
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
+        CLASS.deactivate(instance);
+        CLASS["activeInstances"].push(instance);
+    }
+    static stringOrObject(instance) {
+        if (typeof (instance) == "string")
+            instance = this.byLabel(instance);
+        return instance;
+    }
+    buildBase(...Arguments) { this.constructor["buildBase"](this, ...Arguments); }
+    static buildBase(THIS, ...Arguments) {
+        let CLASS = this;
+        if (CLASS["labelNo"] == undefined)
+            CLASS["labelNo"] = 0;
+        if (CLASS["defaults"] == undefined)
+            CLASS["defaults"] = {};
+        if (CLASS["argMap"] == undefined)
+            CLASS["argMap"] = {};
+        if (CLASS["instances"] == undefined)
+            CLASS["instances"] = [];
+        if (CLASS["activeInstances"] == undefined)
+            CLASS["activeInstances"] = [];
+        CLASS.push(THIS);
+        THIS.retArgs = BaseF.argumentsByType(Arguments);
+        let updatedDefaults = BaseF.ifObjectMergeWithDefaults(THIS, CLASS);
+        let retArgsMapped = BaseF.retArgsMapped(updatedDefaults, THIS, CLASS);
+        BaseF.modifyClassProperties(retArgsMapped, THIS);
+    }
+    static makeLabel(instance) {
+        let CLASS = this;
+        if (instance["label"] == undefined || instance["label"].trim() == "") {
+            CLASS["labelNo"] += 1;
+            instance["label"] = `${CLASS.name}_${CLASS["labelNo"]}`;
+        }
+    }
+}
+// class Test extends Base {
+//     static labelNo = 0;
+//     static instances:Test[] = [];
+//     static activeInstances:Test[] = [];
+//     static defaults = {
+//         tag: "DIV",
+//     }
+//     static argMap = {
+//         string : ["label", "innerHTML", "css"],
+//         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+//     }
+//     // retArgs:ArgsObj;   // <- this will appear
+//     constructor(...Arguments:any){
+//         super();this.buildBase(...Arguments);
+//         Test.makeLabel(this);
+//     }
+// }
 class FunctionStack {
     static push(label, function_) {
         if (!(label in FunctionStack.instanceObj))
@@ -176,6 +327,7 @@ pf.mergeObjects = function (startObj, AddObj) {
         returnObject[j] = AddObj[j];
     return returnObject;
 };
+Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
 class Point {
 }
 class Within {
@@ -188,17 +340,12 @@ class Within {
     reset() { this.x = this.y = this.width = this.height = undefined; }
     ;
 }
-class Coord {
+class Coord extends Base {
     constructor(...Arguments) {
+        super();
         this.within = new Within();
-        Coord.instances.push(this);
-        mf.applyArguments("Coord", Arguments, Coord.defaults, Coord.argMap, this);
-    }
-    static byLabel(label) {
-        for (let key in Coord.instances)
-            if (Coord.instances[key].label == label)
-                return Coord.instances[key];
-        return undefined;
+        this.buildBase(...Arguments);
+        Coord.makeLabel(this);
     }
     get x() { return this.x_ + ((this.offset) ? this.offset.x : 0); }
     set x(x) { this.x_ = x; }
@@ -214,12 +361,6 @@ class Coord {
         else
             this.offset = { x, y, width, height };
     }
-    // setWithin(within:Coord|Within){
-    //     this.within.x = within.x;
-    //     this.within.y = within.y;
-    //     this.within.width = within.width;
-    //     this.within.height = within.height
-    // }
     cropWithin(within = this.within) {
         let x = this.x, y = this.y, width = this.width, height = this.height, x2 = x + width, y2 = y + height;
         let wx = within.x, wy = within.y, wwidth = within.width, wheight = within.height, wx2 = wx + wwidth, wy2 = wy + wheight;
@@ -373,8 +514,8 @@ class Coord {
     }
 }
 Coord.instances = [];
+Coord.activeInstances = [];
 Coord.defaults = {
-    label: function () { return `Coord_${pf.pad_with_zeroes(Coord.instances.length)}`; },
     x: 0, y: 0, width: 0, height: 0, zindex: 0
 };
 Coord.argMap = {
@@ -387,45 +528,24 @@ Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
 /**
  * This Class Holds the HTMLElement
  */
-class HtmlBlock {
-    // tree:Tree;
-    /**
-     * Constructor Arguments include:
-     *
-     *  label:string;[first string argument]
-     *  innerHTML:string;[second string argument]
-     *  tag:string;
-     *  dim:string;
-     *
-     *  events: Events;
-     *  el:HTMLElement;
-     *
-     *  marginLeft : number;
-     *  marginRight : number;
-     *  marginTop : number;
-     *  marginBottom : number;
-     *
-     *
-     * css:string - generated Argument of Class Css
-     */
+class HtmlBlock extends Base {
     constructor(...Arguments) {
+        super();
         this.attributes = {};
-        HtmlBlock.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "HtmlBlock");
-        mf.applyArguments("HtmlBlock", Arguments, HtmlBlock.defaults, HtmlBlock.argMap, this);
+        this.buildBase(...Arguments);
         let elementWithIdAsLabel = document.getElementById(this.label);
         if (elementWithIdAsLabel) {
             this.innerHTML = elementWithIdAsLabel.innerHTML;
             this.attributes = pf.getAttribs(elementWithIdAsLabel, this.attributes);
             elementWithIdAsLabel.remove();
         }
-        if ("Css" in retArgs)
-            for (let css of retArgs["Css"])
+        if ("Css" in this.retArgs)
+            for (let css of this.retArgs["Css"])
                 this.css = (this.css + " " + css.classname).trim();
-        if ("string" in retArgs && retArgs.string.length > 3)
-            this.css += " " + retArgs.string.splice(3).join(' ');
-        if ("number" in retArgs) {
-            let length = retArgs["number"].length;
+        if ("string" in this.retArgs && this.retArgs.string.length > 3)
+            this.css += " " + this.retArgs.string.splice(3).join(' ');
+        if ("number" in this.retArgs) {
+            let length = this.retArgs["number"].length;
             if (length == 1) {
                 this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
             }
@@ -434,19 +554,12 @@ class HtmlBlock {
                 this.marginBottom = this.marginTop;
             }
         }
-        if (this.label.trim() == "")
-            this.label = `htmlBlock_${pf.pad_with_zeroes(HtmlBlock.instances.length)}`;
-    }
-    static byLabel(label) {
-        for (let key in HtmlBlock.instances)
-            if (HtmlBlock.instances[key].label == label)
-                return HtmlBlock.instances[key];
-        return undefined;
+        HtmlBlock.makeLabel(this);
     }
 }
 HtmlBlock.instances = [];
+HtmlBlock.activeInstances = [];
 HtmlBlock.defaults = {
-    label: function () { return `htmlBlock_${pf.pad_with_zeroes(HtmlBlock.instances.length)}`; },
     innerHTML: " ",
     tag: "DIV",
     css: "",
@@ -465,24 +578,16 @@ function html(...Arguments) {
     htmlblock.label = HtmlBlock.defaults["label"]();
     return htmlblock;
 }
-//interface Action { [key: string]: Function; }
-class Events {
+class Events extends Base {
     constructor(...Arguments) {
-        Events.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Events");
+        super();
+        let retArgs = BaseF.argumentsByType(Arguments);
         if ("object" in retArgs) {
             this.actions = retArgs["object"][0];
             delete retArgs["object"];
         }
-        let updatedDefaults = pf.ifObjectMergeWithDefaults(retArgs, Events.defaults);
-        let retArgsMapped = pf.retArgsMapped(retArgs, updatedDefaults, Events.argMap);
-        mf.modifyClassProperties(retArgsMapped, this);
-    }
-    static byLabel(label) {
-        for (let key in Events.instances)
-            if (Events.instances[key].label == label)
-                return Events.instances[key];
-        return undefined;
+        this.buildBase(...Arguments);
+        Events.makeLabel(this);
     }
     applyToHtmlBlock(htmlblock) {
         let el = htmlblock.el;
@@ -508,22 +613,21 @@ class Events {
 }
 Events.elementId = "llmEvents";
 Events.instances = [];
+Events.activeInstances = [];
 Events.history = [];
-Events.defaults = {
-    label: function () { return `Events_${pf.pad_with_zeroes(Events.instances.length)}`; },
-};
+Events.defaults = {};
 Events.argMap = {
     string: ["label"]
 };
 function events(...arguments) { return new Events(...arguments); }
-class DisplayCell {
+class DisplayCell extends Base {
     constructor(...Arguments) {
+        super();
         this.htmlBlock_ = undefined;
         this.displaygroup_ = undefined;
         this.overlays = [];
         this.isRendered = false;
-        DisplayCell.instances.push(this);
-        mf.applyArguments("DisplayCell", Arguments, DisplayCell.defaults, DisplayCell.argMap, this);
+        this.buildBase(...Arguments);
         if (this.displaygroup && this.displaygroup.htmlBlock) {
             this.htmlBlock = this.displaygroup.htmlBlock;
         }
@@ -532,17 +636,12 @@ class DisplayCell {
         if (!this.label)
             this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
                 : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
-                    : `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`;
+                    : undefined;
         if (this.htmlBlock && this.htmlBlock.hideWidth)
             this.coord = new Coord(this.label, true);
         else
             this.coord = new Coord(this.label);
-    }
-    static byLabel(label) {
-        for (let key in DisplayCell.instances)
-            if (DisplayCell.instances[key].label == label)
-                return DisplayCell.instances[key];
-        return undefined;
+        DisplayCell.makeLabel(this);
     }
     get htmlBlock() { return this.htmlBlock_; }
     set htmlBlock(htmlblock) {
@@ -571,9 +670,9 @@ class DisplayCell {
     }
 }
 DisplayCell.instances = [];
+DisplayCell.activeInstances = [];
 DisplayCell.minDisplayGroupSize = 200; // copied from htmlblock
 DisplayCell.defaults = {
-    // label : function(){return `DisplayCell_${pf.pad_with_zeroes(DisplayCell.instances.length)}`},
     dim: ""
 };
 DisplayCell.argMap = {
@@ -589,26 +688,25 @@ function I(...Arguments) {
     // let newblock = new HtmlBlock(...Arguments);
     // return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
 }
-class DisplayGroup {
+class DisplayGroup extends Base {
     // minimumCellSize:number;
     // renderStartIndex:number;
     // renderEndIndex:number;
     constructor(...Arguments) {
+        super();
         this.cellArray = [];
         this.htmlBlock = undefined;
         this.overlay = undefined;
-        DisplayGroup.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "DisplayGroup");
-        mf.applyArguments("DisplayGroup", Arguments, DisplayGroup.defaults, DisplayGroup.argMap, this);
-        if ("DisplayCell" in retArgs)
-            this.cellArray = retArgs["DisplayCell"];
-        if ("HtmlBlock" in retArgs) {
-            this.htmlBlock = retArgs["HtmlBlock"][0];
+        this.buildBase(...Arguments);
+        if ("DisplayCell" in this.retArgs)
+            this.cellArray = this.retArgs["DisplayCell"];
+        if ("HtmlBlock" in this.retArgs) {
+            this.htmlBlock = this.retArgs["HtmlBlock"][0];
         }
-        if ("Array" in retArgs)
-            this.cellArray = retArgs["Array"][0];
-        if (("number" in retArgs) && retArgs["number"].length == 1)
-            this.marginVer = this.marginHor = retArgs["number"][0];
+        if ("Array" in this.retArgs)
+            this.cellArray = this.retArgs["Array"][0];
+        if (("number" in this.retArgs) && this.retArgs["number"].length == 1)
+            this.marginVer = this.marginHor = this.retArgs["number"][0];
         this.coord = new Coord(this.label);
         // Fill In Dim Values
         let percentsum = 0;
@@ -627,12 +725,7 @@ class DisplayGroup {
                 if (displaycell.dim == "")
                     displaycell.dim = newDimValue;
         }
-    }
-    static byLabel(label) {
-        for (let key in DisplayGroup.instances)
-            if (DisplayGroup.instances[key].label == label)
-                return DisplayGroup.instances[key];
-        return undefined;
+        DisplayGroup.makeLabel(this);
     }
     percentToPx(displaycell /* child in cellarray */) {
         let percentAsNumber = pf.percentAsNumber(displaycell.dim);
@@ -665,12 +758,11 @@ class DisplayGroup {
 }
 DisplayGroup.defaultMargins = 0;
 DisplayGroup.instances = [];
+DisplayGroup.activeInstances = [];
 DisplayGroup.defaults = {
-    label: function () { return `DisplayGroup_${pf.pad_with_zeroes(DisplayGroup.instances.length)}`; },
     ishor: true,
     marginHor: DisplayGroup.defaultMargins,
     marginVer: DisplayGroup.defaultMargins,
-    // minimumCellSize : 300,
 };
 DisplayGroup.argMap = {
     string: ["label"],
@@ -692,13 +784,13 @@ function v(...Arguments) {
     // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
     // return displaycell;
 }
-class Handler {
+class Handler extends Base {
     constructor(...Arguments) {
+        super();
         this.rootCell = undefined;
-        let retArgs = pf.sortArgs(Arguments, "Handler");
-        mf.applyArguments("Handler", Arguments, Handler.defaults, Handler.argMap, this);
-        if ("DisplayCell" in retArgs)
-            this.rootCell = retArgs["DisplayCell"][0];
+        this.buildBase(...Arguments);
+        if ("DisplayCell" in this.retArgs)
+            this.rootCell = this.retArgs["DisplayCell"][0];
         else
             pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
         if (this.handlerMargin == undefined)
@@ -710,38 +802,32 @@ class Handler {
                 element.remove();
             window.onresize = function () { Handler.update(); };
             window.onwheel = function (event) { ScrollBar.onWheel(event); };
-            // window.onscroll = function(event:WheelEvent){Observe.onScroll(event);};
             window.addEventListener("popstate", function (event) { Pages.popstate(event); });
             Pages.parseURL();
         }
-        if (this.addThisHandlerToStack)
-            Handler.activeHandlers.push(this);
-        Handler.instances.push(this);
+        if (this.addThisHandlerToStack) {
+            Handler.activeInstances.push(this);
+        }
+        Handler.makeLabel(this);
         Handler.update( /* [this] */);
         Css.update();
     }
-    static byLabel(label) {
-        for (let key in Handler.instances)
-            if (Handler.instances[key].label == label)
-                return Handler.instances[key];
-        return undefined;
-    }
     pop() { return Handler.pop(this); }
     toTop() {
-        let index = Handler.activeHandlers.indexOf(this);
-        if (index > -1 && index != Handler.activeHandlers.length - 1) {
-            Handler.activeHandlers.splice(index, 1);
-            Handler.activeHandlers.push(this);
+        let index = Handler.activeInstances.indexOf(this);
+        if (index > -1 && index != Handler.activeInstances.length - 1) {
+            Handler.activeInstances.splice(index, 1);
+            Handler.activeInstances.push(this);
             Handler.update();
         }
     }
-    static pop(handlerInstance = Handler.activeHandlers[Handler.activeHandlers.length - 1]) {
-        let index = Handler.activeHandlers.indexOf(handlerInstance);
+    static pop(handlerInstance = Handler.activeInstances[Handler.activeInstances.length - 1]) {
+        let index = Handler.activeInstances.indexOf(handlerInstance);
         let poppedInstance = undefined;
         if (index != -1) {
-            poppedInstance = Handler.activeHandlers[index];
+            poppedInstance = Handler.activeInstances[index];
             Handler.update([handlerInstance], index, true);
-            Handler.activeHandlers.splice(index, 1);
+            Handler.activeInstances.splice(index, 1);
         }
         return poppedInstance;
     }
@@ -750,7 +836,7 @@ class Handler {
         dislaycell.coord.assign(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
         //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
-    static update(ArrayofHandlerInstances = Handler.activeHandlers, instanceNo = 0, derender = false) {
+    static update(ArrayofHandlerInstances = Handler.activeInstances, instanceNo = 0, derender = false) {
         // console.log("Update Fired");
         Handler.renderAgain = false;
         Pages.activePages = [];
@@ -765,10 +851,6 @@ class Handler {
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
             }
-            // if (handlerInstance.controlledBySomething)
-            //     handlerInstance.rootCell.coord.copyWithin(handlerInstance.rootCell.coord);
-            // else 
-            //     handlerInstance.rootCell.coord.copyWithin(true);
             Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
             instanceNo += 1;
             Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
@@ -782,11 +864,6 @@ class Handler {
             console.log("REDNDER AGAIN!");
     }
     static renderDisplayCell(displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
-        // if (displaycell.label == "Example01_javascript") {
-        //     let co = displaycell.coord
-        //     console.log(`base    x= ${co.x} y= ${co.y} width = ${co.width} height = ${co.height}`);
-        //     console.log(`within  x= ${co.within.x} y= ${co.within.y} width = ${co.within.width} height = ${co.within.height}`);
-        // }
         if (displaycell.preRenderCallback)
             displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         if (derender)
@@ -1018,9 +1095,8 @@ class Handler {
 Handler.handlerMarginDefault = 0;
 Handler.firstRun = true;
 Handler.instances = [];
-Handler.activeHandlers = [];
+Handler.activeInstances = [];
 Handler.defaults = {
-    label: function () { return `handler_${pf.pad_with_zeroes(Handler.activeHandlers.length)}`; },
     cssString: " ",
     addThisHandlerToStack: true,
     controlledBySomething: false,
@@ -1030,7 +1106,7 @@ Handler.argMap = {
     number: ["handlerMargin"],
     Coord: ["coord"],
     function: ["preRenderCallback", "postRenderCallback"],
-    boolean: ["addThisHandlerToStack", "controlledBySomething"]
+    boolean: ["addThisHandlerToStack"]
 };
 Handler.renderNullObjects = false;
 Handler.argCustomTypes = [];
@@ -1040,10 +1116,10 @@ Handler.handlerZindexIncrement = 100;
 function H(...Arguments) {
     return new Handler(...Arguments);
 }
-class Css {
+class Css extends Base {
     constructor(...Arguments) {
-        Css.instances.push(this);
-        mf.applyArguments("Css", Arguments, Css.defaults, Css.argMap, this);
+        super();
+        this.buildBase(...Arguments);
         if (this.cssObj == undefined) {
             this.cssObj = this.makeObj();
             this.css = this.makeString();
@@ -1056,7 +1132,6 @@ class Css {
             this.cssSelectObj = this.makeObj(this.cssSelect);
             this.cssSelect = this.makeString(this.cssSelectObj, "", "Selected");
         }
-        // console.log( JSON.stringify(this.cssObj) )
     }
     static byLabel(classname) {
         for (let key in Css.instances)
@@ -1123,6 +1198,7 @@ class Css {
 }
 Css.elementId = "llmStyle";
 Css.instances = [];
+Css.activeInstances = [];
 Css.defaults = {
     css: function () { return `Css_${pf.pad_with_zeroes(Css.instances.length)}`; },
     isClassname: true
@@ -1140,21 +1216,17 @@ DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
 // context
 DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
 Css.theme = DefaultTheme;
-class Pages {
+class Pages extends Base {
     constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        Pages.pop(this);
         Pages.instances.unshift(this);
-        let retArgs = pf.sortArgs(Arguments, "Pages");
-        mf.applyArguments("Pages", Arguments, Pages.defaults, Pages.argMap, this);
-        if (retArgs["DisplayCell"])
-            this.displaycells = retArgs["DisplayCell"];
+        if (this.retArgs["DisplayCell"])
+            this.displaycells = this.retArgs["DisplayCell"];
         else
             pf.errorHandling("Pages Requires at least one DisplayCells");
-    }
-    static byLabel(label, source = Pages.instances) {
-        for (let key in Pages.instances)
-            if (Pages.instances[key].label == label)
-                return Pages.instances[key];
-        return undefined;
+        Pages.makeLabel(this);
     }
     eval() { return this.evalFunction(this); }
     evalCell() { return this.displaycells[this.eval()]; }
@@ -1251,8 +1323,8 @@ class Pages {
 }
 Pages.activePages = [];
 Pages.instances = [];
+Pages.activeInstances = [];
 Pages.defaults = {
-    label: function () { return `Pages_${pf.pad_with_zeroes(Pages.instances.length)}`; },
     currentPage: 0, previousPage: 0,
     evalFunction: function (thisPages) { return thisPages.currentPage; }
 };
@@ -1269,23 +1341,22 @@ function P(...arguments) {
         displaycell.dim = displaycell.pages.dim;
     return displaycell;
 }
-class Drag {
+class Drag extends Base {
     constructor(...Arguments) {
+        super();
         this.onDown = function () { };
         this.onMove = function () { };
         this.onUp = function () { };
         this.isDown = false;
-        Drag.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Drag");
-        mf.applyArguments("Drag", Arguments, Drag.defaults, Drag.argMap, this);
-        if ("Array" in retArgs) {
-            let array = retArgs["Array"][0];
+        this.buildBase(...Arguments);
+        if ("Array" in this.retArgs) {
+            let array = this.retArgs["Array"][0];
             this.onDown = array[0];
             this.onMove = array[1];
             this.onUp = array[2];
         }
-        if ("HTMLDivElement" in retArgs) {
-            this.el = retArgs["HTMLDivElement"][0];
+        if ("HTMLDivElement" in this.retArgs) {
+            this.el = this.retArgs["HTMLDivElement"][0];
         }
         let THIS = this;
         this.el.onmousedown = function (e) {
@@ -1302,12 +1373,7 @@ class Drag {
                 THIS.onUp(THIS.mouseDiff);
             };
         };
-    }
-    static byLabel(label) {
-        for (let key in Drag.instances)
-            if (Drag.instances[key].label == label)
-                return Drag.instances[key];
-        return undefined;
+        Drag.makeLabel(this);
     }
     reset() {
         window.onmousemove = function () { };
@@ -1320,26 +1386,23 @@ class Drag {
     }
 }
 Drag.instances = [];
-Drag.defaults = {
-    label: function () { return `Drag_${pf.pad_with_zeroes(Drag.instances.length)}`; },
-};
+Drag.activeInstances = [];
+Drag.defaults = {};
 Drag.argMap = {
     string: ["label"],
 };
-class Swipe {
+class Swipe extends Base {
     constructor(...Arguments) {
-        Swipe.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Swipe");
-        let updatedDefaults = pf.ifObjectMergeWithDefaults(retArgs, Swipe.defaults);
-        let retArgsMapped = pf.retArgsMapped(retArgs, updatedDefaults, Swipe.argMap);
-        mf.modifyClassProperties(retArgsMapped, this);
+        super();
+        this.buildBase(...Arguments);
+        Swipe.makeLabel(this);
     }
 }
 Swipe.swipeDistance = 50;
 Swipe.elementId = "llmSwipe";
 Swipe.instances = [];
+Swipe.activeInstances = [];
 Swipe.defaults = {
-    label: function () { return `Swipe_Instance_${pf.pad_with_zeroes(Swipe.instances.length)}`; },
     swipeDistance: Swipe.swipeDistance
 };
 Swipe.argMap = {
@@ -1369,17 +1432,16 @@ function swipe(...Arguments) {
         } };
     return retObj;
 }
-class Hold {
+class Hold extends Base {
     constructor(...Arguments) {
+        super();
         this.onDown = function () { };
         this.event = function () { };
         this.onUp = function () { };
         this.isDown = false;
-        Hold.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Hold");
-        mf.applyArguments("Hold", Arguments, Hold.defaults, Hold.argMap, this);
-        if ("HTMLDivElement" in retArgs) {
-            this.el = retArgs["HTMLDivElement"][0];
+        this.buildBase(...Arguments);
+        if ("HTMLDivElement" in this.retArgs) {
+            this.el = this.retArgs["HTMLDivElement"][0];
         }
         let THIS = this;
         this.el.onmousedown = function (e) {
@@ -1394,12 +1456,7 @@ class Hold {
                 THIS.isDown = false;
             };
         };
-    }
-    static byLabel(label) {
-        for (let key in Hold.instances)
-            if (Hold.instances[key].label == label)
-                return Hold.instances[key];
-        return undefined;
+        Hold.makeLabel(this);
     }
     static start(THIS) {
         if (THIS.isDown) {
@@ -1409,8 +1466,8 @@ class Hold {
     }
 }
 Hold.instances = [];
+Hold.activeInstances = [];
 Hold.defaults = {
-    label: function () { return `Hold_${pf.pad_with_zeroes(Hold.instances.length)}`; },
     startTime: 1000, repeatTime: 100, doOnclick: true
 };
 Hold.argMap = {
@@ -1439,14 +1496,11 @@ Overlay.instances = [];
 Overlay.classes = {
 //    DragBar,for wxample... filled in when modules load.
 };
-class DragBar {
+class DragBar extends Base {
     constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
         let dragbar = this;
-        let parentDisplaycell = this.parentDisplaycell;
-        DragBar.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "DragBar");
-        mf.applyArguments("DragBar", Arguments, DragBar.defaults, DragBar.argMap, this);
-        // this.parentDisplaycell.dragbar = this;
         this.displaycell = I(`${this.label}_dragbar`, "", events({ ondrag: { onDown: function (xmouseDiff) {
                     if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
                         dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
@@ -1464,12 +1518,7 @@ class DragBar {
                 },
                 // onUp: function(ouxmouseDifftput:object){}
             } }));
-    }
-    static byLabel(label) {
-        for (let key in DragBar.instances)
-            if (DragBar.instances[key].label == label)
-                return DragBar.instances[key];
-        return undefined;
+        DragBar.makeLabel(this);
     }
     render(displaycell, parentDisplaygroup, index, derender) {
         // console.log(parentDisplaygroup);
@@ -1497,8 +1546,8 @@ class DragBar {
 DragBar.horCss = css("db_hor", "background-color:black;cursor: ew-resize;");
 DragBar.verCss = css("db_ver", "background-color:black;cursor: ns-resize;");
 DragBar.instances = [];
+DragBar.activeInstances = [];
 DragBar.defaults = {
-    label: function () { return `DragBar_${pf.pad_with_zeroes(DragBar.instances.length)}`; },
     horcss: DragBar.horCss,
     vercss: DragBar.verCss
 };
@@ -1517,17 +1566,12 @@ function dragbar(...Arguments) {
     return parentDisplaycell;
 }
 Overlay.classes["DragBar"] = DragBar;
-class ScrollBar {
+class ScrollBar extends Base {
     constructor(...Arguments) {
-        ScrollBar.instances.push(this);
-        mf.applyArguments("ScrollBar", Arguments, ScrollBar.defaults, ScrollBar.argMap, this);
+        super();
+        this.buildBase(...Arguments);
+        ScrollBar.makeLabel(this);
         this.build();
-    }
-    static byLabel(label) {
-        for (let key in ScrollBar.instances)
-            if (ScrollBar.instances[key].label == label)
-                return ScrollBar.instances[key];
-        return undefined;
     }
     build() {
         let THIS = this;
@@ -1688,10 +1732,10 @@ class ScrollBar {
     }
 }
 ScrollBar.instances = [];
+ScrollBar.activeInstances = [];
 ScrollBar.whiteBG = css("whiteBG", "background-color:white;outline: 1px solid black;outline-offset: -1px;");
 ScrollBar.blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
 ScrollBar.defaults = {
-    label: function () { return `ScrollBar_${pf.pad_with_zeroes(ScrollBar.instances.length)}`; },
     offset: 0, displayAtEnd: true, scrollWidth: 15, currentlyRendered: true, arrowOffset: 2,
 };
 ScrollBar.argMap = {
@@ -1703,21 +1747,16 @@ ScrollBar.argMap = {
 ScrollBar.scrollWheelMult = 4;
 ScrollBar.triggerDistance = 40;
 Overlay.classes["ScrollBar"] = ScrollBar;
-class Context {
+class Context extends Base {
     constructor(...Arguments) {
+        super();
         this.coord = new Coord();
-        Context.instances.push(this);
-        mf.applyArguments("Context", Arguments, Context.defaults, Context.argMap, this);
+        this.buildBase(...Arguments);
         if (!this.menuObj)
             this.menuObj = Context.defaultObj;
         this.height = Object.keys(this.menuObj).length * this.cellheight;
+        Context.makeLabel(this);
         this.buildCell();
-    }
-    static byLabel(label) {
-        for (let key in Context.instances)
-            if (Context.instances[key].label == label)
-                return Context.instances[key];
-        return undefined;
     }
     buildCell() {
         let THIS = this;
@@ -1799,8 +1838,7 @@ class Context {
 }
 Context.subOverlapPx = 4;
 Context.instances = [];
-// static defaultContextCss = css("contxt","background-color:white;color: black;outline-style: solid;outline-width: 1px;");
-// static defaultContextCssHover = css("contxt:hover","background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+Context.activeInstances = [];
 Context.defaultMenuBarCss = css("menuBar", "background-color:white;color: black;");
 Context.defaultMenuBarHover = css("menuBar:hover", "background-color:black;color: white;");
 Context.defaultMenuBarNoHoverCss = css("menuBarNoHover", "background-color:white;color: black;");
@@ -1809,7 +1847,6 @@ Context.defaultObj = { one: function () { console.log("one"); },
     three: function () { console.log("three"); },
 };
 Context.defaults = {
-    label: function () { return `Context_${pf.pad_with_zeroes(Context.instances.length)}`; },
     width: 100,
     cellheight: 25,
     css: Css.theme.context, //Context.defaultContextCss
@@ -1836,15 +1873,14 @@ let vMenuBar = function (...Arguments) {
     let newcontext = new Context(...Arguments);
     return function (mouseEvent) { newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary()); return false; };
 };
-class Modal {
+class Modal extends Base {
     constructor(...Arguments) {
-        Modal.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Modal");
-        mf.applyArguments("Modal", Arguments, Modal.defaults, Modal.argMap, this);
-        if ("number" in retArgs) {
+        super();
+        this.buildBase(...Arguments);
+        if ("number" in this.retArgs) {
             if (!this.coord)
                 this.coord = new Coord();
-            let numbers = retArgs["number"];
+            let numbers = this.retArgs["number"];
             let numberOfArgs = numbers.length;
             let x, y, width, height;
             if (numberOfArgs == 2) {
@@ -1887,13 +1923,8 @@ class Modal {
         if (this.footerTitle) {
             this.showFooter = true;
         }
+        Modal.makeLabel(this);
         this.build();
-    }
-    static byLabel(label) {
-        for (let key in Modal.instances)
-            if (Modal.instances[key].label == label)
-                return Modal.instances[key];
-        return undefined;
     }
     setContent(html) {
         this.bodyCell.htmlBlock.innerHTML = html;
@@ -1952,7 +1983,7 @@ class Modal {
         // this.handler.pop();
     }
     show() {
-        Handler.activeHandlers.push(this.handler);
+        Handler.activeInstances.push(this.handler);
         Handler.update();
     }
     hide() {
@@ -1983,6 +2014,7 @@ class Modal {
     }
 }
 Modal.instances = [];
+Modal.activeInstances = [];
 Modal.headerCss = css("HeaderTitle", "background-color:blue;color:white;text-align: center;border: 1px solid black;cursor: -webkit-grab; cursor: grab;");
 Modal.footerCss = css("FooterTitle", "background-color:white;color:black;border: 1px solid black;");
 Modal.closeCss = css("Close", "background-color:white;color:black;border: 1px solid black;font-size: 20px;");
@@ -1990,7 +2022,6 @@ Modal.closeCssHover = css("Close:hover", "background-color:red;color:white;borde
 Modal.bodyCss = css("ModalBody", "background-color:white;border: 1px solid black;");
 Modal.optionsCss = css("ModalOptions", "background-color:white;border: 1px solid black;display: flex;justify-content: center;align-items: center;");
 Modal.defaults = {
-    label: function () { return `Modal_${pf.pad_with_zeroes(Modal.instances.length)}`; },
     showHeader: true, showFooter: false, resizeable: true, showClose: true, showOptions: true,
     headerHeight: 20, footerHeight: 20, headerTitle: "", innerHTML: "", optionsHeight: 30,
 };
@@ -1999,22 +2030,16 @@ Modal.argMap = {
     DisplayCell: ["bodyCell", "headerCell", "footerCell", "optionsCell"],
     Coord: ["coord"]
 };
-class TreeNode {
+class TreeNode extends Base {
     constructor(...Arguments) {
+        super();
         this.collapsed = false;
         this.nodeCellArray = [];
-        TreeNode.instances.push(this);
-        mf.applyArguments("TreeNode", Arguments, TreeNode.defaults, TreeNode.argMap, this);
+        this.buildBase(...Arguments);
         if (this.labelCell.htmlBlock)
             this.labelCell.htmlBlock.hideWidth = this.labelCell.coord.hideWidth = true;
         if (this.labelCell && !this.label)
             this.label = this.labelCell.label;
-    }
-    static byLabel(label) {
-        for (let key in TreeNode.instances)
-            if (TreeNode.instances[key].label == label)
-                return TreeNode.instances[key];
-        return undefined;
     }
     visibleChildren(noChildren = 0) {
         if (!this.collapsed && this.children)
@@ -2034,9 +2059,8 @@ class TreeNode {
     }
 }
 TreeNode.instances = [];
-TreeNode.defaults = {
-// label : function(){return `TreeNode_${pf.pad_with_zeroes(TreeNode.instances.length)}`},
-};
+TreeNode.activeInstances = [];
+TreeNode.defaults = {};
 TreeNode.argMap = {
     DisplayCell: ["labelCell"],
     string: ["label"],
@@ -2044,43 +2068,19 @@ TreeNode.argMap = {
     boolean: ["collapsed"]
 };
 function T(...Arguments) { return new TreeNode(...Arguments); }
-class Props {
+class Tree extends Base {
     constructor(...Arguments) {
-        Props.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Prop");
-        mf.applyArguments("Prop", Arguments, Props.defaults, Props.argMap, this);
-        if ("DisplayCell" in retArgs)
-            this.cellArray = retArgs["DisplayCell"];
-    }
-    static byLabel(label) {
-        for (let key in Props.instances)
-            if (Props.instances[key].label == label)
-                return Props.instances[key];
-        return undefined;
-    }
-}
-Props.instances = [];
-Props.defaults = {
-    label: function () { return `Prop_${pf.pad_with_zeroes(Props.instances.length)}`; },
-};
-Props.argMap = {
-    string: ["label"],
-};
-function props(...Arguments) { return new Props(...Arguments); }
-class Tree {
-    constructor(...Arguments) {
+        super();
         this.css = ""; // default class(es) for tree items.
-        Tree.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Tree");
-        mf.applyArguments("Tree", Arguments, Tree.defaults, Tree.argMap, this);
+        this.buildBase(...Arguments);
         if (!this.parentDisplayCell) {
             this.parentDisplayCell = new DisplayCell(`TreeRoot_${this.label}`);
         }
-        if ("Css" in retArgs) // duplicated!!!!!
-            for (let css of retArgs["Css"])
+        if ("Css" in this.retArgs) // duplicated!!!!!
+            for (let css of this.retArgs["Css"])
                 this.css = (this.css + " " + css.classname).trim();
-        if ("string" in retArgs && retArgs.string.length > 1)
-            this.css += " " + retArgs.string.splice(1).join(' ');
+        if ("string" in this.retArgs && this.retArgs.string.length > 1)
+            this.css += " " + this.retArgs.string.splice(1).join(' ');
         // console.log(this.parentDisplayCell)
         let V = v(`${this.label}_rootV`, this.parentDisplayCell.dim, this.margin, this.margin); ////////////////////////////////////// check this again!
         let cellArray = V.displaygroup.cellArray;
@@ -2112,13 +2112,8 @@ class Tree {
                 // console.log(displaycell.displaygroup.cellArray[0].dim)
             }
         };
+        Tree.makeLabel(this);
         this.buildTreeNode(this.rootTreeNode, cellArray);
-    }
-    static byLabel(label) {
-        for (let key in Tree.instances)
-            if (Tree.instances[key].label == label)
-                return Tree.instances[key];
-        return undefined;
     }
     // autoLabel(node = this.rootTreeNode, newLabel=`${this.label}`){
     //     // node.label = node.labelCell.label = node.labelCell.htmlBlock.label = newLabel;
@@ -2247,13 +2242,13 @@ class Tree {
     }
 }
 Tree.instances = [];
-Tree.defaultObj = T("Tree", I("Tree_TopDisplay", "Top Display"), props(I("Tree_TopDisplay_prop1", "prop1"), I("Tree_TopDisplay_prop2", "prop2")), [T("Tree_child1", I("Tree_Child1ofTop", "Child1ofTop"), // true,       
+Tree.activeInstances = [];
+Tree.defaultObj = T("Tree", I("Tree_TopDisplay", "Top Display"), [T("Tree_child1", I("Tree_Child1ofTop", "Child1ofTop"), // true,       
     [T("Tree_child1_1", I("Tree_Child1ofChild1", "Child1ofChild1")),
         T("Tree_child1_2", I("Tree_Child2ofChild1", "Child2ofChild1"))
     ]),
     T("Tree_child2", I("Tree_Child2ofTop", "Child2ofTop"))]);
 Tree.defaults = {
-    label: function () { return `Tree_${pf.pad_with_zeroes(Tree.instances.length)}`; },
     cellHeight: 20, SVGColor: "white", startIndent: 0, indent: 10, collapsePad: 4, collapseSize: 16,
     margin: 2,
 };
@@ -2300,24 +2295,24 @@ class i_ {
 class t_ {
     constructor(...Arguments) { this.TreeNodeArguments = Arguments; }
 }
-class Observe {
+class Observe extends Base {
     // derendering: boolean = false;
     constructor(...Arguments) {
-        Observe.instances.push(this);
-        let retArgs = pf.sortArgs(Arguments, "Observe");
-        mf.applyArguments("Observe", Arguments, Observe.defaults, Observe.argMap, this);
+        super();
+        this.buildBase(...Arguments);
         let observerInstance = this;
         let handler = Handler.byLabel(observerInstance.label);
         if (!handler.coord)
             handler.coord = new Coord();
         // put handler in stack if not there already (push Handler)
-        if (Handler.activeHandlers.indexOf(handler) == -1) {
-            Handler.activeHandlers.push(handler);
+        if (Handler.activeInstances.indexOf(handler) == -1) {
+            Handler.activeInstances.push(handler);
         }
         this.parentDisplayCell.htmlBlock.el.onscroll = function (event) { Observe.onScroll(event); };
         handler.controlledBySomething = true;
         if (!this.parentDisplayCell.postRenderCallback)
             this.parentDisplayCell.postRenderCallback = FunctionStack.function(this.parentDisplayCell.label);
+        Observe.makeLabel(this);
         FunctionStack.push(this.parentDisplayCell.label, function (displaycell, parentDisplaygroup = undefined, index = undefined, derender = false) {
             let el = displaycell.htmlBlock.el;
             let dCoord = displaycell.coord;
@@ -2335,12 +2330,6 @@ class Observe {
         });
         Handler.update();
     }
-    static byLabel(label) {
-        for (let key in Observe.instances)
-            if (Observe.instances[key].label == label)
-                return Observe.instances[key];
-        return undefined;
-    }
     static derender(displaycell) {
         let handler;
         // 
@@ -2348,9 +2337,9 @@ class Observe {
             let observeInstance = Observe.instances[index];
             if (observeInstance.parentDisplayCell == displaycell) {
                 handler = Handler.byLabel(observeInstance.label);
-                let Hindex = Handler.activeHandlers.indexOf(handler);
+                let Hindex = Handler.activeInstances.indexOf(handler);
                 if (Hindex > -1) {
-                    Handler.activeHandlers.splice(Hindex, 1);
+                    Handler.activeInstances.splice(Hindex, 1);
                 }
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);
@@ -2397,9 +2386,8 @@ class Observe {
     }
 }
 Observe.instances = [];
-Observe.defaults = {
-    label: function () { return `Observe_${pf.pad_with_zeroes(Observe.instances.length)}`; },
-};
+Observe.activeInstances = [];
+Observe.defaults = {};
 Observe.argMap = {
     string: ["label"],
     HTMLDivElement: ["el"],
@@ -2426,38 +2414,40 @@ class Builder {
     constructor() {
     }
     static updateTree(handler) {
+        let returnString = `TI("${handler.label}", [\n`;
         console.log("Updating Tree");
-        console.group("Handler: " + handler.label);
-        Builder.DC(handler.rootCell);
-        console.groupEnd();
+        returnString += Builder.DC(handler.rootCell, "\t");
+        returnString += "])";
+        return returnString;
     }
-    static DC(displaycell) {
-        // console.group("DisplayCell: " + displaycell.label);
+    static DC(displaycell, indent) {
+        let returnString = "";
         if (displaycell.htmlBlock)
-            Builder.HB(displaycell.htmlBlock);
+            returnString += Builder.HB(displaycell.htmlBlock, indent);
         if (displaycell.displaygroup)
-            Builder.DG(displaycell.displaygroup);
-        if (displaycell.pages)
-            Builder.PG(displaycell.pages);
-        // console.groupEnd()
+            returnString += Builder.DG(displaycell.displaygroup, indent);
+        return returnString;
     }
-    static HB(htmlblock) {
-        console.log("HtmlBlock: " + htmlblock.label);
+    static HB(htmlblock, indent) {
+        return indent + `TI("${htmlblock.label}"),\n`;
     }
-    static DG(displaygroup) {
-        console.group("DisplayGroup: " + displaygroup.label);
+    static DG(displaygroup, indent) {
+        let returnString = indent + `TI("${displaygroup.label}", [\n`;
         for (let index = 0; index < displaygroup.cellArray.length; index++) {
             const displaycell = displaygroup.cellArray[index];
-            Builder.DC(displaycell);
+            returnString += Builder.DC(displaycell, indent + "\t");
         }
-        console.groupEnd();
+        returnString += indent + `]),\n`;
+        return returnString;
     }
-    static PG(pages) {
-        console.group(pages.label);
+    static PG(pages, indent) {
+        let returnString = indent + `TI("${pages.label}", [\n`;
         for (let index = 0; index < pages.displaycells.length; index++) {
-            Builder.DC(pages.displaycells[index]);
+            const displaycell = pages.displaycells[index];
+            returnString += Builder.DC(displaycell, indent + "\t");
         }
-        console.groupEnd();
+        returnString += indent + `])\n`;
+        return returnString;
     }
 }
 // let treeOfNodes:t_ = 
@@ -2472,12 +2462,14 @@ class Builder {
 //     ],
 // )
 window.onload = function () {
-    let clientHandler = H("Client Window", I("Client_Main", "Client Main"), false, new Coord(), function () { Builder.updateTree(Handler.byLabel("Main Window")); });
-    let mainBodyDisplayCell = I("Main_body", bCss.menuItem);
+    let mainBodyDisplayCell = I("Main_body");
     mainBodyDisplayCell.postRenderCallback =
         function (displaycell, displaygroup, index, derender) {
             Handler.byLabel("Client Window").coord.copy(displaycell.coord);
         };
+    let clientHandler = H("Client Window", I("Client_Main", "Client Main"), false, new Coord(), function () {
+        console.log(Builder.updateTree(Handler.byLabel("Main Window")));
+    });
     let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue), h("Tree_Body", 5, dragbar(I("Main_tree", "Tree", "300px", bCss.bgGreen), 100, 600), mainBodyDisplayCell)));
-    Handler.activeHandlers.push(clientHandler);
+    Handler.activate(clientHandler);
 };
