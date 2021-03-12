@@ -760,6 +760,14 @@ declare class Observe {
     static onScroll(event: WheelEvent): void;
     static update(): void;
 }
+declare class BaseF {
+    static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
+    static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
+    static argumentsByType(Args: any[], // 1st argument is a list of args.
+    customTypes?: Function[]): ArgsObj;
+    static modifyClassProperties(argobj: object, targetobject: object): void;
+    static mergeObjects: (startObj: object, AddObj: object) => object;
+}
 declare class Base {
     static defaultIsChecks: ((it: any) => any)[];
     static byLabel(label: string): any;
@@ -774,12 +782,6 @@ declare class Base {
     constructor();
     build(...Arguments: any): void;
     static build(THIS: any, ...Arguments: any): void;
-    static ifObjectMergeWithDefaults(THIS: any): object;
-    static retArgsMapped(updatedDefaults: object, THIS: any): object;
-    static argumentsByType(Args: any[], // 1st argument is a list of args.
-    customTypes?: Function[]): ArgsObj;
-    static modifyClassProperties(argobj: object, targetobject: object): void;
-    static mergeObjects: (startObj: object, AddObj: object) => object;
     static makeLabel(instance: any): void;
 }
 declare class Test extends Base {

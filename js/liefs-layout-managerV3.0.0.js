@@ -2386,6 +2386,65 @@ Observe.argMap = {
     DisplayCell: ["parentDisplayCell"],
 };
 Observe.Os_ScrollbarSize = 15;
+class BaseF {
+    static ifObjectMergeWithDefaults(THIS, CLASS) {
+        if ("object" in THIS.retArgs) {
+            let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
+            for (let key in THIS.retArgs["object"])
+                returnObj = CLASS.mergeObjects(returnObj, THIS.retArgs["object"][key]);
+            return returnObj;
+        }
+        return CLASS.defaults;
+    }
+    static retArgsMapped(updatedDefaults, THIS, CLASS) {
+        let returnObject = {};
+        let indexNo;
+        for (let i in updatedDefaults)
+            returnObject[i] = updatedDefaults[i];
+        for (let typeName in THIS.retArgs) {
+            if (typeName in CLASS.argMap) {
+                indexNo = 0;
+                while (indexNo < THIS.retArgs[typeName].length &&
+                    indexNo < CLASS.argMap[typeName].length) {
+                    returnObject[CLASS.argMap[typeName][indexNo]] = THIS.retArgs[typeName][indexNo];
+                    indexNo++;
+                }
+            }
+        }
+        return returnObject;
+    }
+    static argumentsByType(Args, // 1st argument is a list of args.
+    customTypes = []) {
+        customTypes = customTypes.concat(Base.defaultIsChecks); // assumed these are included.
+        let returnArray = {};
+        let valueType;
+        let returnValue;
+        for (let value of Args) {
+            valueType = typeof (value); // evaluate type
+            for (let checkFunction of customTypes) { // check if it is a custom Type
+                returnValue = checkFunction(value);
+                if (returnValue)
+                    valueType = returnValue;
+            }
+            if (!(valueType in returnArray))
+                returnArray[valueType] = []; // If type doesn't exist, add empty array
+            returnArray[valueType].push(value); // Assign Type Value
+        }
+        return returnArray;
+    }
+    static modifyClassProperties(argobj, targetobject) {
+        for (let key of Object.keys(argobj))
+            targetobject[key] = argobj[key];
+    }
+}
+BaseF.mergeObjects = function (startObj, AddObj) {
+    let returnObject = {};
+    for (let i in startObj)
+        returnObject[i] = startObj[i];
+    for (let j in AddObj)
+        returnObject[j] = AddObj[j];
+    return returnObject;
+};
 class Base {
     constructor() {
     }
@@ -2448,61 +2507,10 @@ class Base {
         if (CLASS["activeInstances"] == undefined)
             CLASS["activeInstances"] = [];
         CLASS.push(THIS);
-        THIS.retArgs = CLASS.argumentsByType(Arguments);
-        let updatedDefaults = CLASS.ifObjectMergeWithDefaults(THIS);
-        let retArgsMapped = CLASS.retArgsMapped(updatedDefaults, THIS);
-        CLASS.modifyClassProperties(retArgsMapped, THIS);
-    }
-    static ifObjectMergeWithDefaults(THIS) {
-        let CLASS = this;
-        if ("object" in THIS.retArgs) {
-            let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
-            for (let key in THIS.retArgs["object"])
-                returnObj = CLASS.mergeObjects(returnObj, THIS.retArgs["object"][key]);
-            return returnObj;
-        }
-        return CLASS.defaults;
-    }
-    static retArgsMapped(updatedDefaults, THIS) {
-        let CLASS = this;
-        let returnObject = {};
-        let indexNo;
-        for (let i in updatedDefaults)
-            returnObject[i] = updatedDefaults[i];
-        for (let typeName in THIS.retArgs) {
-            if (typeName in CLASS.argMap) {
-                indexNo = 0;
-                while (indexNo < THIS.retArgs[typeName].length &&
-                    indexNo < CLASS.argMap[typeName].length) {
-                    returnObject[CLASS.argMap[typeName][indexNo]] = THIS.retArgs[typeName][indexNo];
-                    indexNo++;
-                }
-            }
-        }
-        return returnObject;
-    }
-    static argumentsByType(Args, // 1st argument is a list of args.
-    customTypes = []) {
-        customTypes = customTypes.concat(Base.defaultIsChecks); // assumed these are included.
-        let returnArray = {};
-        let valueType;
-        let returnValue;
-        for (let value of Args) {
-            valueType = typeof (value); // evaluate type
-            for (let checkFunction of customTypes) { // check if it is a custom Type
-                returnValue = checkFunction(value);
-                if (returnValue)
-                    valueType = returnValue;
-            }
-            if (!(valueType in returnArray))
-                returnArray[valueType] = []; // If type doesn't exist, add empty array
-            returnArray[valueType].push(value); // Assign Type Value
-        }
-        return returnArray;
-    }
-    static modifyClassProperties(argobj, targetobject) {
-        for (let key of Object.keys(argobj))
-            targetobject[key] = argobj[key];
+        THIS.retArgs = BaseF.argumentsByType(Arguments);
+        let updatedDefaults = BaseF.ifObjectMergeWithDefaults(THIS, CLASS);
+        let retArgsMapped = BaseF.retArgsMapped(updatedDefaults, THIS, CLASS);
+        BaseF.modifyClassProperties(retArgsMapped, THIS);
     }
     static makeLabel(instance) {
         let CLASS = this;
@@ -2513,14 +2521,6 @@ class Base {
     }
 }
 Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
-Base.mergeObjects = function (startObj, AddObj) {
-    let returnObject = {};
-    for (let i in startObj)
-        returnObject[i] = startObj[i];
-    for (let j in AddObj)
-        returnObject[j] = AddObj[j];
-    return returnObject;
-};
 class Test extends Base {
     // retArgs:ArgsObj;   // <- this will appear
     constructor(...Arguments) {
