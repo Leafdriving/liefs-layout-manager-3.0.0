@@ -69,23 +69,23 @@ class Base {
                 return CLASS["instances"][key];
         return undefined;
     }
-    static pop(instance, fromInstances = false) {
+    static pop(instance = undefined) {
         let CLASS = this;
         instance = CLASS.stringOrObject(instance);
+        if (instance == undefined)
+            instance = CLASS["instances"][CLASS["instances"].length - 1];
         CLASS.deactivate(instance);
-        if (fromInstances) {
-            let index = CLASS["instances"].indexOf(instance);
-            if (index != -1)
-                CLASS["instances"].splice(index, 1);
-        }
+        let index = CLASS["instances"].indexOf(instance);
+        if (index != -1)
+            CLASS["instances"].splice(index, 1);
     }
     static push(instance, toActive = false) {
         let CLASS = this;
         instance = CLASS.stringOrObject(instance);
-        CLASS.pop(instance, true); // if pushing same, remove previous
+        CLASS.pop(instance); // if pushing same, remove previous
         CLASS["instances"].push(instance);
         if (toActive)
-            CLASS["activeInstances"].push(instance);
+            CLASS.activate(instance);
     }
     static deactivate(instance) {
         let CLASS = this;
@@ -132,23 +132,24 @@ class Base {
         }
     }
 }
-// class Test extends Base {
-//     static labelNo = 0;
-//     static instances:Test[] = [];
-//     static activeInstances:Test[] = [];
-//     static defaults = {
-//         tag: "DIV",
-//     }
-//     static argMap = {
-//         string : ["label", "innerHTML", "css"],
-//         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-//     }
-//     // retArgs:ArgsObj;   // <- this will appear
-//     constructor(...Arguments:any){
-//         super();this.buildBase(...Arguments);
-//         Test.makeLabel(this);
-//     }
-// }
+class Test extends Base {
+    // retArgs:ArgsObj;   // <- this will appear
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        Test.makeLabel(this);
+    }
+}
+Test.labelNo = 0;
+Test.instances = [];
+Test.activeInstances = [];
+Test.defaults = {
+    tag: "DIV",
+};
+Test.argMap = {
+    string: ["label", "innerHTML", "css"],
+    number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+};
 class FunctionStack {
     static push(label, function_) {
         if (!(label in FunctionStack.instanceObj))

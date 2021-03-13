@@ -2,11 +2,13 @@ class Builder {
     constructor(){
     }
     static updateTree(handler:Handler){
-      let returnString = `TI("${handler.label}", [\n`;
-      console.log("Updating Tree");
+      let returnString = `TI("${handler.label}", bCss.handlerSVG ,[\n`;
+      // console.log("Updating Tree");
       returnString += Builder.DC(handler.rootCell, "\t");
       returnString += "])"
-      return returnString;
+      let treeOfNodes:t_ = eval(returnString)
+      // console.log(treeOfNodes)
+      return treeOfNodes;
     }
     static DC(displaycell:DisplayCell, indent:string) {
       let returnString = "";
@@ -15,10 +17,10 @@ class Builder {
       return returnString;
     }
     static HB(htmlblock:HtmlBlock, indent:string) {
-      return indent + `TI("${htmlblock.label}"),\n`
+      return indent + `TI("${htmlblock.label}", bCss.ISVG),\n`
     }
     static DG(displaygroup: DisplayGroup, indent:string){
-      let returnString = indent + `TI("${displaygroup.label}", [\n`
+      let returnString = indent + `TI("${displaygroup.label}", ${(displaygroup.ishor) ? "bCss.hSVG" :"bCss.vSVG"} ,[\n`
       for (let index = 0; index < displaygroup.cellArray.length; index++) {
         const displaycell = displaygroup.cellArray[index];
         returnString += Builder.DC(displaycell, indent + "\t")
@@ -63,12 +65,19 @@ mainBodyDisplayCell.postRenderCallback =
   }
 
 
-let clientHandler = H("Client Window",
-  I("Client_Main","Client Main"),
+let clientHandler =
+H("Client Window",
+  h("Client_h", 5,
+    I("Client_Main1","left", bCss.bgCyan),
+    v("Client_v", 5,
+      I("Client_Top","top", bCss.bgGreen),
+      I("Client_Bottom","bottom", bCss.bgBlue),
+    )
+  ),
   false,
   new Coord(),
   function(){
-    console.log(  Builder.updateTree(Handler.byLabel("Main Window"))   );
+    // console.log(  Builder.updateTree(clientHandler)   );
   }
 );
 
@@ -81,7 +90,12 @@ let mainHandler = H("Main Window", 4,
     ),
     I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue),
     h("Tree_Body", 5,
-      dragbar(I("Main_tree","Tree", "300px", bCss.bgGreen), 100, 600),
+      tree("Display",
+        dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),
+        Builder.updateTree(clientHandler),
+        {SVGColor: "Black"},
+        25,
+      ),
       mainBodyDisplayCell
     )
   )

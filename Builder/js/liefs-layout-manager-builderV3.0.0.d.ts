@@ -9,7 +9,7 @@ declare class BaseF {
 declare class Base {
     static defaultIsChecks: any;
     static byLabel(label: string): any;
-    static pop(instance: any, fromInstances?: boolean): void;
+    static pop(instance?: any): void;
     static push(instance: any, toActive?: boolean): void;
     static deactivate(instance: any): void;
     static activate(instance: any): void;
@@ -21,6 +21,19 @@ declare class Base {
     buildBase(...Arguments: any): void;
     static buildBase(THIS: any, ...Arguments: any): void;
     static makeLabel(instance: any): void;
+}
+declare class Test extends Base {
+    static labelNo: number;
+    static instances: Test[];
+    static activeInstances: Test[];
+    static defaults: {
+        tag: string;
+    };
+    static argMap: {
+        string: string[];
+        number: string[];
+    };
+    constructor(...Arguments: any);
 }
 declare class FunctionStack {
     static instanceObj: {};
@@ -753,15 +766,20 @@ declare class Observe extends Base {
     static update(): void;
 }
 declare class bCss {
+    static bgLight: Css;
     static bgGreen: Css;
     static bgBlue: Css;
     static bgCyan: Css;
     static menuItem: Css;
     static menuSpace: Css;
+    static handlerSVG: Css;
+    static hSVG: Css;
+    static vSVG: Css;
+    static ISVG: Css;
 }
 declare class Builder {
     constructor();
-    static updateTree(handler: Handler): string;
+    static updateTree(handler: Handler): t_;
     static DC(displaycell: DisplayCell, indent: string): string;
     static HB(htmlblock: HtmlBlock, indent: string): string;
     static DG(displaygroup: DisplayGroup, indent: string): string;

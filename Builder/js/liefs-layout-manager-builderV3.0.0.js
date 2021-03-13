@@ -69,23 +69,23 @@ class Base {
                 return CLASS["instances"][key];
         return undefined;
     }
-    static pop(instance, fromInstances = false) {
+    static pop(instance = undefined) {
         let CLASS = this;
         instance = CLASS.stringOrObject(instance);
+        if (instance == undefined)
+            instance = CLASS["instances"][CLASS["instances"].length - 1];
         CLASS.deactivate(instance);
-        if (fromInstances) {
-            let index = CLASS["instances"].indexOf(instance);
-            if (index != -1)
-                CLASS["instances"].splice(index, 1);
-        }
+        let index = CLASS["instances"].indexOf(instance);
+        if (index != -1)
+            CLASS["instances"].splice(index, 1);
     }
     static push(instance, toActive = false) {
         let CLASS = this;
         instance = CLASS.stringOrObject(instance);
-        CLASS.pop(instance, true); // if pushing same, remove previous
+        CLASS.pop(instance); // if pushing same, remove previous
         CLASS["instances"].push(instance);
         if (toActive)
-            CLASS["activeInstances"].push(instance);
+            CLASS.activate(instance);
     }
     static deactivate(instance) {
         let CLASS = this;
@@ -132,23 +132,24 @@ class Base {
         }
     }
 }
-// class Test extends Base {
-//     static labelNo = 0;
-//     static instances:Test[] = [];
-//     static activeInstances:Test[] = [];
-//     static defaults = {
-//         tag: "DIV",
-//     }
-//     static argMap = {
-//         string : ["label", "innerHTML", "css"],
-//         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-//     }
-//     // retArgs:ArgsObj;   // <- this will appear
-//     constructor(...Arguments:any){
-//         super();this.buildBase(...Arguments);
-//         Test.makeLabel(this);
-//     }
-// }
+class Test extends Base {
+    // retArgs:ArgsObj;   // <- this will appear
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        Test.makeLabel(this);
+    }
+}
+Test.labelNo = 0;
+Test.instances = [];
+Test.activeInstances = [];
+Test.defaults = {
+    tag: "DIV",
+};
+Test.argMap = {
+    string: ["label", "innerHTML", "css"],
+    number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+};
 class FunctionStack {
     static push(label, function_) {
         if (!(label in FunctionStack.instanceObj))
@@ -2396,6 +2397,7 @@ Observe.argMap = {
 Observe.Os_ScrollbarSize = 15;
 class bCss {
 }
+bCss.bgLight = css("bgLight", `background: #dcedf0`);
 bCss.bgGreen = css("bgGreen", `background: green;`);
 bCss.bgBlue = css("bgBlue", `background: blue;`);
 bCss.bgCyan = css("bgCyan", `background: cyan;`);
@@ -2410,15 +2412,29 @@ bCss.menuSpace = css("menuspace", `background: white;
                                         cursor: default;
                                         outline: 1px solid black;
                                         outline-offset: -1px;`);
+bCss.handlerSVG = css("handlerSVG", `background-image: url("svg/user-homeOPT.svg");
+                                        background-repeat: no-repeat;
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+bCss.hSVG = css("hSVG", `background-image: url("svg/Horizontal.svg");
+                                        background-repeat: no-repeat;
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+bCss.vSVG = css("vSVG", `background-image: url("svg/Vertical.svg");
+                                        background-repeat: no-repeat;
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+bCss.ISVG = css("ISVG", `background-image: url("svg/icon-htmlOPT.svg");
+                                        background-repeat: no-repeat;
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
 class Builder {
     constructor() {
     }
     static updateTree(handler) {
-        let returnString = `TI("${handler.label}", [\n`;
-        console.log("Updating Tree");
+        let returnString = `TI("${handler.label}", bCss.handlerSVG ,[\n`;
+        // console.log("Updating Tree");
         returnString += Builder.DC(handler.rootCell, "\t");
         returnString += "])";
-        return returnString;
+        let treeOfNodes = eval(returnString);
+        // console.log(treeOfNodes)
+        return treeOfNodes;
     }
     static DC(displaycell, indent) {
         let returnString = "";
@@ -2429,10 +2445,10 @@ class Builder {
         return returnString;
     }
     static HB(htmlblock, indent) {
-        return indent + `TI("${htmlblock.label}"),\n`;
+        return indent + `TI("${htmlblock.label}", bCss.ISVG),\n`;
     }
     static DG(displaygroup, indent) {
-        let returnString = indent + `TI("${displaygroup.label}", [\n`;
+        let returnString = indent + `TI("${displaygroup.label}", ${(displaygroup.ishor) ? "bCss.hSVG" : "bCss.vSVG"} ,[\n`;
         for (let index = 0; index < displaygroup.cellArray.length; index++) {
             const displaycell = displaygroup.cellArray[index];
             returnString += Builder.DC(displaycell, indent + "\t");
@@ -2467,9 +2483,9 @@ window.onload = function () {
         function (displaycell, displaygroup, index, derender) {
             Handler.byLabel("Client Window").coord.copy(displaycell.coord);
         };
-    let clientHandler = H("Client Window", I("Client_Main", "Client Main"), false, new Coord(), function () {
-        console.log(Builder.updateTree(Handler.byLabel("Main Window")));
+    let clientHandler = H("Client Window", h("Client_h", 5, I("Client_Main1", "left", bCss.bgCyan), v("Client_v", 5, I("Client_Top", "top", bCss.bgGreen), I("Client_Bottom", "bottom", bCss.bgBlue))), false, new Coord(), function () {
+        // console.log(  Builder.updateTree(clientHandler)   );
     });
-    let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue), h("Tree_Body", 5, dragbar(I("Main_tree", "Tree", "300px", bCss.bgGreen), 100, 600), mainBodyDisplayCell)));
+    let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue), h("Tree_Body", 5, tree("Display", dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600), Builder.updateTree(clientHandler), { SVGColor: "Black" }, 25), mainBodyDisplayCell)));
     Handler.activate(clientHandler);
 };

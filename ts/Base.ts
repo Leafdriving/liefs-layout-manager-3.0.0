@@ -66,19 +66,19 @@ class Base {
                 return CLASS["instances"][key];
         return undefined;
     }
-    static pop(instance:any, fromInstances = false){
+    static pop(instance:any = undefined){
         let CLASS = this;instance = CLASS.stringOrObject(instance);
+        if (instance == undefined)
+            instance = CLASS["instances"][ CLASS["instances"].length-1 ]
         CLASS.deactivate(instance);
-        if (fromInstances) {
-            let index = CLASS["instances"].indexOf(instance);
-            if (index != -1) CLASS["instances"].splice(index,1);            
-        }
+        let index = CLASS["instances"].indexOf(instance);
+        if (index != -1) CLASS["instances"].splice(index,1);            
     }
     static push(instance:any, toActive = false){
         let CLASS = this;instance = CLASS.stringOrObject(instance);
-        CLASS.pop(instance, true);          // if pushing same, remove previous
+        CLASS.pop(instance);          // if pushing same, remove previous
         CLASS["instances"].push(instance);
-        if (toActive) CLASS["activeInstances"].push(instance);
+        if (toActive) CLASS.activate(instance);
     }
     static deactivate(instance:any){
         let CLASS = this;instance = CLASS.stringOrObject(instance);
@@ -123,21 +123,21 @@ class Base {
     }
 }
 
-// class Test extends Base {
-//     static labelNo = 0;
-//     static instances:Test[] = [];
-//     static activeInstances:Test[] = [];
-//     static defaults = {
-//         tag: "DIV",
-//     }
-//     static argMap = {
-//         string : ["label", "innerHTML", "css"],
-//         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-//     }
-//     // retArgs:ArgsObj;   // <- this will appear
-//     constructor(...Arguments:any){
-//         super();this.buildBase(...Arguments);
+class Test extends Base {
+    static labelNo = 0;
+    static instances:Test[] = [];
+    static activeInstances:Test[] = [];
+    static defaults = {
+        tag: "DIV",
+    }
+    static argMap = {
+        string : ["label", "innerHTML", "css"],
+        number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+    }
+    // retArgs:ArgsObj;   // <- this will appear
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
 
-//         Test.makeLabel(this);
-//     }
-// }
+        Test.makeLabel(this);
+    }
+}

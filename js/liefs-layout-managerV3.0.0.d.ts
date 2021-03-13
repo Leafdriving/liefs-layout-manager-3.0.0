@@ -9,7 +9,7 @@ declare class BaseF {
 declare class Base {
     static defaultIsChecks: any;
     static byLabel(label: string): any;
-    static pop(instance: any, fromInstances?: boolean): void;
+    static pop(instance?: any): void;
     static push(instance: any, toActive?: boolean): void;
     static deactivate(instance: any): void;
     static activate(instance: any): void;
@@ -21,6 +21,19 @@ declare class Base {
     buildBase(...Arguments: any): void;
     static buildBase(THIS: any, ...Arguments: any): void;
     static makeLabel(instance: any): void;
+}
+declare class Test extends Base {
+    static labelNo: number;
+    static instances: Test[];
+    static activeInstances: Test[];
+    static defaults: {
+        tag: string;
+    };
+    static argMap: {
+        string: string[];
+        number: string[];
+    };
+    constructor(...Arguments: any);
 }
 declare class FunctionStack {
     static instanceObj: {};
