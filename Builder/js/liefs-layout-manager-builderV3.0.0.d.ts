@@ -621,41 +621,46 @@ declare class Modal extends Base {
         headerHeight: number;
         footerHeight: number;
         headerTitle: string;
+        footerTitle: string;
         innerHTML: string;
         optionsHeight: number;
     };
     static argMap: {
-        string: (string | string[])[];
+        string: string[];
         DisplayCell: string[];
         Coord: string[];
     };
     static x: number;
     static y: number;
     label: string;
-    fullCell: DisplayCell;
     headerTitle: string;
     footerTitle: string;
+    innerHTML: string;
+    fullCell: DisplayCell;
     headerCell: DisplayCell;
     bodyCell: DisplayCell;
-    footerCell: DisplayCell;
     optionsCell: DisplayCell;
-    coord: Coord;
+    footerCell: DisplayCell;
     headerHeight: number;
-    footerHeight: number;
     optionsHeight: number;
+    footerHeight: number;
+    minWidth: number;
+    minHeight: number;
+    maxWidth: number;
+    maxHeight: number;
     showHeader: boolean;
     showClose: boolean;
     showFooter: boolean;
     showOptions: boolean;
     resizeable: boolean;
-    minWidth: number;
-    minHeight: number;
-    maxWidth: number;
-    maxHeight: number;
     handler: Handler;
-    innerHTML: string;
+    coord: Coord;
     constructor(...Arguments: any);
+    setSize(...numbers: number[]): void;
     setContent(html: string): void;
+    setTitle(html: string): void;
+    setFooter(html: string): void;
+    buildClose(): DisplayCell;
     buildHeader(): void;
     buildFooter(): void;
     buildOptions(): void;
@@ -666,6 +671,21 @@ declare class Modal extends Base {
     static startMoveModal(handler: Handler): void;
     static moveModal(handler: Handler, offset: object): void;
 }
+declare class Stretch extends Base {
+    static labelNo: number;
+    static instances: Stretch[];
+    static activeInstances: Stretch[];
+    static defaults: {};
+    static argMap: {
+        string: string[];
+        Modal: string[];
+    };
+    parentModal: Modal;
+    parentDisplaycell: DisplayCell;
+    constructor(...Arguments: any);
+    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+}
+declare function stretch(...Arguments: any): DisplayCell;
 declare class TreeNode extends Base {
     static instances: TreeNode[];
     static activeInstances: TreeNode[];
@@ -776,6 +796,7 @@ declare class bCss {
     static hSVG: Css;
     static vSVG: Css;
     static ISVG: Css;
+    static pagesSVG: Css;
 }
 declare class Builder {
     constructor();

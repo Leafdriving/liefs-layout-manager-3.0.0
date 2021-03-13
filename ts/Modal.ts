@@ -10,29 +10,33 @@ class Modal extends Base {
     static optionsCss:Css = css("ModalOptions","background-color:white;border: 1px solid black;display: flex;justify-content: center;align-items: center;");
     static defaults = {
         showHeader : true, showFooter: false, resizeable : true, showClose: true, showOptions: true,
-        headerHeight: 20, footerHeight : 20, headerTitle:"", innerHTML:"", optionsHeight: 30,
+        headerHeight: 20, footerHeight : 20, headerTitle:"",footerTitle:"" ,  innerHTML:"", optionsHeight: 30,
     }
     static argMap = {
-        string : ["label", "headerTitle", "footerTitle", ["innerHTML"]], /// this can't be right!!!!!!!!!!!!!!!!!!!!!!!!!
-        DisplayCell: ["bodyCell", "headerCell", "footerCell", "optionsCell"],
+        string : ["label", "innerHTML", "headerTitle", "footerTitle"],
+        DisplayCell: ["bodyCell", "optionsCell", "footerCell", "headerCell"],
         Coord: ["coord"]
     }
     static x:number; // used during move Modal
     static y:number; // used during move Modal
     label:string;
-
-    fullCell:DisplayCell;
     headerTitle:string;
     footerTitle:string;
+    innerHTML:string;
+
+    fullCell:DisplayCell;
     headerCell:DisplayCell;
     bodyCell:DisplayCell;
-    footerCell:DisplayCell;
     optionsCell:DisplayCell;
-    coord:Coord;
+    footerCell:DisplayCell;
 
     headerHeight: number;
-    footerHeight: number;
     optionsHeight: number;
+    footerHeight: number;
+    minWidth: number;
+    minHeight: number;
+    maxWidth: number;
+    maxHeight: number;
 
     showHeader:boolean;
     showClose:boolean;
@@ -40,62 +44,63 @@ class Modal extends Base {
     showOptions:boolean;
     resizeable:boolean;
 
-    minWidth: number;
-    minHeight: number;
-    maxWidth: number;
-    maxHeight: number;
-
     handler: Handler;
-    innerHTML:string;
+    coord:Coord;
+
 
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
-        
         if ("number" in this.retArgs){
-            if (!this.coord) this.coord = new Coord();
-            let numbers = this.retArgs["number"]
-            let numberOfArgs = numbers.length;
-            let x:number, y:number, width:number, height:number;
-            if (numberOfArgs == 2) {
-                let vp= pf.viewport();
-                width=numbers[0];
-                height=numbers[1];
-                x = (vp[0] - width)/2;
-                y = (vp[1] - height)/2;
-                this.coord.assign(x, y, width, height);
-            } else if (numberOfArgs == 4) {
-                this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3]);
-                // console.log(pf.viewport())
-                let vp = pf.viewport();
-                // this.coord.copyWithin(0, 0, vp[0], vp[1], true)
-                this.coord.within.x = 0;
-                this.coord.within.y = 0;
-                this.coord.within.width = vp[0];
-                this.coord.within.height = vp[1];
-                // console.log(this.coord)
-            }
-        } else {
-            if (!this.coord) {
-                let vp= pf.viewport();
-                this.coord = new Coord( Math.round(vp[0]/4), Math.round(vp[1]/4), Math.round(vp[0]/2), Math.round(vp[1]/2));
-                this.coord.within.x = 0;
-                this.coord.within.y = 0;
-                this.coord.within.width = vp[0];
-                this.coord.within.height = vp[1];
-            }
+            this.setSize(...this.retArgs["number"]);
+        } 
+        if (!this.coord) {
+            let [vpX, vpY] = pf.viewport();
+            this.coord = new Coord( Math.round(vpX/4), Math.round(vpY/4), Math.round(vpX/2), Math.round(vpY/2));
+            this.coord.within.x = this.coord.within.y = 0;
+            this.coord.within.width = vpX;
+            this.coord.within.height = vpY;
         }
         if (!this.minWidth) this.minWidth = this.coord.width;
         if (!this.minHeight) this.minHeight = this.coord.height;
-        if (!this.bodyCell){
-            this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);
-        }
-        if (this.footerTitle){this.showFooter = true}
-        Modal.makeLabel(this);
+        if (!this.bodyCell){this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);}
+        if (this.footerTitle) {this.showFooter = true}
+        Modal.makeLabel(this); // see Base.ts
         this.build();
     }
-    setContent(html:string){
-        this.bodyCell.htmlBlock.innerHTML = html;
-        Handler.update();
+    setSize(...numbers:number[]) {
+        let [vpX, vpY] = pf.viewport();
+        let numberOfArgs = numbers.length;
+        let x:number, y:number, width:number, height:number;
+        if (numberOfArgs >= 2 && numberOfArgs < 4) {
+            if (!this.coord) this.coord = new Coord();
+            width=numbers[0];
+            height=numbers[1];
+            x = (vpX - width)/2;
+            y = (vpY - height)/2;
+            this.coord.assign(x, y, width, height);
+        } else if (numberOfArgs >= 4) {
+            if (!this.coord) this.coord = new Coord();
+            this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3]);
+            this.coord.within.x = this.coord.within.y = 0;
+            this.coord.within.width = vpX;
+            this.coord.within.height = vpY;
+        }
+    }
+    setContent(html:string){this.bodyCell.htmlBlock.innerHTML = html;Handler.update();}
+    setTitle(html:string) {this.headerCell.displaygroup.cellArray[0].htmlBlock.innerHTML = html;Handler.update();}
+    setFooter(html:string) {this.footerCell.displaygroup.cellArray[0].htmlBlock.innerHTML = html;Handler.update();}
+    buildClose(): DisplayCell {
+        let THIS = this;
+        return I({innerHTML:`<svg viewPort="0 0 ${this.headerHeight} ${this.headerHeight}" version="1.1"
+        xmlns="http://www.w3.org/2000/svg" style="width: ${this.headerHeight}px; height: ${this.headerHeight}px;">
+        <line x1="3" y1="${this.headerHeight-3}" x2="${this.headerHeight-3}" y2="3" 
+          stroke="black" stroke-width="2"/>
+        <line x1="3" y1="3" x2="${this.headerHeight-3}" y2="${this.headerHeight-3}" 
+          stroke="black" stroke-width="2"/></svg>`
+        },
+        Modal.closeCss,
+        `${this.headerHeight}px`,
+        events({onclick:function(){ THIS.hide() }}))
     }
     buildHeader(){
         let THIS = this;
@@ -104,32 +109,11 @@ class Modal extends Base {
                                 I(`${this.label}_headerTitle`,
                                     this.headerTitle,
                                     Modal.headerCss,
-
                                     events({ondrag: {onDown : function(){return Modal.startMoveModal(THIS.handler)},
                                                      onMove : function(offset:object) {return Modal.moveModal(THIS.handler, offset)},
-                                                     // onUp: function(offset:object){/*console.log(offset,"up")*/}
-                                                     // onclick : function(){console.log("clicked")}
                                                     }}),
-
-                                    )
-                                );
-            if (this.showClose) {this.headerCell.displaygroup.cellArray.push(
-                I({innerHTML:`<svg viewPort="0 0 ${this.headerHeight} ${this.headerHeight}" version="1.1"
-                              xmlns="http://www.w3.org/2000/svg" style="width: ${this.headerHeight}px; height: ${this.headerHeight}px;">
-                              <line x1="3" y1="${this.headerHeight-3}" 
-                                x2="${this.headerHeight-3}" y2="3" 
-                                stroke="black" 
-                                stroke-width="2"/>
-                              <line x1="3" y1="3" 
-                                x2="${this.headerHeight-3}" y2="${this.headerHeight-3}" 
-                                stroke="black" 
-                                stroke-width="2"/>
-                              </svg>`
-                    },
-                    Modal.closeCss,
-                    `${this.headerHeight}px`,
-                    events({onclick:function(){ THIS.hide() }}))
-            )}
+                                ));
+            if (this.showClose) {this.headerCell.displaygroup.cellArray.push(this.buildClose())}
         }
     }
     buildFooter(){
@@ -139,9 +123,13 @@ class Modal extends Base {
                                 );
     }
     buildOptions(){
+        let THIS = this;
         if (!this.optionsCell)
             this.optionsCell = h(`${this.label}_options`, `${this.optionsHeight}px`,
-                                I(`${this.label}_okButton`,`<button onclick="Modal.byLabel('${this.label}').hide()" >OK</button>`, Modal.optionsCss)
+                                I(`${this.label}_okButton`,
+                                    `<button>OK</button>`,
+                                    Modal.optionsCss,
+                                    events({onclick:function(){ THIS.hide() }}))
                                 );
     }
     buildFull(){
@@ -161,24 +149,20 @@ class Modal extends Base {
         this.buildFooter();
         this.buildOptions();
         this.buildFull();
-        // console.log(JSON.stringify(this.coord));
         this.handler = H(`${this.label}_h`,v(this.fullCell),
                           this.coord, false)
-        // this.handler.pop();
     }
     show(){
-        Handler.activeInstances.push(this.handler);
+        Handler.activate(this.handler);
         Handler.update();
     }
     hide(){
         this.handler.pop();
     }
     static startMoveModal(handler:Handler){
-        //console.log("clicked");
         handler.toTop()
         Modal.x = handler.coord.x;
         Modal.y = handler.coord.y;
-        // handler.toTop();
     }
     static moveModal(handler:Handler, offset:object){
         let vp=pf.viewport()
@@ -194,3 +178,34 @@ class Modal extends Base {
         Handler.update();
     }
 }
+
+class Stretch extends Base {
+    static labelNo = 0;
+    static instances:Stretch[] = [];
+    static activeInstances:Stretch[] = [];
+    static defaults = {}
+    static argMap = {
+        string : ["label"],
+        Modal: ["parentModal"],
+    }
+    // retArgs:ArgsObj;   // <- this will appear
+    parentModal: Modal;
+    parentDisplaycell: DisplayCell;
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
+
+        if (!this.parentDisplaycell && this.parentModal) this.parentDisplaycell = this.parentModal.fullCell;
+        Stretch.makeLabel(this);
+    }
+    render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+        console.log("RenderStretch!");
+    }
+}
+function stretch(...Arguments:any) {
+    let overlay=new Overlay("Stretch", ...Arguments);
+    let newStretch = <Stretch>overlay.returnObj;
+    let parentDisplaycell = newStretch.parentDisplaycell;
+    parentDisplaycell.addOverlay(overlay);
+    return parentDisplaycell;
+}
+Overlay.classes["Stretch"] = Stretch;

@@ -14,6 +14,7 @@ class Builder {
       let returnString = "";
       if (displaycell.htmlBlock) returnString += Builder.HB(displaycell.htmlBlock, indent);
       if (displaycell.displaygroup) returnString += Builder.DG(displaycell.displaygroup, indent);
+      if (displaycell.pages) returnString += Builder.PG(displaycell.pages, indent);
       return returnString;
     }
     static HB(htmlblock:HtmlBlock, indent:string) {
@@ -29,7 +30,8 @@ class Builder {
       return returnString;
     }
     static PG(pages:Pages, indent:string) {
-      let returnString = indent + `TI("${pages.label}", [\n`
+      console.log("Here");
+      let returnString = indent + `TI("${pages.label}", bCss.pagesSVG ,[\n`
       for (let index = 0; index < pages.displaycells.length; index++) {
         const displaycell = pages.displaycells[index];
         returnString += Builder.DC(displaycell, indent + "\t")
@@ -71,7 +73,10 @@ H("Client Window",
     I("Client_Main1","left", bCss.bgCyan),
     v("Client_v", 5,
       I("Client_Top","top", bCss.bgGreen),
-      I("Client_Bottom","bottom", bCss.bgBlue),
+      P("MainPages",
+        I("Client_Bottom1","bottom1", bCss.bgBlue),
+        I("Client_Bottom2","bottom2", bCss.bgLight),
+      )
     )
   ),
   false,

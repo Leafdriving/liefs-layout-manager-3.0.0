@@ -1879,40 +1879,14 @@ class Modal extends Base {
         super();
         this.buildBase(...Arguments);
         if ("number" in this.retArgs) {
-            if (!this.coord)
-                this.coord = new Coord();
-            let numbers = this.retArgs["number"];
-            let numberOfArgs = numbers.length;
-            let x, y, width, height;
-            if (numberOfArgs == 2) {
-                let vp = pf.viewport();
-                width = numbers[0];
-                height = numbers[1];
-                x = (vp[0] - width) / 2;
-                y = (vp[1] - height) / 2;
-                this.coord.assign(x, y, width, height);
-            }
-            else if (numberOfArgs == 4) {
-                this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3]);
-                // console.log(pf.viewport())
-                let vp = pf.viewport();
-                // this.coord.copyWithin(0, 0, vp[0], vp[1], true)
-                this.coord.within.x = 0;
-                this.coord.within.y = 0;
-                this.coord.within.width = vp[0];
-                this.coord.within.height = vp[1];
-                // console.log(this.coord)
-            }
+            this.setSize(...this.retArgs["number"]);
         }
-        else {
-            if (!this.coord) {
-                let vp = pf.viewport();
-                this.coord = new Coord(Math.round(vp[0] / 4), Math.round(vp[1] / 4), Math.round(vp[0] / 2), Math.round(vp[1] / 2));
-                this.coord.within.x = 0;
-                this.coord.within.y = 0;
-                this.coord.within.width = vp[0];
-                this.coord.within.height = vp[1];
-            }
+        if (!this.coord) {
+            let [vpX, vpY] = pf.viewport();
+            this.coord = new Coord(Math.round(vpX / 4), Math.round(vpY / 4), Math.round(vpX / 2), Math.round(vpY / 2));
+            this.coord.within.x = this.coord.within.y = 0;
+            this.coord.within.width = vpX;
+            this.coord.within.height = vpY;
         }
         if (!this.minWidth)
             this.minWidth = this.coord.width;
@@ -1924,33 +1898,51 @@ class Modal extends Base {
         if (this.footerTitle) {
             this.showFooter = true;
         }
-        Modal.makeLabel(this);
+        Modal.makeLabel(this); // see Base.ts
         this.build();
     }
-    setContent(html) {
-        this.bodyCell.htmlBlock.innerHTML = html;
-        Handler.update();
+    setSize(...numbers) {
+        let [vpX, vpY] = pf.viewport();
+        let numberOfArgs = numbers.length;
+        let x, y, width, height;
+        if (numberOfArgs >= 2 && numberOfArgs < 4) {
+            if (!this.coord)
+                this.coord = new Coord();
+            width = numbers[0];
+            height = numbers[1];
+            x = (vpX - width) / 2;
+            y = (vpY - height) / 2;
+            this.coord.assign(x, y, width, height);
+        }
+        else if (numberOfArgs >= 4) {
+            if (!this.coord)
+                this.coord = new Coord();
+            this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3]);
+            this.coord.within.x = this.coord.within.y = 0;
+            this.coord.within.width = vpX;
+            this.coord.within.height = vpY;
+        }
+    }
+    setContent(html) { this.bodyCell.htmlBlock.innerHTML = html; Handler.update(); }
+    setTitle(html) { this.headerCell.displaygroup.cellArray[0].htmlBlock.innerHTML = html; Handler.update(); }
+    setFooter(html) { this.footerCell.displaygroup.cellArray[0].htmlBlock.innerHTML = html; Handler.update(); }
+    buildClose() {
+        let THIS = this;
+        return I({ innerHTML: `<svg viewPort="0 0 ${this.headerHeight} ${this.headerHeight}" version="1.1"
+        xmlns="http://www.w3.org/2000/svg" style="width: ${this.headerHeight}px; height: ${this.headerHeight}px;">
+        <line x1="3" y1="${this.headerHeight - 3}" x2="${this.headerHeight - 3}" y2="3" 
+          stroke="black" stroke-width="2"/>
+        <line x1="3" y1="3" x2="${this.headerHeight - 3}" y2="${this.headerHeight - 3}" 
+          stroke="black" stroke-width="2"/></svg>`
+        }, Modal.closeCss, `${this.headerHeight}px`, events({ onclick: function () { THIS.hide(); } }));
     }
     buildHeader() {
         let THIS = this;
         if (!this.headerCell) {
             this.headerCell = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_headerTitle`, this.headerTitle, Modal.headerCss, events({ ondrag: { onDown: function () { return Modal.startMoveModal(THIS.handler); }, onMove: function (offset) { return Modal.moveModal(THIS.handler, offset); },
-                    // onUp: function(offset:object){/*console.log(offset,"up")*/}
-                    // onclick : function(){console.log("clicked")}
                 } })));
             if (this.showClose) {
-                this.headerCell.displaygroup.cellArray.push(I({ innerHTML: `<svg viewPort="0 0 ${this.headerHeight} ${this.headerHeight}" version="1.1"
-                              xmlns="http://www.w3.org/2000/svg" style="width: ${this.headerHeight}px; height: ${this.headerHeight}px;">
-                              <line x1="3" y1="${this.headerHeight - 3}" 
-                                x2="${this.headerHeight - 3}" y2="3" 
-                                stroke="black" 
-                                stroke-width="2"/>
-                              <line x1="3" y1="3" 
-                                x2="${this.headerHeight - 3}" y2="${this.headerHeight - 3}" 
-                                stroke="black" 
-                                stroke-width="2"/>
-                              </svg>`
-                }, Modal.closeCss, `${this.headerHeight}px`, events({ onclick: function () { THIS.hide(); } })));
+                this.headerCell.displaygroup.cellArray.push(this.buildClose());
             }
         }
     }
@@ -1959,8 +1951,9 @@ class Modal extends Base {
             this.footerCell = h(`${this.label}_footer`, `${this.footerHeight}px`, I(`${this.label}_footerTitle`, this.footerTitle, Modal.footerCss));
     }
     buildOptions() {
+        let THIS = this;
         if (!this.optionsCell)
-            this.optionsCell = h(`${this.label}_options`, `${this.optionsHeight}px`, I(`${this.label}_okButton`, `<button onclick="Modal.byLabel('${this.label}').hide()" >OK</button>`, Modal.optionsCss));
+            this.optionsCell = h(`${this.label}_options`, `${this.optionsHeight}px`, I(`${this.label}_okButton`, `<button>OK</button>`, Modal.optionsCss, events({ onclick: function () { THIS.hide(); } })));
     }
     buildFull() {
         this.fullCell = v(this.bodyCell);
@@ -1979,23 +1972,19 @@ class Modal extends Base {
         this.buildFooter();
         this.buildOptions();
         this.buildFull();
-        // console.log(JSON.stringify(this.coord));
         this.handler = H(`${this.label}_h`, v(this.fullCell), this.coord, false);
-        // this.handler.pop();
     }
     show() {
-        Handler.activeInstances.push(this.handler);
+        Handler.activate(this.handler);
         Handler.update();
     }
     hide() {
         this.handler.pop();
     }
     static startMoveModal(handler) {
-        //console.log("clicked");
         handler.toTop();
         Modal.x = handler.coord.x;
         Modal.y = handler.coord.y;
-        // handler.toTop();
     }
     static moveModal(handler, offset) {
         let vp = pf.viewport();
@@ -2024,13 +2013,41 @@ Modal.bodyCss = css("ModalBody", "background-color:white;border: 1px solid black
 Modal.optionsCss = css("ModalOptions", "background-color:white;border: 1px solid black;display: flex;justify-content: center;align-items: center;");
 Modal.defaults = {
     showHeader: true, showFooter: false, resizeable: true, showClose: true, showOptions: true,
-    headerHeight: 20, footerHeight: 20, headerTitle: "", innerHTML: "", optionsHeight: 30,
+    headerHeight: 20, footerHeight: 20, headerTitle: "", footerTitle: "", innerHTML: "", optionsHeight: 30,
 };
 Modal.argMap = {
-    string: ["label", "headerTitle", "footerTitle", ["innerHTML"]],
-    DisplayCell: ["bodyCell", "headerCell", "footerCell", "optionsCell"],
+    string: ["label", "innerHTML", "headerTitle", "footerTitle"],
+    DisplayCell: ["bodyCell", "optionsCell", "footerCell", "headerCell"],
     Coord: ["coord"]
 };
+class Stretch extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        if (!this.parentDisplaycell && this.parentModal)
+            this.parentDisplaycell = this.parentModal.fullCell;
+        Stretch.makeLabel(this);
+    }
+    render(displaycell, parentDisplaygroup, index, derender) {
+        console.log("RenderStretch!");
+    }
+}
+Stretch.labelNo = 0;
+Stretch.instances = [];
+Stretch.activeInstances = [];
+Stretch.defaults = {};
+Stretch.argMap = {
+    string: ["label"],
+    Modal: ["parentModal"],
+};
+function stretch(...Arguments) {
+    let overlay = new Overlay("Stretch", ...Arguments);
+    let newStretch = overlay.returnObj;
+    let parentDisplaycell = newStretch.parentDisplaycell;
+    parentDisplaycell.addOverlay(overlay);
+    return parentDisplaycell;
+}
+Overlay.classes["Stretch"] = Stretch;
 class TreeNode extends Base {
     constructor(...Arguments) {
         super();
@@ -2424,6 +2441,9 @@ bCss.vSVG = css("vSVG", `background-image: url("svg/Vertical.svg");
 bCss.ISVG = css("ISVG", `background-image: url("svg/icon-htmlOPT.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+bCss.pagesSVG = css("pagesSVG", `background-image: url("svg/bookOPT.svg");
+                                        background-repeat: no-repeat;
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
 class Builder {
     constructor() {
     }
@@ -2442,6 +2462,8 @@ class Builder {
             returnString += Builder.HB(displaycell.htmlBlock, indent);
         if (displaycell.displaygroup)
             returnString += Builder.DG(displaycell.displaygroup, indent);
+        if (displaycell.pages)
+            returnString += Builder.PG(displaycell.pages, indent);
         return returnString;
     }
     static HB(htmlblock, indent) {
@@ -2457,7 +2479,8 @@ class Builder {
         return returnString;
     }
     static PG(pages, indent) {
-        let returnString = indent + `TI("${pages.label}", [\n`;
+        console.log("Here");
+        let returnString = indent + `TI("${pages.label}", bCss.pagesSVG ,[\n`;
         for (let index = 0; index < pages.displaycells.length; index++) {
             const displaycell = pages.displaycells[index];
             returnString += Builder.DC(displaycell, indent + "\t");
@@ -2483,7 +2506,7 @@ window.onload = function () {
         function (displaycell, displaygroup, index, derender) {
             Handler.byLabel("Client Window").coord.copy(displaycell.coord);
         };
-    let clientHandler = H("Client Window", h("Client_h", 5, I("Client_Main1", "left", bCss.bgCyan), v("Client_v", 5, I("Client_Top", "top", bCss.bgGreen), I("Client_Bottom", "bottom", bCss.bgBlue))), false, new Coord(), function () {
+    let clientHandler = H("Client Window", h("Client_h", 5, I("Client_Main1", "left", bCss.bgCyan), v("Client_v", 5, I("Client_Top", "top", bCss.bgGreen), P("MainPages", I("Client_Bottom1", "bottom1", bCss.bgBlue), I("Client_Bottom2", "bottom2", bCss.bgLight)))), false, new Coord(), function () {
         // console.log(  Builder.updateTree(clientHandler)   );
     });
     let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue), h("Tree_Body", 5, tree("Display", dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600), Builder.updateTree(clientHandler), { SVGColor: "Black" }, 25), mainBodyDisplayCell)));
