@@ -651,6 +651,7 @@ declare class Modal extends Base {
     resizeable: boolean;
     handler: Handler;
     coord: Coord;
+    withinCoord: Coord;
     constructor(...Arguments: any);
     setSize(...numbers: number[]): void;
     setContent(html: string): void;
@@ -664,7 +665,7 @@ declare class Modal extends Base {
     build(): void;
     show(): void;
     hide(): void;
-    static preRenderCallback(handler: Handler): void;
+    preRenderCallback(handler: Handler): void;
     static startMoveModal(handler: Handler): void;
     static moveModal(handler: Handler, offset: object): void;
 }

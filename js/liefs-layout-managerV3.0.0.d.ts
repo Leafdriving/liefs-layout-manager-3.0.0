@@ -621,41 +621,43 @@ declare class Modal extends Base {
         headerHeight: number;
         footerHeight: number;
         headerTitle: string;
+        footerTitle: string;
         innerHTML: string;
         optionsHeight: number;
     };
     static argMap: {
-        string: (string | string[])[];
+        string: string[];
         DisplayCell: string[];
         Coord: string[];
     };
     static x: number;
     static y: number;
     label: string;
-    fullCell: DisplayCell;
     headerTitle: string;
     footerTitle: string;
+    innerHTML: string;
+    fullCell: DisplayCell;
     headerCell: DisplayCell;
     bodyCell: DisplayCell;
-    footerCell: DisplayCell;
     optionsCell: DisplayCell;
-    coord: Coord;
+    footerCell: DisplayCell;
     headerHeight: number;
-    footerHeight: number;
     optionsHeight: number;
+    footerHeight: number;
     showHeader: boolean;
     showClose: boolean;
     showFooter: boolean;
     showOptions: boolean;
     resizeable: boolean;
-    minWidth: number;
-    minHeight: number;
-    maxWidth: number;
-    maxHeight: number;
     handler: Handler;
-    innerHTML: string;
+    coord: Coord;
+    withinCoord: Coord;
     constructor(...Arguments: any);
+    setSize(...numbers: number[]): void;
     setContent(html: string): void;
+    setTitle(html: string): void;
+    setFooter(html: string): void;
+    buildClose(): DisplayCell;
     buildHeader(): void;
     buildFooter(): void;
     buildOptions(): void;
@@ -663,9 +665,44 @@ declare class Modal extends Base {
     build(): void;
     show(): void;
     hide(): void;
+    preRenderCallback(handler: Handler): void;
     static startMoveModal(handler: Handler): void;
     static moveModal(handler: Handler, offset: object): void;
 }
+declare class Stretch extends Base {
+    static labelNo: number;
+    static instances: Stretch[];
+    static activeInstances: Stretch[];
+    static defaults: {
+        pxSize: number;
+        minWidth: number;
+        minHeight: number;
+    };
+    static argMap: {
+        string: string[];
+        Modal: string[];
+    };
+    static NWcss: Css;
+    static NEcss: Css;
+    static startCoord: Coord;
+    static corner: string;
+    label: string;
+    parentModal: Modal;
+    parentDisplaycell: DisplayCell;
+    pxSize: number;
+    UL: DisplayCell;
+    UR: DisplayCell;
+    LL: DisplayCell;
+    LR: DisplayCell;
+    minWidth: number;
+    minHeight: number;
+    maxWidth: number;
+    maxHeight: number;
+    events(corner: string): Events;
+    constructor(...Arguments: any);
+    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+}
+declare function stretch(...Arguments: any): DisplayCell | Modal;
 declare class TreeNode extends Base {
     static instances: TreeNode[];
     static activeInstances: TreeNode[];

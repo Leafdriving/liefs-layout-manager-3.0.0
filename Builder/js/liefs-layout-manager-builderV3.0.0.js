@@ -1888,6 +1888,9 @@ class Modal extends Base {
             this.coord.within.width = vpX;
             this.coord.within.height = vpY;
         }
+        if (!this.withinCoord) {
+            this.withinCoord = Handler.activeInstances[0].rootCell.coord;
+        }
         // if (!this.minWidth) this.minWidth = this.coord.width;
         // if (!this.minHeight) this.minHeight = this.coord.height;
         if (!this.bodyCell) {
@@ -1970,7 +1973,7 @@ class Modal extends Base {
         this.buildFooter();
         this.buildOptions();
         this.buildFull();
-        this.handler = H(`${this.label}_h`, v(this.fullCell), this.coord, false, Modal.preRenderCallback);
+        this.handler = H(`${this.label}_h`, v(this.fullCell), this.coord, false, this.preRenderCallback.bind(this));
     }
     show() {
         Handler.activate(this.handler);
@@ -1979,20 +1982,21 @@ class Modal extends Base {
     hide() {
         this.handler.pop();
     }
-    static preRenderCallback(handler) {
-        let [vpX, vpY] = pf.viewport();
+    preRenderCallback(handler) {
+        let within = this.withinCoord.within;
+        let x = within.x, y = within.y, x2 = within.x + within.width, y2 = within.y + within.height;
         let coord = handler.coord;
-        if (coord.x + coord.width > vpX)
-            coord.x = vpX - coord.width;
-        if (coord.x < 0) {
+        if (coord.x + coord.width > x2)
+            coord.x = x2 - coord.width; // something
+        if (coord.x < x) {
             coord.width += coord.x;
-            coord.x = 0;
-        }
-        if (coord.y + coord.height > vpY)
-            coord.y = vpY - coord.height;
-        if (coord.y < 0) {
+            coord.x = x;
+        } // is off here - make outer margin huge to see!
+        if (coord.y + coord.height > y2)
+            coord.y = y2 - coord.height;
+        if (coord.y < y) {
             coord.height += coord.y;
-            coord.y = 0;
+            coord.y = y;
         }
     }
     static startMoveModal(handler) {
@@ -2032,7 +2036,7 @@ Modal.defaults = {
 Modal.argMap = {
     string: ["label", "innerHTML", "headerTitle", "footerTitle"],
     DisplayCell: ["bodyCell", "optionsCell", "footerCell", "headerCell"],
-    Coord: ["coord"]
+    Coord: ["coord", "withinCoord"]
 };
 class Stretch extends Base {
     constructor(...Arguments) {

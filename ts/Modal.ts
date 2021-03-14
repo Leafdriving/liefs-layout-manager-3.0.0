@@ -15,7 +15,7 @@ class Modal extends Base {
     static argMap = {
         string : ["label", "innerHTML", "headerTitle", "footerTitle"],
         DisplayCell: ["bodyCell", "optionsCell", "footerCell", "headerCell"],
-        Coord: ["coord"]
+        Coord: ["coord", "withinCoord"]
     }
     static x:number; // used during move Modal
     static y:number; // used during move Modal
@@ -46,6 +46,7 @@ class Modal extends Base {
 
     handler: Handler;
     coord:Coord;
+    withinCoord: Coord;
 
 
     constructor(...Arguments: any) {
@@ -60,6 +61,7 @@ class Modal extends Base {
             this.coord.within.width = vpX;
             this.coord.within.height = vpY;
         }
+        if (!this.withinCoord) {this.withinCoord = Handler.activeInstances[0].rootCell.coord;}
         // if (!this.minWidth) this.minWidth = this.coord.width;
         // if (!this.minHeight) this.minHeight = this.coord.height;
         if (!this.bodyCell){this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);}
@@ -150,7 +152,7 @@ class Modal extends Base {
         this.buildOptions();
         this.buildFull();
         this.handler = H(`${this.label}_h`,v(this.fullCell),
-                          this.coord, false, Modal.preRenderCallback)
+                          this.coord, false, this.preRenderCallback.bind(this))
     }
     show(){
         Handler.activate(this.handler);
@@ -159,13 +161,14 @@ class Modal extends Base {
     hide(){
         this.handler.pop();
     }
-    static preRenderCallback(handler:Handler){
-        let [vpX, vpY] = pf.viewport()
+    preRenderCallback(handler:Handler){
+        let within = this.withinCoord.within;
+        let x = within.x, y=within.y, x2 = within.x + within.width, y2 = within.y + within.height;
         let coord = handler.coord;
-        if (coord.x + coord.width > vpX) coord.x = vpX - coord.width;
-        if (coord.x < 0) {coord.width += coord.x;coord.x = 0;}
-        if (coord.y + coord.height > vpY) coord.y = vpY - coord.height;
-        if (coord.y < 0) {coord.height += coord.y;coord.y = 0;}
+        if (coord.x + coord.width > x2) coord.x = x2 - coord.width;  // something
+        if (coord.x < x) {coord.width += coord.x;coord.x = x;}       // is off here - make outer margin huge to see!
+        if (coord.y + coord.height > y2) coord.y = y2 - coord.height;
+        if (coord.y < y) {coord.height += coord.y;coord.y = y;}
     }
     static startMoveModal(handler:Handler){
         handler.toTop()
