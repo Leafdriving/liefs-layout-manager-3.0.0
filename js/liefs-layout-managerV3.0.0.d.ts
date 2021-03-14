@@ -673,6 +673,7 @@ declare class Stretch extends Base {
         pxSize: number;
         minWidth: number;
         minHeight: number;
+        onUpCallBack: () => void;
     };
     static argMap: {
         string: string[];
@@ -694,6 +695,7 @@ declare class Stretch extends Base {
     minHeight: number;
     maxWidth: number;
     maxHeight: number;
+    onUpCallBack: Function;
     events(corner: string): Events;
     constructor(...Arguments: any);
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
@@ -810,14 +812,20 @@ declare class ToolBar extends Base {
         string: string[];
         number: string[];
     };
+    static llm_checker: Css;
     label: string;
     sizePx: number;
+    parentDisplayGroup: DisplayGroup;
     rootDisplayCell: DisplayCell;
     displaycells: DisplayCell[];
     spacer: DisplayCell;
+    hBar: DisplayCell;
+    vBar: DisplayCell;
     modal: Modal;
     isDocked: boolean;
     constructor(...Arguments: any);
     build(): void;
     sizeFunction(thisPages: Pages): number;
+    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
+declare function tool_bar(...Arguments: any): DisplayCell;

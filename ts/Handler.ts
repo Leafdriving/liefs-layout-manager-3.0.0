@@ -128,7 +128,7 @@ class Handler extends Base {
         else {
             let htmlBlock = displaycell.htmlBlock;
             let displaygroup = displaycell.displaygroup;
-            let overlays = displaycell.overlays;
+            // let overlays = displaycell.overlays;
             if (htmlBlock) {
                 Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup)
             }
@@ -143,10 +143,12 @@ class Handler extends Base {
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
-            if (overlays.length) {
-                for (let ovlay of overlays) {
-                    ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
-                }
+
+        }
+        if (displaycell.overlays.length) {
+            for (let ovlay of displaycell.overlays) {
+                // console.log("rendering",displaycell.label)
+                ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
             }
         }
         // if (derender) displaycell.coord.within.reset();

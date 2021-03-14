@@ -24,6 +24,7 @@ class Overlay {
     }
     renderOverlay(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         this.currentlyRendered = !derender;
+        // console.log("render",this.returnObj["label"]);
         (this.returnObj["render"])(displaycell, parentDisplaygroup, index, derender);
     }
 }

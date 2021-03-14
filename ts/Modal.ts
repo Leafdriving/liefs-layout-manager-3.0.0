@@ -33,10 +33,6 @@ class Modal extends Base {
     headerHeight: number;
     optionsHeight: number;
     footerHeight: number;
-    // minWidth: number;
-    // minHeight: number;
-    // maxWidth: number;
-    // maxHeight: number;
 
     showHeader:boolean;
     showClose:boolean;
@@ -62,12 +58,13 @@ class Modal extends Base {
             this.coord.within.height = vpY;
         }
         if (!this.withinCoord) {this.withinCoord = Handler.activeInstances[0].rootCell.coord;}
-        // if (!this.minWidth) this.minWidth = this.coord.width;
-        // if (!this.minHeight) this.minHeight = this.coord.height;
-        if (!this.bodyCell){this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);}
-        if (this.footerTitle) {this.showFooter = true}
-        Modal.makeLabel(this); // see Base.ts
-        this.build();
+
+        if (!this.fullCell) {
+            if (!this.bodyCell){this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);}
+            if (this.footerTitle) {this.showFooter = true}
+            Modal.makeLabel(this); // see Base.ts
+            this.build();
+        }
     }
     setSize(...numbers:number[]) {
         let [vpX, vpY] = pf.viewport();
@@ -195,7 +192,7 @@ class Stretch extends Base {
     static instances:Stretch[] = [];
     static activeInstances:Stretch[] = [];
     static defaults = {
-        pxSize:10, minWidth:200, minHeight:200,
+        pxSize:10, minWidth:200, minHeight:200,onUpCallBack:function(){},
     }
     static argMap = {
         string : ["label"],
@@ -221,6 +218,8 @@ class Stretch extends Base {
     minHeight: number;
     maxWidth: number;
     maxHeight: number;
+
+    onUpCallBack: Function;
 
     events(corner:string) {
         let THIS = this;
@@ -280,6 +279,7 @@ class Stretch extends Base {
                 coord.assign(x, y, width, height);
                 Handler.update();
             },
+            onUp : this.onUpCallBack
         }})
     };
 

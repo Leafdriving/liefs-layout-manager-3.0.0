@@ -30,7 +30,7 @@ class Builder {
       return returnString;
     }
     static PG(pages:Pages, indent:string) {
-      console.log("Here");
+      // console.log("Here");
       let returnString = indent + `TI("${pages.label}", bCss.pagesSVG ,[\n`
       for (let index = 0; index < pages.displaycells.length; index++) {
         const displaycell = pages.displaycells[index];
@@ -86,6 +86,12 @@ H("Client Window",
   }
 );
 
+let TOOLBAR = tool_bar("Main_toolbar",
+I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
+I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
+I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
+);
+
 let mainHandler = H("Main Window", 4,
   v("Main_v",
     h("MenuBar", "20px",
@@ -93,7 +99,8 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Edit","Edit", "35px", bCss.menuItem),
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
-    I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue),
+    // I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue),
+    TOOLBAR,
     h("Tree_Body", 5,
       tree("Display",
         dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),

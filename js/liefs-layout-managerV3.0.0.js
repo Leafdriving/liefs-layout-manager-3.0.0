@@ -909,7 +909,7 @@ class Handler extends Base {
         else {
             let htmlBlock = displaycell.htmlBlock;
             let displaygroup = displaycell.displaygroup;
-            let overlays = displaycell.overlays;
+            // let overlays = displaycell.overlays;
             if (htmlBlock) {
                 Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup);
             }
@@ -921,10 +921,11 @@ class Handler extends Base {
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
-            if (overlays.length) {
-                for (let ovlay of overlays) {
-                    ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
-                }
+        }
+        if (displaycell.overlays.length) {
+            for (let ovlay of displaycell.overlays) {
+                // console.log("rendering",displaycell.label)
+                ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
             }
         }
         // if (derender) displaycell.coord.within.reset();
@@ -1511,6 +1512,7 @@ class Overlay {
     }
     renderOverlay(displaycell, parentDisplaygroup, index, derender) {
         this.currentlyRendered = !derender;
+        // console.log("render",this.returnObj["label"]);
         (this.returnObj["render"])(displaycell, parentDisplaygroup, index, derender);
     }
 }
@@ -1912,16 +1914,16 @@ class Modal extends Base {
         if (!this.withinCoord) {
             this.withinCoord = Handler.activeInstances[0].rootCell.coord;
         }
-        // if (!this.minWidth) this.minWidth = this.coord.width;
-        // if (!this.minHeight) this.minHeight = this.coord.height;
-        if (!this.bodyCell) {
-            this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);
+        if (!this.fullCell) {
+            if (!this.bodyCell) {
+                this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);
+            }
+            if (this.footerTitle) {
+                this.showFooter = true;
+            }
+            Modal.makeLabel(this); // see Base.ts
+            this.build();
         }
-        if (this.footerTitle) {
-            this.showFooter = true;
-        }
-        Modal.makeLabel(this); // see Base.ts
-        this.build();
     }
     setSize(...numbers) {
         let [vpX, vpY] = pf.viewport();
@@ -2166,8 +2168,7 @@ class Stretch extends Base {
                     }
                     coord.assign(x, y, width, height);
                     Handler.update();
-                },
-            } });
+                }, onUp: this.onUpCallBack } });
     }
     ;
     render(displaycell, parentDisplaygroup, index, derender) {
@@ -2187,7 +2188,7 @@ Stretch.labelNo = 0;
 Stretch.instances = [];
 Stretch.activeInstances = [];
 Stretch.defaults = {
-    pxSize: 10, minWidth: 200, minHeight: 200,
+    pxSize: 10, minWidth: 200, minHeight: 200, onUpCallBack: function () { },
 };
 Stretch.argMap = {
     string: ["label"],
@@ -2584,29 +2585,38 @@ Observe.argMap = {
 };
 Observe.Os_ScrollbarSize = 15;
 class ToolBar extends Base {
+    // page: Pages;
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
         ToolBar.makeLabel(this);
         this.spacer = I(`${this.label}_toolbar_spacer`);
-        if ("DisplayCell" in this.retArgs)
+        if ("DisplayCell" in this.retArgs) {
             this.displaycells = this.retArgs["DisplayCell"];
+            for (let index = 0; index < this.displaycells.length; index++) {
+                let displaycell = this.displaycells[index];
+                if (!displaycell.dim)
+                    displaycell.dim = `${this.sizePx}px`;
+            }
+        }
         if (!this.rootDisplayCell)
             this.build();
     }
     build() {
+        let checker = I(`${this.label}_checker`, ToolBar.llm_checker, "10px");
+        this.hBar = h(`${this.label}_hBar`, `${this.sizePx}px`);
+        this.vBar = v(`${this.label}_hBar`, `${this.sizePx}px`);
+        this.displaycells.unshift(checker);
+        this.hBar.displaygroup.cellArray = this.vBar.displaygroup.cellArray = this.displaycells;
         this.rootDisplayCell =
-            P(`${this.label}_toolbar_Pages`, this.sizeFunction);
-        // h(`${this.label}_toolbar_h`, `${this.sizePx}px`,
-        //     spacer
-        // );
+            P(`${this.label}_toolbar_Pages`, `${this.sizePx}px`, this.hBar, this.vBar, this.sizeFunction);
     }
     sizeFunction(thisPages) {
-        // let [x, y] = pf.viewport();
-        // if (x > 920) slideMenu.pop();
-        // // if (returnValue != thisPages.currentPage) {}
-        // return (x > 920) ? 0 : 1;
         return 0;
+    }
+    render(displaycell, parentDisplaygroup, index, derender) {
+        if (!this.parentDisplayGroup)
+            this.parentDisplayGroup = parentDisplaygroup;
     }
 }
 ToolBar.labelNo = 0;
@@ -2618,3 +2628,35 @@ ToolBar.argMap = {
     // DisplayCell : see constructor,
     number: ["sizePx"],
 };
+ToolBar.llm_checker = css("llm_checker", `cursor:pointer;`, `
+    --checkerSize: 2px; /* edit me */
+    
+    background-image:
+      linear-gradient(45deg, lightgrey 25%, transparent 25%), 
+      linear-gradient(135deg, lightgrey 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, lightgrey 75%),
+      linear-gradient(135deg, transparent 75%, lightgrey 75%);
+    
+    background-size: 
+      calc(2 * var(--checkerSize)) 
+      calc(2 * var(--checkerSize));
+    
+    background-position: 
+      0 0, 
+      var(--checkerSize) 0, 
+      var(--checkerSize) calc(-1 * var(--checkerSize)), 
+      0px var(--checkerSize);
+    
+    /* for fun */
+    transition-property: background-position, background-size;
+    transition-duration: 1s;`);
+function tool_bar(...Arguments) {
+    // console.log("start");
+    let overlay = new Overlay("ToolBar", ...Arguments);
+    let newToolBar = overlay.returnObj;
+    let parentDisplaycell = newToolBar.rootDisplayCell;
+    parentDisplaycell.addOverlay(overlay);
+    // console.log("parentDisplayCell",parentDisplaycell);
+    return parentDisplaycell;
+}
+Overlay.classes["ToolBar"] = ToolBar;
