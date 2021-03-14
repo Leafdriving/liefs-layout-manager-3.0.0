@@ -17,18 +17,18 @@ class DisplayCell extends Base {
     label:string;
     coord: Coord;
 
-    htmlBlock_ : HtmlBlock = undefined;
-    get htmlBlock(): HtmlBlock {return this.htmlBlock_;}
+    #htmlBlock_ : HtmlBlock = undefined;
+    get htmlBlock(): HtmlBlock {return this.#htmlBlock_;}
     set htmlBlock(htmlblock) {
-        this.htmlBlock_ = htmlblock;
-        if (this.htmlBlock_.dim) this.dim = this.htmlBlock_.dim;
-        if (this.htmlBlock_.minDisplayGroupSize) this.minDisplayGroupSize = this.htmlBlock_.minDisplayGroupSize;
+        this.#htmlBlock_ = htmlblock;
+        if (this.#htmlBlock_.dim) this.dim = this.#htmlBlock_.dim;
+        if (this.#htmlBlock_.minDisplayGroupSize) this.minDisplayGroupSize = this.#htmlBlock_.minDisplayGroupSize;
     }
-    displaygroup_: DisplayGroup = undefined;
-    get displaygroup(): DisplayGroup {return this.displaygroup_}
+    #displaygroup_: DisplayGroup = undefined;
+    get displaygroup(): DisplayGroup {return this.#displaygroup_}
     set displaygroup(displaygroup) {
-        this.displaygroup_ = displaygroup;
-        if (this.displaygroup_.dim) this.dim = this.displaygroup_.dim;
+        this.#displaygroup_ = displaygroup;
+        if (this.#displaygroup_.dim) this.dim = this.#displaygroup_.dim;
     }
 
     overlays: Overlay[] = [];

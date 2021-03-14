@@ -1,3 +1,16 @@
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to get private field on non-instance");
+    }
+    return privateMap.get(receiver);
+};
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, privateMap, value) {
+    if (!privateMap.has(receiver)) {
+        throw new TypeError("attempted to set private field on non-instance");
+    }
+    privateMap.set(receiver, value);
+    return value;
+};
 class BaseF {
     static ifObjectMergeWithDefaults(THIS, CLASS) {
         if ("object" in THIS.retArgs) {
@@ -329,6 +342,7 @@ pf.mergeObjects = function (startObj, AddObj) {
     return returnObject;
 };
 Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
+var _x_, _y_, _width_, _height_;
 class Point {
 }
 class Within {
@@ -344,18 +358,22 @@ class Within {
 class Coord extends Base {
     constructor(...Arguments) {
         super();
+        _x_.set(this, void 0);
+        _y_.set(this, void 0);
+        _width_.set(this, void 0);
+        _height_.set(this, void 0);
         this.within = new Within();
         this.buildBase(...Arguments);
         Coord.makeLabel(this);
     }
-    get x() { return this.x_ + ((this.offset) ? this.offset.x : 0); }
-    set x(x) { this.x_ = x; }
-    get y() { return this.y_ + ((this.offset) ? this.offset.y : 0); }
-    set y(y) { this.y_ = y; }
-    get width() { return this.width_ + ((this.offset) ? this.offset.width : 0); }
-    set width(width) { this.width_ = width; }
-    get height() { return this.height_ + ((this.offset) ? this.offset.height : 0); }
-    set height(height) { this.height_ = height; }
+    get x() { return __classPrivateFieldGet(this, _x_) + ((this.offset) ? this.offset.x : 0); }
+    set x(x) { __classPrivateFieldSet(this, _x_, x); }
+    get y() { return __classPrivateFieldGet(this, _y_) + ((this.offset) ? this.offset.y : 0); }
+    set y(y) { __classPrivateFieldSet(this, _y_, y); }
+    get width() { return __classPrivateFieldGet(this, _width_) + ((this.offset) ? this.offset.width : 0); }
+    set width(width) { __classPrivateFieldSet(this, _width_, width); }
+    get height() { return __classPrivateFieldGet(this, _height_) + ((this.offset) ? this.offset.height : 0); }
+    set height(height) { __classPrivateFieldSet(this, _height_, height); }
     setOffset(x = 0, y = 0, width = 0, height = 0) {
         if (x == 0 && y == 0 && width == 0 && height == 0)
             this.offset = undefined;
@@ -514,6 +532,7 @@ class Coord extends Base {
             + `height:${this.height}px; z-index:${this.zindex + ((this.offset) ? 1 : 0)};${this.newClipStyleString()}`;
     }
 }
+_x_ = new WeakMap(), _y_ = new WeakMap(), _width_ = new WeakMap(), _height_ = new WeakMap();
 Coord.instances = [];
 Coord.activeInstances = [];
 Coord.defaults = {
@@ -621,11 +640,12 @@ Events.argMap = {
     string: ["label"]
 };
 function events(...arguments) { return new Events(...arguments); }
+var _htmlBlock_, _displaygroup_;
 class DisplayCell extends Base {
     constructor(...Arguments) {
         super();
-        this.htmlBlock_ = undefined;
-        this.displaygroup_ = undefined;
+        _htmlBlock_.set(this, undefined);
+        _displaygroup_.set(this, undefined);
         this.overlays = [];
         this.isRendered = false;
         this.buildBase(...Arguments);
@@ -644,19 +664,19 @@ class DisplayCell extends Base {
             this.coord = new Coord(this.label);
         DisplayCell.makeLabel(this);
     }
-    get htmlBlock() { return this.htmlBlock_; }
+    get htmlBlock() { return __classPrivateFieldGet(this, _htmlBlock_); }
     set htmlBlock(htmlblock) {
-        this.htmlBlock_ = htmlblock;
-        if (this.htmlBlock_.dim)
-            this.dim = this.htmlBlock_.dim;
-        if (this.htmlBlock_.minDisplayGroupSize)
-            this.minDisplayGroupSize = this.htmlBlock_.minDisplayGroupSize;
+        __classPrivateFieldSet(this, _htmlBlock_, htmlblock);
+        if (__classPrivateFieldGet(this, _htmlBlock_).dim)
+            this.dim = __classPrivateFieldGet(this, _htmlBlock_).dim;
+        if (__classPrivateFieldGet(this, _htmlBlock_).minDisplayGroupSize)
+            this.minDisplayGroupSize = __classPrivateFieldGet(this, _htmlBlock_).minDisplayGroupSize;
     }
-    get displaygroup() { return this.displaygroup_; }
+    get displaygroup() { return __classPrivateFieldGet(this, _displaygroup_); }
     set displaygroup(displaygroup) {
-        this.displaygroup_ = displaygroup;
-        if (this.displaygroup_.dim)
-            this.dim = this.displaygroup_.dim;
+        __classPrivateFieldSet(this, _displaygroup_, displaygroup);
+        if (__classPrivateFieldGet(this, _displaygroup_).dim)
+            this.dim = __classPrivateFieldGet(this, _displaygroup_).dim;
     }
     get minDisplayGroupSize() { return (this.minDisplayGroupSize_) ? this.minDisplayGroupSize_ : DisplayCell.minDisplayGroupSize; }
     set minDisplayGroupSize(size) { this.minDisplayGroupSize = size; }
@@ -670,6 +690,7 @@ class DisplayCell extends Base {
         this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) });
     }
 }
+_htmlBlock_ = new WeakMap(), _displaygroup_ = new WeakMap();
 DisplayCell.instances = [];
 DisplayCell.activeInstances = [];
 DisplayCell.minDisplayGroupSize = 200; // copied from htmlblock
@@ -2562,6 +2583,41 @@ Observe.argMap = {
     DisplayCell: ["parentDisplayCell"],
 };
 Observe.Os_ScrollbarSize = 15;
+class ToolBar extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        ToolBar.makeLabel(this);
+        this.spacer = I(`${this.label}_toolbar_spacer`);
+        if ("DisplayCell" in this.retArgs)
+            this.displaycells = this.retArgs["DisplayCell"];
+        if (!this.rootDisplayCell)
+            this.build();
+    }
+    build() {
+        this.rootDisplayCell =
+            P(`${this.label}_toolbar_Pages`, this.sizeFunction);
+        // h(`${this.label}_toolbar_h`, `${this.sizePx}px`,
+        //     spacer
+        // );
+    }
+    sizeFunction(thisPages) {
+        // let [x, y] = pf.viewport();
+        // if (x > 920) slideMenu.pop();
+        // // if (returnValue != thisPages.currentPage) {}
+        // return (x > 920) ? 0 : 1;
+        return 0;
+    }
+}
+ToolBar.labelNo = 0;
+ToolBar.instances = [];
+ToolBar.activeInstances = [];
+ToolBar.defaults = { sizePx: 25, isDocked: false, };
+ToolBar.argMap = {
+    string: ["label"],
+    // DisplayCell : see constructor,
+    number: ["sizePx"],
+};
 class bCss {
 }
 bCss.bgLight = css("bgLight", `background: #dcedf0`);

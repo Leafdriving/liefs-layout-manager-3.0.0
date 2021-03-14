@@ -30,18 +30,18 @@ class Coord extends Base {
 
     label:string;
 
-    x_: number;
-    get x() {return this.x_ + ((this.offset) ? this.offset.x : 0);}
-    set x(x) {this.x_ = x}
-    y_: number;
-    get y() {return this.y_ + ((this.offset) ? this.offset.y : 0);}
-    set y(y) {this.y_ = y}
-    width_: number;
-    get width() {return this.width_ + ((this.offset) ? this.offset.width : 0);}
-    set width(width) {this.width_ = width}
-    height_: number;
-    get height() {return this.height_ + ((this.offset) ? this.offset.height : 0);}
-    set height(height) {this.height_ = height}
+    #x_: number;
+    get x() {return this.#x_ + ((this.offset) ? this.offset.x : 0);}
+    set x(x) {this.#x_ = x}
+    #y_: number;
+    get y() {return this.#y_ + ((this.offset) ? this.offset.y : 0);}
+    set y(y) {this.#y_ = y}
+    #width_: number;
+    get width() {return this.#width_ + ((this.offset) ? this.offset.width : 0);}
+    set width(width) {this.#width_ = width}
+    #height_: number;
+    get height() {return this.#height_ + ((this.offset) ? this.offset.height : 0);}
+    set height(height) {this.#height_ = height}
 
     zindex: number;
     within: Within = new Within();

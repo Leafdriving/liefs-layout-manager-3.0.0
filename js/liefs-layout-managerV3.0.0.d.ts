@@ -108,6 +108,7 @@ interface Offset {
     height: number;
 }
 declare class Coord extends Base {
+    #private;
     static instances: Coord[];
     static activeInstances: Coord[];
     static defaults: {
@@ -129,16 +130,12 @@ declare class Coord extends Base {
         number: string[];
     };
     label: string;
-    x_: number;
     get x(): number;
     set x(x: number);
-    y_: number;
     get y(): number;
     set y(y: number);
-    width_: number;
     get width(): number;
     set width(width: number);
-    height_: number;
     get height(): number;
     set height(height: number);
     zindex: number;
@@ -214,6 +211,7 @@ declare class Events extends Base {
 }
 declare function events(...arguments: any): Events;
 declare class DisplayCell extends Base {
+    #private;
     static instances: DisplayCell[];
     static activeInstances: DisplayCell[];
     static minDisplayGroupSize: number;
@@ -230,10 +228,8 @@ declare class DisplayCell extends Base {
     };
     label: string;
     coord: Coord;
-    htmlBlock_: HtmlBlock;
     get htmlBlock(): HtmlBlock;
     set htmlBlock(htmlblock: HtmlBlock);
-    displaygroup_: DisplayGroup;
     get displaygroup(): DisplayGroup;
     set displaygroup(displaygroup: DisplayGroup);
     overlays: Overlay[];
@@ -801,4 +797,27 @@ declare class Observe extends Base {
     static derender(displaycell: DisplayCell): void;
     static onScroll(event: WheelEvent): void;
     static update(): void;
+}
+declare class ToolBar extends Base {
+    static labelNo: number;
+    static instances: ToolBar[];
+    static activeInstances: ToolBar[];
+    static defaults: {
+        sizePx: number;
+        isDocked: boolean;
+    };
+    static argMap: {
+        string: string[];
+        number: string[];
+    };
+    label: string;
+    sizePx: number;
+    rootDisplayCell: DisplayCell;
+    displaycells: DisplayCell[];
+    spacer: DisplayCell;
+    modal: Modal;
+    isDocked: boolean;
+    constructor(...Arguments: any);
+    build(): void;
+    sizeFunction(thisPages: Pages): number;
 }
