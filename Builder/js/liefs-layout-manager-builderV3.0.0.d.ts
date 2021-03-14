@@ -644,10 +644,6 @@ declare class Modal extends Base {
     headerHeight: number;
     optionsHeight: number;
     footerHeight: number;
-    minWidth: number;
-    minHeight: number;
-    maxWidth: number;
-    maxHeight: number;
     showHeader: boolean;
     showClose: boolean;
     showFooter: boolean;
@@ -668,6 +664,7 @@ declare class Modal extends Base {
     build(): void;
     show(): void;
     hide(): void;
+    static preRenderCallback(handler: Handler): void;
     static startMoveModal(handler: Handler): void;
     static moveModal(handler: Handler, offset: object): void;
 }
@@ -675,17 +672,36 @@ declare class Stretch extends Base {
     static labelNo: number;
     static instances: Stretch[];
     static activeInstances: Stretch[];
-    static defaults: {};
+    static defaults: {
+        pxSize: number;
+        minWidth: number;
+        minHeight: number;
+    };
     static argMap: {
         string: string[];
         Modal: string[];
     };
+    static NWcss: Css;
+    static NEcss: Css;
+    static startCoord: Coord;
+    static corner: string;
+    label: string;
     parentModal: Modal;
     parentDisplaycell: DisplayCell;
+    pxSize: number;
+    UL: DisplayCell;
+    UR: DisplayCell;
+    LL: DisplayCell;
+    LR: DisplayCell;
+    minWidth: number;
+    minHeight: number;
+    maxWidth: number;
+    maxHeight: number;
+    events(corner: string): Events;
     constructor(...Arguments: any);
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
-declare function stretch(...Arguments: any): DisplayCell;
+declare function stretch(...Arguments: any): DisplayCell | Modal;
 declare class TreeNode extends Base {
     static instances: TreeNode[];
     static activeInstances: TreeNode[];

@@ -1888,10 +1888,8 @@ class Modal extends Base {
             this.coord.within.width = vpX;
             this.coord.within.height = vpY;
         }
-        if (!this.minWidth)
-            this.minWidth = this.coord.width;
-        if (!this.minHeight)
-            this.minHeight = this.coord.height;
+        // if (!this.minWidth) this.minWidth = this.coord.width;
+        // if (!this.minHeight) this.minHeight = this.coord.height;
         if (!this.bodyCell) {
             this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);
         }
@@ -1972,7 +1970,7 @@ class Modal extends Base {
         this.buildFooter();
         this.buildOptions();
         this.buildFull();
-        this.handler = H(`${this.label}_h`, v(this.fullCell), this.coord, false);
+        this.handler = H(`${this.label}_h`, v(this.fullCell), this.coord, false, Modal.preRenderCallback);
     }
     show() {
         Handler.activate(this.handler);
@@ -1980,6 +1978,22 @@ class Modal extends Base {
     }
     hide() {
         this.handler.pop();
+    }
+    static preRenderCallback(handler) {
+        let [vpX, vpY] = pf.viewport();
+        let coord = handler.coord;
+        if (coord.x + coord.width > vpX)
+            coord.x = vpX - coord.width;
+        if (coord.x < 0) {
+            coord.width += coord.x;
+            coord.x = 0;
+        }
+        if (coord.y + coord.height > vpY)
+            coord.y = vpY - coord.height;
+        if (coord.y < 0) {
+            coord.height += coord.y;
+            coord.y = 0;
+        }
     }
     static startMoveModal(handler) {
         handler.toTop();
@@ -2026,28 +2040,160 @@ class Stretch extends Base {
         this.buildBase(...Arguments);
         if (!this.parentDisplaycell && this.parentModal)
             this.parentDisplaycell = this.parentModal.fullCell;
+        this.UL = I(`${this.label}_UL`, Stretch.NWcss, this.events("UL"));
+        this.UR = I(`${this.label}_UR`, Stretch.NEcss, this.events("UR"));
+        this.LL = I(`${this.label}_LL`, Stretch.NEcss, this.events("LL"));
+        this.LR = I(`${this.label}_LR`, Stretch.NWcss, this.events("LR"));
         Stretch.makeLabel(this);
     }
+    events(corner) {
+        let THIS = this;
+        return events({ ondrag: { onDown: function (mouseDiff) {
+                    let coord = (THIS.parentModal) ? THIS.parentModal.handler.coord : THIS.parentDisplaycell.coord;
+                    Stretch.startCoord.copy(coord);
+                    Stretch.corner = corner;
+                }, onMove: function (diff) {
+                    let [vpX, vpY] = pf.viewport();
+                    let coord = (THIS.parentModal) ? THIS.parentModal.handler.coord : THIS.parentDisplaycell.coord;
+                    let ssc = Stretch.startCoord;
+                    let x, y, width, height;
+                    switch (Stretch.corner) {
+                        case "UL":
+                            width = ssc.width - diff.x;
+                            if (width < THIS.minWidth) {
+                                diff.x -= (THIS.minWidth - width);
+                                width = THIS.minWidth;
+                            }
+                            height = ssc.height - diff.y;
+                            if (height < THIS.minHeight) {
+                                diff.y -= (THIS.minHeight - height);
+                                height = THIS.minHeight;
+                            }
+                            x = ssc.x + diff.x;
+                            if (x < 0) {
+                                width += x;
+                                x = 0;
+                            }
+                            y = ssc.y + diff.y;
+                            if (y < 0) {
+                                height += y;
+                                y = 0;
+                            }
+                            break;
+                        case "UR":
+                            x = ssc.x;
+                            width = ssc.width + diff.x;
+                            if (width < THIS.minWidth) {
+                                diff.x -= (THIS.minWidth - width);
+                                width = THIS.minWidth;
+                            }
+                            if (x + width > vpX) {
+                                width += (vpX - (x + width));
+                            }
+                            height = ssc.height - diff.y;
+                            if (height < THIS.minHeight) {
+                                diff.y -= (THIS.minHeight - height);
+                                height = THIS.minHeight;
+                            }
+                            y = ssc.y + diff.y;
+                            if (y < 0) {
+                                height += y;
+                                y = 0;
+                            }
+                            break;
+                        case "LL":
+                            width = ssc.width - diff.x;
+                            if (width < THIS.minWidth) {
+                                diff.x -= (THIS.minWidth - width);
+                                width = THIS.minWidth;
+                            }
+                            x = ssc.x + diff.x;
+                            if (x < 0) {
+                                width += x;
+                                x = 0;
+                            }
+                            y = ssc.y;
+                            height = ssc.height + diff.y;
+                            if (height < THIS.minHeight) {
+                                diff.y -= (THIS.minHeight - height);
+                                height = THIS.minHeight;
+                            }
+                            if (height + y > vpY) {
+                                height = vpY - y;
+                            }
+                            break;
+                        case "LR":
+                            x = ssc.x;
+                            y = ssc.y;
+                            width = ssc.width + diff.x;
+                            if (width < THIS.minWidth)
+                                width = THIS.maxWidth;
+                            if (width + x > vpX)
+                                width = vpX - x;
+                            height = ssc.height + diff.y;
+                            if (height < THIS.minHeight)
+                                height = THIS.maxHeight;
+                            if (height + y > vpY)
+                                height = vpY - y;
+                            break;
+                        default:
+                            break;
+                    }
+                    coord.assign(x, y, width, height);
+                    Handler.update();
+                },
+            } });
+    }
+    ;
     render(displaycell, parentDisplaygroup, index, derender) {
-        console.log("RenderStretch!");
+        if (!derender) {
+            let coord = this.parentDisplaycell.coord;
+            this.UL.coord.assign(coord.x, coord.y, this.pxSize, this.pxSize, coord.within.x, coord.within.y, coord.within.width, coord.within.height, coord.zindex + Handler.zindexIncrement);
+            this.UR.coord.assign(coord.x + coord.width - this.pxSize + 1, coord.y, this.pxSize, this.pxSize, coord.within.x, coord.within.y, coord.within.width, coord.within.height, coord.zindex + Handler.zindexIncrement);
+            this.LL.coord.assign(coord.x, coord.y + coord.height - this.pxSize + 1, this.pxSize, this.pxSize, coord.within.x, coord.within.y, coord.within.width, coord.within.height, coord.zindex + Handler.zindexIncrement);
+            this.LR.coord.assign(coord.x + coord.width - this.pxSize + 1, coord.y + coord.height - this.pxSize + 1, this.pxSize, this.pxSize, coord.within.x, coord.within.y, coord.within.width, coord.within.height, coord.zindex + Handler.zindexIncrement);
+        }
+        let array = [this.UL, this.UR, this.LL, this.LR];
+        for (let index = 0; index < array.length; index++)
+            Handler.renderDisplayCell(array[index], undefined, undefined, derender);
     }
 }
 Stretch.labelNo = 0;
 Stretch.instances = [];
 Stretch.activeInstances = [];
-Stretch.defaults = {};
+Stretch.defaults = {
+    pxSize: 10, minWidth: 200, minHeight: 200,
+};
 Stretch.argMap = {
     string: ["label"],
     Modal: ["parentModal"],
 };
+Stretch.NWcss = new Css("NWcss", `cursor: nw-resize;`);
+Stretch.NEcss = new Css("NEcss", `cursor: ne-resize;`);
+Stretch.startCoord = new Coord();
 function stretch(...Arguments) {
     let overlay = new Overlay("Stretch", ...Arguments);
     let newStretch = overlay.returnObj;
     let parentDisplaycell = newStretch.parentDisplaycell;
     parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
+    return (newStretch.parentModal) ? newStretch.parentModal : parentDisplaycell;
 }
 Overlay.classes["Stretch"] = Stretch;
+// events({ondrag: {onDown :function(xmouseDiff:object){
+//     if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
+//         dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
+//     }
+//     dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplaycell.dim);
+// },
+// onMove :function(xmouseDiff:object){
+//     let newdim = dragbar.startpos + ((dragbar.ishor) ? xmouseDiff["x"]: xmouseDiff["y"])*((dragbar.isLast) ? -1 :1);
+//     if (newdim > dragbar.max) newdim = dragbar.max;
+//     if (newdim < dragbar.min) newdim = dragbar.min;
+//     dragbar.parentDisplaycell.dim = `${newdim}px`;
+//     Handler.update();
+// },
+// // onUp: function(ouxmouseDifftput:object){}
+// } })
 class TreeNode extends Base {
     constructor(...Arguments) {
         super();
