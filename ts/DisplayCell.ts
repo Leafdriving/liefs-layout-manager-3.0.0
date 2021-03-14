@@ -53,7 +53,7 @@ class DisplayCell extends Base {
         if (!this.label)
             this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
                             : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
-                                : undefined
+                                : (this.pages) ? this.pages.label + "_DisplayCell" : undefined
         if (this.htmlBlock && this.htmlBlock.hideWidth)
             this.coord = new Coord(this.label, true);
         else

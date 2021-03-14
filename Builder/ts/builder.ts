@@ -87,9 +87,9 @@ H("Client Window",
 );
 
 let TOOLBAR = tool_bar("Main_toolbar",
-I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
-I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
-I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
+  I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
+  I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
+  I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
 );
 
 let mainHandler = H("Main Window", 4,
@@ -100,7 +100,7 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
     // I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue),
-    TOOLBAR,
+    TOOLBAR,                                             /// put toolbar back here!
     h("Tree_Body", 5,
       tree("Display",
         dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),

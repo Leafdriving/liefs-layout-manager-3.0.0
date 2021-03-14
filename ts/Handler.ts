@@ -15,6 +15,7 @@ class Handler extends Base {
         function: ["preRenderCallback", "postRenderCallback"],
         boolean: ["addThisHandlerToStack"]
     }
+    static screenSizeCoord: Coord = new Coord();
     static renderNullObjects:boolean = false;
     static argCustomTypes:Function[] = [];
     static handlerZindexStart:number = 1;
@@ -35,6 +36,7 @@ class Handler extends Base {
 
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
+        Handler.updateScreenSize();
 
         if ("DisplayCell" in this.retArgs) this.rootCell = this.retArgs["DisplayCell"][0];
         else pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
@@ -82,9 +84,14 @@ class Handler extends Base {
                                 handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2,Handler.currentZindex);
         //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
     }
+    static updateScreenSize() {
+        let [width, height] = pf.viewport();
+        Handler.screenSizeCoord.assign(0,0,width,height,0,0,width,height,0)
+    }
 
     static update(ArrayofHandlerInstances:Handler[] = Handler.activeInstances, instanceNo:number = 0, derender:boolean = false){
         // console.log("Update Fired");
+        Handler.updateScreenSize();
         Handler.renderAgain = false;
         Pages.activePages = [];
         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;

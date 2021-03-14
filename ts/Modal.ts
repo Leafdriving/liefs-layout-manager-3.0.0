@@ -57,7 +57,10 @@ class Modal extends Base {
             this.coord.within.width = vpX;
             this.coord.within.height = vpY;
         }
-        if (!this.withinCoord) {this.withinCoord = Handler.activeInstances[0].rootCell.coord;}
+        if (!this.withinCoord) {
+            this.withinCoord = (Handler.activeInstances.length) ? Handler.activeInstances[0].rootCell.coord
+                                                                : Handler.screenSizeCoord;
+        }
 
         if (!this.fullCell) {
             if (!this.bodyCell){this.bodyCell = I(this.label, this.innerHTML, Modal.bodyCss);}
@@ -65,6 +68,7 @@ class Modal extends Base {
             Modal.makeLabel(this); // see Base.ts
             this.build();
         }
+        this.handler = H(`${this.label}_h`,v(this.fullCell),this.coord, false, this.preRenderCallback.bind(this));
     }
     setSize(...numbers:number[]) {
         let [vpX, vpY] = pf.viewport();
@@ -148,8 +152,6 @@ class Modal extends Base {
         this.buildFooter();
         this.buildOptions();
         this.buildFull();
-        this.handler = H(`${this.label}_h`,v(this.fullCell),
-                          this.coord, false, this.preRenderCallback.bind(this))
     }
     show(){
         Handler.activate(this.handler);

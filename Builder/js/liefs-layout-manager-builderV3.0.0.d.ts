@@ -297,6 +297,7 @@ declare class Handler extends Base {
         function: string[];
         boolean: string[];
     };
+    static screenSizeCoord: Coord;
     static renderNullObjects: boolean;
     static argCustomTypes: Function[];
     static handlerZindexStart: number;
@@ -317,6 +318,7 @@ declare class Handler extends Base {
     toTop(): void;
     static pop(handlerInstance?: Handler): Handler;
     static screensizeToCoord(dislaycell: DisplayCell, handlerMargin: number): void;
+    static updateScreenSize(): void;
     static update(ArrayofHandlerInstances?: Handler[], instanceNo?: number, derender?: boolean): void;
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
     static renderDisplayGroup(parentDisplaycell: DisplayCell, derender: boolean): void;
@@ -804,16 +806,19 @@ declare class ToolBar extends Base {
     static labelNo: number;
     static instances: ToolBar[];
     static activeInstances: ToolBar[];
+    static llm_checker: Css;
     static defaults: {
         sizePx: number;
         isDocked: boolean;
+        isHor: boolean;
     };
     static argMap: {
         string: string[];
         number: string[];
     };
-    static llm_checker: Css;
+    static triggerUndockDistance: number;
     label: string;
+    type: string;
     sizePx: number;
     parentDisplayGroup: DisplayGroup;
     rootDisplayCell: DisplayCell;
@@ -823,8 +828,21 @@ declare class ToolBar extends Base {
     vBar: DisplayCell;
     modal: Modal;
     isDocked: boolean;
+    isHor: boolean;
+    coord: Coord;
     constructor(...Arguments: any);
+    static startMoveToolbar(THIS: ToolBar, handler: Handler): void;
+    static moveToolbar(THIS: ToolBar, handler: Handler, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static undock(THIS: ToolBar, handler: Handler, offset: {
+        x: number;
+        y: number;
+    }): void;
     build(): void;
+    makeModal(): void;
+    setModalSize(): [number, number];
     sizeFunction(thisPages: Pages): number;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
