@@ -1,3 +1,5 @@
+import { SVG } from "@svgdotjs/svg.js";
+
 class Builder {
     constructor(){
     }
@@ -162,11 +164,4 @@ let mainHandler = H("Main Window", 4,
   )
 );
 Handler.activate(clientHandler);
-
-
-
-
-
-
-
 }

@@ -7,6 +7,9 @@
         "target" : "es6",
         "module" :"amd",
     },
+    "include": [
+        "./svgjs/svg.js.d.ts",
+    ],
     "files": [
         "../ts/Base.ts",
         "../ts/FunctionStack.ts",        
