@@ -1,13 +1,61 @@
 class Builder {
     constructor(){
     }
+    static hoverModalDisplayCell: DisplayCell = I("hoverModal", bCss.bgBlack)
+    static hoverModal: Modal = new Modal("hoverModal", {fullCell: Builder.hoverModalDisplayCell});
+
+    static HandlerMouseOver(mouseEvent:MouseEvent){
+      let el:HTMLDivElement = this as unknown as HTMLDivElement;
+      let coord = Handler.byLabel(el.innerHTML).coord;
+      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+      Builder.hoverModal.show();
+    }
+    static HandlerMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    static HandlerEvent = events({onmouseover: Builder.HandlerMouseOver,
+                                  onmouseleave: Builder.HandlerMouseLeave});
+
+
+    static DisplayGroupMouseOver(event:MouseEvent){
+      let el:HTMLDivElement = this as unknown as HTMLDivElement;
+      let coord = DisplayGroup.byLabel(el.innerHTML).coord;
+      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+      Builder.hoverModal.show();
+    }
+    static DisplayGroupMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    static DisplayGroupEvent = events({onmouseover: Builder.DisplayGroupMouseOver,
+                                  onmouseleave: Builder.DisplayGroupMouseLeave});
+
+
+
+    static PagesMouseOver(event:MouseEvent){
+      let el:HTMLDivElement = this as unknown as HTMLDivElement;
+      let coord = DisplayCell.byLabel(el.innerHTML + "_DisplayCell").coord;
+      // console.log(Pages.byLabel(el.innerHTML+"_DisplayCell"))
+      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+      Builder.hoverModal.show();
+    }
+    static PagesMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    static PagesEvent = events({onmouseover: Builder.PagesMouseOver,
+                                  onmouseleave: Builder.PagesMouseLeave});
+
+
+
+    static htmlBlockMouseOver(event:MouseEvent){
+      let el:HTMLDivElement = this as unknown as HTMLDivElement;
+      let coord = DisplayCell.byLabel(el.innerHTML).coord;
+      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+      Builder.hoverModal.show();
+    }
+    static htmlBlockMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    static htmlBlockEvent = events({onmouseover: Builder.htmlBlockMouseOver,
+                                  onmouseleave: Builder.htmlBlockMouseLeave});
+
+
     static updateTree(handler:Handler){
-      let returnString = `TI("${handler.label}", bCss.handlerSVG ,[\n`;
-      // console.log("Updating Tree");
+      let returnString = `TI("${handler.label}", bCss.handlerSVG ,Builder.HandlerEvent ,[\n`;
       returnString += Builder.DC(handler.rootCell, "\t");
       returnString += "])"
       let treeOfNodes:t_ = eval(returnString)
-      // console.log(treeOfNodes)
       return treeOfNodes;
     }
     static DC(displaycell:DisplayCell, indent:string) {
@@ -18,10 +66,10 @@ class Builder {
       return returnString;
     }
     static HB(htmlblock:HtmlBlock, indent:string) {
-      return indent + `TI("${htmlblock.label}", bCss.ISVG),\n`
+      return indent + `TI("${htmlblock.label}", bCss.ISVG, Builder.htmlBlockEvent),\n`
     }
     static DG(displaygroup: DisplayGroup, indent:string){
-      let returnString = indent + `TI("${displaygroup.label}", ${(displaygroup.ishor) ? "bCss.hSVG" :"bCss.vSVG"} ,[\n`
+      let returnString = indent + `TI("${displaygroup.label}", ${(displaygroup.ishor) ? "bCss.hSVG" :"bCss.vSVG"} , Builder.DisplayGroupEvent ,[\n`
       for (let index = 0; index < displaygroup.cellArray.length; index++) {
         const displaycell = displaygroup.cellArray[index];
         returnString += Builder.DC(displaycell, indent + "\t")
@@ -31,7 +79,7 @@ class Builder {
     }
     static PG(pages:Pages, indent:string) {
       // console.log("Here");
-      let returnString = indent + `TI("${pages.label}", bCss.pagesSVG ,[\n`
+      let returnString = indent + `TI("${pages.label}", bCss.pagesSVG ,Builder.PagesEvent,[\n`
       for (let index = 0; index < pages.displaycells.length; index++) {
         const displaycell = pages.displaycells[index];
         returnString += Builder.DC(displaycell, indent + "\t")

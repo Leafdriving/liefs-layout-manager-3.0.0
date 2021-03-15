@@ -3,6 +3,10 @@ class bCss{
     static bgGreen = css("bgGreen",`background: green;`);
     static bgBlue = css("bgBlue",`background: blue;`);
     static bgCyan = css("bgCyan",`background: cyan;`);
+    static bgBlack = css("bgBlack",`background: black;
+                                    opacity:0.5;
+                                    box-sizing: border-box;
+                                    border: 10px solid red;`);
     static menuItem = css("menuItem", `background: white;
                                        color: black;
                                        cursor: default;

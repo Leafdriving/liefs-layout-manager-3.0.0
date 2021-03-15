@@ -2627,14 +2627,12 @@ class Dockable extends Base {
                 newCoord.copy(displaycell1.coord);
                 newCoord.assign(undefined, displaycell1.coord.height - toolbar.sizePx, undefined, toolbar.sizePx);
                 this.dropZones.push(newCoord);
-                // console.log("DropZones Created", this.dropZones)
             }
             for (let index = 0; index < this.dropZones.length; index++) {
                 let dropCoord = this.dropZones[index];
                 if (!toolbar.rootDisplayCell.coord.isCoordCompletelyOutside(dropCoord)) {
                     if (Dockable.open == undefined) {
                         Dockable.open = index;
-                        // console.log("open", index);
                         this.dummy.dim = `${toolbar.sizePx}px`;
                         cellArray.splice(index, 0, this.dummy);
                     }
@@ -2642,7 +2640,6 @@ class Dockable extends Base {
                 else {
                     if (index == Dockable.open) {
                         Dockable.open = undefined;
-                        // console.log("Closed!")
                         cellArray.splice(index, 1);
                     }
                 }
@@ -2658,7 +2655,6 @@ class Dockable extends Base {
                     toolbar.modal.hide();
                     Handler.update();
                 }
-                // console.log("DropZones Deleted");
                 this.dropZones = undefined;
             }
         }
@@ -2681,7 +2677,6 @@ function dockable(...Arguments) {
 }
 Overlay.classes["Dockable"] = Dockable;
 class ToolBar extends Base {
-    // page: Pages;
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -2711,9 +2706,6 @@ class ToolBar extends Base {
         Handler.update();
     }
     static undock(THIS, handler, offset) {
-        //console.log("Undock!");
-        // console.log(THIS.parentDisplayGroup)
-        // console.log( THIS.parentDisplayGroup.cellArray.indexOf(THIS.rootDisplayCell) )
         let index = THIS.parentDisplayGroup.cellArray.indexOf(THIS.rootDisplayCell);
         if (index > -1)
             THIS.parentDisplayGroup.cellArray.splice(index, 1); // pop from previous DisplayGroup
@@ -2723,7 +2715,6 @@ class ToolBar extends Base {
         let [width, height] = THIS.setModalSize();
         let x = THIS.rootDisplayCell.coord.x + offset.x;
         let y = THIS.rootDisplayCell.coord.y + offset.y;
-        // console.log(x, y, width, height)
         THIS.modal.setSize(x, y, width, height);
         THIS.modal.show();
     }
@@ -2758,12 +2749,8 @@ class ToolBar extends Base {
             P(`${this.label}_toolbar_Pages`, `${this.sizePx}px`, this.hBar, this.vBar, this.sizeFunction);
     }
     makeModal() {
-        // this.modal = new Modal("hi","inner","title","footer");
         this.modal =
             new Modal(`${this.label}_modal`, { fullCell: this.rootDisplayCell }, ...(this.setModalSize()));
-        // setTimeout(() => {
-        //     this.modal.show();    
-        // }, 0);
     }
     setModalSize() {
         let width = (this.isHor) ? this.displaycells.length * this.sizePx : this.sizePx;
@@ -2808,12 +2795,10 @@ ToolBar.argMap = {
 ToolBar.triggerUndockDistance = 15;
 ToolBar.isMoving = false;
 function tool_bar(...Arguments) {
-    // console.log("start");
     let overlay = new Overlay("ToolBar", ...Arguments);
     let newToolBar = overlay.returnObj;
     let parentDisplaycell = newToolBar.rootDisplayCell;
     parentDisplaycell.addOverlay(overlay);
-    // console.log("parentDisplayCell",parentDisplaycell);
     return parentDisplaycell;
 }
 Overlay.classes["ToolBar"] = ToolBar;
@@ -2823,6 +2808,10 @@ bCss.bgLight = css("bgLight", `background: #dcedf0`);
 bCss.bgGreen = css("bgGreen", `background: green;`);
 bCss.bgBlue = css("bgBlue", `background: blue;`);
 bCss.bgCyan = css("bgCyan", `background: cyan;`);
+bCss.bgBlack = css("bgBlack", `background: black;
+                                    opacity:0.5;
+                                    box-sizing: border-box;
+                                    border: 10px solid red;`);
 bCss.menuItem = css("menuItem", `background: white;
                                        color: black;
                                        cursor: default;
@@ -2852,13 +2841,40 @@ bCss.pagesSVG = css("pagesSVG", `background-image: url("svg/bookOPT.svg");
 class Builder {
     constructor() {
     }
+    static HandlerMouseOver(mouseEvent) {
+        let el = this;
+        let coord = Handler.byLabel(el.innerHTML).coord;
+        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+        Builder.hoverModal.show();
+    }
+    static HandlerMouseLeave(event) { Builder.hoverModal.hide(); }
+    static DisplayGroupMouseOver(event) {
+        let el = this;
+        let coord = DisplayGroup.byLabel(el.innerHTML).coord;
+        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+        Builder.hoverModal.show();
+    }
+    static DisplayGroupMouseLeave(event) { Builder.hoverModal.hide(); }
+    static PagesMouseOver(event) {
+        let el = this;
+        let coord = DisplayCell.byLabel(el.innerHTML + "_DisplayCell").coord;
+        // console.log(Pages.byLabel(el.innerHTML+"_DisplayCell"))
+        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+        Builder.hoverModal.show();
+    }
+    static PagesMouseLeave(event) { Builder.hoverModal.hide(); }
+    static htmlBlockMouseOver(event) {
+        let el = this;
+        let coord = DisplayCell.byLabel(el.innerHTML).coord;
+        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+        Builder.hoverModal.show();
+    }
+    static htmlBlockMouseLeave(event) { Builder.hoverModal.hide(); }
     static updateTree(handler) {
-        let returnString = `TI("${handler.label}", bCss.handlerSVG ,[\n`;
-        // console.log("Updating Tree");
+        let returnString = `TI("${handler.label}", bCss.handlerSVG ,Builder.HandlerEvent ,[\n`;
         returnString += Builder.DC(handler.rootCell, "\t");
         returnString += "])";
         let treeOfNodes = eval(returnString);
-        // console.log(treeOfNodes)
         return treeOfNodes;
     }
     static DC(displaycell, indent) {
@@ -2872,10 +2888,10 @@ class Builder {
         return returnString;
     }
     static HB(htmlblock, indent) {
-        return indent + `TI("${htmlblock.label}", bCss.ISVG),\n`;
+        return indent + `TI("${htmlblock.label}", bCss.ISVG, Builder.htmlBlockEvent),\n`;
     }
     static DG(displaygroup, indent) {
-        let returnString = indent + `TI("${displaygroup.label}", ${(displaygroup.ishor) ? "bCss.hSVG" : "bCss.vSVG"} ,[\n`;
+        let returnString = indent + `TI("${displaygroup.label}", ${(displaygroup.ishor) ? "bCss.hSVG" : "bCss.vSVG"} , Builder.DisplayGroupEvent ,[\n`;
         for (let index = 0; index < displaygroup.cellArray.length; index++) {
             const displaycell = displaygroup.cellArray[index];
             returnString += Builder.DC(displaycell, indent + "\t");
@@ -2885,7 +2901,7 @@ class Builder {
     }
     static PG(pages, indent) {
         // console.log("Here");
-        let returnString = indent + `TI("${pages.label}", bCss.pagesSVG ,[\n`;
+        let returnString = indent + `TI("${pages.label}", bCss.pagesSVG ,Builder.PagesEvent,[\n`;
         for (let index = 0; index < pages.displaycells.length; index++) {
             const displaycell = pages.displaycells[index];
             returnString += Builder.DC(displaycell, indent + "\t");
@@ -2894,6 +2910,16 @@ class Builder {
         return returnString;
     }
 }
+Builder.hoverModalDisplayCell = I("hoverModal", bCss.bgBlack);
+Builder.hoverModal = new Modal("hoverModal", { fullCell: Builder.hoverModalDisplayCell });
+Builder.HandlerEvent = events({ onmouseover: Builder.HandlerMouseOver,
+    onmouseleave: Builder.HandlerMouseLeave });
+Builder.DisplayGroupEvent = events({ onmouseover: Builder.DisplayGroupMouseOver,
+    onmouseleave: Builder.DisplayGroupMouseLeave });
+Builder.PagesEvent = events({ onmouseover: Builder.PagesMouseOver,
+    onmouseleave: Builder.PagesMouseLeave });
+Builder.htmlBlockEvent = events({ onmouseover: Builder.htmlBlockMouseOver,
+    onmouseleave: Builder.htmlBlockMouseLeave });
 // let treeOfNodes:t_ = 
 // TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
 //     [TI("Installation", Pages.button("PAGES",1) ),
