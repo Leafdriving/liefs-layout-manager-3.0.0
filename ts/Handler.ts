@@ -7,6 +7,7 @@ class Handler extends Base {
         cssString : " ",
         addThisHandlerToStack: true,
         controlledBySomething: false,
+        activeOffset: false,
     }
     static argMap = {
         string : ["label"],
@@ -23,6 +24,7 @@ class Handler extends Base {
     static handlerZindexIncrement:number = 100;
     static currentZindex:number;
     static renderAgain:boolean;
+    static activeOffset: boolean;
 
     label:string;
     rootCell:DisplayCell = undefined;
@@ -115,6 +117,7 @@ class Handler extends Base {
     }
 
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
+        if (displaycell.coord.offset) Handler.activeOffset = true;
         if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         if (derender) Observe.derender(displaycell);
         let pages = displaycell.pages;
@@ -160,6 +163,7 @@ class Handler extends Base {
         }
         // if (derender) displaycell.coord.within.reset();
         if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
+        if (displaycell.coord.offset) Handler.activeOffset = false;
     }
 
     static renderDisplayGroup(parentDisplaycell: DisplayCell, derender:boolean) {

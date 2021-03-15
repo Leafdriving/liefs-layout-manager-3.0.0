@@ -1,3 +1,91 @@
+class Dockable extends Base {
+    static labelNo = 0;
+    static instances:Dockable[] = [];
+    static activeInstances:Dockable[] = [];
+    static defaults = { type:"All", }
+    static argMap = {
+        string : ["label", "type"],
+        DisplayCell: ["rootDisplayCell"],
+    }
+    // retArgs:ArgsObj;   // <- this will appear
+
+    static open:number; //number of dropZone Active
+    static activeToolbar:ToolBar;
+    dummy:DisplayCell;
+    label: string;
+    type: string;
+    rootDisplayCell: DisplayCell;
+    displaygroup: DisplayGroup;
+    dropZones: Coord[];
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
+        if (this.rootDisplayCell) this.displaygroup = this.rootDisplayCell.displaygroup;
+        Dockable.makeLabel(this);
+        this.dummy = I(`${this.label}_DockableDummy`);
+    }
+    render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+        // console.log("Moving?", ToolBar.isMoving)
+        if (ToolBar.isMoving && !ToolBar.activeInstace.isDocked ){
+            let toolbar = Dockable.activeToolbar = ToolBar.activeInstace;
+            let cellArray = this.displaygroup.cellArray;
+            if (!this.dropZones) {
+                this.dropZones = [];
+                for (let index = 0; index < cellArray.length; index++) {
+                    let displaycell1  = cellArray[index];
+                    let newCoord = new Coord();
+                    newCoord.copy( displaycell1.coord );
+                    newCoord.assign(undefined, undefined, undefined, toolbar.sizePx);
+                    this.dropZones.push(newCoord);
+                }
+                let displaycell1 = cellArray[cellArray.length-1];
+                let newCoord = new Coord();
+                newCoord.copy( displaycell1.coord );
+                newCoord.assign(undefined, displaycell1.coord.height - toolbar.sizePx, undefined, toolbar.sizePx);
+                this.dropZones.push(newCoord);
+                // console.log("DropZones Created", this.dropZones)
+            }
+            for (let index = 0; index < this.dropZones.length; index++) {
+                let dropCoord = this.dropZones[index];
+                if (!toolbar.rootDisplayCell.coord.isCoordCompletelyOutside(dropCoord)) {
+                    if (Dockable.open == undefined){
+                        Dockable.open = index;
+                        // console.log("open", index);
+                        this.dummy.dim = `${toolbar.sizePx}px`;
+                        cellArray.splice(index, 0, this.dummy);
+                    }
+                } else {
+                    if (index == Dockable.open) {
+                        Dockable.open = undefined;
+                        // console.log("Closed!")
+                        cellArray.splice(index, 1);
+                    }
+                }
+            }
+        } else {
+            if (this.dropZones) {
+                if (Dockable.open != undefined) {
+                    let toolbar = Dockable.activeToolbar;
+                    this.displaygroup.cellArray[Dockable.open] = toolbar.rootDisplayCell;
+                    Dockable.open = undefined;
+                    toolbar.isDocked = true;
+                    toolbar.modal.hide();
+                    Handler.update();
+                }
+                // console.log("DropZones Deleted");
+                this.dropZones = undefined;
+            }
+        }
+    }
+}
+function dockable(...Arguments:any) {
+    let overlay=new Overlay("Dockable", ...Arguments);
+    let newDockable = <Dockable>overlay.returnObj;
+    let parentDisplaycell = newDockable.rootDisplayCell;
+    parentDisplaycell.addOverlay(overlay);
+    return parentDisplaycell;
+}
+Overlay.classes["Dockable"] = Dockable;
+
 class ToolBar extends Base {
     static labelNo = 0;
     static instances:ToolBar[] = [];
@@ -20,13 +108,15 @@ class ToolBar extends Base {
     /* for fun */
     transition-property: background-position, background-size;
     transition-duration: 2s;`)
-    static defaults = { sizePx: 25, isDocked: true, isHor:true}
+    static defaults = { sizePx: 25, isDocked: true, isHor:true, type:"All"}
     static argMap = {
         string : ["label", "type"],
         // DisplayCell : see constructor,
         number: ["sizePx"],
     }
-    static triggerUndockDistance:number =  10;
+    static triggerUndockDistance:number =  15;
+    static isMoving:boolean =  false;
+    static activeInstace: ToolBar;
 
     // retArgs:ArgsObj;   // <- this will appear
     label:string;
@@ -64,13 +154,15 @@ class ToolBar extends Base {
         this.makeModal();
     }
     static startMoveToolbar(THIS: ToolBar, handler:Handler){
-        console.log("Start move Toolbar");
+        Modal.movingInstace = THIS.modal;
     }
     static moveToolbar(THIS: ToolBar, handler: Handler, offset:{x:number, y:number}){
-        // console.log(offset);
+        THIS.rootDisplayCell.coord.setOffset(offset.x, offset.y);
         if ( Math.abs(offset["x"]) > ToolBar.triggerUndockDistance ||  Math.abs(offset["y"]) > ToolBar.triggerUndockDistance){
+            THIS.rootDisplayCell.coord.setOffset();
             ToolBar.undock(THIS, handler, offset);
         }
+        Handler.update();
     }
     static undock(THIS: ToolBar, handler: Handler, offset:{x:number, y:number}){
         //console.log("Undock!");
@@ -85,43 +177,31 @@ class ToolBar extends Base {
         let [width, height] = THIS.setModalSize();
         let x = THIS.rootDisplayCell.coord.x + offset.x;
         let y = THIS.rootDisplayCell.coord.y + offset.y;
-        console.log(x, y, width, height)
+        // console.log(x, y, width, height)
         THIS.modal.setSize(x, y, width, height);
-        // Handler.update(); // maybe remove!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
         THIS.modal.show();
-        
-        
-
-        // THIS.modal.handler.coord.copy(THIS.rootDisplayCell.coord);            // copy Postion from Drag
-        // let [width, height] =  THIS.setModalSize();
-        // let hCoord = THIS.modal.handler.coord;
-        // hCoord.assign(hCoord.x + offset.x, hCoord.y + offset.y, width, height);
-        // THIS.modal.show();
-
-
-
-
-
-
-//////////////////// here!
-
-
-
-
-
-
     }
     build(){
         let THIS = this;
         let checker = I(`${this.label}_checker`, ToolBar.llm_checker, "10px",
                         events({ondrag: {
             onDown : function(){
+                // console.log("onDown");
+                ToolBar.isMoving = true; ToolBar.activeInstace = THIS;
                 return (THIS.isDocked) ? ToolBar.startMoveToolbar(THIS, THIS.modal.handler) : Modal.startMoveModal(THIS.modal.handler);
             },
             onMove : function(offset:{x:number, y:number}) {
                 return (THIS.isDocked) ? ToolBar.moveToolbar(THIS, THIS.modal.handler, offset) : Modal.moveModal(THIS.modal.handler, offset)
-            },                          }}),);
+            },
+            onUp : function(offset:{x:number, y:number}) {
+                // console.log("onUp");
+                ToolBar.isMoving = false; ToolBar.activeInstace = undefined; Modal.movingInstace = undefined;
+                if (THIS.isDocked) {
+                    THIS.rootDisplayCell.coord.setOffset();
+                }
+                Handler.update();
+            }
+                                  }}),);
         this.hBar = h(`${this.label}_hBar`, `${this.sizePx}px`);
         this.vBar = v(`${this.label}_hBar`, `${this.sizePx}px`);
         this.displaycells.unshift(checker);

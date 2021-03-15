@@ -203,6 +203,6 @@ class Coord extends Base {
     newAsAttributeString(){
         return `left: ${this.x}px; top:${this.y}px;`
          +`${ (this.hideWidth) ? "" : "width:" + this.width + "px; " }`
-        +`height:${this.height}px; z-index:${this.zindex + ((this.offset) ? 1 : 0)};${this.newClipStyleString()}`
+        +`height:${this.height}px; z-index:${this.zindex + ((Handler.activeOffset) ? Handler.zindexIncrement*3 : 0)};${this.newClipStyleString()}`
     }
 }

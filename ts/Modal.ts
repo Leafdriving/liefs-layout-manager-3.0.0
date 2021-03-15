@@ -19,6 +19,8 @@ class Modal extends Base {
     }
     static x:number; // used during move Modal
     static y:number; // used during move Modal
+    static offset:{x:number, y:number} // used during move Modal
+    static movingInstace:Modal;    // used during move Modal
     label:string;
     headerTitle:string;
     footerTitle:string;
@@ -112,8 +114,9 @@ class Modal extends Base {
                                 I(`${this.label}_headerTitle`,
                                     this.headerTitle,
                                     Modal.headerCss,
-                                    events({ondrag: {onDown : function(){return Modal.startMoveModal(THIS.handler)},
-                                                     onMove : function(offset:object) {return Modal.moveModal(THIS.handler, offset)},
+                                    events({ondrag: {onDown : function(){Modal.movingInstace = THIS;return Modal.startMoveModal(THIS.handler)},
+                                                     onMove : function(offset:{x:number, y:number}) {return Modal.moveModal(THIS.handler, offset)},
+                                                     onUp : function(offset:{x:number, y:number}) {Modal.movingInstace = undefined}
                                                     }}),
                                 ));
             if (this.showClose) {this.headerCell.displaygroup.cellArray.push(this.buildClose())}
@@ -173,8 +176,10 @@ class Modal extends Base {
         handler.toTop()
         Modal.x = handler.coord.x;
         Modal.y = handler.coord.y;
+
     }
-    static moveModal(handler:Handler, offset:object){
+    static moveModal(handler:Handler, offset:{x:number, y:number}){
+        Modal.offset = offset;
         let vp=pf.viewport()
         let x=Modal.x + offset["x"];
         if (x < 0) x = 0;

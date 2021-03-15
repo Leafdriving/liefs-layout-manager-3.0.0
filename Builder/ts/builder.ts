@@ -99,17 +99,18 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Edit","Edit", "35px", bCss.menuItem),
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
-    // I("Main_toolbar", "Toolbar", "24px", bCss.bgBlue),
-    TOOLBAR,                                             /// put toolbar back here!
-    h("Tree_Body", 5,
-      tree("Display",
-        dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),
-        Builder.updateTree(clientHandler),
-        {SVGColor: "Black"},
-        25,
-      ),
-      mainBodyDisplayCell
-    )
+    dockable(v("Main_Dockable",
+      TOOLBAR,                                             /// put toolbar back here!
+      h("Tree_Body", 5,
+        tree("Display",
+          dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),
+          Builder.updateTree(clientHandler),
+          {SVGColor: "Black"},
+          25,
+        ),
+        mainBodyDisplayCell
+      )
+    )),
   )
 );
 Handler.activate(clientHandler);
