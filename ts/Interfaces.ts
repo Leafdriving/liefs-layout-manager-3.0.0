@@ -4,3 +4,4 @@ interface ArgsObj {
 interface ArgsFunctions {
     [type: string]: Function[];
 }
+// export {ArgsObj, ArgsFunctions}

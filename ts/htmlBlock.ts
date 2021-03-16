@@ -1,3 +1,5 @@
+// import {ArgsObj, ArgsFunctions} from 'Interfaces'
+
 /**
  * This Class Holds the HTMLElement
  */

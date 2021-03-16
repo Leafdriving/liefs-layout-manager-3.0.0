@@ -28,19 +28,6 @@ declare class Base {
     static buildBase(THIS: any, ...Arguments: any): void;
     static makeLabel(instance: any): void;
 }
-declare class Test extends Base {
-    static labelNo: number;
-    static instances: Test[];
-    static activeInstances: Test[];
-    static defaults: {
-        tag: string;
-    };
-    static argMap: {
-        string: string[];
-        number: string[];
-    };
-    constructor(...Arguments: any);
-}
 declare class FunctionStack {
     static instanceObj: {};
     static push(label: string, function_: Function): void;

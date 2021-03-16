@@ -11,6 +11,7 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     privateMap.set(receiver, value);
     return value;
 };
+// export {ArgsObj, ArgsFunctions}
 class BaseF {
     static ifObjectMergeWithDefaults(THIS, CLASS) {
         if ("object" in THIS.retArgs) {
@@ -145,24 +146,24 @@ class Base {
         }
     }
 }
-class Test extends Base {
-    // retArgs:ArgsObj;   // <- this will appear
-    constructor(...Arguments) {
-        super();
-        this.buildBase(...Arguments);
-        Test.makeLabel(this);
-    }
-}
-Test.labelNo = 0;
-Test.instances = [];
-Test.activeInstances = [];
-Test.defaults = {
-    tag: "DIV",
-};
-Test.argMap = {
-    string: ["label", "innerHTML", "css"],
-    number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-};
+// export {BaseF, Base};
+// class Test extends Base {
+//     static labelNo = 0;
+//     static instances:Test[] = [];
+//     static activeInstances:Test[] = [];
+//     static defaults = {
+//         tag: "DIV",
+//     }
+//     static argMap = {
+//         string : ["label", "innerHTML", "css"],
+//         number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+//     }
+//     // retArgs:ArgsObj;   // <- this will appear
+//     constructor(...Arguments:any){
+//         super();this.buildBase(...Arguments);
+//         Test.makeLabel(this);
+//     }
+// }
 class FunctionStack {
     static push(label, function_) {
         if (!(label in FunctionStack.instanceObj))
@@ -544,6 +545,7 @@ Coord.argMap = {
 };
 Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
     number: ["x", "y", "width", "height", "zindex"] };
+// import {ArgsObj, ArgsFunctions} from 'Interfaces'
 /**
  * This Class Holds the HTMLElement
  */
