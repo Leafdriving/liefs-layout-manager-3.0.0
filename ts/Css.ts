@@ -1,3 +1,6 @@
+// import {BaseF, Base} from './Base';
+// import {mf, pf} from './PureFunctions';
+
 class Css extends Base {
     static theme:any // set by theme class
     static elementId="llmStyle";
@@ -100,3 +103,4 @@ class Css extends Base {
     }
 }
 function css(...Arguments:any){return new Css(...Arguments);}
+// export {Css, css}

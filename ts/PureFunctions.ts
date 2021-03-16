@@ -1,3 +1,6 @@
+// import {Base} from './Base';
+// import {ArgsObj} from './Interfaces';
+
 class mf {
   /**
   * Sample Comment
@@ -162,3 +165,4 @@ class pf {
     }
 }
 Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
+// export {mf, pf}

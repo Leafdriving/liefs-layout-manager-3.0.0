@@ -4,4 +4,5 @@ interface ArgsObj {
 interface ArgsFunctions {
     [type: string]: Function[];
 }
-// export {ArgsObj, ArgsFunctions}
+interface Offset {x:number;y:number;width:number;height:number}
+// export {ArgsObj, ArgsFunctions, Offset}

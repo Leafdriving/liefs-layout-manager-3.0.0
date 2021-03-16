@@ -1,3 +1,10 @@
+// import {Base} from './Base';
+// import {DisplayCell} from './DisplayCell';
+// import {Handler} from './Handler';
+// import {Css, css} from './Css';
+// import {mf, pf} from './PureFunctions';
+// import {Tree, tree} from './Tree';
+
 class Pages extends Base {
     static activePages:Pages[] = [];
     static instances:Pages[] = [];
@@ -124,8 +131,9 @@ class Pages extends Base {
         Handler.update();
     }
 }
-function P(...arguments:any){
-    let displaycell = new DisplayCell(new Pages(...arguments) );
+function P(...Arguments:any){
+    let displaycell = new DisplayCell(new Pages(...Arguments) );
     if (displaycell.pages.dim) displaycell.dim = displaycell.pages.dim;
     return displaycell;
 }
+// export {P, Pages}

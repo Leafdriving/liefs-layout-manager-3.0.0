@@ -1,4 +1,8 @@
-// import {ArgsObj, ArgsFunctions} from 'Interfaces'
+// import {ArgsObj, ArgsFunctions} from './Interfaces'
+// import {BaseF, Base} from './Base';
+// import {events, Events} from './Events';
+// import {Css, css} from './Css';
+// import {mf, pf} from './PureFunctions';
 
 /**
  * This Class Holds the HTMLElement
@@ -69,3 +73,4 @@ function html(...Arguments:any){
     htmlblock.label = HtmlBlock.defaults["label"]();
     return htmlblock;
 }
+// export {html, HtmlBlock}

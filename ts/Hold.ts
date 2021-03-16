@@ -1,3 +1,5 @@
+// import {Base} from './Base';
+
 class Hold extends Base {
     static instances:Hold[] = [];
     static activeInstances:Hold[] = [];
@@ -45,3 +47,4 @@ class Hold extends Base {
         }
     }
 }
+// export {Hold}

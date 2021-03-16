@@ -15,3 +15,4 @@ class FunctionStack {
     }
     static pop(label:string) {FunctionStack.instanceObj[label] = [];}
 }
+// export {FunctionStack}

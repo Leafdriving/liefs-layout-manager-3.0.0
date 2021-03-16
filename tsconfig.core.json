@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
-        "outFile" : "dist/liefs-layout-managerV3.0.0.GLOBALS.full.js",
-        //"outDir" : "dist/modules",
+        "outFile" : "liefs-layout-managerV3.0.0.GLOBALS.full.js",
         "declaration" : true,        
         "allowJs": false,
         "target" : "es6",

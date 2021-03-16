@@ -1,3 +1,12 @@
+// import {Base} from './Base';
+// import {Css, css} from './Css';
+// import {DisplayCell, I} from './DisplayCell';
+// import {DisplayGroup, v, h} from './DisplayGroup';
+// import {Events, events} from './Events';
+// import {Coord} from './Coord';
+// import {Handler} from './Handler';
+// import {Overlay} from './Overlay';
+
 class ScrollBar extends Base {
     static instances:ScrollBar[] = [];
     static activeInstances:ScrollBar[] = [];
@@ -221,3 +230,4 @@ class ScrollBar extends Base {
     }
 }
 Overlay.classes["ScrollBar"] = ScrollBar;
+// export {ScrollBar}

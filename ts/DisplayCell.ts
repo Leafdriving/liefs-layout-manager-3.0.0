@@ -1,3 +1,13 @@
+// import {Base} from './Base';
+// import {Coord} from './Coord';
+// import {HtmlBlock} from './htmlBlock';
+// import {DisplayGroup} from './DisplayGroup';
+// import {events, Events} from './Events';
+// import {Overlay} from './Overlay';
+// import {Pages} from './Pages';
+// import {vMenuBar, hMenuBar, context, Context} from './Context';
+
+
 class DisplayCell extends Base {
     static instances:DisplayCell[] = [];
     static activeInstances:DisplayCell[] = [];
@@ -63,11 +73,11 @@ class DisplayCell extends Base {
     addOverlay(overlay:Overlay){this.overlays.push(overlay)}
     hMenuBar(menuObj:object){
         menuObj["launchcell"] = this;
-        this.htmlBlock.events = events({onmouseover:hMenuBar(menuObj)})
+        this.htmlBlock.events = events({onmouseover:hMenuBar(menuObj)})            //////////////// COME BACK HERE!!!!
     }
     vMenuBar(menuObj:object){
         menuObj["launchcell"] = this;
-        this.htmlBlock.events = events({onmouseover:vMenuBar(menuObj)})
+        this.htmlBlock.events = events({onmouseover:vMenuBar(menuObj)})            //////////////// COME BACK HERE!!!!
     }
     static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
 }
@@ -76,3 +86,4 @@ function I(...Arguments:any) : DisplayCell {
     // let newblock = new HtmlBlock(...Arguments);
     // return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
 }
+// export {I, DisplayCell}

@@ -1,3 +1,4 @@
+// import {ArgsObj} from './Interfaces';
 class BaseF {
     static ifObjectMergeWithDefaults(THIS:any, CLASS:any) : object{
         if ("object" in THIS.retArgs) {

@@ -1,3 +1,8 @@
+// import {ArgsObj} from './Interfaces';
+// import {Base, BaseF} from './Base';
+// import {HtmlBlock} from './htmlBlock';
+// import {Drag} from './Drag';
+// import {Hold} from './Hold';
 
 class Events extends Base {
     static elementId="llmEvents";
@@ -42,4 +47,5 @@ class Events extends Base {
         console.log(this);
     }
 }
-function events(...arguments:any) {return new Events(...arguments);}
+function events(...Arguments:any) {return new Events(...Arguments);}
+// export {events, Events}

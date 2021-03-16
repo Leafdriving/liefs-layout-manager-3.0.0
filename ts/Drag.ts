@@ -1,3 +1,5 @@
+// import { Base } from './Base';
+
 class Drag extends Base {
     static instances:Drag[] = [];
     static activeInstances:Drag[] = [];
@@ -88,3 +90,4 @@ function swipe(...Arguments:any){
                             }}
     return retObj;
 }
+// export {swipe, Swipe, Drag}

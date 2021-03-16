@@ -11,7 +11,8 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     privateMap.set(receiver, value);
     return value;
 };
-// export {ArgsObj, ArgsFunctions}
+// export {ArgsObj, ArgsFunctions, Offset}
+// import {ArgsObj} from './Interfaces';
 class BaseF {
     static ifObjectMergeWithDefaults(THIS, CLASS) {
         if ("object" in THIS.retArgs) {
@@ -181,6 +182,9 @@ class FunctionStack {
     static pop(label) { FunctionStack.instanceObj[label] = []; }
 }
 FunctionStack.instanceObj = {};
+// export {FunctionStack}
+// import {Base} from './Base';
+// import {ArgsObj} from './Interfaces';
 class mf {
     /**
     * Sample Comment
@@ -342,6 +346,11 @@ pf.mergeObjects = function (startObj, AddObj) {
     return returnObject;
 };
 Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
+// export {mf, pf}
+// import {BaseF, Base} from './Base';
+// import {ArgsObj, ArgsFunctions, Offset} from './Interfaces';
+// import {Handler} from './Handler';
+// import {mf, pf} from './PureFunctions';
 var _x_, _y_, _width_, _height_;
 class Point {
 }
@@ -545,7 +554,12 @@ Coord.argMap = {
 };
 Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
     number: ["x", "y", "width", "height", "zindex"] };
-// import {ArgsObj, ArgsFunctions} from 'Interfaces'
+// export {Point, Within, Coord}
+// import {ArgsObj, ArgsFunctions} from './Interfaces'
+// import {BaseF, Base} from './Base';
+// import {events, Events} from './Events';
+// import {Css, css} from './Css';
+// import {mf, pf} from './PureFunctions';
 /**
  * This Class Holds the HTMLElement
  */
@@ -599,6 +613,12 @@ function html(...Arguments) {
     htmlblock.label = HtmlBlock.defaults["label"]();
     return htmlblock;
 }
+// export {html, HtmlBlock}
+// import {ArgsObj} from './Interfaces';
+// import {Base, BaseF} from './Base';
+// import {HtmlBlock} from './htmlBlock';
+// import {Drag} from './Drag';
+// import {Hold} from './Hold';
 class Events extends Base {
     constructor(...Arguments) {
         super();
@@ -640,7 +660,16 @@ Events.defaults = {};
 Events.argMap = {
     string: ["label"]
 };
-function events(...arguments) { return new Events(...arguments); }
+function events(...Arguments) { return new Events(...Arguments); }
+// export {events, Events}
+// import {Base} from './Base';
+// import {Coord} from './Coord';
+// import {HtmlBlock} from './htmlBlock';
+// import {DisplayGroup} from './DisplayGroup';
+// import {events, Events} from './Events';
+// import {Overlay} from './Overlay';
+// import {Pages} from './Pages';
+// import {vMenuBar, hMenuBar, context, Context} from './Context';
 var _htmlBlock_, _displaygroup_;
 class DisplayCell extends Base {
     constructor(...Arguments) {
@@ -684,11 +713,11 @@ class DisplayCell extends Base {
     addOverlay(overlay) { this.overlays.push(overlay); }
     hMenuBar(menuObj) {
         menuObj["launchcell"] = this;
-        this.htmlBlock.events = events({ onmouseover: hMenuBar(menuObj) });
+        this.htmlBlock.events = events({ onmouseover: hMenuBar(menuObj) }); //////////////// COME BACK HERE!!!!
     }
     vMenuBar(menuObj) {
         menuObj["launchcell"] = this;
-        this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) });
+        this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) }); //////////////// COME BACK HERE!!!!
     }
     static concatArray(main, added) { for (let displaycell of added)
         main.push(displaycell); }
@@ -713,6 +742,13 @@ function I(...Arguments) {
     // let newblock = new HtmlBlock(...Arguments);
     // return (newblock.dim) ? new DisplayCell(newblock, newblock.dim) : new DisplayCell(newblock);
 }
+// export {I, DisplayCell}
+// import {Base} from './Base';
+// import {DisplayCell} from './DisplayCell';
+// import {Coord} from './Coord';
+// import {HtmlBlock} from './htmlBlock';
+// import {Overlay} from './Overlay';
+// import {mf, pf} from './PureFunctions';
 class DisplayGroup extends Base {
     // minimumCellSize:number;
     // renderStartIndex:number;
@@ -809,6 +845,18 @@ function v(...Arguments) {
     // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
     // return displaycell;
 }
+// export {v, h, DisplayGroup}
+// import {Base} from './Base';
+// import {Coord} from './Coord';
+// import {DisplayCell} from './DisplayCell';
+// import {Css} from './Css';
+// import {DisplayGroup} from './DisplayGroup';
+// import {HtmlBlock} from './htmlBlock';
+// import {Observe} from './Observe'
+// import {Overlay} from './Overlay';
+// import {Pages} from './Pages';
+// import {mf, pf} from './PureFunctions';
+// import {ScrollBar} from './ScrollBar';
 class Handler extends Base {
     constructor(...Arguments) {
         super();
@@ -1154,6 +1202,9 @@ Handler.handlerZindexIncrement = 100;
 function H(...Arguments) {
     return new Handler(...Arguments);
 }
+// export {H, Handler}
+// import {BaseF, Base} from './Base';
+// import {mf, pf} from './PureFunctions';
 class Css extends Base {
     constructor(...Arguments) {
         super();
@@ -1247,6 +1298,8 @@ Css.argMap = {
 };
 Css.deleteOnFirstRunClassname = ".remove";
 function css(...Arguments) { return new Css(...Arguments); }
+// export {Css, css}
+// import {Css, css} from './Css'
 class DefaultTheme {
 }
 DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false);
@@ -1254,6 +1307,13 @@ DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
 // context
 DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
 Css.theme = DefaultTheme;
+// export {DefaultTheme}
+// import {Base} from './Base';
+// import {DisplayCell} from './DisplayCell';
+// import {Handler} from './Handler';
+// import {Css, css} from './Css';
+// import {mf, pf} from './PureFunctions';
+// import {Tree, tree} from './Tree';
 class Pages extends Base {
     constructor(...Arguments) {
         super();
@@ -1373,12 +1433,14 @@ Pages.argMap = {
     dim: ["dim"],
     // DisplayCell: ["displaycells"] <- but the whole array done in constructor
 };
-function P(...arguments) {
-    let displaycell = new DisplayCell(new Pages(...arguments));
+function P(...Arguments) {
+    let displaycell = new DisplayCell(new Pages(...Arguments));
     if (displaycell.pages.dim)
         displaycell.dim = displaycell.pages.dim;
     return displaycell;
 }
+// export {P, Pages}
+// import { Base } from './Base';
 class Drag extends Base {
     constructor(...Arguments) {
         super();
@@ -1470,6 +1532,8 @@ function swipe(...Arguments) {
         } };
     return retObj;
 }
+// export {swipe, Swipe, Drag}
+// import {Base} from './Base';
 class Hold extends Base {
     constructor(...Arguments) {
         super();
@@ -1511,6 +1575,10 @@ Hold.defaults = {
 Hold.argMap = {
     string: ["label"],
 };
+// export {Hold}
+// import {DisplayCell} from './DisplayCell';
+// import {DisplayGroup} from './DisplayGroup';
+// import {mf, pf} from './PureFunctions';
 class Overlay {
     constructor(...Arguments) {
         Overlay.instances.push(this);
@@ -1535,6 +1603,16 @@ Overlay.instances = [];
 Overlay.classes = {
 //    DragBar,for wxample... filled in when modules load.
 };
+// export {Overlay}
+// import { Base } from './Base';
+// import {Css, css} from './Css';
+// import {I, DisplayCell} from './DisplayCell';
+// import {DisplayGroup, h, v} from './DisplayGroup';
+// import {Coord} from './Coord';
+// import {Events, events} from './Events';
+// import {Handler} from './Handler';
+// import {Overlay} from './Overlay';
+// import {mf, pf} from './PureFunctions';
 class DragBar extends Base {
     constructor(...Arguments) {
         super();
@@ -1605,6 +1683,15 @@ function dragbar(...Arguments) {
     return parentDisplaycell;
 }
 Overlay.classes["DragBar"] = DragBar;
+// export {dragbar, DragBar}
+// import {Base} from './Base';
+// import {Css, css} from './Css';
+// import {DisplayCell, I} from './DisplayCell';
+// import {DisplayGroup, v, h} from './DisplayGroup';
+// import {Events, events} from './Events';
+// import {Coord} from './Coord';
+// import {Handler} from './Handler';
+// import {Overlay} from './Overlay';
 class ScrollBar extends Base {
     constructor(...Arguments) {
         super();
@@ -1786,6 +1873,14 @@ ScrollBar.argMap = {
 ScrollBar.scrollWheelMult = 4;
 ScrollBar.triggerDistance = 40;
 Overlay.classes["ScrollBar"] = ScrollBar;
+// export {ScrollBar}
+// import {/*BaseF,*/ Base} from './Base';
+// import {/*Point, Within,*/ Coord} from './Coord';
+// import {Css, css} from './Css';
+// import {DisplayCell, I} from './DisplayCell';
+// import {/*DisplayGroup, h,*/ v} from './DisplayGroup';
+// import {events, Events} from './Events';
+// import {Handler, H} from './Handler';
 class Context extends Base {
     constructor(...Arguments) {
         super();
@@ -1912,6 +2007,16 @@ let vMenuBar = function (...Arguments) {
     let newcontext = new Context(...Arguments);
     return function (mouseEvent) { newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary()); return false; };
 };
+// export {vMenuBar, hMenuBar, context, Context}
+// import {Base} from './Base';
+// import {Css, css} from './Css';
+// import {DisplayCell, I} from './DisplayCell';
+// import {Handler, H} from './Handler';
+// import {Coord} from './Coord';
+// import {DisplayGroup, v, h} from './DisplayGroup';
+// import {events, Events} from './Events';
+// import {Overlay} from './Overlay';
+// import {mf, pf} from './PureFunctions';
 class Modal extends Base {
     constructor(...Arguments) {
         super();
@@ -2223,6 +2328,7 @@ function stretch(...Arguments) {
     return (newStretch.parentModal) ? newStretch.parentModal : parentDisplaycell;
 }
 Overlay.classes["Stretch"] = Stretch;
+// export {Modal, stretch}
 // events({ondrag: {onDown :function(xmouseDiff:object){
 //     if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
 //         dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
@@ -2238,6 +2344,18 @@ Overlay.classes["Stretch"] = Stretch;
 // },
 // // onUp: function(ouxmouseDifftput:object){}
 // } })
+// import {Base} from './Base';
+// import {DisplayCell, I} from './DisplayCell';
+// import {Coord} from './Coord';
+// import {events, Events} from './Events';
+// import {Css, css} from './Css';
+// import {DisplayGroup, h, v} from './DisplayGroup';
+// import {Handler} from './Handler';
+// import {Drag} from './Drag';
+// import {Pages, P} from './Pages';
+// import {HtmlBlock} from './htmlBlock';
+// import {Overlay} from './Overlay';
+// import {pf} from './PureFunctions';
 class TreeNode extends Base {
     constructor(...Arguments) {
         super();
@@ -2503,6 +2621,14 @@ class i_ {
 class t_ {
     constructor(...Arguments) { this.TreeNodeArguments = Arguments; }
 }
+// export {t_, i_, TI, tree, TreeNode, Tree}
+// import {Base} from './Base';
+// import {DisplayCell} from './DisplayCell';
+// import {Handler} from './Handler';
+// import {Coord} from './Coord';
+// import {FunctionStack} from './FunctionStack';
+// import {DisplayGroup} from './DisplayGroup';
+// import {mf, pf} from './PureFunctions';
 class Observe extends Base {
     // derendering: boolean = false;
     constructor(...Arguments) {
@@ -2602,6 +2728,17 @@ Observe.argMap = {
     DisplayCell: ["parentDisplayCell"],
 };
 Observe.Os_ScrollbarSize = 15;
+// export {Observe}
+// import {Base} from './Base';
+// import {DisplayCell, I} from './DisplayCell';
+// import {DisplayGroup, v, h} from './DisplayGroup';
+// import {Coord} from './Coord';
+// import {Handler} from './Handler';
+// import {Overlay} from './Overlay';
+// import {css, Css} from './Css';
+// import {Modal} from './Modal';
+// import {events, Events} from './Events';
+// import {Pages, P} from './Pages';
 class Dockable extends Base {
     constructor(...Arguments) {
         super();
@@ -2805,3 +2942,4 @@ function tool_bar(...Arguments) {
     return parentDisplaycell;
 }
 Overlay.classes["ToolBar"] = ToolBar;
+// export {tool_bar, ToolBar, Dockable, dockable}

@@ -1,3 +1,8 @@
+// import {BaseF, Base} from './Base';
+// import {ArgsObj, ArgsFunctions, Offset} from './Interfaces';
+// import {Handler} from './Handler';
+// import {mf, pf} from './PureFunctions';
+
 class Point{x:number;y:number}
 class Within{
     x: number;
@@ -12,7 +17,6 @@ class Within{
     }
     reset(){this.x = this.y = this.width = this.height = undefined};
 }
-interface Offset {x:number;y:number;width:number;height:number}
 class Coord extends Base {
     static instances:Coord[] = [];
     static activeInstances:Coord[] = [];
@@ -206,3 +210,4 @@ class Coord extends Base {
         +`height:${this.height}px; z-index:${this.zindex + ((Handler.activeOffset) ? Handler.zindexIncrement*3 : 0)};${this.newClipStyleString()}`
     }
 }
+// export {Point, Within, Coord}

@@ -4,6 +4,12 @@ interface ArgsObj {
 interface ArgsFunctions {
     [type: string]: Function[];
 }
+interface Offset {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
 declare class BaseF {
     static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
     static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
@@ -86,12 +92,6 @@ declare class Within {
     constructor(...Arguments: any);
     clipStyleString(sub: Coord): string;
     reset(): void;
-}
-interface Offset {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
 }
 declare class Coord extends Base {
     #private;
@@ -195,7 +195,7 @@ declare class Events extends Base {
     applyToHtmlBlock(htmlblock: HtmlBlock): void;
     static do(event: MouseEvent): void;
 }
-declare function events(...arguments: any): Events;
+declare function events(...Arguments: any): Events;
 declare class DisplayCell extends Base {
     #private;
     static instances: DisplayCell[];
@@ -386,7 +386,7 @@ declare class Pages extends Base {
     static pushHistory(): void;
     static popstate(event: PopStateEvent): void;
 }
-declare function P(...arguments: any): DisplayCell;
+declare function P(...Arguments: any): DisplayCell;
 declare class Drag extends Base {
     static instances: Drag[];
     static activeInstances: Drag[];

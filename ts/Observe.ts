@@ -1,3 +1,11 @@
+// import {Base} from './Base';
+// import {DisplayCell} from './DisplayCell';
+// import {Handler} from './Handler';
+// import {Coord} from './Coord';
+// import {FunctionStack} from './FunctionStack';
+// import {DisplayGroup} from './DisplayGroup';
+// import {mf, pf} from './PureFunctions';
+
 class Observe extends Base {
     static instances:Observe[] = [];
     static activeInstances:Observe[] = [];
@@ -108,3 +116,4 @@ class Observe extends Base {
         // }
     }
 }
+// export {Observe}

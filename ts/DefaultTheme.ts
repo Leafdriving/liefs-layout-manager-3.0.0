@@ -1,3 +1,4 @@
+// import {Css, css} from './Css'
 class DefaultTheme {
     static advisedDiv = new Css("div[llm]","position:absolute;", false);
     static advisedBody = new Css("body","overflow: hidden;", false);
@@ -8,3 +9,4 @@ class DefaultTheme {
 
 }
 Css.theme = DefaultTheme;
+// export {DefaultTheme}

@@ -1,3 +1,14 @@
+// import {Base} from './Base';
+// import {DisplayCell, I} from './DisplayCell';
+// import {DisplayGroup, v, h} from './DisplayGroup';
+// import {Coord} from './Coord';
+// import {Handler} from './Handler';
+// import {Overlay} from './Overlay';
+// import {css, Css} from './Css';
+// import {Modal} from './Modal';
+// import {events, Events} from './Events';
+// import {Pages, P} from './Pages';
+
 class Dockable extends Base {
     static labelNo = 0;
     static instances:Dockable[] = [];
@@ -231,3 +242,4 @@ function tool_bar(...Arguments:any) {
     return parentDisplaycell;
 }
 Overlay.classes["ToolBar"] = ToolBar;
+// export {tool_bar, ToolBar, Dockable, dockable}
