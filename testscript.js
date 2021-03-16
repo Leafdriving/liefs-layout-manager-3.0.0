@@ -9,9 +9,9 @@ css("BlueBG", "background-color:blue;color:white", "background-color:red;color:w
 
 H("Main",
     h("HBAR", 5,
-        dragbar(I("One","One", "CyanBG"), 50, 500),
-        I("Two","Two", "RedBG", "20%"),
-        I("Three","Four", "GreenBG"),
+        dragbar(I("One","One", "CyanBG",{minDisplayGroupSize:200}), 50, 500),
+        I("Two","Two", "RedBG", "20%", {minDisplayGroupSize:200}),
+        I("Three","Four", "GreenBG", {minDisplayGroupSize:200}),
     )
 )
 

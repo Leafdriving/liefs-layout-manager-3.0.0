@@ -51,7 +51,8 @@ class ScrollBar extends Base {
     rightArrow: DisplayCell;
     downArrow: DisplayCell;
     paddleSizePx:number;
-    displayedFixedPx: number;
+    clickPageSize: number;
+    // displayedFixedPx: number;
     
 
     constructor(...Arguments: any) {
@@ -125,12 +126,12 @@ class ScrollBar extends Base {
         Handler.update();
     }
     clickPageLeftorUp(mouseEvent:MouseEvent|WheelEvent){
-        this.offset -= this.displayedFixedPx;
+        this.offset -= this.clickPageSize;
         if (this.offset < 0) this.offset = 0;
         Handler.update();
     }
     clickPageRightOrDown(mouseEvent:MouseEvent|WheelEvent){
-        this.offset += this.displayedFixedPx;
+        this.offset += this.clickPageSize;
         if (this.offset > this.maxOffset) this.offset = this.maxOffset;
         Handler.update();
     }
@@ -144,22 +145,18 @@ class ScrollBar extends Base {
         Handler.update();
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-        // console.log(this.label);
-        // console.log(this);
         if (!this.parentDisplaygroup) this.parentDisplaygroup = parentDisplaygroup;
         let dgCoord:Coord = this.displaygroup.coord;
         // calculate outer scrollbar dimensions
+
+        // console.log( JSON.stringify(parentDisplaygroup.coord.within, null, 4) )
 
         let x = (this.ishor) ? dgCoord.within.x : dgCoord.within.x + dgCoord.within.width - this.scrollWidth;
         let width = (this.ishor) ? dgCoord.within.width : this.scrollWidth;
         let y = (this.ishor) ? dgCoord.within.y + dgCoord.within.height - this.scrollWidth : dgCoord.within.y;
         let height = (this.ishor) ? this.scrollWidth : dgCoord.within.height;
 
-
-        // let x = (this.ishor) ? dgCoord.x : dgCoord.x + dgCoord.width - this.scrollWidth;
-        // let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
-        // let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
-        // let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
+        // console.log( JSON.stringify({x,y,width,height}, null, 4) )
 
         this.displaycell.coord.assign(x, y, width, height);
 
@@ -168,25 +165,30 @@ class ScrollBar extends Base {
         let paddleDisplayCell = this.displaycell.displaygroup.cellArray[2];
         let postDisplayCell = this.displaycell.displaygroup.cellArray[3];
         
-        let actualFixedPx = this.displaygroup.totalPx();
-        let displayedFixedPx = this.displayedFixedPx = ((this.ishor) ? width : height);
-        this.maxOffset = actualFixedPx - displayedFixedPx;
-        if (this.offset > this.maxOffset) this.offset = this.maxOffset;
-        if (this.offset < 0) this.offset = 0;
-        // console.log(this.offset);
-        this.offsetPixelRatio = actualFixedPx/displayedFixedPx;
+        // "fixedPixels", "viewingPixels"
 
-        let prePercent = Math.round((this.offset/actualFixedPx)*100);
-        let paddlePercent = Math.round((displayedFixedPx/actualFixedPx)*100);
-        let postPercent = 100-paddlePercent-prePercent;
+        let overflow = this.fixedPixels - this.viewingPixels;
+        if (this.offset > overflow) this.offset = overflow;
+        let viewingPixels = (this.ishor) ? dgCoord.width : dgCoord.height;
+        let fixedPixels = parentDisplaygroup.dimArrayTotal;
+
+        let paddlePercent = Math.round(viewingPixels/fixedPixels*100);
+        let percentAfterPaddle = Math.round(100 - (viewingPixels/fixedPixels*100));
+        let prePercent = Math.round(percentAfterPaddle*(this.offset/overflow));
+        let postPercent = 100 - paddlePercent - prePercent;
 
         preDisplayCell.dim = `${prePercent}%`;
         paddleDisplayCell.dim = `${paddlePercent}%`;
         postDisplayCell.dim = `${postPercent}%`;
 
+        let pixelForStretch = fixedPixels*percentAfterPaddle/100
+        this.offsetPixelRatio = (fixedPixels-viewingPixels)/pixelForStretch;
+        this.clickPageSize = ((paddlePercent)/100)*(fixedPixels - viewingPixels)
+        // console.log(this.clickPageSize)
+
         Handler.currentZindex += Handler.zindexIncrement*2;
         this.currentlyRendered = !derender;
-        // console.log(this.displaycell);
+        // console.log(this.displaycell, this.offset);
         Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
         Handler.currentZindex -= Handler.zindexIncrement*2;
     }

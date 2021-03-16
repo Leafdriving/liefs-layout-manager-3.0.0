@@ -709,7 +709,7 @@ class DisplayCell extends Base {
             this.dim = __classPrivateFieldGet(this, _displaygroup_).dim;
     }
     get minDisplayGroupSize() { return (this.minDisplayGroupSize_) ? this.minDisplayGroupSize_ : DisplayCell.minDisplayGroupSize; }
-    set minDisplayGroupSize(size) { this.minDisplayGroupSize = size; }
+    set minDisplayGroupSize(size) { this.minDisplayGroupSize_ = size; }
     addOverlay(overlay) { this.overlays.push(overlay); }
     hMenuBar(menuObj) {
         menuObj["launchcell"] = this;
@@ -725,7 +725,7 @@ class DisplayCell extends Base {
 _htmlBlock_ = new WeakMap(), _displaygroup_ = new WeakMap();
 DisplayCell.instances = [];
 DisplayCell.activeInstances = [];
-DisplayCell.minDisplayGroupSize = 200; // copied from htmlblock
+DisplayCell.minDisplayGroupSize = 1; // copied from htmlblock
 DisplayCell.defaults = {
     dim: ""
 };
@@ -998,6 +998,115 @@ class Handler extends Base {
         let ishor = displaygroup.ishor;
         let coord = displaygroup.coord;
         let cellArraylength = displaygroup.cellArray.length;
+        let overlay = displaygroup.overlay;
+        let marginpx = (ishor) ? displaygroup.marginHor * (cellArraylength - 1) : displaygroup.marginVer * (cellArraylength - 1);
+        let maxpx = (ishor) ? coord.width - marginpx : coord.height - marginpx;
+        let totalFixedpx = displaygroup.totalPx();
+        let pxForPercent = maxpx - totalFixedpx;
+        let dimArray = [];
+        // create dim array - Initialize.
+        for (let index = 0; index < cellArraylength; index++) {
+            let displaycell = displaygroup.cellArray[index];
+            let dim = displaycell.dim;
+            let min = ((pf.isTypePx(displaycell.dim)) ? pf.pxAsNumber(displaycell.dim) : displaycell.minDisplayGroupSize);
+            let px = (pf.isTypePx(displaycell.dim) ? pf.pxAsNumber(displaycell.dim) : pf.percentAsNumber(displaycell.dim) * pxForPercent / 100);
+            // dimArrayTotal += px;            
+            dimArray.push({ dim, min, px });
+        }
+        // loop until all % are worked out
+        let percentReballancingRequired;
+        let dimArrayTotal;
+        do {
+            // If % less than min... assign it min
+            percentReballancingRequired = false;
+            let fixedPixels = 0;
+            dimArrayTotal = 0;
+            for (let index = 0; index < dimArray.length; index++) {
+                let dimObj = dimArray[index];
+                if (dimObj.px < dimObj.min) {
+                    dimObj.px = dimObj.min;
+                    dimObj.dim = `${dimObj.px}px`;
+                    percentReballancingRequired = true;
+                }
+                fixedPixels += (pf.isTypePx(dimObj.dim) ? dimObj.px : 0);
+                dimArrayTotal += dimObj.px;
+            }
+            let px4Percent = maxpx - fixedPixels; // key
+            //console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`)
+            // console.log(maxpx, fixedPixels, px4Percent)
+            // if min was assigned - rebalance
+            if (percentReballancingRequired) {
+                let currentPercent = 0;
+                // calculate total percent (so less than 100)
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        currentPercent += pf.percentAsNumber(dimObj.dim);
+                    }
+                }
+                let mult = 100 / currentPercent;
+                // and apply the difference over this code.
+                dimArrayTotal = 0;
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        dimObj.dim = `${pf.percentAsNumber(dimObj.dim) * mult}%`;
+                        dimObj.px = pf.percentAsNumber(dimObj.dim) * px4Percent / 100;
+                        //console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`)
+                    }
+                    dimArrayTotal += dimObj.px;
+                }
+            }
+        } while (percentReballancingRequired);
+        displaygroup.dimArrayTotal = dimArrayTotal;
+        // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
+        let x = displaygroup.coord.x;
+        let y = displaygroup.coord.y;
+        let width;
+        let height;
+        if (!displaygroup.label.includes("ScrollBar")) {
+            if (dimArrayTotal > maxpx) {
+                // console.log(pxForPercent)
+                if (!overlay) {
+                    displaygroup.overlay = new Overlay("ScrollBar", `${displaygroup.label}_ScrollBar`, displaygroup, dimArrayTotal, maxpx);
+                }
+                displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, false);
+                let dgCoord = displaygroup.coord;
+                let scrollbar = displaygroup.overlay.returnObj;
+                let scrollWidth = scrollbar.scrollWidth;
+                dgCoord.width -= (ishor) ? 0 : scrollWidth;
+                dgCoord.within.width -= (ishor) ? 0 : scrollWidth;
+                dgCoord.height -= (ishor) ? scrollWidth : 0;
+                dgCoord.within.height -= (ishor) ? scrollWidth : 0;
+                let offset = displaygroup.overlay.returnObj.offset;
+                console.log(offset);
+                x -= (ishor) ? offset : 0;
+                y -= (ishor) ? 0 : offset;
+            }
+            else {
+                if (overlay) {
+                    if (overlay.currentlyRendered)
+                        displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, true);
+                }
+            }
+        }
+        for (let index = 0; index < cellArraylength; index++) {
+            let displaycell = displaygroup.cellArray[index];
+            let cellsizepx = dimArray[index].px;
+            width = (ishor) ? cellsizepx : coord.width;
+            height = (ishor) ? coord.height : cellsizepx;
+            displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
+            displaycell.coord.cropWithin(displaygroup.coord.within);
+            Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
+            x += (ishor) ? width + displaygroup.marginHor : 0;
+            y += (ishor) ? 0 : height + displaygroup.marginVer;
+        }
+    }
+    static renderDisplayGroup_old(parentDisplaycell, derender) {
+        let displaygroup = parentDisplaycell.displaygroup;
+        let ishor = displaygroup.ishor;
+        let coord = displaygroup.coord;
+        let cellArraylength = displaygroup.cellArray.length;
         let marginpx = (ishor) ? displaygroup.marginHor * (cellArraylength - 1) : displaygroup.marginVer * (cellArraylength - 1);
         let maxpx = (ishor) ? coord.width - marginpx : coord.height - marginpx;
         let cellsizepx;
@@ -1066,8 +1175,10 @@ class Handler extends Base {
                 }
             }
         } while (percentReballancingRequired);
-        //console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
+        // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
         // this part opens and/or closes the scrollbar overlay
+        // pxForPercent = maxpx - dimArrayTotal;
+        // totalFixedpx = dimArrayTotal;
         if (pxForPercent < 0) {
             // console.log(pxForPercent)
             if (!overlay) {
@@ -1693,6 +1804,7 @@ Overlay.classes["DragBar"] = DragBar;
 // import {Handler} from './Handler';
 // import {Overlay} from './Overlay';
 class ScrollBar extends Base {
+    // displayedFixedPx: number;
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -1748,13 +1860,13 @@ class ScrollBar extends Base {
         Handler.update();
     }
     clickPageLeftorUp(mouseEvent) {
-        this.offset -= this.displayedFixedPx;
+        this.offset -= this.clickPageSize;
         if (this.offset < 0)
             this.offset = 0;
         Handler.update();
     }
     clickPageRightOrDown(mouseEvent) {
-        this.offset += this.displayedFixedPx;
+        this.offset += this.clickPageSize;
         if (this.offset > this.maxOffset)
             this.offset = this.maxOffset;
         Handler.update();
@@ -1771,43 +1883,41 @@ class ScrollBar extends Base {
         Handler.update();
     }
     render(displaycell, parentDisplaygroup, index, derender) {
-        // console.log(this.label);
-        // console.log(this);
         if (!this.parentDisplaygroup)
             this.parentDisplaygroup = parentDisplaygroup;
         let dgCoord = this.displaygroup.coord;
         // calculate outer scrollbar dimensions
+        // console.log( JSON.stringify(parentDisplaygroup.coord.within, null, 4) )
         let x = (this.ishor) ? dgCoord.within.x : dgCoord.within.x + dgCoord.within.width - this.scrollWidth;
         let width = (this.ishor) ? dgCoord.within.width : this.scrollWidth;
         let y = (this.ishor) ? dgCoord.within.y + dgCoord.within.height - this.scrollWidth : dgCoord.within.y;
         let height = (this.ishor) ? this.scrollWidth : dgCoord.within.height;
-        // let x = (this.ishor) ? dgCoord.x : dgCoord.x + dgCoord.width - this.scrollWidth;
-        // let width = (this.ishor) ? dgCoord.width : this.scrollWidth;
-        // let y = (this.ishor) ? dgCoord.y + dgCoord.height - this.scrollWidth : dgCoord.y;
-        // let height = (this.ishor) ? this.scrollWidth : dgCoord.height;
+        // console.log( JSON.stringify({x,y,width,height}, null, 4) )
         this.displaycell.coord.assign(x, y, width, height);
         // calculate inner scrollbar dimensions
         let preDisplayCell = this.displaycell.displaygroup.cellArray[1];
         let paddleDisplayCell = this.displaycell.displaygroup.cellArray[2];
         let postDisplayCell = this.displaycell.displaygroup.cellArray[3];
-        let actualFixedPx = this.displaygroup.totalPx();
-        let displayedFixedPx = this.displayedFixedPx = ((this.ishor) ? width : height);
-        this.maxOffset = actualFixedPx - displayedFixedPx;
-        if (this.offset > this.maxOffset)
-            this.offset = this.maxOffset;
-        if (this.offset < 0)
-            this.offset = 0;
-        // console.log(this.offset);
-        this.offsetPixelRatio = actualFixedPx / displayedFixedPx;
-        let prePercent = Math.round((this.offset / actualFixedPx) * 100);
-        let paddlePercent = Math.round((displayedFixedPx / actualFixedPx) * 100);
+        // "fixedPixels", "viewingPixels"
+        let overflow = this.fixedPixels - this.viewingPixels;
+        if (this.offset > overflow)
+            this.offset = overflow;
+        let viewingPixels = (this.ishor) ? dgCoord.width : dgCoord.height;
+        let fixedPixels = parentDisplaygroup.dimArrayTotal;
+        let paddlePercent = Math.round(viewingPixels / fixedPixels * 100);
+        let percentAfterPaddle = Math.round(100 - (viewingPixels / fixedPixels * 100));
+        let prePercent = Math.round(percentAfterPaddle * (this.offset / overflow));
         let postPercent = 100 - paddlePercent - prePercent;
         preDisplayCell.dim = `${prePercent}%`;
         paddleDisplayCell.dim = `${paddlePercent}%`;
         postDisplayCell.dim = `${postPercent}%`;
+        let pixelForStretch = fixedPixels * percentAfterPaddle / 100;
+        this.offsetPixelRatio = (fixedPixels - viewingPixels) / pixelForStretch;
+        this.clickPageSize = ((paddlePercent) / 100) * (fixedPixels - viewingPixels);
+        // console.log(this.clickPageSize)
         Handler.currentZindex += Handler.zindexIncrement * 2;
         this.currentlyRendered = !derender;
-        // console.log(this.displaycell);
+        // console.log(this.displaycell, this.offset);
         Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
         Handler.currentZindex -= Handler.zindexIncrement * 2;
     }

@@ -261,6 +261,7 @@ declare class DisplayGroup extends Base {
     dim: string;
     overlay: Overlay;
     offset: number;
+    dimArrayTotal: number;
     constructor(...Arguments: any);
     percentToPx(displaycell: DisplayCell): void;
     totalPx(addMin?: boolean): number;
@@ -311,6 +312,7 @@ declare class Handler extends Base {
     static update(ArrayofHandlerInstances?: Handler[], instanceNo?: number, derender?: boolean): void;
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
     static renderDisplayGroup(parentDisplaycell: DisplayCell, derender: boolean): void;
+    static renderDisplayGroup_old(parentDisplaycell: DisplayCell, derender: boolean): void;
     static renderHtmlBlock(displaycell: DisplayCell, derender: boolean, parentDisplaygroup: DisplayGroup): void;
     static renderHtmlAttributes(el: HTMLElement, htmlblock: HtmlBlock, id: string): void;
 }
@@ -531,7 +533,7 @@ declare class ScrollBar extends Base {
     rightArrow: DisplayCell;
     downArrow: DisplayCell;
     paddleSizePx: number;
-    displayedFixedPx: number;
+    clickPageSize: number;
     constructor(...Arguments: any);
     build(): void;
     clickLeftorUp(mouseEvent: MouseEvent | WheelEvent, noTimes?: number): void;

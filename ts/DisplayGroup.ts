@@ -34,6 +34,7 @@ class DisplayGroup extends Base {
     dim:string;
     overlay: Overlay = undefined;
     offset:number; //used by overlay
+    dimArrayTotal:number // used during Handler Update 
     // minimumCellSize:number;
 
     // renderStartIndex:number;

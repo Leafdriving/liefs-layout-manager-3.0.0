@@ -11,7 +11,7 @@
 class DisplayCell extends Base {
     static instances:DisplayCell[] = [];
     static activeInstances:DisplayCell[] = [];
-    static minDisplayGroupSize = 200; // copied from htmlblock
+    static minDisplayGroupSize = 1; // copied from htmlblock
     static defaults = {
         dim : ""
     }
@@ -49,7 +49,7 @@ class DisplayCell extends Base {
     postRenderCallback: Function;
     minDisplayGroupSize_: number;
     get minDisplayGroupSize(): number {return (this.minDisplayGroupSize_) ? this.minDisplayGroupSize_ : DisplayCell.minDisplayGroupSize;}
-    set minDisplayGroupSize(size) {this.minDisplayGroupSize = size}
+    set minDisplayGroupSize(size) {this.minDisplayGroupSize_ = size}
 
 
     constructor(...Arguments: any) {
