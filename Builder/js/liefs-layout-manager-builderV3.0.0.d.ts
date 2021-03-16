@@ -1,3 +1,9 @@
+interface ArgsObj {
+    [type: string]: any[];
+}
+interface ArgsFunctions {
+    [type: string]: Function[];
+}
 declare class BaseF {
     static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
     static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
@@ -41,12 +47,6 @@ declare class FunctionStack {
     static function(label: string): (...Arguments: any) => void;
     static pop(label: string): void;
 }
-interface ArgsObj {
-    [type: string]: any[];
-}
-interface ArgsFunctions {
-    [type: string]: Function[];
-}
 declare class mf {
     /**
     * Sample Comment
@@ -85,7 +85,6 @@ declare class pf {
     static viewport(): number[];
     static errorReporting(errString: string): void;
     static uis0(num: number): number;
-    static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
     static parseURLParams(url?: string): {};
 }
 declare class Point {
@@ -245,6 +244,7 @@ declare class DisplayCell extends Base {
     addOverlay(overlay: Overlay): void;
     hMenuBar(menuObj: object): void;
     vMenuBar(menuObj: object): void;
+    static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
 }
 declare function I(...Arguments: any): DisplayCell;
 declare class DisplayGroup extends Base {
@@ -350,6 +350,8 @@ declare class Css extends Base {
     cssHoverObj: object;
     cssSelect: string;
     cssSelectObj: object;
+    cssSelectHover: string;
+    cssSelectHoverObj: object;
     isClassname: boolean;
     constructor(...Arguments: any);
     makeString(obj?: object, postfix?: string, addToClassName?: string): string;

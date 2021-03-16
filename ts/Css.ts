@@ -15,7 +15,7 @@ class Css extends Base {
         isClassname : true
     }
     static argMap = {
-        string : ["classname", "css", "cssHover", "cssSelect"],
+        string : ["classname", "css", "cssHover", "cssSelect", "cssSelectHover"],
         boolean : ["isClassname"]
     }
     static deleteOnFirstRunClassname=".remove";
@@ -29,6 +29,9 @@ class Css extends Base {
 
     cssSelect: string;
     cssSelectObj: object;
+
+    cssSelectHover: string;
+    cssSelectHoverObj: object;
 
     isClassname:boolean;
 

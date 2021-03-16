@@ -208,7 +208,7 @@ class Tree extends Base {
         if (node.children) {
             for (let childNode of node.children)
                 this.buildTreeNode(childNode, node.nodeCellArray, indent + this.indent);
-            if (!node.collapsed) pf.concatArray(cellArray, node.nodeCellArray);     
+            if (!node.collapsed) DisplayCell.concatArray(cellArray, node.nodeCellArray);     
         }
     }
     render(displaycell:DisplayCell){ /* Do Nothing! YAY! */}

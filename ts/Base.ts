@@ -118,7 +118,7 @@ class Base {
         let CLASS = this;
         if (instance["label"] == undefined || instance["label"].trim() == ""){
             CLASS["labelNo"] += 1;
-            instance["label"] = `${CLASS.name}_${CLASS["labelNo"]}`
+            instance["label"] = `${CLASS["name"]}_${CLASS["labelNo"]}`
         }
     }
 }

@@ -1,3 +1,9 @@
+interface ArgsObj {
+    [type: string]: any[];
+}
+interface ArgsFunctions {
+    [type: string]: Function[];
+}
 declare class BaseF {
     static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
     static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
@@ -41,12 +47,6 @@ declare class FunctionStack {
     static function(label: string): (...Arguments: any) => void;
     static pop(label: string): void;
 }
-interface ArgsObj {
-    [type: string]: any[];
-}
-interface ArgsFunctions {
-    [type: string]: Function[];
-}
 declare class mf {
     /**
     * Sample Comment
@@ -85,7 +85,6 @@ declare class pf {
     static viewport(): number[];
     static errorReporting(errString: string): void;
     static uis0(num: number): number;
-    static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
     static parseURLParams(url?: string): {};
 }
 declare class Point {
@@ -245,6 +244,7 @@ declare class DisplayCell extends Base {
     addOverlay(overlay: Overlay): void;
     hMenuBar(menuObj: object): void;
     vMenuBar(menuObj: object): void;
+    static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
 }
 declare function I(...Arguments: any): DisplayCell;
 declare class DisplayGroup extends Base {
@@ -289,6 +289,7 @@ declare class Handler extends Base {
         cssString: string;
         addThisHandlerToStack: boolean;
         controlledBySomething: boolean;
+        activeOffset: boolean;
     };
     static argMap: {
         string: string[];
@@ -305,6 +306,7 @@ declare class Handler extends Base {
     static handlerZindexIncrement: number;
     static currentZindex: number;
     static renderAgain: boolean;
+    static activeOffset: boolean;
     label: string;
     rootCell: DisplayCell;
     coord: Coord;
@@ -348,6 +350,8 @@ declare class Css extends Base {
     cssHoverObj: object;
     cssSelect: string;
     cssSelectObj: object;
+    cssSelectHover: string;
+    cssSelectHoverObj: object;
     isClassname: boolean;
     constructor(...Arguments: any);
     makeString(obj?: object, postfix?: string, addToClassName?: string): string;
@@ -630,6 +634,11 @@ declare class Modal extends Base {
     };
     static x: number;
     static y: number;
+    static offset: {
+        x: number;
+        y: number;
+    };
+    static movingInstace: Modal;
     label: string;
     headerTitle: string;
     footerTitle: string;
@@ -665,7 +674,10 @@ declare class Modal extends Base {
     hide(): void;
     preRenderCallback(handler: Handler): void;
     static startMoveModal(handler: Handler): void;
-    static moveModal(handler: Handler, offset: object): void;
+    static moveModal(handler: Handler, offset: {
+        x: number;
+        y: number;
+    }): void;
 }
 declare class Stretch extends Base {
     static labelNo: number;
@@ -802,6 +814,29 @@ declare class Observe extends Base {
     static onScroll(event: WheelEvent): void;
     static update(): void;
 }
+declare class Dockable extends Base {
+    static labelNo: number;
+    static instances: Dockable[];
+    static activeInstances: Dockable[];
+    static defaults: {
+        type: string;
+    };
+    static argMap: {
+        string: string[];
+        DisplayCell: string[];
+    };
+    static open: number;
+    static activeToolbar: ToolBar;
+    dummy: DisplayCell;
+    label: string;
+    type: string;
+    rootDisplayCell: DisplayCell;
+    displaygroup: DisplayGroup;
+    dropZones: Coord[];
+    constructor(...Arguments: any);
+    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+}
+declare function dockable(...Arguments: any): DisplayCell;
 declare class ToolBar extends Base {
     static labelNo: number;
     static instances: ToolBar[];
@@ -811,12 +846,15 @@ declare class ToolBar extends Base {
         sizePx: number;
         isDocked: boolean;
         isHor: boolean;
+        type: string;
     };
     static argMap: {
         string: string[];
         number: string[];
     };
     static triggerUndockDistance: number;
+    static isMoving: boolean;
+    static activeInstace: ToolBar;
     label: string;
     type: string;
     sizePx: number;
@@ -832,8 +870,14 @@ declare class ToolBar extends Base {
     coord: Coord;
     constructor(...Arguments: any);
     static startMoveToolbar(THIS: ToolBar, handler: Handler): void;
-    static moveToolbar(THIS: ToolBar, handler: Handler, offset: object): void;
-    static undock(THIS: ToolBar, handler: Handler, offset: object): void;
+    static moveToolbar(THIS: ToolBar, handler: Handler, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static undock(THIS: ToolBar, handler: Handler, offset: {
+        x: number;
+        y: number;
+    }): void;
     build(): void;
     makeModal(): void;
     setModalSize(): [number, number];

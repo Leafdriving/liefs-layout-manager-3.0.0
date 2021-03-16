@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outFile" : "js/liefs-layout-managerV3.0.0.js",
+        "outFile" : "dist/liefs-layout-managerV3.0.0.full.js",
         "outDir" : "js",
         "declaration" : true,        
         "allowJs": false,
@@ -8,6 +8,7 @@
         "module" :"amd",
     },
     "files": [
+        "ts/Interfaces.ts",
         "ts/Base.ts",
         "ts/FunctionStack.ts",        
         "ts/PureFunctions.ts",

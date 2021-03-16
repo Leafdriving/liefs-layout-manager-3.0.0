@@ -1,9 +1,3 @@
-interface ArgsObj {
-    [type: string]: any[];   
-}
-interface ArgsFunctions {
-    [type: string]: Function[];
-}
 class mf {
   /**
   * Sample Comment
@@ -146,7 +140,7 @@ class pf {
         console.log(errString);
     }
     static uis0(num:number){return (num == undefined) ? 0 : num}
-    static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
+    // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static parseURLParams(url = window.location.href) {
         let queryStart = url.indexOf("?") + 1,
             queryEnd   = url.indexOf("#") + 1 || url.length + 1,

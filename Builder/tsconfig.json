@@ -11,10 +11,11 @@
     //     "./svgjs/svg.js.d.ts",
     // ],
     "files": [
+        "../ts/Interfaces.ts",
         "../ts/Base.ts",
         "../ts/FunctionStack.ts",        
         "../ts/PureFunctions.ts",
-        "../ts/Coord.ts",
+        "../ts/Coord.ts", 
         "../ts/htmlBlock.ts",
         "../ts/Events.ts",
         "../ts/DisplayCell.ts",

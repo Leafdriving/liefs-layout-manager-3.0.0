@@ -69,6 +69,7 @@ class DisplayCell extends Base {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({onmouseover:vMenuBar(menuObj)})
     }
+    static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
 }
 function I(...Arguments:any) : DisplayCell {
     return new DisplayCell( new HtmlBlock(...Arguments) )

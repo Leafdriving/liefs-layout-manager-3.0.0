@@ -141,7 +141,7 @@ class Base {
         let CLASS = this;
         if (instance["label"] == undefined || instance["label"].trim() == "") {
             CLASS["labelNo"] += 1;
-            instance["label"] = `${CLASS.name}_${CLASS["labelNo"]}`;
+            instance["label"] = `${CLASS["name"]}_${CLASS["labelNo"]}`;
         }
     }
 }
@@ -296,8 +296,7 @@ class pf {
         console.log(errString);
     }
     static uis0(num) { return (num == undefined) ? 0 : num; }
-    static concatArray(main, added) { for (let displaycell of added)
-        main.push(displaycell); }
+    // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static parseURLParams(url = window.location.href) {
         let queryStart = url.indexOf("?") + 1, queryEnd = url.indexOf("#") + 1 || url.length + 1, query = url.slice(queryStart, queryEnd - 1), pairs = query.replace(/\+/g, " ").split("&"), parms = {}, i, n, v, nv;
         if (query === url || query === "")
@@ -689,6 +688,8 @@ class DisplayCell extends Base {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) });
     }
+    static concatArray(main, added) { for (let displaycell of added)
+        main.push(displaycell); }
 }
 _htmlBlock_ = new WeakMap(), _displaygroup_ = new WeakMap();
 DisplayCell.instances = [];
@@ -1239,7 +1240,7 @@ Css.defaults = {
     isClassname: true
 };
 Css.argMap = {
-    string: ["classname", "css", "cssHover", "cssSelect"],
+    string: ["classname", "css", "cssHover", "cssSelect", "cssSelectHover"],
     boolean: ["isClassname"]
 };
 Css.deleteOnFirstRunClassname = ".remove";
@@ -2394,7 +2395,7 @@ class Tree extends Base {
             for (let childNode of node.children)
                 this.buildTreeNode(childNode, node.nodeCellArray, indent + this.indent);
             if (!node.collapsed)
-                pf.concatArray(cellArray, node.nodeCellArray);
+                DisplayCell.concatArray(cellArray, node.nodeCellArray);
         }
     }
     render(displaycell) { }

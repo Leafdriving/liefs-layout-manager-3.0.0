@@ -141,7 +141,7 @@ class Base {
         let CLASS = this;
         if (instance["label"] == undefined || instance["label"].trim() == "") {
             CLASS["labelNo"] += 1;
-            instance["label"] = `${CLASS.name}_${CLASS["labelNo"]}`;
+            instance["label"] = `${CLASS["name"]}_${CLASS["labelNo"]}`;
         }
     }
 }
@@ -296,8 +296,7 @@ class pf {
         console.log(errString);
     }
     static uis0(num) { return (num == undefined) ? 0 : num; }
-    static concatArray(main, added) { for (let displaycell of added)
-        main.push(displaycell); }
+    // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static parseURLParams(url = window.location.href) {
         let queryStart = url.indexOf("?") + 1, queryEnd = url.indexOf("#") + 1 || url.length + 1, query = url.slice(queryStart, queryEnd - 1), pairs = query.replace(/\+/g, " ").split("&"), parms = {}, i, n, v, nv;
         if (query === url || query === "")
@@ -529,7 +528,7 @@ class Coord extends Base {
     newAsAttributeString() {
         return `left: ${this.x}px; top:${this.y}px;`
             + `${(this.hideWidth) ? "" : "width:" + this.width + "px; "}`
-            + `height:${this.height}px; z-index:${this.zindex + ((this.offset) ? 1 : 0)};${this.newClipStyleString()}`;
+            + `height:${this.height}px; z-index:${this.zindex + ((Handler.activeOffset) ? Handler.zindexIncrement * 3 : 0)};${this.newClipStyleString()}`;
     }
 }
 _x_ = new WeakMap(), _y_ = new WeakMap(), _width_ = new WeakMap(), _height_ = new WeakMap();
@@ -657,7 +656,7 @@ class DisplayCell extends Base {
         if (!this.label)
             this.label = (this.htmlBlock) ? this.htmlBlock.label + "_DisplayCell"
                 : (this.displaygroup) ? this.displaygroup.label + "_DisplayCell"
-                    : undefined;
+                    : (this.pages) ? this.pages.label + "_DisplayCell" : undefined;
         if (this.htmlBlock && this.htmlBlock.hideWidth)
             this.coord = new Coord(this.label, true);
         else
@@ -689,6 +688,8 @@ class DisplayCell extends Base {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) });
     }
+    static concatArray(main, added) { for (let displaycell of added)
+        main.push(displaycell); }
 }
 _htmlBlock_ = new WeakMap(), _displaygroup_ = new WeakMap();
 DisplayCell.instances = [];
@@ -892,6 +893,8 @@ class Handler extends Base {
             console.log("REDNDER AGAIN!");
     }
     static renderDisplayCell(displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
+        if (displaycell.coord.offset)
+            Handler.activeOffset = true;
         if (displaycell.preRenderCallback)
             displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
         if (derender)
@@ -937,6 +940,8 @@ class Handler extends Base {
         // if (derender) displaycell.coord.within.reset();
         if (displaycell.postRenderCallback)
             displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
+        if (displaycell.coord.offset)
+            Handler.activeOffset = false;
     }
     static renderDisplayGroup(parentDisplaycell, derender) {
         let displaygroup = parentDisplaycell.displaygroup;
@@ -1129,6 +1134,7 @@ Handler.defaults = {
     cssString: " ",
     addThisHandlerToStack: true,
     controlledBySomething: false,
+    activeOffset: false,
 };
 Handler.argMap = {
     string: ["label"],
@@ -1234,7 +1240,7 @@ Css.defaults = {
     isClassname: true
 };
 Css.argMap = {
-    string: ["classname", "css", "cssHover", "cssSelect"],
+    string: ["classname", "css", "cssHover", "cssSelect", "cssSelectHover"],
     boolean: ["isClassname"]
 };
 Css.deleteOnFirstRunClassname = ".remove";
@@ -1972,7 +1978,8 @@ class Modal extends Base {
     buildHeader() {
         let THIS = this;
         if (!this.headerCell) {
-            this.headerCell = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_headerTitle`, this.headerTitle, Modal.headerCss, events({ ondrag: { onDown: function () { return Modal.startMoveModal(THIS.handler); }, onMove: function (offset) { return Modal.moveModal(THIS.handler, offset); },
+            this.headerCell = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_headerTitle`, this.headerTitle, Modal.headerCss, events({ ondrag: { onDown: function () { Modal.movingInstace = THIS; return Modal.startMoveModal(THIS.handler); }, onMove: function (offset) { return Modal.moveModal(THIS.handler, offset); },
+                    onUp: function (offset) { Modal.movingInstace = undefined; }
                 } })));
             if (this.showClose) {
                 this.headerCell.displaygroup.cellArray.push(this.buildClose());
@@ -2036,6 +2043,7 @@ class Modal extends Base {
         Modal.y = handler.coord.y;
     }
     static moveModal(handler, offset) {
+        Modal.offset = offset;
         let vp = pf.viewport();
         let x = Modal.x + offset["x"];
         if (x < 0)
@@ -2387,7 +2395,7 @@ class Tree extends Base {
             for (let childNode of node.children)
                 this.buildTreeNode(childNode, node.nodeCellArray, indent + this.indent);
             if (!node.collapsed)
-                pf.concatArray(cellArray, node.nodeCellArray);
+                DisplayCell.concatArray(cellArray, node.nodeCellArray);
         }
     }
     render(displaycell) { }
@@ -2592,8 +2600,84 @@ Observe.argMap = {
     DisplayCell: ["parentDisplayCell"],
 };
 Observe.Os_ScrollbarSize = 15;
+class Dockable extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        if (this.rootDisplayCell)
+            this.displaygroup = this.rootDisplayCell.displaygroup;
+        Dockable.makeLabel(this);
+        this.dummy = I(`${this.label}_DockableDummy`);
+    }
+    render(displaycell, parentDisplaygroup, index, derender) {
+        // console.log("Moving?", ToolBar.isMoving)
+        if (ToolBar.isMoving && !ToolBar.activeInstace.isDocked) {
+            let toolbar = Dockable.activeToolbar = ToolBar.activeInstace;
+            let cellArray = this.displaygroup.cellArray;
+            if (!this.dropZones) {
+                this.dropZones = [];
+                for (let index = 0; index < cellArray.length; index++) {
+                    let displaycell1 = cellArray[index];
+                    let newCoord = new Coord();
+                    newCoord.copy(displaycell1.coord);
+                    newCoord.assign(undefined, undefined, undefined, toolbar.sizePx);
+                    this.dropZones.push(newCoord);
+                }
+                let displaycell1 = cellArray[cellArray.length - 1];
+                let newCoord = new Coord();
+                newCoord.copy(displaycell1.coord);
+                newCoord.assign(undefined, displaycell1.coord.height - toolbar.sizePx, undefined, toolbar.sizePx);
+                this.dropZones.push(newCoord);
+            }
+            for (let index = 0; index < this.dropZones.length; index++) {
+                let dropCoord = this.dropZones[index];
+                if (!toolbar.rootDisplayCell.coord.isCoordCompletelyOutside(dropCoord)) {
+                    if (Dockable.open == undefined) {
+                        Dockable.open = index;
+                        this.dummy.dim = `${toolbar.sizePx}px`;
+                        cellArray.splice(index, 0, this.dummy);
+                    }
+                }
+                else {
+                    if (index == Dockable.open) {
+                        Dockable.open = undefined;
+                        cellArray.splice(index, 1);
+                    }
+                }
+            }
+        }
+        else {
+            if (this.dropZones) {
+                if (Dockable.open != undefined) {
+                    let toolbar = Dockable.activeToolbar;
+                    this.displaygroup.cellArray[Dockable.open] = toolbar.rootDisplayCell;
+                    Dockable.open = undefined;
+                    toolbar.isDocked = true;
+                    toolbar.modal.hide();
+                    Handler.update();
+                }
+                this.dropZones = undefined;
+            }
+        }
+    }
+}
+Dockable.labelNo = 0;
+Dockable.instances = [];
+Dockable.activeInstances = [];
+Dockable.defaults = { type: "All", };
+Dockable.argMap = {
+    string: ["label", "type"],
+    DisplayCell: ["rootDisplayCell"],
+};
+function dockable(...Arguments) {
+    let overlay = new Overlay("Dockable", ...Arguments);
+    let newDockable = overlay.returnObj;
+    let parentDisplaycell = newDockable.rootDisplayCell;
+    parentDisplaycell.addOverlay(overlay);
+    return parentDisplaycell;
+}
+Overlay.classes["Dockable"] = Dockable;
 class ToolBar extends Base {
-    // page: Pages;
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -2612,27 +2696,51 @@ class ToolBar extends Base {
         this.makeModal();
     }
     static startMoveToolbar(THIS, handler) {
-        console.log("Start move Toolbar");
+        Modal.movingInstace = THIS.modal;
     }
     static moveToolbar(THIS, handler, offset) {
-        // console.log(offset);
+        THIS.rootDisplayCell.coord.setOffset(offset.x, offset.y);
         if (Math.abs(offset["x"]) > ToolBar.triggerUndockDistance || Math.abs(offset["y"]) > ToolBar.triggerUndockDistance) {
+            THIS.rootDisplayCell.coord.setOffset();
             ToolBar.undock(THIS, handler, offset);
         }
+        Handler.update();
     }
     static undock(THIS, handler, offset) {
-        console.log("Undock!");
-        //////////////////// here!
+        let index = THIS.parentDisplayGroup.cellArray.indexOf(THIS.rootDisplayCell);
+        if (index > -1)
+            THIS.parentDisplayGroup.cellArray.splice(index, 1); // pop from previous DisplayGroup
+        THIS.isDocked = false; // Mark as unDocked
+        Modal.x = THIS.rootDisplayCell.coord.x;
+        Modal.y = THIS.rootDisplayCell.coord.y;
+        let [width, height] = THIS.setModalSize();
+        let x = THIS.rootDisplayCell.coord.x + offset.x;
+        let y = THIS.rootDisplayCell.coord.y + offset.y;
+        THIS.modal.setSize(x, y, width, height);
+        THIS.modal.show();
     }
     build() {
         let THIS = this;
         let checker = I(`${this.label}_checker`, ToolBar.llm_checker, "10px", events({ ondrag: {
                 onDown: function () {
+                    // console.log("onDown");
+                    ToolBar.isMoving = true;
+                    ToolBar.activeInstace = THIS;
                     return (THIS.isDocked) ? ToolBar.startMoveToolbar(THIS, THIS.modal.handler) : Modal.startMoveModal(THIS.modal.handler);
                 },
                 onMove: function (offset) {
                     return (THIS.isDocked) ? ToolBar.moveToolbar(THIS, THIS.modal.handler, offset) : Modal.moveModal(THIS.modal.handler, offset);
                 },
+                onUp: function (offset) {
+                    // console.log("onUp");
+                    ToolBar.isMoving = false;
+                    ToolBar.activeInstace = undefined;
+                    Modal.movingInstace = undefined;
+                    if (THIS.isDocked) {
+                        THIS.rootDisplayCell.coord.setOffset();
+                    }
+                    Handler.update();
+                }
             } }));
         this.hBar = h(`${this.label}_hBar`, `${this.sizePx}px`);
         this.vBar = v(`${this.label}_hBar`, `${this.sizePx}px`);
@@ -2642,12 +2750,8 @@ class ToolBar extends Base {
             P(`${this.label}_toolbar_Pages`, `${this.sizePx}px`, this.hBar, this.vBar, this.sizeFunction);
     }
     makeModal() {
-        // this.modal = new Modal("hi","inner","title","footer");
         this.modal =
             new Modal(`${this.label}_modal`, { fullCell: this.rootDisplayCell }, ...(this.setModalSize()));
-        // setTimeout(() => {
-        //     this.modal.show();    
-        // }, 0);
     }
     setModalSize() {
         let width = (this.isHor) ? this.displaycells.length * this.sizePx : this.sizePx;
@@ -2683,20 +2787,19 @@ ToolBar.llm_checker = css("llm_checker", `cursor:pointer;
     /* for fun */
     transition-property: background-position, background-size;
     transition-duration: 2s;`);
-ToolBar.defaults = { sizePx: 25, isDocked: true, isHor: true };
+ToolBar.defaults = { sizePx: 25, isDocked: true, isHor: true, type: "All" };
 ToolBar.argMap = {
     string: ["label", "type"],
     // DisplayCell : see constructor,
     number: ["sizePx"],
 };
-ToolBar.triggerUndockDistance = 10;
+ToolBar.triggerUndockDistance = 15;
+ToolBar.isMoving = false;
 function tool_bar(...Arguments) {
-    // console.log("start");
     let overlay = new Overlay("ToolBar", ...Arguments);
     let newToolBar = overlay.returnObj;
     let parentDisplaycell = newToolBar.rootDisplayCell;
     parentDisplaycell.addOverlay(overlay);
-    // console.log("parentDisplayCell",parentDisplaycell);
     return parentDisplaycell;
 }
 Overlay.classes["ToolBar"] = ToolBar;
