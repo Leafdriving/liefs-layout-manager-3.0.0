@@ -143,6 +143,9 @@ class Handler extends Base {
                 Pages.pushHistory();
             }
             pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
+            /// new trial
+            // pages.dim = pages.displaycells[evalCurrentPage].dim
+            // new trial
             Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
@@ -273,7 +276,7 @@ class Handler extends Base {
                 dgCoord.height -= (ishor) ? scrollWidth : 0;
                 dgCoord.within.height -= (ishor) ? scrollWidth : 0;
                 let offset = (<ScrollBar>displaygroup.overlay.returnObj).offset;
-                console.log(offset);
+                // console.log(offset);
                 x -= (ishor) ? offset : 0;
                 y -= (ishor) ? 0 : offset;
             }

@@ -9,6 +9,8 @@
 // import {events, Events} from './Events';
 // import {Pages, P} from './Pages';
 
+// import { LabeledStatement } from "../node_modules/typescript/lib/typescript";
+
 class Dockable extends Base {
     static labelNo = 0;
     static instances:Dockable[] = [];
@@ -22,6 +24,7 @@ class Dockable extends Base {
 
     static open:number; //number of dropZone Active
     static activeToolbar:ToolBar;
+    static DockableOwner:string;
     dummy:DisplayCell;
     label: string;
     type: string;
@@ -36,6 +39,7 @@ class Dockable extends Base {
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         // console.log("Moving?", ToolBar.isMoving)
+        let ishor = this.displaygroup.ishor;
         if (ToolBar.isMoving && !ToolBar.activeInstace.isDocked ){
             let toolbar = Dockable.activeToolbar = ToolBar.activeInstace;
             let cellArray = this.displaygroup.cellArray;
@@ -45,25 +49,32 @@ class Dockable extends Base {
                     let displaycell1  = cellArray[index];
                     let newCoord = new Coord();
                     newCoord.copy( displaycell1.coord );
-                    newCoord.assign(undefined, undefined, undefined, toolbar.sizePx);
+                    newCoord.assign(undefined, undefined,
+                                (ishor) ? toolbar.ifHorWidth : undefined,
+                                (ishor) ? undefined : toolbar.ifVerHeight);
                     this.dropZones.push(newCoord);
                 }
                 let displaycell1 = cellArray[cellArray.length-1];
                 let newCoord = new Coord();
                 newCoord.copy( displaycell1.coord );
-                newCoord.assign(undefined, displaycell1.coord.height - toolbar.sizePx, undefined, toolbar.sizePx);
+                // console.log(ishor) ///////////////////////////////////////////
+                newCoord.assign((ishor) ? displaycell1.coord.width - toolbar.ifHorWidth : undefined,
+                                (ishor) ? undefined : displaycell1.coord.height - toolbar.ifVerHeight,
+                                (ishor) ? toolbar.ifHorWidth : undefined,
+                                (ishor) ? undefined : toolbar.ifVerHeight );
                 this.dropZones.push(newCoord);
             }
             for (let index = 0; index < this.dropZones.length; index++) {
                 let dropCoord = this.dropZones[index];
                 if (!toolbar.rootDisplayCell.coord.isCoordCompletelyOutside(dropCoord)) {
                     if (Dockable.open == undefined){
+                        Dockable.DockableOwner = this.label;
                         Dockable.open = index;
-                        this.dummy.dim = `${toolbar.sizePx}px`;
+                        this.dummy.dim = `${(ishor) ? toolbar.ifHorWidth : toolbar.ifVerHeight}px`;
                         cellArray.splice(index, 0, this.dummy);
                     }
                 } else {
-                    if (index == Dockable.open) {
+                    if (index == Dockable.open && Dockable.DockableOwner == this.label) {
                         Dockable.open = undefined;
                         cellArray.splice(index, 1);
                     }
@@ -71,15 +82,15 @@ class Dockable extends Base {
             }
         } else {
             if (this.dropZones) {
-                if (Dockable.open != undefined) {
+                if (Dockable.open != undefined && Dockable.DockableOwner == this.label) {
                     let toolbar = Dockable.activeToolbar;
                     this.displaygroup.cellArray[Dockable.open] = toolbar.rootDisplayCell;
                     Dockable.open = undefined;
                     toolbar.isDocked = true;
                     toolbar.modal.hide();
-                    Handler.update();
                 }
                 this.dropZones = undefined;
+                Handler.update();
             }
         }
     }
@@ -119,17 +130,20 @@ class ToolBar extends Base {
     static argMap = {
         string : ["label", "type"],
         // DisplayCell : see constructor,
-        number: ["sizePx"],
+        number: ["ifHorWidth", "ifVerHeight"],
     }
     static triggerUndockDistance:number =  15;
     static isMoving:boolean =  false;
     static activeInstace: ToolBar;
+    static checkerSize:number = 10;
 
     // retArgs:ArgsObj;   // <- this will appear
     label:string;
     type:string;
 
     sizePx: number;
+    ifVerHeight: number;
+    ifHorWidth: number;
 
     parentDisplayGroup: DisplayGroup;
 
@@ -153,7 +167,7 @@ class ToolBar extends Base {
             this.displaycells = this.retArgs["DisplayCell"];
             for (let index = 0; index < this.displaycells.length; index++) {
                 let displaycell = this.displaycells[index];
-                if (!displaycell.dim) displaycell.dim = `${this.sizePx}px`;
+                if (!displaycell.dim) displaycell.dim = `${this.ifHorWidth}px`;
             }
         }
         if (!this.rootDisplayCell) this.build();
@@ -185,7 +199,7 @@ class ToolBar extends Base {
     }
     build(){
         let THIS = this;
-        let checker = I(`${this.label}_checker`, ToolBar.llm_checker, "10px",
+        let checker = I(`${this.label}_checker`, ToolBar.llm_checker, `${ToolBar.checkerSize}px`,
                         events({ondrag: {
             onDown : function(){
                 // console.log("onDown");
@@ -204,12 +218,13 @@ class ToolBar extends Base {
                 Handler.update();
             }
                                   }}),);
-        this.hBar = h(`${this.label}_hBar`, `${this.sizePx}px`);
-        this.vBar = v(`${this.label}_hBar`, `${this.sizePx}px`);
+        this.hBar = h(`${this.label}_hBar`, `${this.ifVerHeight}px`); // within a vertical container
+        this.vBar = v(`${this.label}_hBar`, `${this.ifHorWidth}px`);  // witin a horizontal container
         this.displaycells.unshift(checker);
         this.hBar.displaygroup.cellArray = this.vBar.displaygroup.cellArray =  this.displaycells;
+        // console.log(this.ifHorWidth, this.ifVerHeight)
         this.rootDisplayCell =
-        P(`${this.label}_toolbar_Pages`, `${this.sizePx}px`,
+        P(`${this.label}`, // `${this.ifVerHeight}px`, // px should not be set here!!!!!
             this.hBar,
             this.vBar,
             this.sizeFunction,
@@ -223,16 +238,48 @@ class ToolBar extends Base {
         );
     }
     setModalSize():  [number, number] {
-        let width = (this.isHor) ? this.displaycells.length * this.sizePx: this.sizePx;
-        let height = (this.isHor) ? this.sizePx : this.displaycells.length * this.sizePx;
+        let width = (this.isHor) ? this.ifHorWidth : this.displaycells.length * this.ifHorWidth + ToolBar.checkerSize;
+        let height = (this.isHor) ? this.displaycells.length * this.ifVerHeight+ ToolBar.checkerSize : this.ifVerHeight;
+        // console.log(this.rootDisplayCell, this)
+        // console.log("Set Modal Size", this.isHor, width, height)
+        console.log("Setting Modal Size", width, height)
         return [width, height];
     }
     sizeFunction(thisPages:Pages):number {
-        return 0;
+        let toolbar = <ToolBar>ToolBar.byLabel(thisPages.label);
+        let returnValue = (toolbar.isHor) ? 1 : 0;
+        // if (thisPages.currentPage != returnValue){
+        //     for (let index = 0; index < thisPages.displaycells.length; index++) {
+        //         let displaycell = thisPages.displaycells[index];
+        //         displaycell.dim = (returnValue) ? `${this.ifHorWidth}px` : `${this.ifVerHeight}px`;
+        //     }
+        // }
+        // console.log("returnValue", toolbar.isHor, returnValue)
+        return returnValue;
       }
-      render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-            if (!this.parentDisplayGroup) this.parentDisplayGroup = parentDisplaygroup
-      }
+    render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+        if (this.parentDisplayGroup == undefined) {
+            if (parentDisplaygroup != undefined) {
+                this.parentDisplayGroup = parentDisplaygroup;
+                if (!parentDisplaygroup.label.endsWith("NoSwitch"))
+                    this.isHor = parentDisplaygroup.ishor;
+                // console.log(parentDisplaygroup.label.endsWith("NoSwitch"), parentDisplaygroup.label)
+            }
+        } else {
+            if (this.parentDisplayGroup != parentDisplaygroup) {
+                this.parentDisplayGroup = parentDisplaygroup;
+                if (!parentDisplaygroup.label.endsWith("NoSwitch"))
+                    this.isHor = parentDisplaygroup.ishor;
+                // console.log(parentDisplaygroup.label.endsWith("NoSwitch"), parentDisplaygroup.label)
+            }
+        }
+
+        // if (this.parentDisplayGroup != parentDisplaygroup) {
+        //     this.parentDisplayGroup = parentDisplaygroup;
+        //     if (parentDisplaygroup) this.isHor = parentDisplaygroup.ishor;
+        // }
+        // console.log(parentDisplaygroup.label)
+    }
 }
 function tool_bar(...Arguments:any) {
     let overlay=new Overlay("ToolBar", ...Arguments);

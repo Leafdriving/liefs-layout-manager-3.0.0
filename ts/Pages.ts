@@ -27,7 +27,9 @@ class Pages extends Base {
     currentPage: number;
     previousPage: number;
     evalFunction: Function;
-    dim:string;
+    // dim:string;
+    get dim() { return this.evalCell().dim; }
+    set dim(value:string) {console.log ("Do Not Set 'Dim' value in Pages.  It is inherited.")}
 
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);

@@ -1,4 +1,58 @@
+class PropModal extends Base {
+    static propModals: {[key: string]: PropModal} = {};
+    static labelNo = 0;
+    static instances:PropModal[] = [];
+    static activeInstances:PropModal[] = [];
+    static defaults = {width:400,height:400}
+    static argMap = {
+        string : ["label"],
+        Modal : ["modal"],
+        DisplayCell : ["displaycell"],
+        number : ["width", "height"],
+        function: ["byObjectFunction"],
+    }
+    static cellHeight = 25;
+    // retArgs:ArgsObj;   // <- this will appear
+    label: string; // also TYPE!
+
+    modal: Modal;
+    displaycell:DisplayCell;
+    width:number;
+    height:number;
+    byObjectFunction: Function;
+    theObject: object;
+
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
+
+        PropModal.makeLabel(this);
+
+        if (!this.modal) this.modal = new Modal(`${this.label}_Prop`, this.width, this.height);
+        
+    }
+    // setLabel() {this.modal.setTitle(`${this.label}.${this.theObject["label"]} Properties`);}
+    static set(label:string, theObject:object){
+      let propInstance = PropModal.propModals[label];
+      // console.log(propInstance)
+      propInstance.theObject = theObject;
+      propInstance.modal.setBody(   PropModal.htmlBlock( (<HtmlBlock>theObject) )   );
+      //console.log(propInstance.modal)
+      return propInstance.modal;
+    }
+    static htmlBlock(htmlBlock: HtmlBlock, cellHeight:number = PropModal.cellHeight): DisplayCell { 
+      return v("htmlBlock_v",
+        h("htmlBlock_h", `${cellHeight}px`,
+            I("htmlBlock_label_",`Label:`),
+            I("htmlBlock_label", `${htmlBlock.label}`),
+        ),
+      )
+    }
+}
+
+PropModal.propModals["htmlBlock"] = new PropModal("htmlBlock", "htmlBlock", PropModal.htmlBlock);
+
 class Builder {
+    
     constructor(){
     }
     static hoverModalDisplayCell: DisplayCell = I("hoverModal", bCss.bgBlack)
@@ -108,6 +162,8 @@ window.onload = function(){
 
 
 
+
+
 let mainBodyDisplayCell = I("Main_body");
 mainBodyDisplayCell.postRenderCallback = 
   function(displaycell: DisplayCell, displaygroup:DisplayGroup, index:number, derender:boolean) {
@@ -134,7 +190,7 @@ H("Client Window",
   }
 );
 
-let TOOLBAR = tool_bar("Main_toolbar",
+let TOOLBAR = tool_bar("Main_toolbar", 40, 25,
   I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
   I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
   I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
@@ -148,7 +204,8 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
     dockable(v("Main_Dockable",
-      TOOLBAR,                                             /// put toolbar back here!
+      TOOLBAR,
+      dockable(
       h("Tree_Body", 5,
         tree("Display",
           dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),
@@ -157,7 +214,9 @@ let mainHandler = H("Main Window", 4,
           25,
         ),
         mainBodyDisplayCell
+      ),
       )
+
     )),
   )
 );

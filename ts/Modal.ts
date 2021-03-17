@@ -80,7 +80,7 @@ class Modal extends Base {
             Modal.makeLabel(this); // see Base.ts
             this.build();
         }
-        this.handler = H(`${this.label}_h`,v(this.fullCell),this.coord, false, this.preRenderCallback.bind(this));
+        this.handler = H(`${this.label}_h`,v(`${this.label}_NoSwitch`, this.fullCell),this.coord, false, this.preRenderCallback.bind(this));
     }
     setSize(...numbers:number[]) {
         let [vpX, vpY] = pf.viewport();
@@ -92,14 +92,22 @@ class Modal extends Base {
             height=numbers[1];
             x = (vpX - width)/2;
             y = (vpY - height)/2;
-            this.coord.assign(x, y, width, height);
+            this.coord.assign(x, y, width, height, 0, 0, vpX, vpY);
+            // console.log("TWO ARGS");
         } else if (numberOfArgs >= 4) {
             if (!this.coord) this.coord = new Coord();
-            this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3]);
-            this.coord.within.x = this.coord.within.y = 0;
-            this.coord.within.width = vpX;
-            this.coord.within.height = vpY;
+            this.coord.assign(numbers[0], numbers[1], numbers[2], numbers[3], 0, 0, vpX, vpY);
+            // this.coord.within.x = this.coord.within.y = 0;
+            // this.coord.within.width = vpX;
+            // this.coord.within.height = vpY;
         }
+    }
+    setBody(newBody:DisplayCell){
+        let index = this.fullCell.displaygroup.cellArray.indexOf(this.bodyCell);
+        if (index > -1) {
+            this.fullCell.displaygroup.cellArray[index] = newBody;
+            this.bodyCell = newBody;
+        } else console.log("Not Found");
     }
     setContent(html:string){this.bodyCell.htmlBlock.innerHTML = html;Handler.update();}
     setTitle(html:string) {this.headerCell.displaygroup.cellArray[0].htmlBlock.innerHTML = html;Handler.update();}
@@ -149,7 +157,7 @@ class Modal extends Base {
                                 );
     }
     buildFull(){
-        this.fullCell = v(this.bodyCell)
+        this.fullCell = v(`${this.label}_fullCell`, this.bodyCell)
         if (this.showHeader){
             this.fullCell.displaygroup.cellArray.unshift(this.headerCell)
         }

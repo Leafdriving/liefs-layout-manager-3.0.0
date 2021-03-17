@@ -1079,7 +1079,7 @@ class Handler extends Base {
                 dgCoord.height -= (ishor) ? scrollWidth : 0;
                 dgCoord.within.height -= (ishor) ? scrollWidth : 0;
                 let offset = displaygroup.overlay.returnObj.offset;
-                console.log(offset);
+                // console.log(offset);
                 x -= (ishor) ? offset : 0;
                 y -= (ishor) ? 0 : offset;
             }
@@ -1848,13 +1848,13 @@ class ScrollBar extends Base {
         (this.ishor) ? this.leftArrow : this.upArrow, this.prePaddle, this.paddle, this.postPaddle, (this.ishor) ? this.rightArrow : this.downArrow, this.label);
     }
     clickLeftorUp(mouseEvent, noTimes = 1) {
-        this.offset -= this.offsetPixelRatio * noTimes;
+        this.offset -= (this.offsetPixelRatio * 10) * noTimes;
         if (this.offset < 0)
             this.offset = 0;
         Handler.update();
     }
     clickRightOrDown(mouseEvent, noTimes = 1) {
-        this.offset += this.offsetPixelRatio * noTimes;
+        this.offset += (this.offsetPixelRatio * 10) * noTimes;
         if (this.offset > this.maxOffset)
             this.offset = this.maxOffset;
         Handler.update();
@@ -1911,9 +1911,13 @@ class ScrollBar extends Base {
         preDisplayCell.dim = `${prePercent}%`;
         paddleDisplayCell.dim = `${paddlePercent}%`;
         postDisplayCell.dim = `${postPercent}%`;
-        let pixelForStretch = fixedPixels * percentAfterPaddle / 100;
-        this.offsetPixelRatio = (fixedPixels - viewingPixels) / pixelForStretch;
-        this.clickPageSize = ((paddlePercent) / 100) * (fixedPixels - viewingPixels);
+        let screenPixelsNotShown = fixedPixels - viewingPixels;
+        let scrollbarPixelsNotShown = viewingPixels - this.scrollWidth * 2;
+        this.offsetPixelRatio = screenPixelsNotShown / scrollbarPixelsNotShown; // so bigger than 1:
+        this.clickPageSize = (paddlePercent / 100) * fixedPixels;
+        // let pixelForStretch = fixedPixels*percentAfterPaddle/100
+        //this.offsetPixelRatio = 
+        //this.clickPageSize = 
         // console.log(this.clickPageSize)
         Handler.currentZindex += Handler.zindexIncrement * 2;
         this.currentlyRendered = !derender;

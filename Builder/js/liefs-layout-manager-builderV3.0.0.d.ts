@@ -374,7 +374,8 @@ declare class Pages extends Base {
     currentPage: number;
     previousPage: number;
     evalFunction: Function;
-    dim: string;
+    get dim(): string;
+    set dim(value: string);
     constructor(...Arguments: any);
     eval(): any;
     evalCell(): DisplayCell;
@@ -650,6 +651,7 @@ declare class Modal extends Base {
     withinCoord: Coord;
     constructor(...Arguments: any);
     setSize(...numbers: number[]): void;
+    setBody(newBody: DisplayCell): void;
     setContent(html: string): void;
     setTitle(html: string): void;
     setFooter(html: string): void;
@@ -816,6 +818,7 @@ declare class Dockable extends Base {
     };
     static open: number;
     static activeToolbar: ToolBar;
+    static DockableOwner: string;
     dummy: DisplayCell;
     label: string;
     type: string;
@@ -844,9 +847,12 @@ declare class ToolBar extends Base {
     static triggerUndockDistance: number;
     static isMoving: boolean;
     static activeInstace: ToolBar;
+    static checkerSize: number;
     label: string;
     type: string;
     sizePx: number;
+    ifVerHeight: number;
+    ifHorWidth: number;
     parentDisplayGroup: DisplayGroup;
     rootDisplayCell: DisplayCell;
     displaycells: DisplayCell[];
@@ -887,6 +893,36 @@ declare class bCss {
     static vSVG: Css;
     static ISVG: Css;
     static pagesSVG: Css;
+}
+declare class PropModal extends Base {
+    static propModals: {
+        [key: string]: PropModal;
+    };
+    static labelNo: number;
+    static instances: PropModal[];
+    static activeInstances: PropModal[];
+    static defaults: {
+        width: number;
+        height: number;
+    };
+    static argMap: {
+        string: string[];
+        Modal: string[];
+        DisplayCell: string[];
+        number: string[];
+        function: string[];
+    };
+    static cellHeight: number;
+    label: string;
+    modal: Modal;
+    displaycell: DisplayCell;
+    width: number;
+    height: number;
+    byObjectFunction: Function;
+    theObject: object;
+    constructor(...Arguments: any);
+    static set(label: string, theObject: object): Modal;
+    static htmlBlock(htmlBlock: HtmlBlock, cellHeight?: number): DisplayCell;
 }
 declare class Builder {
     constructor();

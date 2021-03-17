@@ -116,12 +116,12 @@ class ScrollBar extends Base {
                             );
     }
     clickLeftorUp(mouseEvent:MouseEvent|WheelEvent, noTimes:number=1){
-        this.offset -= this.offsetPixelRatio*noTimes;
+        this.offset -= (this.offsetPixelRatio*10)*noTimes;
         if (this.offset < 0) this.offset = 0;
         Handler.update();
     }
     clickRightOrDown(mouseEvent:MouseEvent|WheelEvent, noTimes:number=1){
-        this.offset += this.offsetPixelRatio*noTimes;
+        this.offset += (this.offsetPixelRatio*10)*noTimes;
         if (this.offset > this.maxOffset) this.offset = this.maxOffset;
         Handler.update();
     }
@@ -181,9 +181,14 @@ class ScrollBar extends Base {
         paddleDisplayCell.dim = `${paddlePercent}%`;
         postDisplayCell.dim = `${postPercent}%`;
 
-        let pixelForStretch = fixedPixels*percentAfterPaddle/100
-        this.offsetPixelRatio = (fixedPixels-viewingPixels)/pixelForStretch;
-        this.clickPageSize = ((paddlePercent)/100)*(fixedPixels - viewingPixels)
+        let screenPixelsNotShown = fixedPixels-viewingPixels;
+        let scrollbarPixelsNotShown = viewingPixels-this.scrollWidth*2;
+        this.offsetPixelRatio = screenPixelsNotShown/scrollbarPixelsNotShown; // so bigger than 1:
+        this.clickPageSize = (paddlePercent/100)*fixedPixels
+
+        // let pixelForStretch = fixedPixels*percentAfterPaddle/100
+        //this.offsetPixelRatio = 
+        //this.clickPageSize = 
         // console.log(this.clickPageSize)
 
         Handler.currentZindex += Handler.zindexIncrement*2;
