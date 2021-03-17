@@ -9,7 +9,7 @@
         "module" :"amd",
     },
     "include": [
-        "../js/liefs-layout-managerV3.0.0.d.ts",
+        "../dist/liefs-layout-managerV3.0.0.GLOBALS.full.d.ts",
     ],
     "files": [
         "ts/CSS.ts",

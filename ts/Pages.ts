@@ -33,8 +33,8 @@ class Pages extends Base {
 
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
-        Pages.pop(this);
-        Pages.instances.unshift(this);
+        Pages.pop(this);                        // pages must be added
+        Pages.instances.unshift(this);          // in reverse order!
 
         if (this.retArgs["DisplayCell"])
             this.displaycells = this.retArgs["DisplayCell"];
@@ -51,8 +51,25 @@ class Pages extends Base {
             Handler.update();
         }
     }
+    byLabel(label:string): number {
+        for (let index = 0; index < this.displaycells.length; index++) {
+            const displaycell = this.displaycells[index];
+            if (displaycell.label == label) return index;
+        }
+        return -1
+    }
+    static byLabel(label:string) {
+        for (let index = 0; index < Pages.instances.length; index++) {
+            const page = Pages.instances[index];
+            if (page.label == label) return page;
+        }
+        return undefined;
+    }
     addSelected(pageNumber:number = this.currentPage){
-        let querry = document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}']`);
+        let querry = document.querySelectorAll(
+            `[pagebutton='${this.label}|${pageNumber}'],`+
+            `[pagebutton='${this.label}|${pageNumber}'],`
+            ); // ".classA, .classB"
         let el:Element;
         let select:string;
         for (let i = 0; i < querry.length; i++){
@@ -83,24 +100,7 @@ class Pages extends Base {
             el.onclick = function(event) {Tree.onclick.bind(this)(event);}
         }
     }
-    indexByName(name:string): number {
-        for (let index = 0; index < this.displaycells.length; index++) {
-            const displaycell = this.displaycells[index];
-            if (displaycell.label == name) return index;
-        }
-        return -1
-    }
     static button(pagename:string, index:string|number): object {
-        // let page = Pages.byLabel(pagename);
-        // let newIndex:number
-        // if (typeof(index) == "string") {
-        //     newIndex = page.indexByName(index);
-        //     if (newIndex == -1) {
-        //         console.log(`Pages.button -> no page called ${index}`);
-        //         return {}
-        //     }
-        //     index = newIndex;
-        // }
         return {attributes : {pagebutton : `${pagename}|${index}`}}
     }
     static parseURL(url = window.location.href){

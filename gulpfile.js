@@ -59,11 +59,11 @@ async function watchTS(cb) {
 
 exports.makeGlobal = makeGlobal;
 exports.makeModule = makeModule;
-exports.copyDeclare = copyDeclare;
-exports.deleteDeclare = deleteDeclare;
+// exports.copyDeclare = copyDeclare;
+// exports.deleteDeclare = deleteDeclare;
 exports.makeScoped = makeScoped;
 exports.minify = minify;
-exports.watch = watchTS;
-exports.move = series(copyDeclare, deleteDeclare);
+// exports.watch = watchTS;
+// exports.move = series(copyDeclare, deleteDeclare);
 exports.default = series(makeGlobal, makeModule, makeScoped, minify);
 

@@ -374,15 +374,17 @@ declare class Pages extends Base {
     currentPage: number;
     previousPage: number;
     evalFunction: Function;
-    dim: string;
+    get dim(): string;
+    set dim(value: string);
     constructor(...Arguments: any);
     eval(): any;
     evalCell(): DisplayCell;
     setPage(pageNumber: number): void;
+    byLabel(label: string): number;
+    static byLabel(label: string): Pages;
     addSelected(pageNumber?: number): void;
     static setPage(label: string, pageNumber: number): void;
     static applyOnclick(): void;
-    indexByName(name: string): number;
     static button(pagename: string, index: string | number): object;
     static parseURL(url?: string): void;
     static pushHistory(): void;
@@ -650,6 +652,7 @@ declare class Modal extends Base {
     withinCoord: Coord;
     constructor(...Arguments: any);
     setSize(...numbers: number[]): void;
+    setBody(newBody: DisplayCell): void;
     setContent(html: string): void;
     setTitle(html: string): void;
     setFooter(html: string): void;
@@ -816,6 +819,7 @@ declare class Dockable extends Base {
     };
     static open: number;
     static activeToolbar: ToolBar;
+    static DockableOwner: string;
     dummy: DisplayCell;
     label: string;
     type: string;
@@ -844,9 +848,12 @@ declare class ToolBar extends Base {
     static triggerUndockDistance: number;
     static isMoving: boolean;
     static activeInstace: ToolBar;
+    static checkerSize: number;
     label: string;
     type: string;
     sizePx: number;
+    ifVerHeight: number;
+    ifHorWidth: number;
     parentDisplayGroup: DisplayGroup;
     rootDisplayCell: DisplayCell;
     displaycells: DisplayCell[];
