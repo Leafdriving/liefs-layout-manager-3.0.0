@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="250"
+   height="250"
+   viewBox="0 0 25 25"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)"
+   sodipodi:docname="book.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="108.26343"
+     inkscape:cy="117.04855"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g975"
+       transform="matrix(0.06903947,0,0,0.04821212,-4.1848864,0.66159884)">
+      <g
+         id="g915">
+	<g
+   id="g913">
+		<g
+   id="g911">
+			<path
+   d="m 131.75,409.1 c -28.8,0 -52.1,18.3 -52.1,40.4 0,22.6 23.3,40.4 52.1,40.4 h 278.4 c -22.6,-24.1 -22.6,-56.8 0,-80.9 h -278.4 z"
+   id="path905" />
+
+			<path
+   d="m 120.15,1.9 c -23.3,7 -40.4,32.7 -40.4,63.8 v 342.2 c 10.5,-9.3 24.9,-15.9 40.4,-17.9 z"
+   id="path907" />
+
+			<polygon
+   points="139.95,388.9 410.25,388.9 410.25,0 244.95,0 244.95,99.2 204.85,73.9 164.85,99.2 164.85,0 139.95,0 "
+   id="polygon909" />
+
+		</g>
+
+	</g>
+
+</g>
+      <g
+         id="g917">
+</g>
+      <g
+         id="g919">
+</g>
+      <g
+         id="g921">
+</g>
+      <g
+         id="g923">
+</g>
+      <g
+         id="g925">
+</g>
+      <g
+         id="g927">
+</g>
+      <g
+         id="g929">
+</g>
+      <g
+         id="g931">
+</g>
+      <g
+         id="g933">
+</g>
+      <g
+         id="g935">
+</g>
+      <g
+         id="g937">
+</g>
+      <g
+         id="g939">
+</g>
+      <g
+         id="g941">
+</g>
+      <g
+         id="g943">
+</g>
+      <g
+         id="g945">
+</g>
+    </g>
+  </g>
+</svg>
