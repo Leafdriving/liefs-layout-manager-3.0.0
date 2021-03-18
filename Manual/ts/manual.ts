@@ -9,7 +9,7 @@ let clickTreeItemEvent = events({onclick:function(mouseEvent:MouseEvent){
 
 function header(label:string, index:number, size=120){
   let noPages = 4;
-  return v(`${label}_v`, 5,
+  return v(label, 5,
     I("1px"),
     h(`${label}_h`, "25px", 15,
       I("1px"),
@@ -22,6 +22,15 @@ function header(label:string, index:number, size=120){
     I(label, CSS.textBlack),
   )
   }
+  // let MainPages = P("PAGES");
+  // MainPages.pages.displaycells = [
+  //   header("Welcome", 0),
+  //   header("Installation", 1),
+  //   header("The Basics", 2),
+  //   header("HTML vs Javascript", 3, 200),
+  //   header("Basics - DisplayCell", 4, 210),
+  // ]
+  
 let MainPages = P("PAGES",
   header("Welcome", 0),
     header("Installation", 1),
@@ -29,6 +38,13 @@ let MainPages = P("PAGES",
       header("HTML vs Javascript", 3, 200),
       header("Basics - DisplayCell", 4, 210),
   )
+  
+  // MainPages.pages.displaycells.push(header("Installation", 1))
+  // MainPages.pages.displaycells.push(header("The Basics", 2))  
+  // MainPages.pages.displaycells.push(header("HTML vs Javascript", 3, 200))
+  // MainPages.pages.displaycells.push(header("Basics - DisplayCell", 4, 210))
+  // MainPages.pages.displaycells.push()
+  // MainPages.pages.displaycells.push()
 
 let treeOfNodes:t_ = 
 TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},

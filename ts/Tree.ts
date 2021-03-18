@@ -265,9 +265,11 @@ class Tree extends Base {
         let value = el.getAttribute("pagebutton");
         let valueArray = value.split("|");
         let pagename = valueArray[0];
-        let pageNo = valueArray[1];
+        let pageNo:string|number = valueArray[1];
+        let page = Pages.byLabel(pagename);
+        if (page.byLabel(pageNo) == -1) pageNo = parseInt(pageNo)
 
-        Pages.setPage( pagename, parseInt(pageNo) );
+        Pages.setPage( pagename, pageNo );
         if (HtmlBlock.byLabel(el.id).events && HtmlBlock.byLabel(el.id).events.actions["onclick"]) {
             var doit = HtmlBlock.byLabel(el.id).events.actions["onclick"].bind(el);
             doit(event);

@@ -955,11 +955,14 @@ class Handler extends Base {
                 Pages.activePages.push(pages);
             let evalCurrentPage = pages.eval();
             if (evalCurrentPage != pages.previousPage) { // derender old page here
+                // console.log("pages.previousPage", pages.previousPage)
+                // console.log(pages.displaycells[pages.previousPage])
                 pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
                 pages.currentPage = pages.previousPage = evalCurrentPage;
                 Pages.pushHistory();
             }
+            // console.log("evalCurrentPage",evalCurrentPage);
             pages.displaycells[evalCurrentPage].coord.copy(displaycell.coord);
             /// new trial
             // pages.dim = pages.displaycells[evalCurrentPage].dim
@@ -1437,15 +1440,17 @@ class Pages extends Base {
         if (this.retArgs["DisplayCell"])
             this.displaycells = this.retArgs["DisplayCell"];
         else
-            pf.errorHandling("Pages Requires at least one DisplayCells");
+            this.displaycells = [];
         Pages.makeLabel(this);
     }
     // dim:string;
     get dim() { return this.evalCell().dim; }
-    set dim(value) { console.log("Do Not Set 'Dim' value in Pages.  It is inherited."); }
+    set dim(value) { console.log(`Do Not Set 'Dim' value in Pages("${this.label}").  It is inherited.`); }
     eval() { return this.evalFunction(this); }
     evalCell() { return this.displaycells[this.eval()]; }
     setPage(pageNumber) {
+        if (typeof (pageNumber) == "string")
+            pageNumber = this.byLabel(pageNumber);
         if (pageNumber != this.currentPage) {
             // this.previousPage = this.currentPage;
             this.currentPage = pageNumber;
@@ -1469,8 +1474,8 @@ class Pages extends Base {
         return undefined;
     }
     addSelected(pageNumber = this.currentPage) {
-        let querry = document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}'],` +
-            `[pagebutton='${this.label}|${pageNumber}'],`); // ".classA, .classB"
+        let labelOfPageNumber = this.displaycells[pageNumber].label;
+        let querry = document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}'], [pagebutton='${this.label}|${labelOfPageNumber}']`); // ".classA, .classB"
         let el;
         let select;
         for (let i = 0; i < querry.length; i++) {
@@ -1490,18 +1495,17 @@ class Pages extends Base {
     static setPage(label, pageNumber) { Pages.byLabel(label).setPage(pageNumber); }
     static applyOnclick() {
         let querry = document.querySelectorAll(`[pagebutton]`);
-        let value;
-        let valueArray;
-        let pagename;
-        let pageNo;
         let el;
-        let THIS = this;
         for (let i = 0; i < querry.length; i++) {
             el = (querry[i]);
             el.onclick = function (event) { Tree.onclick.bind(this)(event); };
         }
     }
-    static button(pagename, index) {
+    static button(pagename, index, keepAsNumber = false) {
+        let page = Pages.byLabel(pagename);
+        if (!keepAsNumber && page && typeof (index) == "number") {
+            index = page.displaycells[index].label;
+        }
         return { attributes: { pagebutton: `${pagename}|${index}` } };
     }
     static parseURL(url = window.location.href) {
@@ -2689,7 +2693,10 @@ class Tree extends Base {
         let valueArray = value.split("|");
         let pagename = valueArray[0];
         let pageNo = valueArray[1];
-        Pages.setPage(pagename, parseInt(pageNo));
+        let page = Pages.byLabel(pagename);
+        if (page.byLabel(pageNo) == -1)
+            pageNo = parseInt(pageNo);
+        Pages.setPage(pagename, pageNo);
         if (HtmlBlock.byLabel(el.id).events && HtmlBlock.byLabel(el.id).events.actions["onclick"]) {
             var doit = HtmlBlock.byLabel(el.id).events.actions["onclick"].bind(el);
             doit(event);

@@ -379,13 +379,13 @@ declare class Pages extends Base {
     constructor(...Arguments: any);
     eval(): any;
     evalCell(): DisplayCell;
-    setPage(pageNumber: number): void;
+    setPage(pageNumber: number | string): void;
     byLabel(label: string): number;
     static byLabel(label: string): Pages;
     addSelected(pageNumber?: number): void;
-    static setPage(label: string, pageNumber: number): void;
+    static setPage(label: string, pageNumber: number | string): void;
     static applyOnclick(): void;
-    static button(pagename: string, index: string | number): object;
+    static button(pagename: string, index: string | number, keepAsNumber?: boolean): object;
     static parseURL(url?: string): void;
     static pushHistory(): void;
     static popstate(event: PopStateEvent): void;

@@ -222,9 +222,23 @@ let clickTreeItemEvent = events({ onclick: function (mouseEvent) {
     } });
 function header(label, index, size = 120) {
     let noPages = 4;
-    return v(`${label}_v`, 5, I("1px"), h(`${label}_h`, "25px", 15, I("1px"), I(`${label}_label`, label, CSS.insetLarge, `${size}px`), I(), I(`${label}_prev`, "Previous Page", CSS.h1h, "145px", Pages.button("PAGES", (index <= 0) ? 0 : index - 1)), I(`${label}_next`, "Next Page", CSS.h1h, "110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)), I("15px")), I(label, CSS.textBlack));
+    return v(label, 5, I("1px"), h(`${label}_h`, "25px", 15, I("1px"), I(`${label}_label`, label, CSS.insetLarge, `${size}px`), I(), I(`${label}_prev`, "Previous Page", CSS.h1h, "145px", Pages.button("PAGES", (index <= 0) ? 0 : index - 1)), I(`${label}_next`, "Next Page", CSS.h1h, "110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)), I("15px")), I(label, CSS.textBlack));
 }
+// let MainPages = P("PAGES");
+// MainPages.pages.displaycells = [
+//   header("Welcome", 0),
+//   header("Installation", 1),
+//   header("The Basics", 2),
+//   header("HTML vs Javascript", 3, 200),
+//   header("Basics - DisplayCell", 4, 210),
+// ]
 let MainPages = P("PAGES", header("Welcome", 0), header("Installation", 1), header("The Basics", 2), header("HTML vs Javascript", 3, 200), header("Basics - DisplayCell", 4, 210));
+// MainPages.pages.displaycells.push(header("Installation", 1))
+// MainPages.pages.displaycells.push(header("The Basics", 2))  
+// MainPages.pages.displaycells.push(header("HTML vs Javascript", 3, 200))
+// MainPages.pages.displaycells.push(header("Basics - DisplayCell", 4, 210))
+// MainPages.pages.displaycells.push()
+// MainPages.pages.displaycells.push()
 let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", { attributes: { pagebutton: "PAGES|0" } }, [TI("Installation", Pages.button("PAGES", 1)),
     TI("The Basics", Pages.button("PAGES", 2), [TI("HTML vs Javascript", Pages.button("PAGES", 3)),
         TI("DisplayCell", Pages.button("PAGES", 4))]),

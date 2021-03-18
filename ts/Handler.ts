@@ -137,11 +137,14 @@ class Handler extends Base {
             if (!derender) Pages.activePages.push(pages);
             let evalCurrentPage:number = pages.eval();
             if (evalCurrentPage != pages.previousPage){ // derender old page here
+                // console.log("pages.previousPage", pages.previousPage)
+                // console.log(pages.displaycells[pages.previousPage])
                 pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
                 pages.currentPage = pages.previousPage = evalCurrentPage;
                 Pages.pushHistory();
             }
+            // console.log("evalCurrentPage",evalCurrentPage);
             pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
             /// new trial
             // pages.dim = pages.displaycells[evalCurrentPage].dim

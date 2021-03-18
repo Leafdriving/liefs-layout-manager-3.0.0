@@ -29,7 +29,7 @@ class Pages extends Base {
     evalFunction: Function;
     // dim:string;
     get dim() { return this.evalCell().dim; }
-    set dim(value:string) {console.log ("Do Not Set 'Dim' value in Pages.  It is inherited.")}
+    set dim(value:string) {console.log (`Do Not Set 'Dim' value in Pages("${this.label}").  It is inherited.`)}
 
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
@@ -39,12 +39,13 @@ class Pages extends Base {
         if (this.retArgs["DisplayCell"])
             this.displaycells = this.retArgs["DisplayCell"];
         else
-            pf.errorHandling("Pages Requires at least one DisplayCells");
+            this.displaycells = [];
         Pages.makeLabel(this);
     }
     eval(){return this.evalFunction(this)}
     evalCell(){return this.displaycells[ this.eval() ];}
-    setPage(pageNumber:number){
+    setPage(pageNumber:number|string){
+        if (typeof(pageNumber) == "string") pageNumber = this.byLabel(pageNumber);
         if (pageNumber != this.currentPage){
             // this.previousPage = this.currentPage;
             this.currentPage = pageNumber;
@@ -66,10 +67,9 @@ class Pages extends Base {
         return undefined;
     }
     addSelected(pageNumber:number = this.currentPage){
+        let labelOfPageNumber = this.displaycells[pageNumber].label
         let querry = document.querySelectorAll(
-            `[pagebutton='${this.label}|${pageNumber}'],`+
-            `[pagebutton='${this.label}|${pageNumber}'],`
-            ); // ".classA, .classB"
+            `[pagebutton='${this.label}|${pageNumber}'], [pagebutton='${this.label}|${labelOfPageNumber}']`); // ".classA, .classB"
         let el:Element;
         let select:string;
         for (let i = 0; i < querry.length; i++){
@@ -86,21 +86,20 @@ class Pages extends Base {
         }
         // console.log(el);
     }
-    static setPage(label:string, pageNumber:number) {Pages.byLabel(label).setPage(pageNumber)}
+    static setPage(label:string, pageNumber:number|string) {Pages.byLabel(label).setPage(pageNumber)}
     static applyOnclick(){
         let querry = document.querySelectorAll(`[pagebutton]`);
-        let value:string;
-        let valueArray:string[];
-        let pagename:string;
-        let pageNo:string;
         let el:HTMLElement;
-        let THIS = this;
         for (let i = 0; i < querry.length; i++){
             el = <HTMLElement>(querry[i]);
             el.onclick = function(event) {Tree.onclick.bind(this)(event);}
         }
     }
-    static button(pagename:string, index:string|number): object {
+    static button(pagename:string, index:string|number, keepAsNumber = false): object {
+        let page = Pages.byLabel(pagename);
+        if (!keepAsNumber && page && typeof(index) == "number") {
+            index = page.displaycells[index].label;
+        }
         return {attributes : {pagebutton : `${pagename}|${index}`}}
     }
     static parseURL(url = window.location.href){
