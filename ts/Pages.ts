@@ -54,8 +54,16 @@ class Pages extends Base {
     }
     byLabel(label:string): number {
         for (let index = 0; index < this.displaycells.length; index++) {
-            const displaycell = this.displaycells[index];
-            if (displaycell.label == label) return index;
+            let displaycell = this.displaycells[index];
+
+            
+            let dslabel = displaycell.label
+            if (dslabel.endsWith("_DisplayCell")) {  /////////////////////////////////////// double check!
+                dslabel = dslabel.slice(0, -12);
+            }
+
+
+            if (dslabel == label) return index;
         }
         return -1
     }
@@ -68,6 +76,9 @@ class Pages extends Base {
     }
     addSelected(pageNumber:number = this.currentPage){
         let labelOfPageNumber = this.displaycells[pageNumber].label
+        if (labelOfPageNumber.endsWith("_DisplayCell")) {  /////////////////////////////////////// double check!
+            labelOfPageNumber = labelOfPageNumber.slice(0, -12);
+        }
         let querry = document.querySelectorAll(
             `[pagebutton='${this.label}|${pageNumber}'], [pagebutton='${this.label}|${labelOfPageNumber}']`); // ".classA, .classB"
         let el:Element;
@@ -99,6 +110,9 @@ class Pages extends Base {
         let page = Pages.byLabel(pagename);
         if (!keepAsNumber && page && typeof(index) == "number") {
             index = page.displaycells[index].label;
+            if (index.endsWith("_DisplayCell")) {  /////////////////////////////////////// double check!
+                index = index.slice(0, -12);
+            }
         }
         return {attributes : {pagebutton : `${pagename}|${index}`}}
     }

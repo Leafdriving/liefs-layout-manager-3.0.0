@@ -3,12 +3,16 @@ declare var Prism:any;
 // Build Tree
 
 let clickTreeItemEvent = events({onclick:function(mouseEvent:MouseEvent){
-  // console.log(this);
-  // console.log( TreeNode.byLabel(this.id).labelCell.htmlBlock.innerHTML )
+  let treeNode = TreeNode.byLabel(this.id);
+  let tree = TreeNode.parentTree(treeNode);
+  if (treeNode.collapsed)
+    tree.toggleCollapse(treeNode, undefined, undefined)
+
+  console.log(TreeNode.path(treeNode));
 }});
 
 function header(label:string, index:number, size=120){
-  let noPages = 4;
+  let noPages = 9;
   return v(label, 5,
     I("1px"),
     h(`${label}_h`, "25px", 15,
@@ -22,14 +26,6 @@ function header(label:string, index:number, size=120){
     I(label, CSS.textBlack),
   )
   }
-  // let MainPages = P("PAGES");
-  // MainPages.pages.displaycells = [
-  //   header("Welcome", 0),
-  //   header("Installation", 1),
-  //   header("The Basics", 2),
-  //   header("HTML vs Javascript", 3, 200),
-  //   header("Basics - DisplayCell", 4, 210),
-  // ]
   
 let MainPages = P("PAGES",
   header("Welcome", 0),
@@ -37,24 +33,74 @@ let MainPages = P("PAGES",
     header("The Basics", 2),
       header("HTML vs Javascript", 3, 200),
       header("Basics - DisplayCell", 4, 210),
+      header("Functions & Objects", 5, 205),
+      header("Arguments By Type", 6, 200),
+      header("Functions", 7),
+      header("Handlers", 8),
+      header("DisplayGroups", 9, 160),
   )
-  
-  // MainPages.pages.displaycells.push(header("Installation", 1))
-  // MainPages.pages.displaycells.push(header("The Basics", 2))  
-  // MainPages.pages.displaycells.push(header("HTML vs Javascript", 3, 200))
-  // MainPages.pages.displaycells.push(header("Basics - DisplayCell", 4, 210))
-  // MainPages.pages.displaycells.push()
-  // MainPages.pages.displaycells.push()
+
 
 let treeOfNodes:t_ = 
-TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
+TI("Welcome to Liefs-Layout-Manager", Pages.button("PAGES",0), /* {attributes : {pagebutton : "PAGES|0"} */
     [TI("Installation", Pages.button("PAGES",1) ),
     TI("The Basics", Pages.button("PAGES",2),
         [TI("HTML vs Javascript", Pages.button("PAGES",3)),
         TI("DisplayCell", Pages.button("PAGES",4))]
     ),
-    TI("Part 3",
-        [TI("3a")]),
+    TI("Functions & Objects", Pages.button("PAGES",5),
+        [TI("Arguments By Type", Pages.button("PAGES",6)),
+
+          TI(true, "Functions", Pages.button("PAGES",7),
+           [TI("H()", Pages.button("PAGES",8)),
+            TI("h() v()", Pages.button("PAGES",9)),
+            TI("I()"),
+            TI("P()"),
+            TI("css()"),
+            TI("swipe()"),
+            TI("dragbar()"),
+            TI("events"),
+            TI("html()"),
+            TI("stretch()"),
+            TI("dockable()"),
+            TI("tool_bar()"),
+            TI("T()"),
+            TI("tree()"),
+            TI("TI()"),
+        ]),
+
+        TI(true, "Objects", [
+          TI("Base"),
+          TI("htmlBlock"),
+          TI("DisplayCell"),
+          TI("DisplayGroup"),
+          TI("Coord"),
+          TI("Context"),
+          TI("Css"),
+          TI("DefaultTheme"),
+          TI("Drag"),
+          TI("Swipe"),
+          TI("DragBar"),
+          TI("Events"),
+          TI("FunctionStack"),
+          TI("Handler"),
+          TI("Hold"),
+          TI("Modal"),
+          TI("Stretch"),
+          TI("Observe"),
+          TI("Overlay"),
+          TI("Pages"),
+          TI("pf/mf"),
+          TI("ScrollBar"),
+          TI("Dockable"),
+          TI("ToolBar"),
+          TI("TreeNode"),
+          TI("Tree"),
+          TI("i_"),
+          TI("t_"), 
+          ]),
+        ]
+      ),
     ],
 )
 

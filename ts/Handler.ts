@@ -260,7 +260,7 @@ class Handler extends Base {
         let height:number;
 
         if (!displaygroup.label.includes("ScrollBar")) {
-            if (dimArrayTotal > maxpx) {
+            if (dimArrayTotal > maxpx + 2) {
                 // console.log(pxForPercent)
                 if (!overlay) {
                     displaygroup.overlay=new Overlay("ScrollBar",

@@ -165,6 +165,154 @@ H( {some code} ) // invoking a handler like this starts liefs-layout-manager fra
 <p>In our simplest example here, we have programmed everything in Javascript:</p>
 
     </div>
+
+
+
+
+    <div id="Functions & Objects">
+
+<p>Liefs-Layout-Manager is a frameword of nested (Class) Objects.</p>
+<p>In order to make Object Creation easier, I have added a lot of "Helper" functions
+  whose only purpose is to help with Object Creation.  All "Pure Functions", which
+  have nothing to do with object creations are located in the classes "pf" and "mf".</p>
+<p>For Example, I() is defined as:</p>
+<pre><code class="language-javascript" style="font-size: medium;">function I(...Arguments:any) /*: DisplayCell*/ {
+  return new DisplayCell( new HtmlBlock(...Arguments) )
+}</code></pre>
+<p>So the code:</p>
+<pre><code class="language-javascript" style="font-size: medium;">I("SomeLabel", "Some Inner Html")</code></pre>
+<p>could also be written as:</p>
+<pre><code class="language-javascript" style="font-size: medium;">new DisplayCell( new HtmlBlock("SomeLabel", "Some Inner Html") )</code></pre>
+<p>So, function I() supplies the arguments to an htmlBlock, wrapped in a DisplayCell</p>
+
+    </div>
+
+
+
+    <div id="Arguments By Type">
+
+<p>(almost) All liefs-layout-manager functions and Objects use "Argument By Type, then position" rather than (default) Position</p>
+<p>To show this in an Example:</p>
+<pre><code class="language-javascript" style="font-size: medium;">somefunction(1, "Two", new Three(), function(four){}, true, 5, "six")</code></pre>
+<p>and</p>
+<pre><code class="language-javascript" style="font-size: medium;">somefunction(true, new Three(), 1, 5, "Two", "six", function(four){})</code></pre>
+<p>Are EQUIVELENT, and would both be intrepreded as:</p>
+<pre><code class="language-javascript" style="font-size: medium;">{"string" : ["Two", "Six"], // first "string" argument is "Two", 2nd is "Six"
+"number" : [1, 5], // first "number" is 1, 2nd is 5
+"Three" : [ ThreeInstance  ], // first type (object) "Three" is ThreeInstance
+"function" : [ function(four){} ], // first "function" is function(four){}
+"boolean" : [ true ], // first "boolean" is true
+}</code></pre>
+
+
+
+    </div>
+
+
+    <div id="Functions">
+<p>When coding liefs-layout-manager in javascript/Typescript, you will "mostly" be using helper functions
+  created with the purpose of "easy" object creation.
+</p>
+    </div>
+
+
+    <div id="Handlers">
+<p>When coding liefs-layout-manager in javascript/Typescript, all functions and objects simply set parameters
+  of some sort.  NOTHING will happen until you initiate a Handler.  This is done with the handler Object (function).
+  A Handler function H() simply creates a new Handler Object.
+</p>
+<pre><code class="language-javascript" style="font-size: medium;">function H(...Arguments/*: any*/) /*: Handler */ {
+  return new Handler(...Arguments)
+}</code></pre><p>By Default, a Handler is "On" (rendering, and watching for events) once this function is completed.
+  to "Register" a handler, but keep it "off" (not rendering, and watching for events), simply include a "false" as
+  one of the arguments:</p>
+  <pre><code class="language-javascript" style="font-size: medium;">H("Some", h("arguments"), false, "other Arguments")</code></pre>  
+<p>Every Example HAS TO HAVE a handler, so... look at ANY other example as well!</p>
+<p>A Handler Instance has the following properties:</p>
+<pre><code class="language-javascript"style="font-size: medium;">label /*:string;*/                   // The name you give to the handler
+rootCell /*:DisplayCell*/            // any Display Cell (ie I(), h(), v() ...) Which acts as the Root.
+coord /*:Coord;*/                    // (optional) define x,y,width,height of Handler with a Coord Object
+cssString /*: string;*/              //
+handlerMargin /*: number;*/          // Number of pixels to leave "Blank" around the outside (Usuallu Screen size)
+addThisHandlerToStack /*: boolean;*/ // Default: true -> Show right Away - false -> I will display it later
+preRenderCallback /*: Function; */   // function to call before Handler is Rendered: function(handlerInstance){}
+postRenderCallback /*: Function;*/   // function to call after Handler is Rendered: function(handlerInstance){}</code></pre>
+<p>These can be included in the arguments according to the typemap:</p>
+<pre><code class="language-javascript"style="font-size: medium;">{ string : ["label"],
+  number : ["handlerMargin"],
+  Coord: ["coord"],
+  function: ["preRenderCallback", "postRenderCallback"],
+  boolean: ["addThisHandlerToStack"]}</code></pre>
+<p>So for example, the following Code:</p>
+<pre><code class="language-javascript"style="font-size: medium;">var handler = H("MyHandler",
+  I("OneCellOnly","innerHtml of Cell"),
+  10,
+  new Coord(0,0,50,50),
+  false,
+  function(handlerInstance) { console.log("Handler Is about to be calculated") },
+  function(handlerInstance) { console.log("Handler has been created") }
+);</code></pre>
+<p>Would assign variable handler to a new Handler() Object with the following properties:</p>
+<pre><code class="language-javascript"style="font-size: medium;">handler.label = "MyHandler"
+handler.rootCell = // (A DisplayCell Object with label "OneCellOnly")
+handler.coord = // (A Coord Object with x=0, y=0, width=50, height=50)
+handler.handlerMargin = 10 // leave a 10 pixel border on all 4 sides
+handler.addThisHandlerToStack = false // so define, but do not show right away
+handler.preRenderCallback = function(handlerInstance) { console.log("Handler Is about to be calculated") }
+handler.postRenderCallback =function(handlerInstance) { console.log("Handler has been created") }</code></pre>
+<p>See Handler Object for Static Properties.</p>
+          </div>
+
+
+          <div id="DisplayGroups">
+<p>All placement of "Where" Components (Divs) go on a page, are determined by "DisplayGroups".
+From the Root Cell (Most likely, the screen (Size) ), to the smallest cells, all positioning is
+determined by "DisplayGroups".  h() and v() are simply wrapper functions for a DisplayGroup.</p>
+<pre><code class="language-javascript" style="font-size: medium;">function h(...Arguments /*: any*/){
+  return new DisplayCell( new DisplayGroup(...Arguments) )
+}
+function v(...Arguments /*: any*/){
+  return new DisplayCell( new DisplayGroup(false, ...Arguments) );
+}</code></pre>
+<p>Both h() and v() return a DisplayGroup wrapped in a DisplayCell.  h() is used for cells placed horizontally,
+  and v() is for cells places vertically.
+</p>
+<p>A DisplayGroup Instance has the following properties:</p>
+<pre><code class="language-javascript"style="font-size: medium;">label /*:string;*/             //
+ishor /*:boolean;*/            // The name you give to the DisplayGroup
+cellArray /*: DisplayCell[] */ // The Array of DisplayCells contained within this DisplayGroup
+coord /*: Coord;*/             // This is handled interally - it is unlikely you would set it.
+htmlBlock /*: HtmlBlock */     // A Background (Usually a color/texture) that is UNDER the DisplayCells in the Group
+marginHor /*:number; */        // The horizontal space BETWEEN cells (no margins at the ends)
+marginVer /*:number; */        // The vertical space BETWEEN cells (no margins at the ends)
+dim /*:string; */              // this is a "Dim" value (string) ie "120px" (fixed size) or "50%"
+</code></pre>
+<p>These can be included in the arguments according to the typemap:</p>
+<pre><code class="language-javascript"style="font-size: medium;">{ string : ["label"],
+  boolean : ["ishor"],                 // note: h() means "true", and v() means false
+  number: ["marginHor", "marginVer"],
+  dim : ["dim"],
+  DisplayCell: //all provided
+}</code></pre>
+<p>So for example, the following Code:</p>
+<pre><code class="language-javascript"style="font-size: medium;">var horDGroup = h("MyHorizontal",
+  I("leftSize","innerHtml of left Div"),
+  I("rightSize","innerHtml of right Div"),
+  "15px",
+  5,
+  new htmlBlock("myBackgroun","", css("bgCyan","background-color: cyan;"))
+)</code></pre>
+<p>Would assign variable horDGroup to a new DisplayGroup() Object with the following properties:</p>
+<pre><code class="language-javascript"style="font-size: medium;">horDGroup.label = "MyHorizontal"
+horDGroup.ishor = true // This was set true, because we used h() not v()
+horDGroup.cellArray = [I("leftSize","innerHtml of left Div"),I("rightSize","innerHtml of right Div")]
+horDGroup.htmlBlock = new htmlBlock("myBackgroun","", css("bgCyan","background-color: cyan;")) // make background color cyan
+horDGroup.marginHor = 5 // there are now 5 blank pixels between Cells
+horDGroup.dim = "15px" // when this DisplayGroup is displayed, it should be 15 pixels in size (Parent Dependent)</code></pre>
+<p>See DislayGroup Object for Static Properties.</p>
+
+          </div>
+
 </body>
 </html>
 <script src="js/manual.js"></script>

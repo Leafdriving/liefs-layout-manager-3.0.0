@@ -102,14 +102,8 @@ class DisplayGroup extends Base {
 }
 function h(...Arguments: any){
     return new DisplayCell( new DisplayGroup(...Arguments) )
-    // let displaycell = new DisplayCell(new DisplayGroup(...Arguments) );
-    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
-    // return displaycell;
 }
 function v(...Arguments: any){
     return new DisplayCell( new DisplayGroup(false, ...Arguments) );
-    // let displaycell = new DisplayCell(new DisplayGroup(false, ...Arguments) );
-    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
-    // return displaycell;
 }
 // export {v, h, DisplayGroup}

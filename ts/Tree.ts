@@ -53,6 +53,20 @@ class TreeNode extends Base {
         }
         return newCellArray;
     }
+    static parentTree(node:TreeNode) {return Tree.byLabel(node.label.split("_")[0]);}
+    static path(node:TreeNode) {
+        let tree:Tree = TreeNode.parentTree(node);
+        let returnArray:any[] = [tree]
+        let labelArray = node.label.split("_");
+        labelArray.shift();                         // we already have tree, so remove that!
+        let loopnode = tree.rootTreeNode
+        while (labelArray.length) {                 // loop indexes in name to get children
+            returnArray.push(loopnode);
+            loopnode = loopnode.children[ parseInt( labelArray[0] )-1 ];
+            labelArray.shift();
+        }
+        return returnArray;
+    }
 }
 function T(...Arguments:any){return new TreeNode(...Arguments)}
 
@@ -144,18 +158,7 @@ class Tree extends Base {
         Tree.makeLabel(this);
         this.buildTreeNode(this.rootTreeNode, cellArray);
     }
-    // autoLabel(node = this.rootTreeNode, newLabel=`${this.label}`){
-    //     // node.label = node.labelCell.label = node.labelCell.htmlBlock.label = newLabel;
-    //     node.label = newLabel;
-    //     if (node.labelCell) {
-    //         node.labelCell.label = newLabel;
-    //         if (node.labelCell.htmlBlock)
-    //             node.labelCell.htmlBlock.label = newLabel;
-    //     }
-        
-    //     for (const key in node.children)
-    //         this.autoLabel(node.children[key], `${newLabel}_${key}`);
-    // }
+
     drawSVG(collapsed: boolean) : string{
         let X = this.collapsePad;
         let Y = (this.cellHeight - this.collapseSize)/2 + this.collapsePad;
@@ -247,15 +250,15 @@ class Tree extends Base {
         let returnArray:TreeNode[] = [];
         let returnTreeNode: TreeNode;
         let ii: i_ = node.TreeNodeArguments[0];
-        if (node.TreeNodeArguments.length > 1){
+        // if (node.TreeNodeArguments.length > 1){
             arrayOft_ = node.TreeNodeArguments[1];
             for (const singlet_ of arrayOft_) {
                 returnArray.push( Tree.makeTreeNodes(singlet_) );
             }
-            returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments), returnArray)
-        } else {
-            returnTreeNode = T(node.label,  I(ii.label, ...ii.Arguments) )
-        }
+            returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments), returnArray, node.TreeNodeArguments[2])
+        // } else {
+        //     returnTreeNode = T(node.label,  I(ii.label, ...ii.Arguments) )
+        // }
         return returnTreeNode
     }
     static t(...Arguments:any){return new t_(...Arguments)}
@@ -288,8 +291,13 @@ Overlay.classes["Tree"] = Tree;
 // this is a messy way to solve a problem...
 function TI(...Arguments:any) : t_ /*: TreeNode*/ {
     let arg:any;
-    let arrayInArgs:TreeNode[];
+    let arrayInArgs:TreeNode[] = [];
     let newT:t_;
+    let collapsed:boolean = false;
+    if (typeof(Arguments[0]) == "boolean" &&  Arguments[0] == true){
+        collapsed = true;
+        Arguments.shift();
+    }
     for (let index = 0; index < Arguments.length; index++) { // pull array from Arguments
         arg = Arguments[index];
         if (pf.isArray(arg)) {
@@ -299,8 +307,9 @@ function TI(...Arguments:any) : t_ /*: TreeNode*/ {
         }
     }
     let newI:i_ = Tree.i(/* "auto", */...Arguments); // name auto picked up in Tree Constructor.
-    if (arrayInArgs) newT = Tree.t(newI, arrayInArgs);
-    else newT = Tree.t(newI);
+    newT = Tree.t(newI, arrayInArgs, collapsed)
+    // if (arrayInArgs) newT = Tree.t(newI, arrayInArgs);
+    // else newT = Tree.t(newI);
     return newT
 }
 class i_{

@@ -726,6 +726,8 @@ declare class TreeNode extends Base {
     constructor(...Arguments: any);
     visibleChildren(noChildren?: number): number;
     addDisplayCells(newCellArray?: DisplayCell[], isFirst?: boolean): DisplayCell[];
+    static parentTree(node: TreeNode): any;
+    static path(node: TreeNode): any[];
 }
 declare function T(...Arguments: any): TreeNode;
 declare class Tree extends Base {

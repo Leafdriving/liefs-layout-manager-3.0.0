@@ -835,15 +835,9 @@ DisplayGroup.argMap = {
 DisplayGroup.argCustomTypes = [];
 function h(...Arguments) {
     return new DisplayCell(new DisplayGroup(...Arguments));
-    // let displaycell = new DisplayCell(new DisplayGroup(...Arguments) );
-    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
-    // return displaycell;
 }
 function v(...Arguments) {
     return new DisplayCell(new DisplayGroup(false, ...Arguments));
-    // let displaycell = new DisplayCell(new DisplayGroup(false, ...Arguments) );
-    // if (displaycell.displaygroup.dim) displaycell.dim = displaycell.displaygroup.dim;
-    // return displaycell;
 }
 // export {v, h, DisplayGroup}
 // import {Base} from './Base';
@@ -1071,7 +1065,7 @@ class Handler extends Base {
         let width;
         let height;
         if (!displaygroup.label.includes("ScrollBar")) {
-            if (dimArrayTotal > maxpx) {
+            if (dimArrayTotal > maxpx + 2) {
                 // console.log(pxForPercent)
                 if (!overlay) {
                     displaygroup.overlay = new Overlay("ScrollBar", `${displaygroup.label}_ScrollBar`, displaygroup, dimArrayTotal, maxpx);
@@ -1459,8 +1453,12 @@ class Pages extends Base {
     }
     byLabel(label) {
         for (let index = 0; index < this.displaycells.length; index++) {
-            const displaycell = this.displaycells[index];
-            if (displaycell.label == label)
+            let displaycell = this.displaycells[index];
+            let dslabel = displaycell.label;
+            if (dslabel.endsWith("_DisplayCell")) { /////////////////////////////////////// double check!
+                dslabel = dslabel.slice(0, -12);
+            }
+            if (dslabel == label)
                 return index;
         }
         return -1;
@@ -1475,6 +1473,9 @@ class Pages extends Base {
     }
     addSelected(pageNumber = this.currentPage) {
         let labelOfPageNumber = this.displaycells[pageNumber].label;
+        if (labelOfPageNumber.endsWith("_DisplayCell")) { /////////////////////////////////////// double check!
+            labelOfPageNumber = labelOfPageNumber.slice(0, -12);
+        }
         let querry = document.querySelectorAll(`[pagebutton='${this.label}|${pageNumber}'], [pagebutton='${this.label}|${labelOfPageNumber}']`); // ".classA, .classB"
         let el;
         let select;
@@ -1505,6 +1506,9 @@ class Pages extends Base {
         let page = Pages.byLabel(pagename);
         if (!keepAsNumber && page && typeof (index) == "number") {
             index = page.displaycells[index].label;
+            if (index.endsWith("_DisplayCell")) { /////////////////////////////////////// double check!
+                index = index.slice(0, -12);
+            }
         }
         return { attributes: { pagebutton: `${pagename}|${index}` } };
     }
@@ -2516,6 +2520,20 @@ class TreeNode extends Base {
         }
         return newCellArray;
     }
+    static parentTree(node) { return Tree.byLabel(node.label.split("_")[0]); }
+    static path(node) {
+        let tree = TreeNode.parentTree(node);
+        let returnArray = [tree];
+        let labelArray = node.label.split("_");
+        labelArray.shift(); // we already have tree, so remove that!
+        let loopnode = tree.rootTreeNode;
+        while (labelArray.length) { // loop indexes in name to get children
+            returnArray.push(loopnode);
+            loopnode = loopnode.children[parseInt(labelArray[0]) - 1];
+            labelArray.shift();
+        }
+        return returnArray;
+    }
 }
 TreeNode.instances = [];
 TreeNode.activeInstances = [];
@@ -2574,17 +2592,6 @@ class Tree extends Base {
         Tree.makeLabel(this);
         this.buildTreeNode(this.rootTreeNode, cellArray);
     }
-    // autoLabel(node = this.rootTreeNode, newLabel=`${this.label}`){
-    //     // node.label = node.labelCell.label = node.labelCell.htmlBlock.label = newLabel;
-    //     node.label = newLabel;
-    //     if (node.labelCell) {
-    //         node.labelCell.label = newLabel;
-    //         if (node.labelCell.htmlBlock)
-    //             node.labelCell.htmlBlock.label = newLabel;
-    //     }
-    //     for (const key in node.children)
-    //         this.autoLabel(node.children[key], `${newLabel}_${key}`);
-    // }
     drawSVG(collapsed) {
         let X = this.collapsePad;
         let Y = (this.cellHeight - this.collapseSize) / 2 + this.collapsePad;
@@ -2673,16 +2680,15 @@ class Tree extends Base {
         let returnArray = [];
         let returnTreeNode;
         let ii = node.TreeNodeArguments[0];
-        if (node.TreeNodeArguments.length > 1) {
-            arrayOft_ = node.TreeNodeArguments[1];
-            for (const singlet_ of arrayOft_) {
-                returnArray.push(Tree.makeTreeNodes(singlet_));
-            }
-            returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments), returnArray);
+        // if (node.TreeNodeArguments.length > 1){
+        arrayOft_ = node.TreeNodeArguments[1];
+        for (const singlet_ of arrayOft_) {
+            returnArray.push(Tree.makeTreeNodes(singlet_));
         }
-        else {
-            returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments));
-        }
+        returnTreeNode = T(node.label, I(ii.label, ...ii.Arguments), returnArray, node.TreeNodeArguments[2]);
+        // } else {
+        //     returnTreeNode = T(node.label,  I(ii.label, ...ii.Arguments) )
+        // }
         return returnTreeNode;
     }
     static t(...Arguments) { return new t_(...Arguments); }
@@ -2734,8 +2740,13 @@ Overlay.classes["Tree"] = Tree;
 // this is a messy way to solve a problem...
 function TI(...Arguments) {
     let arg;
-    let arrayInArgs;
+    let arrayInArgs = [];
     let newT;
+    let collapsed = false;
+    if (typeof (Arguments[0]) == "boolean" && Arguments[0] == true) {
+        collapsed = true;
+        Arguments.shift();
+    }
     for (let index = 0; index < Arguments.length; index++) { // pull array from Arguments
         arg = Arguments[index];
         if (pf.isArray(arg)) {
@@ -2745,10 +2756,9 @@ function TI(...Arguments) {
         }
     }
     let newI = Tree.i(/* "auto", */ ...Arguments); // name auto picked up in Tree Constructor.
-    if (arrayInArgs)
-        newT = Tree.t(newI, arrayInArgs);
-    else
-        newT = Tree.t(newI);
+    newT = Tree.t(newI, arrayInArgs, collapsed);
+    // if (arrayInArgs) newT = Tree.t(newI, arrayInArgs);
+    // else newT = Tree.t(newI);
     return newT;
 }
 class i_ {
