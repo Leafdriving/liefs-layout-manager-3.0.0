@@ -1418,6 +1418,25 @@ DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false);
 DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
 // context
 DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+// Toolbar
+DefaultTheme.llm_checker = css("llm_checker", `cursor:pointer;
+    --checkerSize: 2px; /* edit me */
+    background-image:
+      linear-gradient(45deg, lightgrey 25%, transparent 25%), 
+      linear-gradient(135deg, lightgrey 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, lightgrey 75%),
+      linear-gradient(135deg, transparent 75%, lightgrey 75%);
+    background-size: 
+      calc(2 * var(--checkerSize)) 
+      calc(2 * var(--checkerSize));
+    background-position: 
+      0 0, 
+      var(--checkerSize) 0, 
+      var(--checkerSize) calc(-1 * var(--checkerSize)), 
+      0px var(--checkerSize);
+    /* for fun */
+    transition-property: background-position, background-size;
+    transition-duration: 2s;`);
 Css.theme = DefaultTheme;
 // export {DefaultTheme}
 // import {Base} from './Base';
@@ -2173,7 +2192,7 @@ class Modal extends Base {
             Modal.makeLabel(this); // see Base.ts
             this.build();
         }
-        this.handler = H(`${this.label}_h`, v(`${this.label}_NoSwitch`, this.fullCell), this.coord, false, this.preRenderCallback.bind(this));
+        this.handler = H(`${this.label}_h`, v(`${this.label}_MODAL`, this.fullCell), this.coord, false, this.preRenderCallback.bind(this));
     }
     setSize(...numbers) {
         let [vpX, vpY] = pf.viewport();
@@ -2895,14 +2914,14 @@ class Dockable extends Base {
                     let displaycell1 = cellArray[index];
                     let newCoord = new Coord();
                     newCoord.copy(displaycell1.coord);
-                    newCoord.assign(undefined, undefined, (ishor) ? toolbar.ifHorWidth : undefined, (ishor) ? undefined : toolbar.ifVerHeight);
+                    newCoord.assign(undefined, undefined, (ishor) ? toolbar.width : undefined, (ishor) ? undefined : toolbar.height);
                     this.dropZones.push(newCoord);
                 }
                 let displaycell1 = cellArray[cellArray.length - 1];
                 let newCoord = new Coord();
                 newCoord.copy(displaycell1.coord);
                 // console.log(ishor) ///////////////////////////////////////////
-                newCoord.assign((ishor) ? displaycell1.coord.width - toolbar.ifHorWidth : undefined, (ishor) ? undefined : displaycell1.coord.height - toolbar.ifVerHeight, (ishor) ? toolbar.ifHorWidth : undefined, (ishor) ? undefined : toolbar.ifVerHeight);
+                newCoord.assign((ishor) ? displaycell1.coord.width - toolbar.width : undefined, (ishor) ? undefined : displaycell1.coord.height - toolbar.height, (ishor) ? toolbar.width : undefined, (ishor) ? undefined : toolbar.height);
                 this.dropZones.push(newCoord);
             }
             for (let index = 0; index < this.dropZones.length; index++) {
@@ -2911,7 +2930,7 @@ class Dockable extends Base {
                     if (Dockable.open == undefined) {
                         Dockable.DockableOwner = this.label;
                         Dockable.open = index;
-                        this.dummy.dim = `${(ishor) ? toolbar.ifHorWidth : toolbar.ifVerHeight}px`;
+                        this.dummy.dim = `${(ishor) ? toolbar.width : toolbar.height}px`;
                         cellArray.splice(index, 0, this.dummy);
                     }
                 }
@@ -2954,6 +2973,13 @@ function dockable(...Arguments) {
     return parentDisplaycell;
 }
 Overlay.classes["Dockable"] = Dockable;
+var ToolBarState;
+(function (ToolBarState) {
+    ToolBarState["dockedInVertical"] = "dockedInVertical";
+    ToolBarState["dockedInHorizontal"] = "dockedInHorizontal";
+    ToolBarState["modalWasDockedInHor"] = "modalWasDockedInHor";
+    ToolBarState["modalWasDockedInVer"] = "modalLastwasVer";
+})(ToolBarState || (ToolBarState = {}));
 class ToolBar extends Base {
     constructor(...Arguments) {
         super();
@@ -2965,7 +2991,7 @@ class ToolBar extends Base {
             for (let index = 0; index < this.displaycells.length; index++) {
                 let displaycell = this.displaycells[index];
                 if (!displaycell.dim)
-                    displaycell.dim = `${this.ifHorWidth}px`;
+                    displaycell.dim = `${this.width}px`;
             }
         }
         if (!this.rootDisplayCell)
@@ -2973,6 +2999,7 @@ class ToolBar extends Base {
         this.makeModal();
     }
     static startMoveToolbar(THIS, handler) {
+        console.log("startMoveToolbar");
         Modal.movingInstace = THIS.modal;
     }
     static moveToolbar(THIS, handler, offset) {
@@ -2984,32 +3011,48 @@ class ToolBar extends Base {
         Handler.update();
     }
     static undock(THIS, handler, offset) {
+        console.log("UnDocked!");
         let index = THIS.parentDisplayGroup.cellArray.indexOf(THIS.rootDisplayCell);
         if (index > -1)
             THIS.parentDisplayGroup.cellArray.splice(index, 1); // pop from previous DisplayGroup
         THIS.isDocked = false; // Mark as unDocked
+        THIS.state = (THIS.parentDisplayGroup.ishor) ? ToolBarState.modalWasDockedInHor : ToolBarState.modalWasDockedInVer;
         Modal.x = THIS.rootDisplayCell.coord.x;
         Modal.y = THIS.rootDisplayCell.coord.y;
         let [width, height] = THIS.setModalSize();
-        let x = THIS.rootDisplayCell.coord.x + offset.x;
-        let y = THIS.rootDisplayCell.coord.y + offset.y;
+        let x = Modal.x + offset.x;
+        let y = Modal.y + offset.y;
         THIS.modal.setSize(x, y, width, height);
         THIS.modal.show();
     }
+    show() { if (!this.isDocked)
+        this.modal.show(); }
+    hide() { if (!this.isDocked)
+        this.modal.hide(); }
+    setArrayPx(value) {
+        for (let index = 1; index < this.displaycells.length; index++)
+            this.displaycells[index].dim = `${value}px`;
+    }
     build() {
         let THIS = this;
-        let checker = I(`${this.label}_checker`, ToolBar.llm_checker, `${ToolBar.checkerSize}px`, events({ ondrag: {
+        let checker = I(`${this.label}_checker`, DefaultTheme.llm_checker, `${ToolBar.checkerSize}px`, events({ ondrag: {
                 onDown: function () {
-                    // console.log("onDown");
+                    console.log("onDown - THIS.isDocked ->", THIS.isDocked);
                     ToolBar.isMoving = true;
                     ToolBar.activeInstace = THIS;
-                    return (THIS.isDocked) ? ToolBar.startMoveToolbar(THIS, THIS.modal.handler) : Modal.startMoveModal(THIS.modal.handler);
+                    if (THIS.isDocked)
+                        ToolBar.startMoveToolbar(THIS, THIS.modal.handler);
+                    else
+                        Modal.startMoveModal(THIS.modal.handler);
                 },
                 onMove: function (offset) {
-                    return (THIS.isDocked) ? ToolBar.moveToolbar(THIS, THIS.modal.handler, offset) : Modal.moveModal(THIS.modal.handler, offset);
+                    if (THIS.isDocked)
+                        ToolBar.moveToolbar(THIS, THIS.modal.handler, offset);
+                    else
+                        Modal.moveModal(THIS.modal.handler, offset);
                 },
                 onUp: function (offset) {
-                    // console.log("onUp");
+                    console.log("Mouse Up");
                     ToolBar.isMoving = false;
                     ToolBar.activeInstace = undefined;
                     Modal.movingInstace = undefined;
@@ -3019,89 +3062,67 @@ class ToolBar extends Base {
                     Handler.update();
                 }
             } }));
-        this.hBar = h(`${this.label}_hBar`, `${this.ifVerHeight}px`); // within a vertical container
-        this.vBar = v(`${this.label}_hBar`, `${this.ifHorWidth}px`); // witin a horizontal container
-        this.displaycells.unshift(checker);
-        this.hBar.displaygroup.cellArray = this.vBar.displaygroup.cellArray = this.displaycells;
-        // console.log(this.ifHorWidth, this.ifVerHeight)
-        this.rootDisplayCell =
-            P(`${this.label}`, // `${this.ifVerHeight}px`, // px should not be set here!!!!!
-            this.hBar, this.vBar, this.sizeFunction);
+        this.rootDisplayCell = h(`${this.label}_hBar`, `${this.height}px`);
+        this.rootDisplayCell.displaygroup.cellArray = this.displaycells;
+        this.rootDisplayCell.displaygroup.cellArray.unshift(checker);
+        this.setArrayPx(this.width);
     }
     makeModal() {
-        this.modal =
-            new Modal(`${this.label}_modal`, { fullCell: this.rootDisplayCell }, ...(this.setModalSize()));
+        this.modal = new Modal(`${this.label}_modal`, { fullCell: this.rootDisplayCell }, ...(this.setModalSize()));
     }
     setModalSize() {
-        let width = (this.isHor) ? this.ifHorWidth : this.displaycells.length * this.ifHorWidth + ToolBar.checkerSize;
-        let height = (this.isHor) ? this.displaycells.length * this.ifVerHeight + ToolBar.checkerSize : this.ifVerHeight;
-        // console.log(this.rootDisplayCell, this)
-        // console.log("Set Modal Size", this.isHor, width, height)
-        console.log("Setting Modal Size", width, height);
+        let width = (this.state == ToolBarState.modalWasDockedInHor) ? this.width
+            : this.displaycells.length * this.width + ToolBar.checkerSize;
+        let height = (this.state == ToolBarState.modalWasDockedInHor) ? this.displaycells.length * this.height + ToolBar.checkerSize
+            : this.height;
         return [width, height];
     }
-    sizeFunction(thisPages) {
-        let toolbar = ToolBar.byLabel(thisPages.label);
-        let returnValue = (toolbar.isHor) ? 1 : 0;
-        // if (thisPages.currentPage != returnValue){
-        //     for (let index = 0; index < thisPages.displaycells.length; index++) {
-        //         let displaycell = thisPages.displaycells[index];
-        //         displaycell.dim = (returnValue) ? `${this.ifHorWidth}px` : `${this.ifVerHeight}px`;
-        //     }
-        // }
-        // console.log("returnValue", toolbar.isHor, returnValue)
-        return returnValue;
-    }
     render(displaycell, parentDisplaygroup, index, derender) {
-        if (this.parentDisplayGroup == undefined) {
-            if (parentDisplaygroup != undefined) {
-                this.parentDisplayGroup = parentDisplaygroup;
-                if (!parentDisplaygroup.label.endsWith("NoSwitch"))
-                    this.isHor = parentDisplaygroup.ishor;
-                // console.log(parentDisplaygroup.label.endsWith("NoSwitch"), parentDisplaygroup.label)
+        if (parentDisplaygroup != undefined) {
+            this.parentDisplayGroup = parentDisplaygroup;
+            let isModal = parentDisplaygroup.label.endsWith("_MODAL");
+            let newState;
+            if (isModal) {
+                if (this.state == ToolBarState.dockedInHorizontal)
+                    newState = ToolBarState.modalWasDockedInHor;
+                else if (this.state == ToolBarState.dockedInVertical)
+                    newState = ToolBarState.modalWasDockedInVer;
+                else
+                    newState = this.state;
+            }
+            else {
+                if (parentDisplaygroup.ishor)
+                    newState = ToolBarState.dockedInHorizontal;
+                else
+                    newState = ToolBarState.dockedInVertical;
+            }
+            if (this.state != newState) { // respond to state change
+                let wasDocked = this.isDocked;
+                let isDocked = (newState == ToolBarState.dockedInHorizontal || newState == ToolBarState.dockedInVertical);
+                let wasHor = (this.state == ToolBarState.dockedInVertical || this.state == ToolBarState.modalWasDockedInVer);
+                let isHor = (newState == ToolBarState.dockedInVertical || newState == ToolBarState.modalWasDockedInVer);
+                console.log(`State Change(${this.label}): Was ${this.state}, now ${newState}`);
+                if (wasHor != isHor) {
+                    console.log(`Direction Change Detected - Setting isHor to ${isHor}`);
+                    this.setArrayPx((isHor) ? this.width : this.height);
+                    this.rootDisplayCell.displaygroup.ishor = isHor;
+                }
+                if (wasDocked != isDocked) {
+                    console.log(`Toolbar ${this.label} has been switched to ${(isDocked) ? "" : "un"}docked`);
+                    this.isDocked = isDocked;
+                }
+                this.state = newState;
             }
         }
-        else {
-            if (this.parentDisplayGroup != parentDisplaygroup) {
-                this.parentDisplayGroup = parentDisplaygroup;
-                if (!parentDisplaygroup.label.endsWith("NoSwitch"))
-                    this.isHor = parentDisplaygroup.ishor;
-                // console.log(parentDisplaygroup.label.endsWith("NoSwitch"), parentDisplaygroup.label)
-            }
-        }
-        // if (this.parentDisplayGroup != parentDisplaygroup) {
-        //     this.parentDisplayGroup = parentDisplaygroup;
-        //     if (parentDisplaygroup) this.isHor = parentDisplaygroup.ishor;
-        // }
-        // console.log(parentDisplaygroup.label)
     }
 }
 ToolBar.labelNo = 0;
 ToolBar.instances = [];
 ToolBar.activeInstances = [];
-ToolBar.llm_checker = css("llm_checker", `cursor:pointer;
-    --checkerSize: 2px; /* edit me */
-    background-image:
-      linear-gradient(45deg, lightgrey 25%, transparent 25%), 
-      linear-gradient(135deg, lightgrey 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, lightgrey 75%),
-      linear-gradient(135deg, transparent 75%, lightgrey 75%);
-    background-size: 
-      calc(2 * var(--checkerSize)) 
-      calc(2 * var(--checkerSize));
-    background-position: 
-      0 0, 
-      var(--checkerSize) 0, 
-      var(--checkerSize) calc(-1 * var(--checkerSize)), 
-      0px var(--checkerSize);
-    /* for fun */
-    transition-property: background-position, background-size;
-    transition-duration: 2s;`);
-ToolBar.defaults = { sizePx: 25, isDocked: true, isHor: true, type: "All" };
+ToolBar.defaults = { sizePx: 25, isDocked: false, isHor: true, type: "All", state: ToolBarState.modalWasDockedInVer };
 ToolBar.argMap = {
     string: ["label", "type"],
-    // DisplayCell : see constructor,
-    number: ["ifHorWidth", "ifVerHeight"],
+    number: ["width", "height"],
 };
 ToolBar.triggerUndockDistance = 15;
 ToolBar.isMoving = false;

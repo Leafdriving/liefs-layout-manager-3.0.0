@@ -353,6 +353,7 @@ declare class DefaultTheme {
     static advisedDiv: Css;
     static advisedBody: Css;
     static context: Css;
+    static llm_checker: Css;
 }
 declare class Pages extends Base {
     static activePages: Pages[];
@@ -831,16 +832,22 @@ declare class Dockable extends Base {
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function dockable(...Arguments: any): DisplayCell;
+declare enum ToolBarState {
+    dockedInVertical = "dockedInVertical",
+    dockedInHorizontal = "dockedInHorizontal",
+    modalWasDockedInHor = "modalWasDockedInHor",
+    modalWasDockedInVer = "modalLastwasVer"
+}
 declare class ToolBar extends Base {
     static labelNo: number;
     static instances: ToolBar[];
     static activeInstances: ToolBar[];
-    static llm_checker: Css;
     static defaults: {
         sizePx: number;
         isDocked: boolean;
         isHor: boolean;
         type: string;
+        state: ToolBarState;
     };
     static argMap: {
         string: string[];
@@ -850,20 +857,17 @@ declare class ToolBar extends Base {
     static isMoving: boolean;
     static activeInstace: ToolBar;
     static checkerSize: number;
+    state: ToolBarState;
     label: string;
     type: string;
-    sizePx: number;
-    ifVerHeight: number;
-    ifHorWidth: number;
+    height: number;
+    width: number;
     parentDisplayGroup: DisplayGroup;
     rootDisplayCell: DisplayCell;
     displaycells: DisplayCell[];
     spacer: DisplayCell;
-    hBar: DisplayCell;
-    vBar: DisplayCell;
     modal: Modal;
     isDocked: boolean;
-    isHor: boolean;
     coord: Coord;
     constructor(...Arguments: any);
     static startMoveToolbar(THIS: ToolBar, handler: Handler): void;
@@ -875,10 +879,12 @@ declare class ToolBar extends Base {
         x: number;
         y: number;
     }): void;
+    show(): void;
+    hide(): void;
+    setArrayPx(value: number): void;
     build(): void;
     makeModal(): void;
     setModalSize(): [number, number];
-    sizeFunction(thisPages: Pages): number;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function tool_bar(...Arguments: any): DisplayCell;

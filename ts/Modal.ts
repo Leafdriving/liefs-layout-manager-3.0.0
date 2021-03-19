@@ -80,7 +80,7 @@ class Modal extends Base {
             Modal.makeLabel(this); // see Base.ts
             this.build();
         }
-        this.handler = H(`${this.label}_h`,v(`${this.label}_NoSwitch`, this.fullCell),this.coord, false, this.preRenderCallback.bind(this));
+        this.handler = H(`${this.label}_h`,v(`${this.label}_MODAL`, this.fullCell),this.coord, false, this.preRenderCallback.bind(this));
     }
     setSize(...numbers:number[]) {
         let [vpX, vpY] = pf.viewport();

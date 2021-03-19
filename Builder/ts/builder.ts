@@ -195,6 +195,7 @@ let TOOLBAR = tool_bar("Main_toolbar", 40, 25,
   I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
   I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
 );
+// console.log("ToolBar", TOOLBAR)
 
 let mainHandler = H("Main Window", 4,
   v("Main_v",
@@ -203,9 +204,9 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Edit","Edit", "35px", bCss.menuItem),
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
-    dockable(v("Main_Dockable",
+    /*dockable(*/v("Main_Dockable",
       TOOLBAR,
-      dockable(
+      /*dockable(*/
       h("Tree_Body", 5,
         tree("Display",
           dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),
@@ -215,9 +216,9 @@ let mainHandler = H("Main Window", 4,
         ),
         mainBodyDisplayCell
       ),
-      )
+      /*)*/
 
-    )),
+    ) /*)*/ ,
   )
 );
 Handler.activate(clientHandler);
