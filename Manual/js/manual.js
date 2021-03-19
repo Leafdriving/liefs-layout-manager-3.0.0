@@ -94,6 +94,7 @@ CSS.leftText = css("leftText", `font-size: 25px;
                                         background-color: #ADD8E6;
                                         color:black;
                                         font-weight: bold;`);
+CSS.link = css("link", `color: blue;text-decoration: underline;cursor:pointer`, `color: aqua`);
 CSS.centerButton = css("centerButton", `display: flex;
                                             align-items: center;
                                             justify-content: center;
@@ -119,17 +120,19 @@ CSS.centerButton = css("centerButton", `display: flex;
                                             border-radius: 10px 10px 0px 0px;`);
 class CodeBlock {
     constructor(...Arguments) {
+        this.preCode = "";
         CodeBlock.instances.push(this);
         mf.applyArguments("CodeBlock", Arguments, CodeBlock.defaults, CodeBlock.argMap, this);
-        this.javascript = `H("${this.label}_handler",  // opens a handler (Starts Liefs-layout-manager)
+        this.javascript = `${this.preCode}H("${this.label}_handler",  // opens a handler (Starts Liefs-layout-manager)
 ${this.javascriptForEval}
 )`;
+        // if (this.preCode) this.javascriptForEval = this.preCode + this.javascriptForEval;
         var elem = document.createElement('div');
         elem.innerHTML = this.html;
         document.body.appendChild(elem);
         this.html = `&lthtml lang="en">
   &lthead>&ltmeta charset="utf-8">&lttitle>liefs-layout-manager ${this.label}&lt/title>
-  &ltscript src="../../js/liefs-layout-managerV3.0.0.js">&lt/script>
+  &ltscript src="${CodeBlock.fileNameAndPath}">&lt/script>
   ${(this.css) ? "&ltstyle>\n" + this.css + "\n&lt/style>\n" : ""}&lt/head>
   &ltbody>
 ${this.html.replace(/</g, "&lt")}
@@ -168,7 +171,7 @@ ${this.html.replace(/</g, "&lt")}
         this.javascriptDisplayCell =
             v(`${this.label}_v2`, "37.5%", I(`${this.label}_javascript_label`, `Javascript`, "20px", CSS.centerText), I(`${this.label}_javascript`, `<pre><code class="language-javascript">${this.javascript}</code></pre>`));
         let EvalLabel = I(`${this.label}_output_label`, `Rendered`, "20px", CSS.centerText);
-        let EvalJS = eval(this.javascriptForEval);
+        let EvalJS = eval(this.preCode + this.javascriptForEval);
         this.evalDisplayCell =
             v(`${this.label}_v3`, "25%", EvalLabel, EvalJS);
         let DBevalDisplayCell = dragbar(v(`${this.label}_v3`, "25%", EvalLabel, EvalJS), 200, 600);
@@ -201,15 +204,81 @@ ${this.html.replace(/</g, "&lt")}
             return returnValue;
         });
     }
+    static makeExamples() {
+        H("Example01", codeblock("Example01", `<!-- Nothing Here in this example -->`, `  h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
+I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
+)`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+        css("#Example01_a", "background-color: green", false);
+        css("#Example01_b", "background-color: cyan", false);
+        H("Example01a", codeblock("Example01a", `    <div id="Example01_a">one</div>
+<div id="Example01_b">two</div>`, `  h("Example01a",  // create Horizontal DisplayGroup (In DisplayCell)
+I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
+I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
+)`, `#Example01_a {background-color: green}\n#Example01_b {background-color: cyan}`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+        H("Example01_c", codeblock("Example01_c", `<!-- Nothing Here in this example -->`, `  h("Example01_c",  // create Horizontal DisplayGroup (In DisplayCell)
+    I("120px", "Example01_c1","one", css("bgGREEN","background-color:green;")), // fixed to 120 pixelx
+    I("Example01_c2","two", css("bgCYAN","background-color:cyan;")), // assumes "100%"... of remaing pixels
+  )`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+        H("Example01_d", codeblock("Example01_d", `<!-- Nothing Here in this example -->`, ` h("Example01_d", 20,
+    html("Example01_dBG", css("bgRED","background-color:red;")),
+    I("Example01_d1","one", css("bgGREEN","background-color:green;")),
+    I("Example01_d2","two", css("bgCYAN","background-color:cyan;")),
+  )`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+        H("Example01_e", codeblock("Example01_e", `<!-- Nothing Here in this example -->`, `// First we Make a Standard Handler
+  h("Example01_e", 4,
+// The entire screen is divided into a horizontal group with "one" on the left, and "the rest" on the right
+    html("Example01_eBG", css("bgRED","background-color:red;")),
+// the margin of 4 should be colored red
+    I("40px", "Example01_e1","one", css("bgGREEN","background-color:green;")),
+// The "one" Cell should be 40 pixels in size, background green
+    v("Example01_eBottomV", 8,
+// The right side of the screen is within a vertical container
+      html("Example01_eBG2", css("bgPINK","background-color:Pink;")),
+// the cells between the vertical container of 8 pixels, should be pink
+      I("50px","Example01_e2","two", css("bgCYAN","background-color:cyan;")),
+// the top cell should be 50 pixels high, background cyan
+      h("Example01_e3", 6,
+// The right middle, should have a horizontal container
+        html("Example01_eBG3", css("bgBLUE","background-color:blue;")),
+// horizontal container margins of 6 pixels should be blue
+        I("Example01_e3","three", css("bgGRAY","background-color:gray;")),
+// the inner horizontal left side should be 80% of the size (see next line), and gray background
+        I("20%","Example01_e4","four", css("bgORANGE","background-color:orange;")),
+// the inner horizontal right side shold be 20% of the size, and orange background
+      ),
+      I("30%","Example01_e5","five", css("bgCORAL","background-color:Coral;")),
+// the bottom of the right side vertical container should be 30% of the size, background coral
+    ),
+  )`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+        let preCode_f = `let bgRed = html("Example01_fBG", css("bgRED","background-color:red;"));
+let bgPink = html("Example01_fBG2", css("bgPINK","background-color:Pink;"));
+let bgBlue = html("Example01_fBG3", css("bgBLUE","background-color:blue;"));
+let I_one = I("40px", "Example01_f1","one", css("bgGREEN","background-color:green;"));
+let I_two = I("50px","Example01_f2","two", css("bgCYAN","background-color:cyan;"));
+let I_three = I("Example01_f3","three", css("bgGRAY","background-color:gray;"));
+let I_four = I("20%","Example01_f4","four", css("bgORANGE","background-color:orange;"));
+let I_five = I("30%","Example01_f5","five", css("bgCORAL","background-color:Coral;"));
+let h_inner = h("Example01_f3", 6, bgBlue, I_three, I_four);
+let v_outer = v("Example01_fBottomV", 8, bgPink,
+                        I_two, h_inner, I_five,);
+`;
+        H("Example01_f", codeblock("Example01_f", `<!-- Nothing Here in this example -->`, `  h("Example01_f", 4,
+    bgRed,
+    I_one,
+    v_outer,
+  )`, { preCode: preCode_f }), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+    }
 }
+CodeBlock.fileNameAndPath = "../../dist/liefs-layout-managerV3.0.0.GLOBALS.full.js";
 CodeBlock.instances = [];
 CodeBlock.defaults = {
     label: function () { return `CBlock_${pf.pad_with_zeroes(CodeBlock.instances.length)}`; },
-    height: 200,
+    height: 200, raw: false,
 };
 CodeBlock.argMap = {
     string: ["label", "html", "javascriptForEval", "css"],
-    number: ["height"]
+    number: ["height"],
 };
 function codeblock(...Arguments) {
     let cb = new CodeBlock(...Arguments);
@@ -221,62 +290,65 @@ let clickTreeItemEvent = events({ onclick: function (mouseEvent) {
         let tree = TreeNode.parentTree(treeNode);
         if (treeNode.collapsed)
             tree.toggleCollapse(treeNode, undefined, undefined);
-        console.log(TreeNode.path(treeNode));
+        // console.log(TreeNode.path(treeNode));
     } });
 function header(label, index, size = 120) {
-    let noPages = 9;
+    let noPages = 52;
     return v(label, 5, I("1px"), h(`${label}_h`, "25px", 15, I("1px"), I(`${label}_label`, label, CSS.insetLarge, `${size}px`), I(), I(`${label}_prev`, "Previous Page", CSS.h1h, "145px", Pages.button("PAGES", (index <= 0) ? 0 : index - 1)), I(`${label}_next`, "Next Page", CSS.h1h, "110px", Pages.button("PAGES", (index >= noPages) ? index : index + 1)), I("15px")), I(label, CSS.textBlack));
 }
-let MainPages = P("PAGES", header("Welcome", 0), header("Installation", 1), header("The Basics", 2), header("HTML vs Javascript", 3, 200), header("Basics - DisplayCell", 4, 210), header("Functions & Objects", 5, 205), header("Arguments By Type", 6, 200), header("Functions", 7), header("Handlers", 8), header("DisplayGroups", 9, 160));
+let MainPages = P("PAGES", header("Welcome", 0), header("Installation", 1), header("The Basics", 2), header("HTML vs Javascript", 3, 200), header("Basics - DisplayCell", 4, 210), header("Functions & Objects", 5, 205), header("Arguments By Type", 6, 200), header("Functions", 7), header("Handlers", 8), header("DisplayGroups", 9, 160), header("HtmlBlocks", 10, 130), header("pages", 11), header("css", 12), header("swipe", 13), header("DragBars", 14), header("events", 15), header("Htmlblock", 16), header("stretch", 17), header("dockable", 18), header("Toolbars", 19), header("Trees", 20), header("TI", 21), header("Objects", 22), header("Base", 23), header("HtmlBlock", 24), header("DisplayCells", 25, 130), header("DisplayGroup", 26, 140), header("Coord", 27), header("Context", 28), header("Css", 29), header("Default Theme", 30, 150), header("Drag", 31), header("Swipe", 32), header("DragBar", 33), header("Events", 34), header("FunctionStack", 35, 160), header("Handler", 36), header("Hold", 37), header("Modal", 38), header("Stretch", 39), header("Observe", 40), header("Overlay", 41), header("Pages", 42), header("pf_mf", 43), header("ScrollBar", 44), header("Dockable", 45), header("ToolBar", 46), header("TreeNode", 47), header("Tree", 48), header("i_", 49), header("t_", 50), header("Examples", 51), header("Examples_01", 52, 180));
 let treeOfNodes = TI("Welcome to Liefs-Layout-Manager", Pages.button("PAGES", 0), /* {attributes : {pagebutton : "PAGES|0"} */ [TI("Installation", Pages.button("PAGES", 1)),
     TI("The Basics", Pages.button("PAGES", 2), [TI("HTML vs Javascript", Pages.button("PAGES", 3)),
         TI("DisplayCell", Pages.button("PAGES", 4))]),
     TI("Functions & Objects", Pages.button("PAGES", 5), [TI("Arguments By Type", Pages.button("PAGES", 6)),
         TI(true, "Functions", Pages.button("PAGES", 7), [TI("H()", Pages.button("PAGES", 8)),
             TI("h() v()", Pages.button("PAGES", 9)),
-            TI("I()"),
-            TI("P()"),
-            TI("css()"),
-            TI("swipe()"),
-            TI("dragbar()"),
-            TI("events"),
-            TI("html()"),
-            TI("stretch()"),
-            TI("dockable()"),
-            TI("tool_bar()"),
-            TI("T()"),
-            TI("tree()"),
-            TI("TI()"),
+            TI("I()", Pages.button("PAGES", 10)),
+            TI("P()", Pages.button("PAGES", 11)),
+            TI("css()", Pages.button("PAGES", 12)),
+            TI("swipe()", Pages.button("PAGES", 13)),
+            TI("dragbar()", Pages.button("PAGES", 14)),
+            TI("events", Pages.button("PAGES", 15)),
+            TI("html()", Pages.button("PAGES", 16)),
+            TI("stretch()", Pages.button("PAGES", 17)),
+            TI("dockable()", Pages.button("PAGES", 18)),
+            TI("tool_bar()", Pages.button("PAGES", 19)),
+            TI("tree()", Pages.button("PAGES", 20)),
+            TI("TI()", Pages.button("PAGES", 21)),
         ]),
-        TI(true, "Objects", [
-            TI("Base"),
-            TI("htmlBlock"),
-            TI("DisplayCell"),
-            TI("DisplayGroup"),
-            TI("Coord"),
-            TI("Context"),
-            TI("Css"),
-            TI("DefaultTheme"),
-            TI("Drag"),
-            TI("Swipe"),
-            TI("DragBar"),
-            TI("Events"),
-            TI("FunctionStack"),
-            TI("Handler"),
-            TI("Hold"),
-            TI("Modal"),
-            TI("Stretch"),
-            TI("Observe"),
-            TI("Overlay"),
-            TI("Pages"),
-            TI("pf/mf"),
-            TI("ScrollBar"),
-            TI("Dockable"),
-            TI("ToolBar"),
-            TI("TreeNode"),
-            TI("Tree"),
-            TI("i_"),
-            TI("t_"),
+        TI(true, "Objects", Pages.button("PAGES", 22), [
+            TI("Base", Pages.button("PAGES", 23)),
+            TI("htmlBlock", Pages.button("PAGES", 24)),
+            TI("DisplayCell", Pages.button("PAGES", 25)),
+            TI("DisplayGroup", Pages.button("PAGES", 26)),
+            TI("Coord", Pages.button("PAGES", 27)),
+            TI("Context", Pages.button("PAGES", 28)),
+            TI("Css", Pages.button("PAGES", 29)),
+            TI("DefaultTheme", Pages.button("PAGES", 30)),
+            TI("Drag", Pages.button("PAGES", 31)),
+            TI("Swipe", Pages.button("PAGES", 32)),
+            TI("DragBar", Pages.button("PAGES", 33)),
+            TI("Events", Pages.button("PAGES", 34)),
+            TI("FunctionStack", Pages.button("PAGES", 35)),
+            TI("Handler", Pages.button("PAGES", 36)),
+            TI("Hold", Pages.button("PAGES", 37)),
+            TI("Modal", Pages.button("PAGES", 38)),
+            TI("Stretch", Pages.button("PAGES", 39)),
+            TI("Observe", Pages.button("PAGES", 40)),
+            TI("Overlay", Pages.button("PAGES", 41)),
+            TI("Pages", Pages.button("PAGES", 42)),
+            TI("pf/mf", Pages.button("PAGES", 43)),
+            TI("ScrollBar", Pages.button("PAGES", 44)),
+            TI("Dockable", Pages.button("PAGES", 45)),
+            TI("ToolBar", Pages.button("PAGES", 46)),
+            TI("TreeNode", Pages.button("PAGES", 47)),
+            TI("Tree", Pages.button("PAGES", 48)),
+            TI("i_", Pages.button("PAGES", 49)),
+            TI("t_", Pages.button("PAGES", 50)),
+        ]),
+        TI(/* true,*/ "Examples", Pages.button("PAGES", 51), [
+            TI("01 Basics", Pages.button("PAGES", 52)),
+            TI("Example01a"),
         ]),
     ]),
 ]);
@@ -305,14 +377,4 @@ let sizeFunction = function (thisPages) {
     return (x > 920) ? 0 : 1;
 };
 H("MainHandler", 4, P("MainSizer", LargeScreen, SmallScreen, sizeFunction), { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
-H("Example01", codeblock("Example01", `<!-- Nothing Here in this example -->`, `  h("Example01",  // create Horizontal DisplayGroup (In DisplayCell)
-    I("Example01_1","one", css("#Example01_1","background-color:green;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
-    I("Example01_2","two", css("#Example01_2","background-color:cyan;", false)), // create HtmlBlock (In DisplayCell) assumes "50%"
-  )`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
-css("#Example01_a", "background-color: green", false);
-css("#Example01_b", "background-color: cyan", false);
-H("Example01a", codeblock("Example01a", `    <div id="Example01_a">one</div>
-    <div id="Example01_b">two</div>`, `  h("Example01a",  // create Horizontal DisplayGroup (In DisplayCell)
-    I("Example01_a"), // create HtmlBlock (In DisplayCell) assumes "50%"
-    I("Example01_b"), // create HtmlBlock (In DisplayCell) assumes "50%"
-  )`, `#Example01_a {background-color: green}\n#Example01_b {background-color: cyan}`), false, { postRenderCallback: function (handlerInstance) { Prism.highlightAll(); } });
+CodeBlock.makeExamples();

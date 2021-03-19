@@ -97,6 +97,7 @@ class CSS {
                                         background-color: #ADD8E6;
                                         color:black;
                                         font-weight: bold;`);
+    static link = css("link",`color: blue;text-decoration: underline;cursor:pointer`,`color: aqua`)
     static centerButton = css("centerButton",`display: flex;
                                             align-items: center;
                                             justify-content: center;

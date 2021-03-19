@@ -54,19 +54,19 @@ class TreeNode extends Base {
         return newCellArray;
     }
     static parentTree(node:TreeNode) {return Tree.byLabel(node.label.split("_")[0]);}
-    static path(node:TreeNode) {
-        let tree:Tree = TreeNode.parentTree(node);
-        let returnArray:any[] = [tree]
-        let labelArray = node.label.split("_");
-        labelArray.shift();                         // we already have tree, so remove that!
-        let loopnode = tree.rootTreeNode
-        while (labelArray.length) {                 // loop indexes in name to get children
-            returnArray.push(loopnode);
-            loopnode = loopnode.children[ parseInt( labelArray[0] )-1 ];
-            labelArray.shift();
-        }
-        return returnArray;
-    }
+    // static path(node:TreeNode) {
+    //     let tree:Tree = TreeNode.parentTree(node);
+    //     let returnArray:any[] = [tree]
+    //     let labelArray = node.label.split("_");
+    //     labelArray.shift();                         // we already have tree, so remove that!
+    //     let loopnode = tree.rootTreeNode
+    //     while (labelArray.length) {                 // loop indexes in name to get children
+    //         returnArray.push(loopnode);
+    //         loopnode = loopnode.children[ parseInt( labelArray[0] )-1 ];
+    //         labelArray.shift();
+    //     }
+    //     return returnArray;
+    // }
 }
 function T(...Arguments:any){return new TreeNode(...Arguments)}
 

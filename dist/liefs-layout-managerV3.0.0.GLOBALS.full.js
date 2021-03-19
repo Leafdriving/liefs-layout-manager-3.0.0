@@ -609,8 +609,8 @@ HtmlBlock.argMap = {
     boolean: ["hideWidth"],
 };
 function html(...Arguments) {
-    let htmlblock = new HtmlBlock("", ...Arguments);
-    htmlblock.label = HtmlBlock.defaults["label"]();
+    let htmlblock = new HtmlBlock(...Arguments);
+    // htmlblock.label = HtmlBlock.defaults["label"]();
     return htmlblock;
 }
 // export {html, HtmlBlock}
@@ -865,6 +865,7 @@ class Handler extends Base {
             this.handlerMargin = Handler.handlerMarginDefault;
         if (Handler.firstRun) {
             setTimeout(Handler.update);
+            // setTimeout(Handler.update,200);
             Handler.firstRun = false;
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
                 element.remove();
@@ -1065,7 +1066,7 @@ class Handler extends Base {
         let width;
         let height;
         if (!displaygroup.label.includes("ScrollBar")) {
-            if (dimArrayTotal > maxpx + 2) {
+            if (dimArrayTotal > maxpx + 1) {
                 // console.log(pxForPercent)
                 if (!overlay) {
                     displaygroup.overlay = new Overlay("ScrollBar", `${displaygroup.label}_ScrollBar`, displaygroup, dimArrayTotal, maxpx);
@@ -2521,19 +2522,6 @@ class TreeNode extends Base {
         return newCellArray;
     }
     static parentTree(node) { return Tree.byLabel(node.label.split("_")[0]); }
-    static path(node) {
-        let tree = TreeNode.parentTree(node);
-        let returnArray = [tree];
-        let labelArray = node.label.split("_");
-        labelArray.shift(); // we already have tree, so remove that!
-        let loopnode = tree.rootTreeNode;
-        while (labelArray.length) { // loop indexes in name to get children
-            returnArray.push(loopnode);
-            loopnode = loopnode.children[parseInt(labelArray[0]) - 1];
-            labelArray.shift();
-        }
-        return returnArray;
-    }
 }
 TreeNode.instances = [];
 TreeNode.activeInstances = [];

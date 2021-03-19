@@ -24,10 +24,12 @@ declare class CSS {
     static cssBold: Css;
     static centerText: Css;
     static leftText: Css;
+    static link: Css;
     static centerButton: Css;
     static menu_SVG(size?: number, color?: string): string;
 }
 declare class CodeBlock {
+    static fileNameAndPath: string;
     static byLabel(label: string): CodeBlock;
     static download(filename: string, text: string): void;
     static downloadfile(el: Element): void;
@@ -35,6 +37,7 @@ declare class CodeBlock {
     static defaults: {
         label: () => string;
         height: number;
+        raw: boolean;
     };
     static argMap: {
         string: string[];
@@ -44,6 +47,7 @@ declare class CodeBlock {
     html: string;
     javascript: string;
     javascriptForEval: string;
+    preCode: string;
     css: string;
     htmlDisplayCell: DisplayCell;
     javascriptDisplayCell: DisplayCell;
@@ -52,6 +56,7 @@ declare class CodeBlock {
     displaycell: DisplayCell;
     constructor(...Arguments: any);
     build(): void;
+    static makeExamples(): void;
 }
 declare function codeblock(...Arguments: any): DisplayCell;
 declare var Prism: any;

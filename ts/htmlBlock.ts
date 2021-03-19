@@ -69,8 +69,8 @@ class HtmlBlock extends Base {
     }
 }
 function html(...Arguments:any){
-    let htmlblock = new HtmlBlock("",...Arguments)
-    htmlblock.label = HtmlBlock.defaults["label"]();
+    let htmlblock = new HtmlBlock(...Arguments)
+    // htmlblock.label = HtmlBlock.defaults["label"]();
     return htmlblock;
 }
 // export {html, HtmlBlock}

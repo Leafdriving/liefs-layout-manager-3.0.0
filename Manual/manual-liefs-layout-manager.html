@@ -261,6 +261,19 @@ handler.addThisHandlerToStack = false // so define, but do not show right away
 handler.preRenderCallback = function(handlerInstance) { console.log("Handler Is about to be calculated") }
 handler.postRenderCallback =function(handlerInstance) { console.log("Handler has been created") }</code></pre>
 <p>See Handler Object for Static Properties.</p>
+<p>Note: you could also define the above object, with object notation as shown here:</p>
+<pre><code class="language-javascript"style="font-size: medium;">var handler = H({
+  label: "MyHandler",
+  rootCell: I("OneCellOnly","innerHtml of Cell")
+  coord: new Coord(0,0,50,50),
+  handlerMargin:10,
+  addThisHandlerToStack: false,
+  preRenderCallback: function(handlerInstance) { console.log("Handler Is about to be calculated") },
+  postRenderCallback: function(handlerInstance) { console.log("Handler has been created")
+});</code></pre>
+<p>You can mix arguments with some using mapping, or some with object notation(s)</p>
+<p>start <span class="link" pagebutton="PAGES|Examples_01">Examples 01 The Basics</span> for examples</p>
+<br><br><br><br><br>
           </div>
 
 
@@ -278,8 +291,8 @@ function v(...Arguments /*: any*/){
   and v() is for cells places vertically.
 </p>
 <p>A DisplayGroup Instance has the following properties:</p>
-<pre><code class="language-javascript"style="font-size: medium;">label /*:string;*/             //
-ishor /*:boolean;*/            // The name you give to the DisplayGroup
+<pre><code class="language-javascript"style="font-size: medium;">label /*:string;*/             // The name you give to the DisplayGroup
+ishor /*:boolean;*/            // Internally Set, h() makes it ture, v() makes it false.
 cellArray /*: DisplayCell[] */ // The Array of DisplayCells contained within this DisplayGroup
 coord /*: Coord;*/             // This is handled interally - it is unlikely you would set it.
 htmlBlock /*: HtmlBlock */     // A Background (Usually a color/texture) that is UNDER the DisplayCells in the Group
@@ -310,10 +323,286 @@ horDGroup.htmlBlock = new htmlBlock("myBackgroun","", css("bgCyan","background-c
 horDGroup.marginHor = 5 // there are now 5 blank pixels between Cells
 horDGroup.dim = "15px" // when this DisplayGroup is displayed, it should be 15 pixels in size (Parent Dependent)</code></pre>
 <p>See DislayGroup Object for Static Properties.</p>
-
+<p>Note: you could also define the above object, with object notation as shown here:</p>
+<pre><code class="language-javascript"style="font-size: medium;">var horDGroup = h({
+  label: "MyHorizontal",
+  // ishor: true, // becuase it IS h() 
+  cellArray: [I("leftSize","innerHtml of left Div"), I("rightSize","innerHtml of right Div")],
+  htmlBlock: new htmlBlock("myBackgroun","", css("bgCyan","background-color: cyan;")),
+  marginHor: 5,
+  dim: "15px"
+})</code></pre>
+<p>start <span class="link" pagebutton="PAGES|Examples_01">Examples 01 The Basics</span> for examples</p>
+<br><br><br><br><br>
           </div>
 
-</body>
+
+
+
+          <div id="HtmlBlocks">
+<p>A HtmlBlock, is in essence, the 'div' container. The "label" of the HtmlBlock is the "id" of the div element in the Dom.
+This div container can be referenced from html, or defined in javascript</p>
+<p>Method 1: Referenced from Dom</p>
+<pre><code class="language-markup" style="font-size: medium;">&lt!-- Html File -->
+...&ltbody>...
+  &ltdiv id="MyRandomId">My content Goes HERE!&lt/div>
+...&lt/body>...</code></pre>
+<pre><code class="language-javascript"style="font-size: medium;">// javascript
+let myItem = I("MyRandomId"); // liefs-layout-manager finds the div in the dom, REMOVES it, and re-applys it... when rendered.
+</code></pre>
+<p>Method 2: full javascript definition:</p>
+<pre><code class="language-javascript"style="font-size: medium;">// javascript
+let myItem = I("MyRandomId", "My content Goes HERE!"); // liefs-layout-manager assigns the innerHtml to the 2nd string argument
+</code></pre>
+<p>Both methods produce the same result.  These can be mixed and matched at will.  Note, in both cases, nothing (referenced)
+    is left in the dom after assigned.  It is re-intruduced to the dom at point of render.</p>
+<p>A HtmlBlock Instance has the following properties:</p>
+<pre><code class="language-javascript"style="font-size: medium;">label /*:string;*/                // Your invented "id" value in the div.
+innerHTML /*:string;*/            // The Contents of the 'div' -> if ommitted pulls from dom id=label
+css /*:string;*/                  // can be existing css class, OR liefs-layout-manager Css Object
+dim /*:string;*/                  // string value in pixels "20px" or percent "25%"
+events /*: Events; */             // liefs-layout-manager Event Object (Handle Events on this element, like onclick)
+el /*:HTMLElement; */             // the Dom div Element.
+attributes /*:object = {};*/      // an OBJECT that assignes attributes to the div element for example {title:"My Title"}
+hideWidth /*: boolean; */         // Used Internally by Tree Object - Do not use.
+minDisplayGroupSize /*: number;*/ // This "DisplayCell" is forced (via ScrollBar) to stay at least this many pixels in size</code></pre>
+<p>These can be included in the arguments according to the typemap:</p>
+<pre><code class="language-javascript"style="font-size: medium;">{ string : ["label", "innerHTML", "css"],
+  dim : ["dim"],
+  Events : ["events"],
+  number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+  boolean: ["hideWidth"],
+}</code></pre>
+<p>So for example, the following Code:</p>
+<pre><code class="language-javascript"style="font-size: medium;">var myHtmlBlock = I("MyHtmlBlock",
+  "50%",
+  css("blueBG","background-color: blue;"),
+  events({  onclick: function(mouseEvent){console.log("You Clicked!")}  }),
+  {attributes: {title:"mouseover Title Here"},
+   minDisplayGroupSize:100
+  },
+  "This is my innerHTML!"
+)</code></pre>
+<p>Would assign variable myHtmlBlock to a new HtmlBlock() Object with the following properties:</p>
+<pre><code class="language-javascript"style="font-size: medium;">label: "MyHtmlBlock"
+innerHTML: "This is my innerHTML!"
+css: "blueBG"
+dim: "50%"
+events: events({  onclick: function(mouseEvent){console.log("You Clicked!")}  })
+el: // the Dom Element (reference)
+attributes: {title:"mouseover Title Here"}
+minDisplayGroupSize: 100
+</code></pre>
+<p>Note: you could also define the above object, with FULL object notation as shown here:</p>
+<pre><code class="language-javascript"style="font-size: medium;">var myHtmlBlock = I({
+  label: "MyHtmlBlock",
+  innerHTML: "This is my innerHTML!",
+  css: css("blueBG","background-color: blue;"),
+  dim: "50%",
+  events: events({  onclick: function(mouseEvent){console.log("You Clicked!")}  }),
+  attributes: {title:"mouseover Title Here"},
+  minDisplayGroupSize: 100,
+})</code></pre>
+<p>start <span class="link" pagebutton="PAGES|Examples_01">Examples 01 The Basics</span> for examples</p>
+<br><br><br><br><br>
+        </div>
+
+
+        <div id="pages">
+Pages
+        </div>
+
+
+        <div id="css">
+Css
+        </div>
+
+
+        <div id="swipe">
+Swipe
+        </div>        
+
+        <div id="DragBars">
+DragBar
+        </div>
+      
+        <div id="events">
+Events
+        </div>
+
+        <div id="Htmlblock">
+HtmlBlock
+        </div>        
+
+        <div id="stretch">
+Stretch
+        </div>   
+
+        <div id="dockable">
+Dockable
+        </div>   
+
+        <div id="Toolbars">
+Toolbars
+        </div>
+
+        <div id="Trees">
+Trees
+        </div>  
+
+        <div id="TI">
+TI
+        </div>
+
+        <div id="Objects">
+Objects
+        </div>
+
+        <div id="Base">
+Base
+        </div>
+
+        <div id="HtmlBlock">
+HtmlBlock
+        </div>
+
+        <div id="DisplayCells">
+DisplayCell
+        </div>
+
+        <div id="DisplayGroup">
+DisplayGroup
+        </div>
+
+        <div id="Coord">
+Coord
+        </div>
+
+        <div id="Context">
+Context
+        </div>
+
+        <div id="Css">
+Css
+        </div>
+
+        <div id="Default Theme">
+Default Theme
+        </div>
+
+        <div id="Drag">
+Drag          
+        </div>
+
+        <div id="Swipe">
+Swipe          
+        </div>
+
+        <div id="DragBar">
+Dragbar
+        </div>
+
+        <div id="Events">
+Events
+        </div>
+
+        <div id="FunctionStack">
+FunctionStack          
+        </div>
+
+        <div id="Handler">
+Handler
+        </div>
+
+        <div id="Hold">
+Hold
+        </div>
+
+        <div id="Modal">
+Modal          
+        </div>
+
+        <div id="Stretch">
+Stretch          
+        </div>
+
+        <div id="Observe">
+Observe
+        </div>
+
+        <div id="Overlay">
+Overlay
+        </div>
+        
+        <div id="Pages">
+Pages
+        </div>
+
+        <div id="pf_mf">
+pf_mf
+        </div>
+        <div id="ScrollBar">
+ScrollBar
+        </div>
+
+        <div id="Dockable">
+Dockable
+        </div>
+
+        <div id="ToolBar">
+ToolBar
+        </div>
+
+        <div id="TreeNode">
+TreeNode
+        </div>
+
+        <div id="Tree">
+Tree
+        </div>
+
+        <div id="i_">
+i_          
+        </div>
+
+        <div id="t_">
+t_
+        </div>
+
+        <div id="Examples">
+Examples
+        </div>
+
+        <div id="Examples_01">
+<br><div class="h1">All In Javascript</div>
+<p>This Example is a good Starting Point.  It simply shows a Handler, starting at outer screen dimenstions,
+containing two 'div's placed to the left, and right of the screen (Horizontally)</p>
+<div parentof="Example01" class="codeblock" style="height:323px;"></div>
+<br><div class="h1">Mixed HTML and Javascript</div>
+<p>Note: Css, and HTML elements can be placed as usual OR in Javascript</p>
+<div parentof="Example01a" class="codeblock" style="height:400px;"></div>
+<p>In the above examples, the "width" of the cells is ASSUMED to be "equally".  The "width", or as this software
+refers to it, the "dim" of each cell can be chosen by "Percentage", or "Fixed Pixels".</p>
+<br><div class="h1">Fixed Pixels</div>
+<p>The Following Example shows the left side being "fixed" to 120 pixels</p>
+<div parentof="Example01_c" class="codeblock" style="height:400px;"></div>
+<br><div class="h1">Margins</div>
+<p>This Example Demonstrates how Margins Work:</p>
+<div parentof="Example01_d" class="codeblock" style="height:400px;"></div>
+<p>Note two things here:<ol>
+    <li>the html() is the BACKGROUND behind the other cells</li>
+    <li>the margin of 20 pixels is BETWEEN the cells, not at the ends.</li>
+</ol></p>
+<br><div class="h1">Nested DisplayGroups</div>
+<p>The following example shows how to nest containers</p>
+<div parentof="Example01_e" class="codeblock" style="height: 700px;"></div>
+<p>With more and more lines of expansion, you can break the pieces up to make the code more readable.
+lets do this with this example.</p>
+<div parentof="Example01_f" class="codeblock" style="height: 500px;"></div>
+<p>How you group, and sub-devide is up to you.</p>
+        </div>
+
+
 </html>
 <script src="js/manual.js"></script>
 <!-- <pre><code class="language-css">p { color: red }</code></pre> -->
