@@ -204,9 +204,9 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Edit","Edit", "35px", bCss.menuItem),
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
-    /*dockable(*/v("Main_Dockable",
+    dockable(v("Main_Dockable",
       TOOLBAR,
-      /*dockable(*/
+      dockable(
       h("Tree_Body", 5,
         tree("Display",
           dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600),
@@ -216,9 +216,9 @@ let mainHandler = H("Main Window", 4,
         ),
         mainBodyDisplayCell
       ),
-      /*)*/
+      )
 
-    ) /*)*/ ,
+    ) ) ,
   )
 );
 Handler.activate(clientHandler);

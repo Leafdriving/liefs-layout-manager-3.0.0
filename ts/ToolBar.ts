@@ -22,7 +22,7 @@ class Dockable extends Base {
     }
     // retArgs:ArgsObj;   // <- this will appear
 
-    static open:number; //number of dropZone Active
+    static activeDropZoneIndex:number;
     static activeToolbar:ToolBar;
     static DockableOwner:string;
     dummy:DisplayCell;
@@ -37,57 +37,65 @@ class Dockable extends Base {
         Dockable.makeLabel(this);
         this.dummy = I(`${this.label}_DockableDummy`);
     }
-    render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+    render(unuseddisplaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         // console.log("Moving?", ToolBar.isMoving)
         let ishor = this.displaygroup.ishor;
         if (ToolBar.isMoving && !ToolBar.activeInstace.isDocked ){
             let toolbar = Dockable.activeToolbar = ToolBar.activeInstace;
             let cellArray = this.displaygroup.cellArray;
-            if (!this.dropZones) {
+            if (!this.dropZones) {                                       // define DropZones
                 this.dropZones = [];
+                console.log("--");
                 for (let index = 0; index < cellArray.length; index++) {
-                    let displaycell1  = cellArray[index];
+                    let displaycell  = cellArray[index];  // note scope is lost each loop
                     let newCoord = new Coord();
-                    newCoord.copy( displaycell1.coord );
+                    newCoord.copy( displaycell.coord );
                     newCoord.assign(undefined, undefined,
                                 (ishor) ? toolbar.width : undefined,
                                 (ishor) ? undefined : toolbar.height);
+                    console.log(`DisplayCell: x:${displaycell.coord.x} y:${displaycell.coord.y} width:${displaycell.coord.width} height:${displaycell.coord.height}`);
+                    console.log(`DropZone: x:${newCoord.x} y:${newCoord.y} width:${newCoord.width} height:${newCoord.height}`);
                     this.dropZones.push(newCoord);
                 }
-                let displaycell1 = cellArray[cellArray.length-1];
+                let displaycell = cellArray[cellArray.length-1];
                 let newCoord = new Coord();
-                newCoord.copy( displaycell1.coord );
+                newCoord.copy( displaycell.coord );
                 // console.log(ishor) ///////////////////////////////////////////
-                newCoord.assign((ishor) ? displaycell1.coord.width - toolbar.width : undefined,
-                                (ishor) ? undefined : displaycell1.coord.height - toolbar.height,
+                newCoord.assign((ishor) ? displaycell.coord.width - toolbar.width : undefined,
+                                (ishor) ? undefined : displaycell.coord.height - toolbar.height,
                                 (ishor) ? toolbar.width : undefined,
                                 (ishor) ? undefined : toolbar.height );
                 this.dropZones.push(newCoord);
-            }
+                //console.log("DropZones", this.dropZones)
+            }                                                                       // ok Zones Assigned! loop them!
             for (let index = 0; index < this.dropZones.length; index++) {
                 let dropCoord = this.dropZones[index];
-                if (!toolbar.rootDisplayCell.coord.isCoordCompletelyOutside(dropCoord)) {
-                    if (Dockable.open == undefined){
+                if (!toolbar.modal.coord.isCoordCompletelyOutside(dropCoord)) { // if hit zone, make zone
+                    if (Dockable.activeDropZoneIndex == undefined){
                         Dockable.DockableOwner = this.label;
-                        Dockable.open = index;
+                        Dockable.activeDropZoneIndex = index;
                         this.dummy.dim = `${(ishor) ? toolbar.width : toolbar.height}px`;
                         cellArray.splice(index, 0, this.dummy);
                     }
-                } else {
-                    if (index == Dockable.open && Dockable.DockableOwner == this.label) {
-                        Dockable.open = undefined;
+                } else {                                                                  // When inactive, pop zone
+                    if (index == Dockable.activeDropZoneIndex && Dockable.DockableOwner == this.label) {
+                        Dockable.activeDropZoneIndex = undefined;
                         cellArray.splice(index, 1);
                     }
                 }
             }
         } else {
             if (this.dropZones) {
-                if (Dockable.open != undefined && Dockable.DockableOwner == this.label) {
+                if (Dockable.activeDropZoneIndex != undefined && Dockable.DockableOwner == this.label) { // DOCK IT!
                     let toolbar = Dockable.activeToolbar;
-                    this.displaygroup.cellArray[Dockable.open] = toolbar.rootDisplayCell;
-                    Dockable.open = undefined;
-                    toolbar.isDocked = true;
                     toolbar.modal.hide();
+                    let oldState = toolbar.state;
+                    toolbar.state = (ishor) ? ToolBarState.dockedInHorizontal :ToolBarState.dockedInVertical;
+                    toolbar.alignToolbarToDiplayGroup(oldState);
+                    this.displaygroup.cellArray[Dockable.activeDropZoneIndex] = toolbar.rootDisplayCell;
+                    Dockable.activeDropZoneIndex = undefined;
+                    toolbar.isDocked = true;
+                    console.log("newHome", this.displaygroup)
                 }
                 this.dropZones = undefined;
                 Handler.update();
@@ -108,7 +116,7 @@ enum ToolBarState {
     dockedInVertical = "dockedInVertical",
     dockedInHorizontal = "dockedInHorizontal",
     modalWasDockedInHor = "modalWasDockedInHor",
-    modalWasDockedInVer = "modalLastwasVer"
+    modalWasDockedInVer = "modalWasDockedInVer"
   }
 
 class ToolBar extends Base {
@@ -180,6 +188,7 @@ class ToolBar extends Base {
         if (index > -1) THIS.parentDisplayGroup.cellArray.splice(index, 1);  // pop from previous DisplayGroup
         THIS.isDocked = false;                                                // Mark as unDocked
         THIS.state = (THIS.parentDisplayGroup.ishor) ? ToolBarState.modalWasDockedInHor : ToolBarState.modalWasDockedInVer;
+        console.log("State is now: " + THIS.state);
         Modal.x = THIS.rootDisplayCell.coord.x;
         Modal.y = THIS.rootDisplayCell.coord.y
         let [width, height] = THIS.setModalSize();
@@ -239,37 +248,61 @@ class ToolBar extends Base {
                                                                     : this.height;
         return [width, height];
     }
-    render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-        if (parentDisplaygroup != undefined) {
-            this.parentDisplayGroup = parentDisplaygroup;
-            let isModal = parentDisplaygroup.label.endsWith("_MODAL");
-            let newState:ToolBarState;
+    alignToolbarToDiplayGroup(oldState:ToolBarState) {
+        if (oldState == ToolBarState.modalWasDockedInHor && this.state == ToolBarState.dockedInVertical) {
+            this.setArrayPx(this.width);
+            this.rootDisplayCell.displaygroup.ishor = true;
+            this.rootDisplayCell.dim = `${this.height}px`;
+            console.log("height set to ", this.height)
+        }
+        if (oldState == ToolBarState.modalWasDockedInVer && this.state == ToolBarState.dockedInHorizontal) {
+            this.setArrayPx(this.height);
+            this.rootDisplayCell.displaygroup.ishor = false;
+            this.rootDisplayCell.dim = `${this.width}px`;
+            console.log("Width set to ", this.width)
+        }
+    }
+    evalState(){
+        let newState: ToolBarState;
+        if (this.parentDisplayGroup) {
+            let isModal = this.parentDisplayGroup.label.endsWith("_MODAL");
             if (isModal) {
                 if (this.state == ToolBarState.dockedInHorizontal) newState = ToolBarState.modalWasDockedInHor;
                 else if (this.state == ToolBarState.dockedInVertical) newState = ToolBarState.modalWasDockedInVer;
                 else newState = this.state;
             } else {
-                if (parentDisplaygroup.ishor) newState = ToolBarState.dockedInHorizontal
-                else newState = ToolBarState.dockedInVertical;
+                newState = (this.parentDisplayGroup.ishor) ? ToolBarState.dockedInHorizontal : ToolBarState.dockedInVertical
             }
-            if (this.state != newState) {  // respond to state change
+        }
+        return newState;
+    }
+    render(displaycell:DisplayCell, parentDisplayGroup: DisplayGroup, index:number, derender:boolean){
+        if (parentDisplayGroup) {
+            if (this.parentDisplayGroup != parentDisplayGroup) {
+                console.log("New Parent Found: " + parentDisplayGroup.label);
+                this.parentDisplayGroup = parentDisplayGroup;
+            }
+            let wasState = this.state;
+            let newState =  this.evalState();
+            // console.log(wasState, newState)
+
+            if (newState && wasState != newState) {  // respond to state change
+                this.state = newState;
                 let wasDocked = this.isDocked;
-                let isDocked = (newState == ToolBarState.dockedInHorizontal || newState == ToolBarState.dockedInVertical);
-                let wasHor = (this.state == ToolBarState.dockedInVertical || this.state == ToolBarState.modalWasDockedInVer);
-                let isHor = (newState == ToolBarState.dockedInVertical || newState == ToolBarState.modalWasDockedInVer);
-                console.log(`State Change(${this.label}): Was ${this.state}, now ${newState}`)
+                this.isDocked = (this.state == ToolBarState.dockedInHorizontal || this.state == ToolBarState.dockedInVertical);
+                let wasHor = (wasState == ToolBarState.dockedInVertical || wasState == ToolBarState.modalWasDockedInVer);
+                let isHor = (this.state == ToolBarState.dockedInVertical || this.state == ToolBarState.modalWasDockedInVer);
+                console.log(`State Change(${this.label}): Was ${wasState}, now ${this.state}`)
                 if (wasHor != isHor) {
                     console.log(`Direction Change Detected - Setting isHor to ${isHor}`);
                     this.setArrayPx( (isHor) ? this.width : this.height );
                     this.rootDisplayCell.displaygroup.ishor = isHor;
                 }
-                if (wasDocked != isDocked) {
-                    console.log(`Toolbar ${this.label} has been switched to ${(isDocked) ? "" : "un"}docked`);
-                    this.isDocked = isDocked;
+                if (wasDocked != this.isDocked) {
+                    console.log(`Toolbar ${this.label} has been switched to ${(this.isDocked) ? "" : "un"}docked`);
                 }
-                this.state = newState;
             }
-        }
+        } else console.log("No Parent Display Group");
     }
 }
 function tool_bar(...Arguments:any) {

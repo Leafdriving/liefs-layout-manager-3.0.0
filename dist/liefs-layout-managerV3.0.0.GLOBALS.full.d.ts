@@ -819,7 +819,7 @@ declare class Dockable extends Base {
         string: string[];
         DisplayCell: string[];
     };
-    static open: number;
+    static activeDropZoneIndex: number;
     static activeToolbar: ToolBar;
     static DockableOwner: string;
     dummy: DisplayCell;
@@ -829,14 +829,14 @@ declare class Dockable extends Base {
     displaygroup: DisplayGroup;
     dropZones: Coord[];
     constructor(...Arguments: any);
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    render(unuseddisplaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function dockable(...Arguments: any): DisplayCell;
 declare enum ToolBarState {
     dockedInVertical = "dockedInVertical",
     dockedInHorizontal = "dockedInHorizontal",
     modalWasDockedInHor = "modalWasDockedInHor",
-    modalWasDockedInVer = "modalLastwasVer"
+    modalWasDockedInVer = "modalWasDockedInVer"
 }
 declare class ToolBar extends Base {
     static labelNo: number;
@@ -885,6 +885,8 @@ declare class ToolBar extends Base {
     build(): void;
     makeModal(): void;
     setModalSize(): [number, number];
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    alignToolbarToDiplayGroup(oldState: ToolBarState): void;
+    evalState(): ToolBarState;
+    render(displaycell: DisplayCell, parentDisplayGroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function tool_bar(...Arguments: any): DisplayCell;
