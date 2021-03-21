@@ -103,7 +103,11 @@ class Pages extends Base {
         let el:HTMLElement;
         for (let i = 0; i < querry.length; i++){
             el = <HTMLElement>(querry[i]);
-            el.onclick = function(event) {Tree.onclick.bind(this)(event);}
+            // el.onclick = function(event) {Tree.onclick.bind(this)(event);}
+            ///////////////////////
+            ///////////////////////
+            //////////////////////
+            //////////////////////// re-link HERE!!!!
         }
     }
     static button(pagename:string, index:string|number, keepAsNumber = false): object {

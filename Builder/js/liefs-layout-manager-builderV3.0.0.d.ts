@@ -12,11 +12,16 @@ declare class bCss {
     static ISVG: Css;
     static pagesSVG: Css;
 }
-declare class Builder {
-    constructor();
-    static updateTree(handler: Handler): t_;
-    static DC(displaycell: DisplayCell, indent: string): string;
-    static HB(htmlblock: HtmlBlock, indent: string): string;
-    static DG(displaygroup: DisplayGroup, indent: string): string;
-    static PG(pages: Pages, indent: string): string;
+declare class Builder extends Base {
+    static labelNo: number;
+    static instances: Builder[];
+    static activeInstances: Builder[];
+    static defaults: {};
+    static argMap: {
+        string: string[];
+    };
+    constructor(...Arguments: any);
+    static nodeTree: Tree_;
+    static makeHandlerTree(): void;
+    static makeDisplayCell(node: node_, displaycell: DisplayCell): void;
 }

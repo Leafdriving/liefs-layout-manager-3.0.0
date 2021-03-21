@@ -679,136 +679,84 @@ declare class winModal extends Base {
     buildFooter(): DisplayCell;
     build(): void;
 }
-declare class node extends Base {
-    static Proxy(THIS: node): node;
+declare class node_ extends Base {
     static labelNo: number;
-    static instances: NodeTree[];
-    static activeInstances: NodeTree[];
+    static instances: Tree_[];
+    static activeInstances: Tree_[];
     static defaults: {
         collapsed: boolean;
     };
     static argMap: {
         string: string[];
     };
+    static newNode(THIS: node_, ...Arguments: any): node_;
+    retArgs: ArgsObj;
     label: string;
     Arguments: any;
-    ParentNodeTree: NodeTree;
-    ParentNode: node;
-    PreviousSibling: node;
-    NextSibling: node;
+    ParentNodeTree: Tree_;
+    ParentNode: node_;
+    PreviousSibling: node_;
+    NextSibling: node_;
     collapsed: boolean;
-    children: node[];
-    get $(): node;
-    get node(): node;
+    displaycell: DisplayCell;
+    children: node_[];
     constructor(...Arguments: any);
-    siblingObject(): {};
-    newChild(...Arguments: any): node;
-    newSibling(...Arguments: any): node;
-    topSibling(): node;
-    bottomSibling(): node;
-    nextSibling(): node;
-    previousSibling(): node;
-    firstChild(): node;
-    done(): NodeTree;
-    parent(): node | NodeTree;
+    depth(node?: node_, deep?: number): number;
+    siblingObject(top?: node_, returnObject?: {}): {};
+    newChild(...Arguments: any): node_;
+    newSibling(...Arguments: any): node_;
+    topSibling(): node_;
+    bottomSibling(): node_;
+    nextSibling(): node_;
+    previousSibling(): node_;
+    firstChild(): node_;
+    done(): Tree_;
+    parent(): node_;
     collapse(value?: boolean): void;
+    log(): void;
+    byLabel(label: string): any;
 }
-declare class NodeTree extends Base {
+declare function sample(): Tree_;
+declare class Tree_ extends Base {
     static labelNo: number;
-    static instances: NodeTree[];
-    static activeInstances: NodeTree[];
-    static defaults: {};
-    static argMap: {
-        string: string[];
-    };
-    rootNode: node;
-    Arguments: any;
-    label: string;
-    constructor(...Arguments: any);
-    root(...Arguments: any): node;
-}
-declare class TreeNode extends Base {
-    static instances: TreeNode[];
-    static activeInstances: TreeNode[];
-    static defaults: {};
-    static argMap: {
-        DisplayCell: string[];
-        string: string[];
-        Array: string[];
-        boolean: string[];
-    };
-    label: string;
-    collapsed: boolean;
-    labelCell: DisplayCell;
-    children: TreeNode[];
-    horizontalDisplayCell: DisplayCell;
-    nodeCellArray: DisplayCell[];
-    constructor(...Arguments: any);
-    visibleChildren(noChildren?: number): number;
-    addDisplayCells(newCellArray?: DisplayCell[], isFirst?: boolean): DisplayCell[];
-    static parentTree(node: TreeNode): any;
-}
-declare function T(...Arguments: any): TreeNode;
-declare class Tree extends Base {
-    static instances: Tree[];
-    static activeInstances: Tree[];
-    static defaultObj: TreeNode;
+    static instances: Tree_[];
+    static activeInstances: Tree_[];
     static defaults: {
-        cellHeight: number;
-        SVGColor: string;
-        startIndent: number;
+        height: number;
         indent: number;
-        collapsePad: number;
-        collapseSize: number;
-        margin: number;
+        onNodeCreation: (node: node_) => void;
     };
     static argMap: {
         string: string[];
-        number: string[];
-        TreeNode: string[];
         DisplayCell: string[];
+        function: string[];
+        number: string[];
+        Css: string[];
         Events: string[];
-        t_: string[];
+        node_: string[];
     };
-    collapseSize: number;
-    collapsePad: number;
-    startIndent: number;
-    indent: number;
+    Arguments: any;
+    retArgs: ArgsObj;
     label: string;
-    parentDisplayCell: DisplayCell;
-    rootTreeNode: TreeNode;
-    cellHeight: number;
-    SVGColor: string;
-    coord: Coord;
-    t_instance: t_;
-    margin: number;
+    rootNode: node_;
+    height: number;
     css: string;
+    Css: Css;
+    indent: number;
+    collapsedSVG: string;
+    expandedSVG: string;
+    parentDisplayCell: DisplayCell;
     events: Events;
+    offset: number;
+    finalParentDisplayCellWidth: number;
+    onNodeCreation: (node: node_) => void;
+    traverse(tfunction: (node: node_) => void, node?: node_): void;
     constructor(...Arguments: any);
-    drawSVG(collapsed: boolean): string;
-    toggleCollapse(node: TreeNode, mouseEvent: MouseEvent, el: any): void;
-    buildTreeNode(node: TreeNode, cellArray: DisplayCell[], indent?: number): void;
-    render(displaycell: DisplayCell): void;
-    static autoLabelTreenodes(label: string, rootNode: t_): TreeNode;
-    static autoLabel(tObj: t_, postfix: string): void;
-    static makeTreeNodes(node: t_): TreeNode;
-    static t(...Arguments: any): t_;
-    static i(...Arguments: any): i_;
-    static onclick(event: MouseEvent): void;
+    root(...Arguments: any): node_;
+    log(): void;
+    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function tree(...Arguments: any): DisplayCell;
-declare function TI(...Arguments: any): t_;
-declare class i_ {
-    label: string;
-    Arguments: any[];
-    constructor(...Arguments: any);
-}
-declare class t_ {
-    label: string;
-    TreeNodeArguments: any[];
-    ItemArguments: any[];
-    constructor(...Arguments: any);
-}
 declare class Observe extends Base {
     static instances: Observe[];
     static activeInstances: Observe[];
