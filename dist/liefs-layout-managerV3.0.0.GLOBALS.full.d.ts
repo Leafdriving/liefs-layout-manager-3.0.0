@@ -680,6 +680,7 @@ declare class winModal extends Base {
     build(): void;
 }
 declare class node extends Base {
+    static Proxy(THIS: node): node;
     static labelNo: number;
     static instances: NodeTree[];
     static activeInstances: NodeTree[];
@@ -691,19 +692,23 @@ declare class node extends Base {
     };
     label: string;
     Arguments: any;
-    parentNodeTree: NodeTree;
-    parentNode: node;
-    previousSibling: node;
-    nextSibling: node;
+    ParentNodeTree: NodeTree;
+    ParentNode: node;
+    PreviousSibling: node;
+    NextSibling: node;
     collapsed: boolean;
-    $: node;
-    node: node;
-    proxy: any;
     children: node[];
+    get $(): node;
+    get node(): node;
     constructor(...Arguments: any);
     siblingObject(): {};
-    child(...Arguments: any): node;
-    sibling(...Arguments: any): node;
+    newChild(...Arguments: any): node;
+    newSibling(...Arguments: any): node;
+    topSibling(): node;
+    bottomSibling(): node;
+    nextSibling(): node;
+    previousSibling(): node;
+    firstChild(): node;
     done(): NodeTree;
     parent(): node | NodeTree;
     collapse(value?: boolean): void;

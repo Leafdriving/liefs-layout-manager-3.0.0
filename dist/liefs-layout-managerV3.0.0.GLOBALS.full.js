@@ -2370,56 +2370,77 @@ winModal.argMap = {
 class node extends Base {
     constructor(...Arguments) {
         super();
-        this.parentNodeTree = undefined;
-        this.parentNode = undefined;
-        this.previousSibling = undefined;
-        this.nextSibling = undefined;
+        this.ParentNodeTree = undefined;
+        this.ParentNode = undefined;
+        this.PreviousSibling = undefined;
+        this.NextSibling = undefined;
         this.children = [];
         this.buildBase(...Arguments);
         this.Arguments = Arguments;
-        // this.proxy = new Proxy(this, {
-        //     get: function(target:node, name:string) {
-        //         if (name in target) {
-        //             return target[name];
-        //         } else {
-        //             if (name == "$" || name == "node")
-        //                 return target;
-        //             let siblingObject = target.siblingObject();
-        //             if (name in siblingObject)
-        //                 return siblingObject[name];
-        //         }
-        //     }
-        //   })
-        // return this.proxy;
     }
+    static Proxy(THIS) {
+        return new Proxy(THIS, {
+            get: function (target, name) {
+                if (name in target) {
+                    return target[name];
+                }
+                else {
+                    if (name == "$" || name == "node")
+                        return target;
+                    let siblingObject = target.siblingObject();
+                    if (name in siblingObject)
+                        return siblingObject[name];
+                }
+            }
+        });
+    }
+    get $() { return node.Proxy(this); }
+    get node() { return node.Proxy(this); }
     siblingObject() {
         let top = this;
         let returnObject = {};
-        while (top.previousSibling) {
-            top = top.previousSibling;
+        while (top.PreviousSibling) {
+            top = top.PreviousSibling;
         }
         do {
             returnObject[top.label] = top;
-            top = top.nextSibling;
+            top = top.NextSibling;
         } while (top);
         return returnObject;
     }
-    child(...Arguments) {
+    newChild(...Arguments) {
         let newNode = new node(...Arguments);
-        newNode.parentNodeTree = this.parentNodeTree;
-        newNode.parentNode = this;
+        newNode.ParentNodeTree = this.ParentNodeTree;
+        newNode.ParentNode = this;
         this.children.push(newNode);
         return newNode;
     }
-    sibling(...Arguments) {
-        this.nextSibling = new node(...Arguments);
-        this.nextSibling.parentNodeTree = this.parentNodeTree;
-        this.nextSibling.previousSibling = this;
-        this.nextSibling.parentNode = this.parentNode;
-        return this.nextSibling;
+    newSibling(...Arguments) {
+        let previousNextSibling = this.NextSibling;
+        this.NextSibling = new node(...Arguments);
+        this.NextSibling.ParentNodeTree = this.ParentNodeTree;
+        this.NextSibling.PreviousSibling = this;
+        this.NextSibling.ParentNode = this.ParentNode;
+        this.NextSibling.NextSibling = previousNextSibling;
+        return this.NextSibling;
     }
-    done() { return this.parentNodeTree; }
-    parent() { return (this.parentNode) ? this.parentNode : this.parentNodeTree; }
+    topSibling() {
+        let returnNode = this;
+        while (returnNode.previousSibling())
+            returnNode = returnNode.previousSibling();
+        return returnNode;
+    }
+    bottomSibling() {
+        let returnNode = this;
+        while (returnNode.nextSibling())
+            returnNode = returnNode.nextSibling();
+        return returnNode;
+    }
+    nextSibling() { return this.NextSibling; }
+    previousSibling() { return this.PreviousSibling; }
+    firstChild() { return this.children[0]; }
+    done() { return this.ParentNodeTree; }
+    parent() { return (this.ParentNode) ? this.ParentNode : this.ParentNodeTree; }
     collapse(value = true) { this.collapsed = value; }
 }
 node.labelNo = 0;
@@ -2434,7 +2455,7 @@ class NodeTree extends Base {
         super();
         this.buildBase(...Arguments);
         this.rootNode = new node(...Arguments);
-        this.rootNode.parentNodeTree = this;
+        this.rootNode.ParentNodeTree = this;
     }
     root(...Arguments) {
         this.rootNode = new node(...Arguments);
