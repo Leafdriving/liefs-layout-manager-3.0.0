@@ -91,6 +91,10 @@ class Base {
         CLASS.deactivate(instance);
         CLASS["activeInstances"].push(instance);
     }
+    static isActive(instance:any) {
+        let CLASS = this;instance = CLASS.stringOrObject(instance);
+        return (CLASS["activeInstances"].indexOf(instance) > -1)
+    }
     static stringOrObject(instance:any) {
         if (typeof(instance) == "string") instance = this.byLabel(instance)
         return instance;

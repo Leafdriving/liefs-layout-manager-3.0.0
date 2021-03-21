@@ -83,35 +83,45 @@ bCss.pagesSVG = css("pagesSVG", `background-image: url("svg/bookOPT.svg");
 class Builder {
     constructor() {
     }
-    static HandlerMouseOver(mouseEvent) {
-        let el = this;
-        let coord = Handler.byLabel(el.innerHTML).coord;
-        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-        Builder.hoverModal.show();
-    }
-    static HandlerMouseLeave(event) { Builder.hoverModal.hide(); }
-    static DisplayGroupMouseOver(event) {
-        let el = this;
-        let coord = DisplayGroup.byLabel(el.innerHTML).coord;
-        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-        Builder.hoverModal.show();
-    }
-    static DisplayGroupMouseLeave(event) { Builder.hoverModal.hide(); }
-    static PagesMouseOver(event) {
-        let el = this;
-        let coord = DisplayCell.byLabel(el.innerHTML + "_DisplayCell").coord;
-        // console.log(Pages.byLabel(el.innerHTML+"_DisplayCell"))
-        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-        Builder.hoverModal.show();
-    }
-    static PagesMouseLeave(event) { Builder.hoverModal.hide(); }
-    static htmlBlockMouseOver(event) {
-        let el = this;
-        let coord = DisplayCell.byLabel(el.innerHTML).coord;
-        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-        Builder.hoverModal.show();
-    }
-    static htmlBlockMouseLeave(event) { Builder.hoverModal.hide(); }
+    // static hoverModalDisplayCell: DisplayCell = I("hoverModal", bCss.bgBlack)
+    // static hoverModal: Modal = new Modal("hoverModal", {fullCell: Builder.hoverModalDisplayCell});
+    // static HandlerMouseOver(mouseEvent:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = Handler.byLabel(el.innerHTML).coord;
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static HandlerMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static HandlerEvent = events({onmouseover: Builder.HandlerMouseOver,
+    //                               onmouseleave: Builder.HandlerMouseLeave});
+    // static DisplayGroupMouseOver(event:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = DisplayGroup.byLabel(el.innerHTML).coord;
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static DisplayGroupMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static DisplayGroupEvent = events({onmouseover: Builder.DisplayGroupMouseOver,
+    //                               onmouseleave: Builder.DisplayGroupMouseLeave});
+    // static PagesMouseOver(event:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = DisplayCell.byLabel(el.innerHTML + "_DisplayCell").coord;
+    //   // console.log(Pages.byLabel(el.innerHTML+"_DisplayCell"))
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static PagesMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static PagesEvent = events({onmouseover: Builder.PagesMouseOver,
+    //                               onmouseleave: Builder.PagesMouseLeave});
+    // static htmlBlockMouseOver(event:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = DisplayCell.byLabel(el.innerHTML).coord;
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static htmlBlockMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static htmlBlockEvent = events({onmouseover: Builder.htmlBlockMouseOver,
+    //                               onmouseleave: Builder.htmlBlockMouseLeave});
     static updateTree(handler) {
         let returnString = `TI("${handler.label}", bCss.handlerSVG ,Builder.HandlerEvent ,[\n`;
         returnString += Builder.DC(handler.rootCell, "\t");
@@ -152,16 +162,6 @@ class Builder {
         return returnString;
     }
 }
-Builder.hoverModalDisplayCell = I("hoverModal", bCss.bgBlack);
-Builder.hoverModal = new Modal("hoverModal", { fullCell: Builder.hoverModalDisplayCell });
-Builder.HandlerEvent = events({ onmouseover: Builder.HandlerMouseOver,
-    onmouseleave: Builder.HandlerMouseLeave });
-Builder.DisplayGroupEvent = events({ onmouseover: Builder.DisplayGroupMouseOver,
-    onmouseleave: Builder.DisplayGroupMouseLeave });
-Builder.PagesEvent = events({ onmouseover: Builder.PagesMouseOver,
-    onmouseleave: Builder.PagesMouseLeave });
-Builder.htmlBlockEvent = events({ onmouseover: Builder.htmlBlockMouseOver,
-    onmouseleave: Builder.htmlBlockMouseLeave });
 // let treeOfNodes:t_ = 
 // TI("Welcome to Liefs-Layout-Manager", {attributes : {pagebutton : "PAGES|0"}},
 //     [TI("Installation", Pages.button("PAGES",1) ),
@@ -182,8 +182,14 @@ window.onload = function () {
     let clientHandler = H("Client Window", h("Client_h", 5, I("Client_Main1", "left", bCss.bgCyan), v("Client_v", 5, I("Client_Top", "top", bCss.bgGreen), P("MainPages", I("Client_Bottom1", "bottom1", bCss.bgBlue), I("Client_Bottom2", "bottom2", bCss.bgLight)))), false, new Coord(), function () {
         // console.log(  Builder.updateTree(clientHandler)   );
     });
-    let TOOLBAR = tool_bar("Main_toolbar", 40, 25, I("toolbarb1", `<button style="width:100%; height:100%">1</button>`), I("toolbarb2", `<button style="width:100%; height:100%">2</button>`), I("toolbarb3", `<button style="width:100%; height:100%">3</button>`));
+    // let TOOLBAR = tool_bar("Main_toolbar", 40, 25,
+    //   I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
+    //   I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
+    //   I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
+    // );
     // console.log("ToolBar", TOOLBAR)
-    let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", TOOLBAR, dockable(h("Tree_Body", 5, tree("Display", dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600), Builder.updateTree(clientHandler), { SVGColor: "Black" }, 25), mainBodyDisplayCell))))));
+    let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", 
+    // TOOLBAR,
+    dockable(h("Tree_Body", 5, tree("Display", dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600), Builder.updateTree(clientHandler), { SVGColor: "Black" }, 25), mainBodyDisplayCell))))));
     Handler.activate(clientHandler);
 };

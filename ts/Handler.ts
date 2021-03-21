@@ -115,6 +115,8 @@ class Handler extends Base {
             if (handlerInstance.preRenderCallback) handlerInstance.preRenderCallback(handlerInstance);
             if (handlerInstance.coord) {
                 handlerInstance.rootCell.coord.copy(handlerInstance.coord);
+                handlerInstance.rootCell.coord.assign( undefined,undefined,undefined,undefined, undefined,undefined,undefined,undefined, Handler.currentZindex)
+
             }
             else {
                 Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);  

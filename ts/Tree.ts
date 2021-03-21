@@ -11,6 +11,119 @@
 // import {Overlay} from './Overlay';
 // import {pf} from './PureFunctions';
 
+class node extends Base {
+    static labelNo = 0;
+    static instances:NodeTree[] = [];
+    static activeInstances:NodeTree[] = [];
+    static defaults = {collapsed:false}
+    static argMap = {
+        string : ["label"],
+    }
+    // retArgs:ArgsObj;   // <- this will appear
+    label:string;
+    Arguments:any;
+    parentNodeTree: NodeTree = undefined;
+    parentNode:node = undefined;
+    previousSibling:node = undefined;
+    nextSibling:node = undefined;
+    collapsed: boolean;
+    $:node;
+    node:node;
+    proxy: any;
+
+    children:node[] = [];
+
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
+
+        this.Arguments = Arguments;
+        // this.proxy = new Proxy(this, {
+        //     get: function(target:node, name:string) {
+        //         if (name in target) {
+        //             return target[name];
+        //         } else {
+        //             if (name == "$" || name == "node")
+        //                 return target;
+        //             let siblingObject = target.siblingObject();
+        //             if (name in siblingObject)
+        //                 return siblingObject[name];
+        //         }
+        //     }
+        //   })
+          // return this.proxy;
+    }
+    siblingObject(){
+        let top:node = this;
+        let returnObject = {};
+        while (top.previousSibling) { top = top.previousSibling}
+        do {
+            returnObject[top.label] = top
+            top = top.nextSibling
+        } while (top);
+        return returnObject;
+    }
+    child(...Arguments:any): node{
+        let newNode = new node(...Arguments);
+        newNode.parentNodeTree = this.parentNodeTree;
+        newNode.parentNode = this;
+        this.children.push(newNode);
+        return newNode;
+    }
+    sibling(...Arguments:any): node{ // what if already a sibling?????
+        this.nextSibling = new node(...Arguments);
+        this.nextSibling.parentNodeTree = this.parentNodeTree;
+        this.nextSibling.previousSibling = this;
+        this.nextSibling.parentNode = this.parentNode;
+        return this.nextSibling;
+    }
+    done(){return this.parentNodeTree}
+    parent(){return (this.parentNode) ? this.parentNode : this.parentNodeTree;}
+    collapse(value:boolean = true){this.collapsed = value;}
+}
+
+class NodeTree extends Base {
+    static labelNo = 0;
+    static instances:NodeTree[] = [];
+    static activeInstances:NodeTree[] = [];
+    static defaults = {}
+    static argMap = {
+        string : ["label"],
+    }
+    // retArgs:ArgsObj;   // <- this will appear
+    rootNode: node; // = new node("Root");
+    Arguments:any;
+    label:string;
+
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
+
+        this.rootNode = new node(...Arguments)
+        this.rootNode.parentNodeTree = this;
+    }
+    root(...Arguments:any){
+        this.rootNode = new node(...Arguments)
+        return this.rootNode;
+    }
+    // get child(){return this.rootNode.child}
+    // get sibling(){return this.rootNode.sibling}
+}
+
+/*
+let newTree = nodeTree("TreeName")
+            .sibling("ONE")
+                .child("Child of One")
+            .parent()
+            .sibling("TWO")
+            .sibling("Three")
+                .child("Child of Three")
+                .sibling("2nd Child of Three")
+            .parent()
+            .sibling("Four")
+*/              
+              
+
+
+
 
 class TreeNode extends Base {
     static instances:TreeNode[] = [];

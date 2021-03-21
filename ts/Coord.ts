@@ -137,6 +137,10 @@ class Coord extends Base {
         this.within.width = fromCoord.within.width;
         this.within.height = fromCoord.within.height;
     }
+    log(){
+        console.log(`x=${this.x}`, `y=${this.y}`, `width=${this.width}`, `height=${this.height}`);
+        console.log(`wx=${this.within.x}`, `wy=${this.within.y}`, `wwidth=${this.within.width}`, `wheight=${this.within.height}`);
+    }
 
         // // if no object, x, width, y, height, zindex
         // // if object left, top, right, bottom, zindex

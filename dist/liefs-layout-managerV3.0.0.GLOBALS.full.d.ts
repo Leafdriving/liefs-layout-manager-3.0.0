@@ -25,6 +25,7 @@ declare class Base {
     static push(instance: any, toActive?: boolean): void;
     static deactivate(instance: any): void;
     static activate(instance: any): void;
+    static isActive(instance: any): boolean;
     static stringOrObject(instance: any): any;
     static defaults: object;
     static argMap: object;
@@ -135,6 +136,7 @@ declare class Coord extends Base {
     applyMargins(left: number, top: number, right: number, bottom: number): void;
     assign(x?: any, y?: any, width?: any, height?: any, wx?: any, wy?: any, wwidth?: any, wheight?: any, zindex?: any): void;
     copy(fromCoord: Coord): void;
+    log(): void;
     isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
     derender(derender: boolean): boolean;
     clipStyleString(COORD: Coord): string;
@@ -597,33 +599,18 @@ declare class Context extends Base {
 declare let context: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
 declare let hMenuBar: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
 declare let vMenuBar: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
+declare enum ModalType {
+    winModal = "winModal",
+    toolbar = "toolbar",
+    other = "other"
+}
 declare class Modal extends Base {
+    static closeCss: Css;
+    static closeSVGCss: Css;
+    static closeSVG: string;
+    static labelNo: number;
     static instances: Modal[];
     static activeInstances: Modal[];
-    static headerCss: Css;
-    static footerCss: Css;
-    static closeCss: Css;
-    static closeCssHover: Css;
-    static bodyCss: Css;
-    static optionsCss: Css;
-    static defaults: {
-        showHeader: boolean;
-        showFooter: boolean;
-        resizeable: boolean;
-        showClose: boolean;
-        showOptions: boolean;
-        headerHeight: number;
-        footerHeight: number;
-        headerTitle: string;
-        footerTitle: string;
-        innerHTML: string;
-        optionsHeight: number;
-    };
-    static argMap: {
-        string: string[];
-        DisplayCell: string[];
-        Coord: string[];
-    };
     static x: number;
     static y: number;
     static offset: {
@@ -631,83 +618,110 @@ declare class Modal extends Base {
         y: number;
     };
     static movingInstace: Modal;
-    label: string;
-    headerTitle: string;
-    footerTitle: string;
-    innerHTML: string;
-    fullCell: DisplayCell;
-    headerCell: DisplayCell;
-    bodyCell: DisplayCell;
-    optionsCell: DisplayCell;
-    footerCell: DisplayCell;
-    headerHeight: number;
-    optionsHeight: number;
-    footerHeight: number;
-    showHeader: boolean;
-    showClose: boolean;
-    showFooter: boolean;
-    showOptions: boolean;
-    resizeable: boolean;
-    handler: Handler;
-    coord: Coord;
-    withinCoord: Coord;
-    constructor(...Arguments: any);
-    setSize(...numbers: number[]): void;
-    setBody(newBody: DisplayCell): void;
-    setContent(html: string): void;
-    setTitle(html: string): void;
-    setFooter(html: string): void;
-    buildClose(): DisplayCell;
-    buildHeader(): void;
-    buildFooter(): void;
-    buildOptions(): void;
-    buildFull(): void;
-    build(): void;
-    show(): void;
-    hide(): void;
-    preRenderCallback(handler: Handler): void;
-    static startMoveModal(handler: Handler): void;
-    static moveModal(handler: Handler, offset: {
+    static setSize(THIS: Modal, ...numbers: number[]): void;
+    static events(THIS: Modal): Events;
+    static startMoveModal(THIS: Modal): void;
+    static moveModal(THIS: Modal, offset: {
         x: number;
         y: number;
     }): void;
-}
-declare class Stretch extends Base {
-    static labelNo: number;
-    static instances: Stretch[];
-    static activeInstances: Stretch[];
     static defaults: {
-        pxSize: number;
-        minWidth: number;
-        minHeight: number;
-        onUpCallBack: () => void;
+        type: ModalType;
     };
     static argMap: {
         string: string[];
-        Modal: string[];
+        DisplayCell: string[];
     };
-    static NWcss: Css;
-    static NEcss: Css;
-    static startCoord: Coord;
-    static corner: string;
     label: string;
-    parentModal: Modal;
-    parentDisplaycell: DisplayCell;
-    pxSize: number;
-    UL: DisplayCell;
-    UR: DisplayCell;
-    LL: DisplayCell;
-    LR: DisplayCell;
-    minWidth: number;
-    minHeight: number;
-    maxWidth: number;
-    maxHeight: number;
-    onUpCallBack: Function;
-    events(corner: string): Events;
+    rootDisplayCell: DisplayCell;
+    handler: Handler;
+    type: ModalType;
+    get coord(): Coord;
     constructor(...Arguments: any);
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    setSize(...numbers: number[]): void;
+    show(): void;
+    hide(): void;
+    isShown(): boolean;
+    dragWith(...Arguments: any): void;
+    closeWith(...Arguments: any): void;
 }
-declare function stretch(...Arguments: any): DisplayCell | Modal;
+declare class winModal extends Base {
+    static titleCss: Css;
+    static labelNo: number;
+    static instances: winModal[];
+    static activeInstances: winModal[];
+    static defaults: {
+        headerHeight: number;
+        buttonsHeight: number;
+        footerHeight: number;
+        headerText: string;
+        bodyText: string;
+    };
+    static argMap: {
+        string: string[];
+    };
+    retArgs: ArgsObj;
+    label: string;
+    rootDisplayCell: DisplayCell;
+    header: DisplayCell;
+    headerHeight: number;
+    headerText: string;
+    body: DisplayCell;
+    bodyText: string;
+    footer: DisplayCell;
+    footerHeight: number;
+    footerText: string;
+    modal: Modal;
+    constructor(...Arguments: any);
+    buildClose(): DisplayCell;
+    buildHeader(): DisplayCell;
+    buildBody(): DisplayCell;
+    buildFooter(): DisplayCell;
+    build(): void;
+}
+declare class node extends Base {
+    static labelNo: number;
+    static instances: NodeTree[];
+    static activeInstances: NodeTree[];
+    static defaults: {
+        collapsed: boolean;
+    };
+    static argMap: {
+        string: string[];
+    };
+    label: string;
+    Arguments: any;
+    parentNodeTree: NodeTree;
+    parentNode: node;
+    previousSibling: node;
+    nextSibling: node;
+    collapsed: boolean;
+    $: node;
+    node: node;
+    proxy: any;
+    children: node[];
+    constructor(...Arguments: any);
+    siblingObject(): {};
+    child(...Arguments: any): node;
+    sibling(...Arguments: any): node;
+    done(): NodeTree;
+    parent(): node | NodeTree;
+    collapse(value?: boolean): void;
+}
+declare class NodeTree extends Base {
+    static labelNo: number;
+    static instances: NodeTree[];
+    static activeInstances: NodeTree[];
+    static defaults: {};
+    static argMap: {
+        string: string[];
+    };
+    rootNode: node;
+    Arguments: any;
+    label: string;
+    constructor(...Arguments: any);
+    root(...Arguments: any): node;
+}
 declare class TreeNode extends Base {
     static instances: TreeNode[];
     static activeInstances: TreeNode[];
@@ -809,30 +823,32 @@ declare class Observe extends Base {
     static update(): void;
 }
 declare class Dockable extends Base {
+    static activeDropZoneIndex: number;
+    static DockableOwner: string;
     static labelNo: number;
     static instances: Dockable[];
     static activeInstances: Dockable[];
     static defaults: {
-        type: string;
+        acceptsTypes: string[];
     };
     static argMap: {
         string: string[];
         DisplayCell: string[];
     };
-    static activeDropZoneIndex: number;
-    static activeToolbar: ToolBar;
-    static DockableOwner: string;
-    dummy: DisplayCell;
+    retArgs: ArgsObj;
     label: string;
-    type: string;
-    rootDisplayCell: DisplayCell;
+    displaycell: DisplayCell;
     displaygroup: DisplayGroup;
+    acceptsTypes: string[];
     dropZones: Coord[];
+    dummy: DisplayCell;
     constructor(...Arguments: any);
+    undock(e: CustomEvent): void;
+    dropped(e: CustomEvent): void;
     render(unuseddisplaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function dockable(...Arguments: any): DisplayCell;
-declare enum ToolBarState {
+declare enum TBState {
     dockedInVertical = "dockedInVertical",
     dockedInHorizontal = "dockedInHorizontal",
     modalWasDockedInHor = "modalWasDockedInHor",
@@ -843,50 +859,31 @@ declare class ToolBar extends Base {
     static instances: ToolBar[];
     static activeInstances: ToolBar[];
     static defaults: {
-        sizePx: number;
-        isDocked: boolean;
-        isHor: boolean;
+        state: TBState;
+        checkerSize: number;
         type: string;
-        state: ToolBarState;
     };
     static argMap: {
         string: string[];
         number: string[];
     };
-    static triggerUndockDistance: number;
-    static isMoving: boolean;
-    static activeInstace: ToolBar;
-    static checkerSize: number;
-    state: ToolBarState;
+    retArgs: ArgsObj;
     label: string;
-    type: string;
-    height: number;
-    width: number;
-    parentDisplayGroup: DisplayGroup;
+    state: TBState;
+    displayCells: DisplayCell[];
     rootDisplayCell: DisplayCell;
-    displaycells: DisplayCell[];
-    spacer: DisplayCell;
+    width: number;
+    height: number;
+    parentDisplayGroup: DisplayGroup;
     modal: Modal;
-    isDocked: boolean;
-    coord: Coord;
+    checkerSize: number;
+    type: string;
     constructor(...Arguments: any);
-    static startMoveToolbar(THIS: ToolBar, handler: Handler): void;
-    static moveToolbar(THIS: ToolBar, handler: Handler, offset: {
-        x: number;
-        y: number;
-    }): void;
-    static undock(THIS: ToolBar, handler: Handler, offset: {
-        x: number;
-        y: number;
-    }): void;
-    show(): void;
-    hide(): void;
-    setArrayPx(value: number): void;
-    build(): void;
-    makeModal(): void;
-    setModalSize(): [number, number];
-    alignToolbarToDiplayGroup(oldState: ToolBarState): void;
-    evalState(): ToolBarState;
-    render(displaycell: DisplayCell, parentDisplayGroup: DisplayGroup, index: number, derender: boolean): void;
+    buildModal(): void;
+    size(): number[];
+    toggleDirection(e: MouseEvent): void;
+    resizeForModal(): void;
+    resizeFordock(): void;
+    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
-declare function tool_bar(...Arguments: any): DisplayCell;
+declare function toolBar(...Arguments: any): DisplayCell;

@@ -55,54 +55,54 @@ class Builder {
     
     constructor(){
     }
-    static hoverModalDisplayCell: DisplayCell = I("hoverModal", bCss.bgBlack)
-    static hoverModal: Modal = new Modal("hoverModal", {fullCell: Builder.hoverModalDisplayCell});
+    // static hoverModalDisplayCell: DisplayCell = I("hoverModal", bCss.bgBlack)
+    // static hoverModal: Modal = new Modal("hoverModal", {fullCell: Builder.hoverModalDisplayCell});
 
-    static HandlerMouseOver(mouseEvent:MouseEvent){
-      let el:HTMLDivElement = this as unknown as HTMLDivElement;
-      let coord = Handler.byLabel(el.innerHTML).coord;
-      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-      Builder.hoverModal.show();
-    }
-    static HandlerMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
-    static HandlerEvent = events({onmouseover: Builder.HandlerMouseOver,
-                                  onmouseleave: Builder.HandlerMouseLeave});
-
-
-    static DisplayGroupMouseOver(event:MouseEvent){
-      let el:HTMLDivElement = this as unknown as HTMLDivElement;
-      let coord = DisplayGroup.byLabel(el.innerHTML).coord;
-      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-      Builder.hoverModal.show();
-    }
-    static DisplayGroupMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
-    static DisplayGroupEvent = events({onmouseover: Builder.DisplayGroupMouseOver,
-                                  onmouseleave: Builder.DisplayGroupMouseLeave});
+    // static HandlerMouseOver(mouseEvent:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = Handler.byLabel(el.innerHTML).coord;
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static HandlerMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static HandlerEvent = events({onmouseover: Builder.HandlerMouseOver,
+    //                               onmouseleave: Builder.HandlerMouseLeave});
 
 
-
-    static PagesMouseOver(event:MouseEvent){
-      let el:HTMLDivElement = this as unknown as HTMLDivElement;
-      let coord = DisplayCell.byLabel(el.innerHTML + "_DisplayCell").coord;
-      // console.log(Pages.byLabel(el.innerHTML+"_DisplayCell"))
-      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-      Builder.hoverModal.show();
-    }
-    static PagesMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
-    static PagesEvent = events({onmouseover: Builder.PagesMouseOver,
-                                  onmouseleave: Builder.PagesMouseLeave});
+    // static DisplayGroupMouseOver(event:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = DisplayGroup.byLabel(el.innerHTML).coord;
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static DisplayGroupMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static DisplayGroupEvent = events({onmouseover: Builder.DisplayGroupMouseOver,
+    //                               onmouseleave: Builder.DisplayGroupMouseLeave});
 
 
 
-    static htmlBlockMouseOver(event:MouseEvent){
-      let el:HTMLDivElement = this as unknown as HTMLDivElement;
-      let coord = DisplayCell.byLabel(el.innerHTML).coord;
-      Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-      Builder.hoverModal.show();
-    }
-    static htmlBlockMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
-    static htmlBlockEvent = events({onmouseover: Builder.htmlBlockMouseOver,
-                                  onmouseleave: Builder.htmlBlockMouseLeave});
+    // static PagesMouseOver(event:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = DisplayCell.byLabel(el.innerHTML + "_DisplayCell").coord;
+    //   // console.log(Pages.byLabel(el.innerHTML+"_DisplayCell"))
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static PagesMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static PagesEvent = events({onmouseover: Builder.PagesMouseOver,
+    //                               onmouseleave: Builder.PagesMouseLeave});
+
+
+
+    // static htmlBlockMouseOver(event:MouseEvent){
+    //   let el:HTMLDivElement = this as unknown as HTMLDivElement;
+    //   let coord = DisplayCell.byLabel(el.innerHTML).coord;
+    //   Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+    //   Builder.hoverModal.show();
+    // }
+    // static htmlBlockMouseLeave(event:MouseEvent){Builder.hoverModal.hide();}
+    // static htmlBlockEvent = events({onmouseover: Builder.htmlBlockMouseOver,
+    //                               onmouseleave: Builder.htmlBlockMouseLeave});
 
 
     static updateTree(handler:Handler){
@@ -190,11 +190,11 @@ H("Client Window",
   }
 );
 
-let TOOLBAR = tool_bar("Main_toolbar", 40, 25,
-  I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
-  I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
-  I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
-);
+// let TOOLBAR = tool_bar("Main_toolbar", 40, 25,
+//   I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
+//   I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
+//   I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
+// );
 // console.log("ToolBar", TOOLBAR)
 
 let mainHandler = H("Main Window", 4,
@@ -205,7 +205,7 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
     dockable(v("Main_Dockable",
-      TOOLBAR,
+      // TOOLBAR,
       dockable(
       h("Tree_Body", 5,
         tree("Display",
