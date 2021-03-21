@@ -182,14 +182,8 @@ window.onload = function () {
     let clientHandler = H("Client Window", h("Client_h", 5, I("Client_Main1", "left", bCss.bgCyan), v("Client_v", 5, I("Client_Top", "top", bCss.bgGreen), P("MainPages", I("Client_Bottom1", "bottom1", bCss.bgBlue), I("Client_Bottom2", "bottom2", bCss.bgLight)))), false, new Coord(), function () {
         // console.log(  Builder.updateTree(clientHandler)   );
     });
-    // let TOOLBAR = tool_bar("Main_toolbar", 40, 25,
-    //   I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
-    //   I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
-    //   I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
-    // );
+    let TOOLBAR = toolBar("Main_toolbar", 40, 25, I("toolbarb1", `<button style="width:100%; height:100%">1</button>`), I("toolbarb2", `<button style="width:100%; height:100%">2</button>`), I("toolbarb3", `<button style="width:100%; height:100%">3</button>`));
     // console.log("ToolBar", TOOLBAR)
-    let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", 
-    // TOOLBAR,
-    dockable(h("Tree_Body", 5, tree("Display", dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600), Builder.updateTree(clientHandler), { SVGColor: "Black" }, 25), mainBodyDisplayCell))))));
+    let mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", TOOLBAR, dockable(h("Tree_Body", 5, tree("Display", dragbar(I("Main_tree", "300px", bCss.bgLight), 100, 600), Builder.updateTree(clientHandler), { SVGColor: "Black" }, 25), mainBodyDisplayCell))))));
     Handler.activate(clientHandler);
 };

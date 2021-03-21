@@ -68,12 +68,12 @@ class Dockable extends Base {
         }        
     }
     dropped(e:CustomEvent){
-        console.log("Dropped")
+        // console.log("Dropped")
         let modal = e.detail;
         let toolbar = <ToolBar>ToolBar.byLabel( modal.label.slice(0, -6) );
         if (this.dropZones) {
-            console.log("Has Zones");
-            console.log(Dockable.DockableOwner, this.label)
+            // console.log("Has Zones");
+            // console.log(Dockable.DockableOwner, this.label)
             if (Dockable.activeDropZoneIndex != undefined && Dockable.DockableOwner == this.label) { // DOCK IT!
                 toolbar.modal.hide();
                 let ishor = this.displaygroup.ishor;
@@ -319,7 +319,17 @@ class ToolBar extends Base {
             cellArray[index].dim = `${(isHor) ? this.width : this.height}px`;
     }
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
-        // console.log("Rendered! - so far, do nothing!");
+        if (parentDisplaygroup) {
+            if (parentDisplaygroup != this.parentDisplayGroup){
+                // This only happens when docked at start!
+                this.parentDisplayGroup = parentDisplaygroup;
+
+                this.modal.hide();
+                let ishor = parentDisplaygroup.ishor;
+                this.state = (ishor) ? TBState.dockedInHorizontal :TBState.dockedInVertical;
+                this.resizeFordock();
+            }
+        }
     }
 }
 function toolBar(...Arguments:any) {

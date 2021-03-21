@@ -190,11 +190,11 @@ H("Client Window",
   }
 );
 
-// let TOOLBAR = tool_bar("Main_toolbar", 40, 25,
-//   I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
-//   I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
-//   I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
-// );
+let TOOLBAR = toolBar("Main_toolbar", 40, 25,
+  I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
+  I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
+  I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
+);
 // console.log("ToolBar", TOOLBAR)
 
 let mainHandler = H("Main Window", 4,
@@ -205,7 +205,7 @@ let mainHandler = H("Main Window", 4,
       I("MenuBar_Spacer", "", bCss.menuSpace)
     ),
     dockable(v("Main_Dockable",
-      // TOOLBAR,
+      TOOLBAR,
       dockable(
       h("Tree_Body", 5,
         tree("Display",
