@@ -234,6 +234,8 @@ declare class DisplayCell extends Base {
     set minDisplayGroupSize(size: number);
     constructor(...Arguments: any);
     addOverlay(overlay: Overlay): void;
+    getOverlay(label: string): Overlay;
+    popOverlay(label: string): void;
     hMenuBar(menuObj: object): void;
     vMenuBar(menuObj: object): void;
     static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
@@ -253,7 +255,6 @@ declare class DisplayGroup extends Base {
         boolean: string[];
         number: string[];
         dim: string[];
-        Overlay: string[];
     };
     static argCustomTypes: Function[];
     label: string;
@@ -264,7 +265,6 @@ declare class DisplayGroup extends Base {
     marginHor: number;
     marginVer: number;
     dim: string;
-    overlay: Overlay;
     offset: number;
     dimArrayTotal: number;
     constructor(...Arguments: any);
@@ -317,7 +317,6 @@ declare class Handler extends Base {
     static update(ArrayofHandlerInstances?: Handler[], instanceNo?: number, derender?: boolean): void;
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
     static renderDisplayGroup(parentDisplaycell: DisplayCell, derender: boolean): void;
-    static renderDisplayGroup_old(parentDisplaycell: DisplayCell, derender: boolean): void;
     static renderHtmlBlock(displaycell: DisplayCell, derender: boolean, parentDisplaygroup: DisplayGroup): void;
     static renderHtmlAttributes(el: HTMLElement, htmlblock: HtmlBlock, id: string): void;
 }
@@ -358,11 +357,14 @@ declare class DefaultTheme {
     static advisedDiv: Css;
     static advisedBody: Css;
     static titleCss: Css;
+    static ScrollBar_whiteBG: Css;
+    static ScrollBar_blackBG: Css;
+    static scrollArrowsSVGCss: Css;
     static arrowSVGCss: Css;
-    static leftArrowSVG: string;
-    static rightArrowSVG: string;
-    static upArrowSVG: string;
-    static downArrowSVG: string;
+    static leftArrowSVG(classname: string): string;
+    static rightArrowSVG(classname: string): string;
+    static upArrowSVG(classname: string): string;
+    static downArrowSVG(classname: string): string;
     static closeCss: Css;
     static closeSVGCss: Css;
     static closeSVG: string;
@@ -508,58 +510,46 @@ declare class DragBar extends Base {
 }
 declare function dragbar(...Arguments: any): DisplayCell;
 declare class ScrollBar extends Base {
+    static labelNo: number;
     static instances: ScrollBar[];
     static activeInstances: ScrollBar[];
     static defaults: {
+        barSize: number;
         offset: number;
-        displayAtEnd: boolean;
-        scrollWidth: number;
-        currentlyRendered: boolean;
-        arrowOffset: number;
     };
     static argMap: {
         string: string[];
-        DisplayGroup: string[];
+        DisplayCell: string[];
         number: string[];
-        boolean: string[];
     };
-    static scrollWheelMult: number;
-    static triggerDistance: number;
+    static startoffset: number;
     label: string;
-    currentlyRendered: boolean;
-    ishor: boolean;
-    arrowOffset: number;
-    scrollWidth: number;
-    displayAtEnd: boolean;
-    fixedPixels: number;
-    viewingPixels: number;
+    type: string;
+    displaySize: number;
+    viewPortSize: number;
+    barSize: number;
     offset: number;
-    maxOffset: number;
-    offsetAtDrag: number;
-    offsetPixelRatio: number;
-    parentDisplaygroup: DisplayGroup;
+    scaleFactor: number;
+    parentDisplaycell: DisplayCell;
     displaygroup: DisplayGroup;
-    displaycell: DisplayCell;
-    leftArrow: DisplayCell;
-    upArrow: DisplayCell;
-    prePaddle: DisplayCell;
-    paddle: DisplayCell;
-    postPaddle: DisplayCell;
-    rightArrow: DisplayCell;
-    downArrow: DisplayCell;
-    paddleSizePx: number;
-    clickPageSize: number;
+    scrollbarDisplayCell: DisplayCell;
+    preBar: DisplayCell;
+    Bar: DisplayCell;
+    postBar: DisplayCell;
     constructor(...Arguments: any);
     build(): void;
-    clickLeftorUp(mouseEvent: MouseEvent | WheelEvent, noTimes?: number): void;
-    clickRightOrDown(mouseEvent: MouseEvent | WheelEvent, noTimes?: number): void;
-    clickPageLeftorUp(mouseEvent: MouseEvent | WheelEvent): void;
-    clickPageRightOrDown(mouseEvent: MouseEvent | WheelEvent): void;
-    dragging(output: object): void;
+    onBarDown(): void;
+    onBarMove(xmouseDiff: object): void;
+    onPreBar(mouseEvent: MouseEvent): void;
+    onPostBar(mouseEvent: MouseEvent): void;
+    onBackArrow(mouseEvent: MouseEvent): void;
+    onForwardArrow(mouseEvent: MouseEvent): void;
+    validateOffsetAndRender(): void;
+    update(displaySize: number): number;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
-    static distOfMouseFromWheel(THIS: ScrollBar, event: WheelEvent): number;
-    static onWheel(event: WheelEvent): void;
+    delete(): void;
 }
+declare function scrollbar(...Arguments: any): DisplayCell;
 declare class Context extends Base {
     static lastRendered: Context;
     static subOverlapPx: number;

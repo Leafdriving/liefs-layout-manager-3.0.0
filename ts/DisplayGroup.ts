@@ -20,7 +20,7 @@ class DisplayGroup extends Base {
         boolean : ["ishor"],
         number: ["marginHor", "marginVer"],
         dim : ["dim"],
-        Overlay: ["overlay"]
+        //Overlay: ["overlay"]
     }
     static argCustomTypes:Function[] = [];
 
@@ -32,7 +32,7 @@ class DisplayGroup extends Base {
     marginHor:number;
     marginVer:number;
     dim:string;
-    overlay: Overlay = undefined;
+    //overlays: Overlay[] = [];
     offset:number; //used by overlay
     dimArrayTotal:number // used during Handler Update 
     // minimumCellSize:number;
@@ -70,6 +70,7 @@ class DisplayGroup extends Base {
         }
         DisplayGroup.makeLabel(this);
     }
+    //addOverlay(overlay:Overlay){this.overlays.push(overlay)}
     percentToPx(displaycell:DisplayCell /* child in cellarray */) : void {
         let percentAsNumber:number = pf.percentAsNumber(displaycell.dim);
         let percentLeft = 100 - percentAsNumber;

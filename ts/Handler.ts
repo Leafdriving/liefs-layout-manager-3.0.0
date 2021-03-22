@@ -63,7 +63,7 @@ class Handler extends Base {
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname)) element.remove();
             
             window.onresize = function() {Handler.update()};
-            window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);};
+            //window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);};
             window.addEventListener("popstate", function(event){Pages.popstate(event)})
             Pages.parseURL();
         }
@@ -174,7 +174,6 @@ class Handler extends Base {
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
-
         }
         if (displaycell.overlays.length) {
             for (let ovlay of displaycell.overlays) {
@@ -191,7 +190,7 @@ class Handler extends Base {
         let ishor:boolean = displaygroup.ishor;
         let coord:Coord = displaygroup.coord;
         let cellArraylength = displaygroup.cellArray.length;
-        let overlay = displaygroup.overlay;
+        // let overlay = displaygroup.overlay;
 
         let marginpx = (ishor) ? displaygroup.marginHor*(cellArraylength-1): displaygroup.marginVer*(cellArraylength-1);
         let maxpx:number = (ishor) ? coord.width - marginpx : coord.height - marginpx;
@@ -257,42 +256,28 @@ class Handler extends Base {
         displaygroup.dimArrayTotal = dimArrayTotal;
         
         // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
+
+
+        let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+        if (dimArrayTotal > maxpx + 2) { 
+            if (!scrollbarOverlay) {
+                scrollbar(parentDisplaycell, {type: "DisplayGroup"});
+                scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+            }
+            /* this.offset = */ 
+            displaygroup.offset = (<ScrollBar>(scrollbarOverlay.returnObj)).update(dimArrayTotal); ////
+            /* this.offset = */ 
+        } else {
+            if (scrollbarOverlay)
+                (<ScrollBar>(scrollbarOverlay.returnObj)).delete();
+                parentDisplaycell.popOverlay("ScrollBar");
+        }
+
+
         let x:number = displaygroup.coord.x;
         let y:number = displaygroup.coord.y;
         let width:number;
         let height:number;
-
-        if (!displaygroup.label.includes("ScrollBar")) {
-            if (dimArrayTotal > maxpx + 1) {
-                // console.log(pxForPercent)
-                if (!overlay) {
-                    displaygroup.overlay=new Overlay("ScrollBar",
-                                                    `${displaygroup.label}_ScrollBar`,
-                                                    displaygroup,
-                                                    dimArrayTotal, maxpx,
-                                                    );
-                }
-                displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, false);
-                let dgCoord = displaygroup.coord;
-                let scrollbar = <ScrollBar>displaygroup.overlay.returnObj;
-                let scrollWidth = scrollbar.scrollWidth;
-
-                dgCoord.width -= (ishor) ? 0 : scrollWidth;
-                dgCoord.within.width -= (ishor) ? 0 : scrollWidth;
-                dgCoord.height -= (ishor) ? scrollWidth : 0;
-                dgCoord.within.height -= (ishor) ? scrollWidth : 0;
-                let offset = (<ScrollBar>displaygroup.overlay.returnObj).offset;
-                // console.log(offset);
-                x -= (ishor) ? offset : 0;
-                y -= (ishor) ? 0 : offset;
-            }
-            else {
-                if (overlay) {
-                    if (overlay.currentlyRendered)
-                        displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, true);
-                }
-            }
-        }
 
         for (let index=0 ; index < cellArraylength; index++) {
             let displaycell:DisplayCell = displaygroup.cellArray[index];
@@ -309,172 +294,14 @@ class Handler extends Base {
             x += (ishor) ? width+displaygroup.marginHor : 0;
             y += (ishor) ? 0 : height+displaygroup.marginVer;
         }
-
     }
-    static renderDisplayGroup_old(parentDisplaycell: DisplayCell, derender:boolean) {
-        let displaygroup: DisplayGroup = parentDisplaycell.displaygroup;
-
-        let ishor:boolean = displaygroup.ishor;
-        let coord:Coord = displaygroup.coord;
-        let cellArraylength = displaygroup.cellArray.length;
-        let marginpx = (ishor) ? displaygroup.marginHor*(cellArraylength-1): displaygroup.marginVer*(cellArraylength-1);
-        let maxpx:number = (ishor) ? coord.width - marginpx : coord.height - marginpx;
-
-        let cellsizepx:number;
-
-        let totalFixedpx = displaygroup.totalPx();
-        let pxForPercent:number = maxpx - totalFixedpx;
-        let totalPercent:number = 0;
-        let DisplayCellPercent:number = 0;
-        let displayCellPx:number;
-        let pxForPercentLeft:number = pxForPercent;
-        let overlay = displaygroup.overlay;
-
-        // create dim array;
-        // let isValid = true;
-        let dimArray:{dim:string, min:number, px:number}[] = [];
-        // let dimArrayTotal = 0;
-
-        // create dim array - Initialize.
-        for (let index = 0; index < cellArraylength; index++) {
-            let displaycell:DisplayCell = displaygroup.cellArray[index];
-            let dim = displaycell.dim;
-            let min = ((pf.isTypePx(displaycell.dim)) ? pf.pxAsNumber(displaycell.dim) : displaycell.minDisplayGroupSize)
-            let px = (pf.isTypePx(displaycell.dim) ? pf.pxAsNumber(displaycell.dim) : pf.percentAsNumber(displaycell.dim) * pxForPercent / 100);
-            // dimArrayTotal += px;            
-            dimArray.push({dim,min,px});   
-        }
-            // loop until all % are worked out
-        let percentReballancingRequired:boolean;
-        let dimArrayTotal: number;
-        do {
-            // If % less than min... assign it min
-            percentReballancingRequired = false;
-            let fixedPixels = 0;
-            dimArrayTotal = 0;
-            for (let index=0 ; index < dimArray.length; index++) {  
-                let dimObj = dimArray[index];
-                if (dimObj.px < dimObj.min) {
-                    dimObj.px = dimObj.min;
-                    dimObj.dim = `${dimObj.px}px`;
-                    percentReballancingRequired = true;
-                }
-                fixedPixels += ( pf.isTypePx(dimObj.dim) ? dimObj.px : 0 );
-                dimArrayTotal += dimObj.px;
-            }
-            let px4Percent:number = maxpx - fixedPixels;  // key
-            //console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`)
-            // console.log(maxpx, fixedPixels, px4Percent)
-            // if min was assigned - rebalance
-            if (percentReballancingRequired) {
-                let currentPercent = 0;
-                // calculate total percent (so less than 100)
-                for (let index = 0; index < dimArray.length; index++) {
-                    let dimObj = dimArray[index];
-                    if (pf.isTypePercent(dimObj.dim)) {
-                        currentPercent += pf.percentAsNumber(dimObj.dim);
-                    }
-                }
-                let mult = 100/currentPercent;
-                // and apply the difference over this code.
-                dimArrayTotal = 0;
-                for (let index = 0; index < dimArray.length; index++) {
-                    let dimObj = dimArray[index];
-                    if (pf.isTypePercent(dimObj.dim)) {
-                        dimObj.dim = `${pf.percentAsNumber(dimObj.dim) * mult}%`;
-                        dimObj.px = pf.percentAsNumber(dimObj.dim)* px4Percent / 100;
-                        //console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`)
-                    }
-                    dimArrayTotal += dimObj.px;
-                }
-            }
-        } while (percentReballancingRequired);
-        // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
-
-        
-        // this part opens and/or closes the scrollbar overlay
-        // pxForPercent = maxpx - dimArrayTotal;
-        // totalFixedpx = dimArrayTotal;
-        if (pxForPercent < 0) {
-            // console.log(pxForPercent)
-            if (!overlay) {
-                displaygroup.overlay=new Overlay("ScrollBar",
-                                                `${displaygroup.label}_ScrollBar`,
-                                                displaygroup,
-                                                totalFixedpx, maxpx,
-                                                );
-            }
-            displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, false);
-            let dgCoord = displaygroup.coord;
-            let scrollbar = <ScrollBar>displaygroup.overlay.returnObj;
-            let scrollWidth = scrollbar.scrollWidth;
-
-            dgCoord.width -= (ishor) ? 0 : scrollWidth;
-            dgCoord.within.width -= (ishor) ? 0 : scrollWidth;
-            dgCoord.height -= (ishor) ? scrollWidth : 0;
-            dgCoord.within.height -= (ishor) ? scrollWidth : 0;
-        }
-        else {
-            if (overlay) {
-                if (overlay.currentlyRendered)
-                    displaygroup.overlay.renderOverlay(parentDisplaycell, displaygroup, 0, true);
-            }
-        }
-        let x:number = displaygroup.coord.x;
-        let y:number = displaygroup.coord.y;
-        let width:number;
-        let height:number;
-
-        // apply scrollbar offset
-        
-        if (displaygroup.overlay) {
-            displaygroup.offset = displaygroup.overlay.returnObj["offset"];
-            x -= (ishor) ? displaygroup.offset : 0;
-            y -= (ishor) ? 0 : displaygroup.offset;
-        }
-
-        // this part loops the displaycells in cellarray
-
-        for (let index=0 ; index < cellArraylength; index++) {
-            let displaycell:DisplayCell = displaygroup.cellArray[index];
-
-            if (pf.isTypePercent(displaycell.dim)) {
-                DisplayCellPercent = pf.percentAsNumber(displaycell.dim);
-                totalPercent += DisplayCellPercent;
-                if (totalPercent <= 100.01) {
-                    displayCellPx = Math.round(pxForPercent*DisplayCellPercent/100.0);
-                    pxForPercentLeft -= displayCellPx;
-                } else {
-                    displayCellPx = pxForPercentLeft;
-                }             
-            }
-            cellsizepx = (pf.isTypePx(displaycell.dim)) ? (pf.pxAsNumber(displaycell.dim)) : displayCellPx;
-            width = (ishor) ? cellsizepx : coord.width;
-            height = (ishor) ? coord.height : cellsizepx;
-
-            displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
-            displaycell.coord.cropWithin( displaygroup.coord.within );
-
-            Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
-            
-            x += (ishor) ? width+displaygroup.marginHor : 0;
-            y += (ishor) ? 0 : height+displaygroup.marginVer;
-        }
-    }
-    // static createDimArray(){}
+  
     static renderHtmlBlock(displaycell:DisplayCell, derender=false, parentDisplaygroup:DisplayGroup){
         let htmlBlock = displaycell.htmlBlock;
         let el:HTMLElement = pf.elExists(displaycell.label);
         let alreadyexists:boolean = (el) ? true : false;
-        // if (htmlBlock.label == "Example01_javascript"){
-        //     console.log(htmlBlock);
-        //     console.log("Already Exists: "+alreadyexists)
-        // }
 
-        // let derenderPre = derender;
         derender = displaycell.coord.derender( derender );
-        // if (derenderPre == false && derender == true)
-        //      console.log(displaycell.label + "out of zone", displaycell.coord);
 
         let isNulDiv = (htmlBlock.css.trim() == "" &&
                         htmlBlock.innerHTML.trim() == "" &&
@@ -483,7 +310,6 @@ class Handler extends Base {
 
         if (derender || isNulDiv) {
             if (alreadyexists) el.remove();
-            // htmlBlock.el = undefined;
         } else {
             if (!alreadyexists) el = document.createElement(htmlBlock.tag);
             pf.setAttrib(el, "id", displaycell.label);

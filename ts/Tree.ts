@@ -185,7 +185,7 @@ class Tree_ extends Base {
                             );
                         }
     static defaults = {height:20, indent:6, onNodeCreation:Tree_.onNodeCreation, topMargin:2, sideMargin:0, tabSize:8,
-                        collapsedIcon:DefaultTheme.rightArrowSVG, expandedIcon:DefaultTheme.downArrowSVG,
+                        collapsedIcon:DefaultTheme.rightArrowSVG("arrowIcon"), expandedIcon:DefaultTheme.downArrowSVG("arrowIcon"),
                         iconClass: DefaultTheme.arrowSVGCss.classname}
     static argMap = {
         string : ["label", "css"],

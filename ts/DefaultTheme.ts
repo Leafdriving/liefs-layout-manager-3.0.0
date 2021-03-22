@@ -8,23 +8,24 @@ class DefaultTheme {
     border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
 
  // ScrollBar
-//  static whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
-//  static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");   
+static ScrollBar_whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
+static ScrollBar_blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");   
 
-// arrows
+// arrows  //scrollArrows
+  static scrollArrowsSVGCss = css(`scrollArrows`,`stroke: black;`,`fill: white;`);
   static arrowSVGCss = css(`arrowIcon`,`stroke: black;`,`fill: white;`);
-  static leftArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+  static leftArrowSVG(classname:string) {return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
     <path transform="rotate(182.31 12.399 12.341)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
-    </svg>`;
-  static rightArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+    </svg>`;}
+  static rightArrowSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
     <path transform="rotate(2.382 1.0017 36.146)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
-    </svg>`;
-  static upArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+    </svg>`;}
+  static upArrowSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
     <path transform="rotate(-87.663 12.607 12.106)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
-    </svg>`;
-  static downArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+    </svg>`;}
+  static downArrowSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
     <path transform="rotate(92.906 12.406 12.398)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
-    </svg>`;
+    </svg>`;}
  
 
 

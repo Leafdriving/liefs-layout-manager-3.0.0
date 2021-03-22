@@ -71,6 +71,17 @@ class DisplayCell extends Base {
         DisplayCell.makeLabel(this);
     }
     addOverlay(overlay:Overlay){this.overlays.push(overlay)}
+    getOverlay(label:string){
+        for (let index = 0; index < this.overlays.length; index++)
+            if (this.overlays[index].sourceClassName == label)
+                return this.overlays[index];
+        return undefined;    
+    }
+    popOverlay(label:string) {
+        for (let index = 0; index < this.overlays.length; index++)
+            if (this.overlays[index].sourceClassName == label)
+                this.overlays.splice(index, 1)
+    }
     hMenuBar(menuObj:object){
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({onmouseover:hMenuBar(menuObj)})            //////////////// COME BACK HERE!!!!
