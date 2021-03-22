@@ -890,7 +890,7 @@ class Handler extends Base {
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
                 element.remove();
             window.onresize = function () { Handler.update(); };
-            //window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);};
+            window.onwheel = function (event) { ScrollBar.onWheel(event); };
             window.addEventListener("popstate", function (event) { Pages.popstate(event); });
             Pages.parseURL();
         }
@@ -1096,9 +1096,10 @@ class Handler extends Base {
             if (scrollbarOverlay)
                 (scrollbarOverlay.returnObj).delete();
             parentDisplaycell.popOverlay("ScrollBar");
+            displaygroup.offset = 0;
         }
-        let x = displaygroup.coord.x;
-        let y = displaygroup.coord.y;
+        let x = displaygroup.coord.x - ((ishor) ? displaygroup.offset : 0);
+        let y = displaygroup.coord.y - ((ishor) ? 0 : displaygroup.offset);
         let width;
         let height;
         for (let index = 0; index < cellArraylength; index++) {
@@ -1758,7 +1759,7 @@ class ScrollBar extends Base {
         super();
         this.buildBase(...Arguments);
         //ScrollBar.makeLabel(this);
-        this.label = this.parentDisplaycell.label;
+        this.label = `${this.parentDisplaycell.label}_${this.type}`;
         this.displaygroup = this.parentDisplaycell.displaygroup;
         this.build();
         // console.log(`ScrollBar :${this.label} created`);
@@ -1771,6 +1772,7 @@ class ScrollBar extends Base {
         this.postBar = I(`${this.label}_postBar`, "100%", DefaultTheme.ScrollBar_whiteBG, events({ onclick: THIS.onPostBar.bind(THIS) }));
         this.scrollbarDisplayCell =
             h(`${this.label}_h`, `${this.barSize}px`, I(`${this.label}_backArrow`, `${this.barSize}px`, (ishor) ? DefaultTheme.leftArrowSVG("scrollArrows") : DefaultTheme.upArrowSVG("scrollArrows"), events({ onhold: { event: function (mouseEvent) { THIS.onBackArrow(mouseEvent); } } })), this.preBar, this.Bar, this.postBar, I(`${this.label}_forwardArrow`, `${this.barSize}px`, (ishor) ? DefaultTheme.rightArrowSVG("scrollArrows") : DefaultTheme.downArrowSVG("scrollArrows"), events({ onhold: { event: function (mouseEvent) { THIS.onForwardArrow(mouseEvent); } } })));
+        ScrollBar.activate(this);
     }
     onBarDown() { ScrollBar.startoffset = this.offset; }
     onBarMove(xmouseDiff) {
@@ -1778,10 +1780,10 @@ class ScrollBar extends Base {
         this.offset = ScrollBar.startoffset + dist / this.scaleFactor;
         this.validateOffsetAndRender();
     }
-    onPreBar(mouseEvent) { this.offset -= this.viewPortSize; this.validateOffsetAndRender(); }
-    onPostBar(mouseEvent) { this.offset += this.viewPortSize; this.validateOffsetAndRender(); }
-    onBackArrow(mouseEvent) { this.offset -= 3 / this.scaleFactor; this.validateOffsetAndRender(); }
-    onForwardArrow(mouseEvent) { this.offset += 3 / this.scaleFactor; this.validateOffsetAndRender(); }
+    onPreBar(mouseEvent = undefined) { this.offset -= this.viewPortSize; this.validateOffsetAndRender(); }
+    onPostBar(mouseEvent = undefined) { this.offset += this.viewPortSize; this.validateOffsetAndRender(); }
+    onBackArrow(mouseEvent = undefined) { this.offset -= 3 / this.scaleFactor; this.validateOffsetAndRender(); }
+    onForwardArrow(mouseEvent = undefined) { this.offset += 3 / this.scaleFactor; this.validateOffsetAndRender(); }
     validateOffsetAndRender() {
         if (this.offset < 0)
             this.offset = 0;
@@ -1815,12 +1817,56 @@ class ScrollBar extends Base {
     delete() {
         // console.log(`ScrollBar :${this.label} destroyed`);
         Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
+        ScrollBar.deactivate(this);
+    }
+    onWheel(event) {
+        //console.log("Wheel Event", event.deltaY);
+        if (event.deltaY > 0)
+            this.onForwardArrow();
+        else
+            this.onBackArrow();
+    }
+    static onWheel(event) {
+        let selectedInstance;
+        let minDist = 100000;
+        let dist;
+        let scrollbar;
+        for (let instance of ScrollBar.activeInstances) {
+            if (instance.scrollbarDisplayCell.coord.isPointIn(event.clientX, event.clientY))
+                scrollbar = instance;
+            else if (instance.parentDisplaycell.coord.isPointIn(event.clientX, event.clientY))
+                scrollbar = instance;
+        }
+        if (scrollbar)
+            scrollbar.onWheel(event);
+    }
+    static distOfMouseFromWheel(THIS, event) {
+        let ishor = THIS.displaygroup.ishor;
+        let displaycell = THIS.parentDisplaycell;
+        let coord = displaycell.coord;
+        let x = event.clientX;
+        let y = event.clientY;
+        let dist = 0;
+        // console.log(ishor, x, y, coord)
+        if (!ishor) {
+            if (x < coord.x)
+                dist = coord.x - x;
+            if (x > coord.x + coord.width)
+                dist = x - (coord.x + coord.width);
+        }
+        else {
+            if (y < coord.y)
+                dist = coord.y - y;
+            if (y > coord.y + coord.height)
+                dist = y - (coord.y + coord.height);
+        }
+        return dist;
     }
 }
 ScrollBar.labelNo = 0;
 ScrollBar.instances = [];
 ScrollBar.activeInstances = [];
-ScrollBar.defaults = { barSize: 15, offset: 0 };
+ScrollBar.defaults = { barSize: 15, offset: 0, type: "Unknown" };
 ScrollBar.argMap = {
     string: ["label"],
     DisplayCell: ["parentDisplaycell"],

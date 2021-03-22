@@ -516,6 +516,7 @@ declare class ScrollBar extends Base {
     static defaults: {
         barSize: number;
         offset: number;
+        type: string;
     };
     static argMap: {
         string: string[];
@@ -540,14 +541,17 @@ declare class ScrollBar extends Base {
     build(): void;
     onBarDown(): void;
     onBarMove(xmouseDiff: object): void;
-    onPreBar(mouseEvent: MouseEvent): void;
-    onPostBar(mouseEvent: MouseEvent): void;
-    onBackArrow(mouseEvent: MouseEvent): void;
-    onForwardArrow(mouseEvent: MouseEvent): void;
+    onPreBar(mouseEvent?: MouseEvent): void;
+    onPostBar(mouseEvent?: MouseEvent): void;
+    onBackArrow(mouseEvent?: MouseEvent): void;
+    onForwardArrow(mouseEvent?: MouseEvent): void;
     validateOffsetAndRender(): void;
     update(displaySize: number): number;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
     delete(): void;
+    onWheel(event: WheelEvent): void;
+    static onWheel(event: WheelEvent): void;
+    static distOfMouseFromWheel(THIS: ScrollBar, event: WheelEvent): number;
 }
 declare function scrollbar(...Arguments: any): DisplayCell;
 declare class Context extends Base {

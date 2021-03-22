@@ -11,7 +11,7 @@ class ScrollBar extends Base {
     static labelNo = 0;
     static instances:ScrollBar[] = [];
     static activeInstances:ScrollBar[] = [];
-    static defaults = {barSize:15, offset:0}
+    static defaults = {barSize:15, offset:0, type:"Unknown"}
     static argMap = {
         string : ["label"],
         DisplayCell : ["parentDisplaycell"],
@@ -40,7 +40,7 @@ class ScrollBar extends Base {
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         //ScrollBar.makeLabel(this);
-        this.label = this.parentDisplaycell.label;
+        this.label = `${this.parentDisplaycell.label}_${this.type}`;
         this.displaygroup = this.parentDisplaycell.displaygroup
         this.build()
         // console.log(`ScrollBar :${this.label} created`);
@@ -68,6 +68,7 @@ class ScrollBar extends Base {
             ),
 
         );
+        ScrollBar.activate(this);
     }
     onBarDown(){ScrollBar.startoffset = this.offset;}
     onBarMove(xmouseDiff:object){
@@ -75,10 +76,10 @@ class ScrollBar extends Base {
         this.offset = ScrollBar.startoffset + dist/this.scaleFactor;
         this.validateOffsetAndRender();
      }
-    onPreBar(mouseEvent:MouseEvent){ this.offset -= this.viewPortSize; this.validateOffsetAndRender(); }
-    onPostBar(mouseEvent:MouseEvent){ this.offset += this.viewPortSize; this.validateOffsetAndRender(); }
-    onBackArrow(mouseEvent:MouseEvent){ this.offset -= 3/this.scaleFactor; this.validateOffsetAndRender();}
-    onForwardArrow(mouseEvent:MouseEvent){ this.offset += 3/this.scaleFactor; this.validateOffsetAndRender();}
+    onPreBar(mouseEvent:MouseEvent=undefined){ this.offset -= this.viewPortSize; this.validateOffsetAndRender(); }
+    onPostBar(mouseEvent:MouseEvent=undefined){ this.offset += this.viewPortSize; this.validateOffsetAndRender(); }
+    onBackArrow(mouseEvent:MouseEvent=undefined){ this.offset -= 3/this.scaleFactor; this.validateOffsetAndRender();}
+    onForwardArrow(mouseEvent:MouseEvent=undefined){ this.offset += 3/this.scaleFactor; this.validateOffsetAndRender();}
 
     validateOffsetAndRender(){
         if (this.offset < 0) this.offset = 0;
@@ -86,6 +87,7 @@ class ScrollBar extends Base {
         if (this.offset > max) this.offset = max;
         Handler.update();
     }
+
     update(displaySize:number){
         let coord = this.displaygroup.coord;
         let ishor = this.displaygroup.ishor;
@@ -115,6 +117,43 @@ class ScrollBar extends Base {
     delete(){
         // console.log(`ScrollBar :${this.label} destroyed`);
         Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
+        ScrollBar.deactivate(this);
+    }
+    onWheel(event:WheelEvent) {
+        //console.log("Wheel Event", event.deltaY);
+        if (event.deltaY > 0) this.onForwardArrow();
+        else this.onBackArrow();
+    }
+    static onWheel(event:WheelEvent) {
+        let selectedInstance:ScrollBar;
+        let minDist:number = 100000;
+        let dist:number;
+        let scrollbar: ScrollBar;
+        for (let instance of ScrollBar.activeInstances) {
+            if (instance.scrollbarDisplayCell.coord.isPointIn(event.clientX, event.clientY))
+                scrollbar = instance;
+            else 
+                if (instance.parentDisplaycell.coord.isPointIn(event.clientX, event.clientY))
+                    scrollbar = instance;
+        }
+        if (scrollbar) scrollbar.onWheel(event)
+    }
+    static distOfMouseFromWheel(THIS:ScrollBar, event:WheelEvent) {
+        let ishor = THIS.displaygroup.ishor;
+        let displaycell = THIS.parentDisplaycell;
+        let coord = displaycell.coord;
+        let x = event.clientX;
+        let y = event.clientY;
+        let dist:number = 0;
+        // console.log(ishor, x, y, coord)
+        if (!ishor) {
+            if (x < coord.x) dist = coord.x -x;
+            if (x > coord.x + coord.width) dist = x - (coord.x + coord.width)
+        } else {
+            if (y < coord.y) dist = coord.y -y;
+            if (y > coord.y + coord.height) dist = y - (coord.y + coord.height)
+        }
+        return dist;
     }
 }
 function scrollbar(...Arguments:any) {

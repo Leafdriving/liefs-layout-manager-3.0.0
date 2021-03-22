@@ -63,7 +63,7 @@ class Handler extends Base {
             for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname)) element.remove();
             
             window.onresize = function() {Handler.update()};
-            //window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);};
+            window.onwheel = function(event:WheelEvent){ScrollBar.onWheel(event);};
             window.addEventListener("popstate", function(event){Pages.popstate(event)})
             Pages.parseURL();
         }
@@ -271,11 +271,12 @@ class Handler extends Base {
             if (scrollbarOverlay)
                 (<ScrollBar>(scrollbarOverlay.returnObj)).delete();
                 parentDisplaycell.popOverlay("ScrollBar");
+                displaygroup.offset = 0;
         }
 
 
-        let x:number = displaygroup.coord.x;
-        let y:number = displaygroup.coord.y;
+        let x:number = displaygroup.coord.x - ((ishor) ? displaygroup.offset : 0);
+        let y:number = displaygroup.coord.y- ((ishor) ? 0 : displaygroup.offset);
         let width:number;
         let height:number;
 
