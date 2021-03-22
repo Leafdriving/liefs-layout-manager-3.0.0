@@ -522,6 +522,8 @@ declare class ScrollBar extends Base {
         string: string[];
         DisplayCell: string[];
         number: string[];
+        boolean: string[];
+        Coord: string[];
     };
     static startoffset: number;
     label: string;
@@ -531,8 +533,9 @@ declare class ScrollBar extends Base {
     barSize: number;
     offset: number;
     scaleFactor: number;
+    ishor: boolean;
+    coord: Coord;
     parentDisplaycell: DisplayCell;
-    displaygroup: DisplayGroup;
     scrollbarDisplayCell: DisplayCell;
     preBar: DisplayCell;
     Bar: DisplayCell;

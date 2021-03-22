@@ -261,7 +261,7 @@ class Handler extends Base {
         let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
         if (dimArrayTotal > maxpx + 2) { 
             if (!scrollbarOverlay) {
-                scrollbar(parentDisplaycell, {type: "DisplayGroup"});
+                scrollbar(parentDisplaycell, displaygroup.ishor, displaygroup.coord);
                 scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
             }
             /* this.offset = */ 
