@@ -39,4 +39,6 @@ class bCss{
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`,
                                         `cursor: pointer;background-color:white;`);
+    static treeItem = css("treeItem",`background: transparent; color:black; cursor:pointer`,
+                                     `background:DeepSkyBlue;`)
 }

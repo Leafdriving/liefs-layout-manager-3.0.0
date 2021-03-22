@@ -4,6 +4,9 @@ interface ArgsObj {
 interface ArgsFunctions {
     [type: string]: Function[];
 }
+interface ArgMap {
+    [key: string]: string[];
+}
 interface Offset {
     x: number;
     y: number;
@@ -354,6 +357,17 @@ declare function css(...Arguments: any): Css;
 declare class DefaultTheme {
     static advisedDiv: Css;
     static advisedBody: Css;
+    static titleCss: Css;
+    static arrowSVGCss: Css;
+    static leftArrowSVG: string;
+    static rightArrowSVG: string;
+    static upArrowSVG: string;
+    static downArrowSVG: string;
+    static closeCss: Css;
+    static closeSVGCss: Css;
+    static closeSVG: string;
+    static horCss: Css;
+    static verCss: Css;
     static context: Css;
     static llm_checker: Css;
 }
@@ -465,8 +479,6 @@ declare class Overlay {
     renderOverlay(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare class DragBar extends Base {
-    static horCss: Css;
-    static verCss: Css;
     static instances: DragBar[];
     static activeInstances: DragBar[];
     static defaults: {
@@ -498,8 +510,6 @@ declare function dragbar(...Arguments: any): DisplayCell;
 declare class ScrollBar extends Base {
     static instances: ScrollBar[];
     static activeInstances: ScrollBar[];
-    static whiteBG: Css;
-    static blackBG: Css;
     static defaults: {
         offset: number;
         displayAtEnd: boolean;
@@ -555,9 +565,6 @@ declare class Context extends Base {
     static subOverlapPx: number;
     static instances: Context[];
     static activeInstances: Context[];
-    static defaultMenuBarCss: Css;
-    static defaultMenuBarHover: Css;
-    static defaultMenuBarNoHoverCss: Css;
     static defaultObj: {
         one: () => void;
         two: () => void;
@@ -605,9 +612,6 @@ declare enum ModalType {
     other = "other"
 }
 declare class Modal extends Base {
-    static closeCss: Css;
-    static closeSVGCss: Css;
-    static closeSVG: string;
     static labelNo: number;
     static instances: Modal[];
     static activeInstances: Modal[];
@@ -646,7 +650,6 @@ declare class Modal extends Base {
     closeWith(...Arguments: any): void;
 }
 declare class winModal extends Base {
-    static titleCss: Css;
     static labelNo: number;
     static instances: winModal[];
     static activeInstances: winModal[];
@@ -686,10 +689,10 @@ declare class node_ extends Base {
     static defaults: {
         collapsed: boolean;
     };
-    static argMap: {
-        string: string[];
-    };
+    static argMap: ArgMap;
     static newNode(THIS: node_, ...Arguments: any): node_;
+    renderx: number;
+    rendery: number;
     retArgs: ArgsObj;
     label: string;
     Arguments: any;
@@ -707,24 +710,34 @@ declare class node_ extends Base {
     newSibling(...Arguments: any): node_;
     topSibling(): node_;
     bottomSibling(): node_;
+    pop(): this;
     nextSibling(): node_;
     previousSibling(): node_;
     firstChild(): node_;
     done(): Tree_;
+    root(): node_;
     parent(): node_;
-    collapse(value?: boolean): void;
     log(): void;
     byLabel(label: string): any;
 }
 declare function sample(): Tree_;
+declare const defaultArgMap: ArgMap;
 declare class Tree_ extends Base {
     static labelNo: number;
     static instances: Tree_[];
     static activeInstances: Tree_[];
+    static toggleCollapse(el: HTMLElement, node: node_, mouseEvent: MouseEvent): void;
+    static onNodeCreation(node: node_): void;
     static defaults: {
         height: number;
         indent: number;
-        onNodeCreation: (node: node_) => void;
+        onNodeCreation: typeof Tree_.onNodeCreation;
+        topMargin: number;
+        sideMargin: number;
+        tabSize: number;
+        collapsedIcon: string;
+        expandedIcon: string;
+        iconClass: string;
     };
     static argMap: {
         string: string[];
@@ -738,22 +751,29 @@ declare class Tree_ extends Base {
     Arguments: any;
     retArgs: ArgsObj;
     label: string;
+    collapsedIcon: string;
+    expandedIcon: string;
+    iconClass: string;
     rootNode: node_;
     height: number;
     css: string;
     Css: Css;
     indent: number;
-    collapsedSVG: string;
-    expandedSVG: string;
     parentDisplayCell: DisplayCell;
     events: Events;
     offset: number;
     finalParentDisplayCellWidth: number;
+    node_arg_map: ArgMap;
+    topMargin: number;
+    sideMargin: number;
+    tabSize: number;
     onNodeCreation: (node: node_) => void;
-    traverse(tfunction: (node: node_) => void, node?: node_): void;
+    traverse(traverseFunction: (node: node_) => void, node?: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
     constructor(...Arguments: any);
     root(...Arguments: any): node_;
     log(): void;
+    derender(node: node_): void;
+    derenderChildren(node: node_): void;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function tree(...Arguments: any): DisplayCell;

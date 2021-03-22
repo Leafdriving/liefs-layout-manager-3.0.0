@@ -12,9 +12,9 @@ class Context extends Base {
     static instances:Context[] = [];
     static activeInstances:Context[] = [];
 
-    static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
-    static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
-    static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");
+    // static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
+    // static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
+    // static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");
     static defaultObj = {one:function(){console.log("one")},
                          two:function(){console.log("two")},
                          three:function(){console.log("three")},

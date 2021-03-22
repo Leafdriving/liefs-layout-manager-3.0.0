@@ -11,8 +11,8 @@ class ScrollBar extends Base {
     static instances:ScrollBar[] = [];
     static activeInstances:ScrollBar[] = [];
     
-    static whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
-    static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
+    // static whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
+    // static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
     static defaults = {
         offset : 0, displayAtEnd: true, scrollWidth : 15, currentlyRendered: true, arrowOffset: 2,
     }

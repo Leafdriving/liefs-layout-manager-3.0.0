@@ -14,13 +14,13 @@ enum ModalType {
 }
 
 class Modal extends Base {
-    static closeCss = css("closeCss",`-moz-box-sizing: border-box;
-                                      -webkit-box-sizing: border-box;
-                                      border: 1px solid black;background:white;`);
-    static closeSVGCss = css(`closeIcon`,`stroke: black;background:white`,`stroke: white;background:red`);
-    static closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
-    <g stroke-linecap="round" stroke-width="3.2"><path d="m2.5 2.5 20 20"/><path d="m22.5 2.5-20 20"/></g>
-   </svg>`;
+//     static closeCss = css("closeCss",`-moz-box-sizing: border-box;
+//                                       -webkit-box-sizing: border-box;
+//                                       border: 1px solid black;background:white;`);
+//     static closeSVGCss = css(`closeIcon`,`stroke: black;background:white`,`stroke: white;background:red`);
+//     static closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+//     <g stroke-linecap="round" stroke-width="3.2"><path d="m2.5 2.5 20 20"/><path d="m22.5 2.5-20 20"/></g>
+//    </svg>`;
     static labelNo = 0;
     static instances:Modal[] = [];
     static activeInstances:Modal[] = [];
@@ -134,8 +134,8 @@ class Modal extends Base {
 }
 
 class winModal extends Base {
-    static titleCss = css("modalTitle",`-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
-    border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
+    // static titleCss = css("modalTitle",`-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
+    // border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
     static labelNo = 0;
     static instances:winModal[] = [];
     static activeInstances:winModal[] = [];
@@ -168,17 +168,17 @@ class winModal extends Base {
         this.build()
     }
     buildClose(): DisplayCell {
-        return I(`${this.label}_close`, Modal.closeSVG, Modal.closeCss, `${this.headerHeight}px`);
+        return I(`${this.label}_close`, DefaultTheme.closeSVG, DefaultTheme.closeCss, `${this.headerHeight}px`);
     }
     buildHeader(){
         this.header =  h(`${this.label}_header`, `${this.headerHeight}px`,
-            I(`${this.label}_title`, this.headerText, winModal.titleCss),
+            I(`${this.label}_title`, this.headerText, DefaultTheme.titleCss),
             this.buildClose(),
         )
         return this.header;
     }
     buildBody(){
-        this.body = I(`${this.label}_body`, this.bodyText, Modal.closeCss)
+        this.body = I(`${this.label}_body`, this.bodyText, DefaultTheme.closeCss)
         return this.body;
     }
     buildFooter(){

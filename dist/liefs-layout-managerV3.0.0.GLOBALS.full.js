@@ -1426,8 +1426,42 @@ class DefaultTheme {
 }
 DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false);
 DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
+// WinModal
+DefaultTheme.titleCss = css("modalTitle", `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
+    border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`);
+// ScrollBar
+//  static whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
+//  static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");   
+// arrows
+DefaultTheme.arrowSVGCss = css(`arrowIcon`, `stroke: black;`, `fill: white;`);
+DefaultTheme.leftArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+    <path transform="rotate(182.31 12.399 12.341)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
+    </svg>`;
+DefaultTheme.rightArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+    <path transform="rotate(2.382 1.0017 36.146)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
+    </svg>`;
+DefaultTheme.upArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+    <path transform="rotate(-87.663 12.607 12.106)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
+    </svg>`;
+DefaultTheme.downArrowSVG = `<svg class="arrowIcon" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
+    <path transform="rotate(92.906 12.406 12.398)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
+    </svg>`;
+// Modal
+DefaultTheme.closeCss = css("closeCss", `-moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      border: 1px solid black;background:white;`);
+DefaultTheme.closeSVGCss = css(`closeIcon`, `stroke: black;background:white`, `stroke: white;background:red`);
+DefaultTheme.closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+      <g stroke-linecap="round" stroke-width="3.2"><path d="m2.5 2.5 20 20"/><path d="m22.5 2.5-20 20"/></g>
+      </svg>`;
+// Dragbar
+DefaultTheme.horCss = css("db_hor", "background-color:black;cursor: ew-resize;");
+DefaultTheme.verCss = css("db_ver", "background-color:black;cursor: ns-resize;");
 // context
 DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+// static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
+// static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
+// static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");                         
 // Toolbar
 DefaultTheme.llm_checker = css("llm_checker", `cursor:pointer;
     --checkerSize: 2px; /* edit me */
@@ -1818,13 +1852,13 @@ class DragBar extends Base {
         Handler.renderDisplayCell(dragcell, parentDisplaygroup, undefined, derender);
     }
 }
-DragBar.horCss = css("db_hor", "background-color:black;cursor: ew-resize;");
-DragBar.verCss = css("db_ver", "background-color:black;cursor: ns-resize;");
+// static horCss = css("db_hor","background-color:black;cursor: ew-resize;");
+// static verCss = css("db_ver","background-color:black;cursor: ns-resize;");
 DragBar.instances = [];
 DragBar.activeInstances = [];
 DragBar.defaults = {
-    horcss: DragBar.horCss,
-    vercss: DragBar.verCss
+    horcss: DefaultTheme.horCss,
+    vercss: DefaultTheme.verCss
 };
 DragBar.argMap = {
     string: ["label"],
@@ -2020,8 +2054,8 @@ class ScrollBar extends Base {
 }
 ScrollBar.instances = [];
 ScrollBar.activeInstances = [];
-ScrollBar.whiteBG = css("whiteBG", "background-color:white;outline: 1px solid black;outline-offset: -1px;");
-ScrollBar.blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
+// static whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
+// static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
 ScrollBar.defaults = {
     offset: 0, displayAtEnd: true, scrollWidth: 15, currentlyRendered: true, arrowOffset: 2,
 };
@@ -2134,9 +2168,9 @@ class Context extends Base {
 Context.subOverlapPx = 4;
 Context.instances = [];
 Context.activeInstances = [];
-Context.defaultMenuBarCss = css("menuBar", "background-color:white;color: black;");
-Context.defaultMenuBarHover = css("menuBar:hover", "background-color:black;color: white;");
-Context.defaultMenuBarNoHoverCss = css("menuBarNoHover", "background-color:white;color: black;");
+// static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
+// static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
+// static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");
 Context.defaultObj = { one: function () { console.log("one"); },
     two: function () { console.log("two"); },
     three: function () { console.log("three"); },
@@ -2295,13 +2329,13 @@ class Modal extends Base {
         }
     }
 }
-Modal.closeCss = css("closeCss", `-moz-box-sizing: border-box;
-                                      -webkit-box-sizing: border-box;
-                                      border: 1px solid black;background:white;`);
-Modal.closeSVGCss = css(`closeIcon`, `stroke: black;background:white`, `stroke: white;background:red`);
-Modal.closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
-    <g stroke-linecap="round" stroke-width="3.2"><path d="m2.5 2.5 20 20"/><path d="m22.5 2.5-20 20"/></g>
-   </svg>`;
+//     static closeCss = css("closeCss",`-moz-box-sizing: border-box;
+//                                       -webkit-box-sizing: border-box;
+//                                       border: 1px solid black;background:white;`);
+//     static closeSVGCss = css(`closeIcon`,`stroke: black;background:white`,`stroke: white;background:red`);
+//     static closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+//     <g stroke-linecap="round" stroke-width="3.2"><path d="m2.5 2.5 20 20"/><path d="m22.5 2.5-20 20"/></g>
+//    </svg>`;
 Modal.labelNo = 0;
 Modal.instances = [];
 Modal.activeInstances = [];
@@ -2318,14 +2352,14 @@ class winModal extends Base {
         this.build();
     }
     buildClose() {
-        return I(`${this.label}_close`, Modal.closeSVG, Modal.closeCss, `${this.headerHeight}px`);
+        return I(`${this.label}_close`, DefaultTheme.closeSVG, DefaultTheme.closeCss, `${this.headerHeight}px`);
     }
     buildHeader() {
-        this.header = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_title`, this.headerText, winModal.titleCss), this.buildClose());
+        this.header = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_title`, this.headerText, DefaultTheme.titleCss), this.buildClose());
         return this.header;
     }
     buildBody() {
-        this.body = I(`${this.label}_body`, this.bodyText, Modal.closeCss);
+        this.body = I(`${this.label}_body`, this.bodyText, DefaultTheme.closeCss);
         return this.body;
     }
     buildFooter() {
@@ -2350,8 +2384,8 @@ class winModal extends Base {
         this.modal.show();
     }
 }
-winModal.titleCss = css("modalTitle", `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
-    border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`);
+// static titleCss = css("modalTitle",`-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
+// border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
 winModal.labelNo = 0;
 winModal.instances = [];
 winModal.activeInstances = [];
@@ -2374,7 +2408,9 @@ class node_ extends Base {
     }
     static newNode(THIS, ...Arguments) {
         let newnode = new node_(...Arguments);
-        THIS.ParentNodeTree.onNodeCreation(newnode);
+        newnode.ParentNodeTree = THIS.ParentNodeTree;
+        if (THIS.ParentNodeTree)
+            THIS.ParentNodeTree.onNodeCreation(newnode);
         return newnode;
     }
     depth(node = this, deep = 0) { while (node) {
@@ -2392,17 +2428,26 @@ class node_ extends Base {
         return returnObject;
     }
     newChild(...Arguments) {
-        //let newNode = new node_(...Arguments);
-        let newNode = node_.newNode(this, ...Arguments);
+        let newNode;
+        if (typeof (Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
+            newNode = (Arguments[0]);
+        else
+            newNode = node_.newNode(this, ...Arguments);
         newNode.ParentNodeTree = this.ParentNodeTree;
         newNode.ParentNode = this;
+        if (this.children.length) {
+            this.children[this.children.length - 1].NextSibling = newNode;
+            newNode.PreviousSibling = this.children[this.children.length - 1];
+        }
         this.children.push(newNode);
         return newNode;
     }
     newSibling(...Arguments) {
         let previousNextSibling = this.NextSibling;
-        // this.NextSibling = new node_(...Arguments);
-        this.NextSibling = node_.newNode(this, ...Arguments);
+        if (typeof (Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
+            this.NextSibling = (Arguments[0]);
+        else
+            this.NextSibling = node_.newNode(this, ...Arguments);
         this.NextSibling.ParentNodeTree = this.ParentNodeTree;
         this.NextSibling.PreviousSibling = this;
         this.NextSibling.ParentNode = this.ParentNode;
@@ -2421,12 +2466,32 @@ class node_ extends Base {
             returnNode = returnNode.nextSibling();
         return returnNode;
     }
+    pop() {
+        let index = this.ParentNode.children.indexOf(this);
+        this.ParentNode.children.splice(index, 1);
+        if (this.PreviousSibling) {
+            this.PreviousSibling.NextSibling = this.NextSibling;
+            if (this.NextSibling)
+                this.NextSibling.PreviousSibling = this.PreviousSibling;
+        }
+        else if (this.NextSibling)
+            this.NextSibling.PreviousSibling = undefined;
+        this.PreviousSibling = this.NextSibling = this.ParentNode = undefined;
+        return this;
+    }
     nextSibling() { return this.NextSibling; }
     previousSibling() { return this.PreviousSibling; }
     firstChild() { return this.children[0]; }
     done() { return this.ParentNodeTree; }
+    root() {
+        let node = this;
+        while (node.parent()) {
+            node = node.parent();
+        }
+        return node;
+    }
     parent() { return this.ParentNode; }
-    collapse(value = true) { this.collapsed = value; }
+    // collapse(value:boolean = true){this.collapsed = value;}
     log() {
         if (this.children.length) {
             console.group(this.label);
@@ -2464,9 +2529,9 @@ node_.argMap = {
     string: ["label"],
 };
 function sample() {
-    let sampleTree = new Tree_("SampleTree", function (node) { console.log(node.label); });
+    let sampleTree = new Tree_("SampleTree");
     let node = sampleTree.rootNode;
-    node.newSibling("One")
+    node.newChild("One")
         .newChild("One-A")
         .newChild("One-A-1")
         .newSibling("One-A-2")
@@ -2488,28 +2553,61 @@ function sample() {
         .newSibling("Three");
     return sampleTree;
 }
+const defaultArgMap = {
+    string: ["label"],
+    other: ["hello"]
+};
 class Tree_ extends Base {
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
         let THIS = this;
-        if (this.Css && !this.css)
-            this.css = this.Css.css;
+        if (this.Css && !this.css) {
+            //console.log("Here", this.Css)
+            this.css = this.Css.classname;
+        }
         if (this.rootNode)
-            this.traverse(function (node) { node.ParentNodeTree = THIS; });
+            this.traverse(function (node) {
+                node.ParentNodeTree = THIS;
+                THIS.onNodeCreation(node);
+            });
         else {
             this.rootNode = new node_(...Arguments);
             this.rootNode.ParentNodeTree = this;
             this.onNodeCreation(this.rootNode);
+            this.rootNode.ParentNodeTree = THIS;
         }
+        if (this.node_arg_map)
+            node_.argMap = this.node_arg_map;
     }
-    traverse(tfunction, node = this.rootNode) {
-        tfunction(node);
-        if (node.children)
-            for (let index = 0; index < node.children.length; index++)
-                this.traverse(tfunction, node.children[index]);
+    static toggleCollapse(el, node, mouseEvent) {
+        if (!node.collapsed)
+            node.ParentNodeTree.derenderChildren(node);
+        node.collapsed = !node.collapsed;
+        let iconDisplayCell = DisplayCell.byLabel(`${node.label}_icon`);
+        iconDisplayCell.htmlBlock.innerHTML = (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon;
+        Handler.update();
+    }
+    static onNodeCreation(node) {
+        let nodeLabel = I(`${node.label}_node`, `${node.label}`, node.ParentNodeTree.css, node.ParentNodeTree.events);
+        nodeLabel.coord.hideWidth = true;
+        node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
+        (node.children.length) ?
+            I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`, (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon, node.ParentNodeTree.iconClass, events({ onclick: function (mouseEvent) { Tree_.toggleCollapse(this, node, mouseEvent); } }))
+            : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), nodeLabel);
+        //node.displaycell.coord.hideWidth = true;
+    }
+    traverse(traverseFunction, node = this.rootNode, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
+        if (traverseNode(node)) {
+            traverseFunction(node);
+            if (traverseChildren(node)) {
+                if (node.children)
+                    for (let index = 0; index < node.children.length; index++)
+                        this.traverse(traverseFunction, node.children[index], traverseChildren, traverseNode);
+            }
+        }
         if (node.NextSibling)
-            this.traverse(tfunction, node.NextSibling);
+            this.traverse(traverseFunction, node.NextSibling, traverseChildren, traverseNode);
     }
     root(...Arguments) {
         this.rootNode = new node_(...Arguments);
@@ -2518,18 +2616,41 @@ class Tree_ extends Base {
     log() {
         this.rootNode.log();
     }
+    derender(node) {
+        this.traverse(function traverseFunction(node) {
+            Handler.renderDisplayCell(node.displaycell, undefined, undefined, true);
+        }, node);
+    }
+    derenderChildren(node) {
+        for (let index = 0; index < node.children.length; index++)
+            this.derender(node.children[index]);
+    }
     render(displaycell, parentDisplaygroup, index, derender) {
-        console.log(`rendering tree: ${this.label}`);
-        // Handler.renderDisplayCell(displaycell, undefined, undefined, derender){
+        let THIS = this;
+        let PDScoord = THIS.parentDisplayCell.coord;
+        let x_ = PDScoord.x + THIS.sideMargin;
+        let y_ = PDScoord.y + THIS.topMargin;
+        this.traverse(function traverseFunction(node) {
+            let x = x_ + (node.depth() - 1) * THIS.tabSize;
+            let y = y_;
+            let width = PDScoord.width - x;
+            let height = THIS.height;
+            node.displaycell.coord.assign(x, y, width, height, PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height, Handler.currentZindex + Handler.zindexIncrement);
+            y_ += THIS.height;
+            Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender);
+        }, THIS.rootNode, function traverseChildren(node) {
+            console.log("TraverseChildrenCalled returning", !node.collapsed);
+            return (!node.collapsed);
+        });
+        //console.log(THIS.rootNode.displaycell)
     }
 }
 Tree_.labelNo = 0;
 Tree_.instances = [];
 Tree_.activeInstances = [];
-Tree_.defaults = { height: 15, indent: 6, onNodeCreation: function (node) {
-        node.displaycell = I(`${node.label}_node`, `${node.label}`, node.ParentNodeTree.css, `${node.ParentNodeTree.height}px`, node.ParentNodeTree.events);
-        node.displaycell.coord.hideWidth = true;
-    }, };
+Tree_.defaults = { height: 20, indent: 6, onNodeCreation: Tree_.onNodeCreation, topMargin: 2, sideMargin: 0, tabSize: 8,
+    collapsedIcon: DefaultTheme.rightArrowSVG, expandedIcon: DefaultTheme.downArrowSVG,
+    iconClass: DefaultTheme.arrowSVGCss.classname };
 Tree_.argMap = {
     string: ["label", "css"],
     DisplayCell: ["parentDisplayCell"],
@@ -2546,7 +2667,7 @@ function tree(...Arguments) {
     parentDisplaycell.addOverlay(overlay);
     return parentDisplaycell;
 }
-Overlay.classes["DragBar"] = DragBar;
+Overlay.classes["Tree_"] = Tree_;
 /*
 let newTree = nodeTree("TreeName")
             .sibling("ONE")

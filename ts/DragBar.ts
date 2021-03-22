@@ -9,13 +9,13 @@
 // import {mf, pf} from './PureFunctions';
 
 class DragBar extends Base {
-    static horCss = css("db_hor","background-color:black;cursor: ew-resize;");
-    static verCss = css("db_ver","background-color:black;cursor: ns-resize;");
+    // static horCss = css("db_hor","background-color:black;cursor: ew-resize;");
+    // static verCss = css("db_ver","background-color:black;cursor: ns-resize;");
     static instances:DragBar[] = [];
     static activeInstances:DragBar[] = [];
     static defaults = {
-        horcss : DragBar.horCss,
-        vercss : DragBar.verCss
+        horcss : DefaultTheme.horCss,
+        vercss : DefaultTheme.verCss
     }
     static argMap = {
         string : ["label"],

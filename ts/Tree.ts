@@ -18,14 +18,17 @@ class node_ extends Base {
     static instances:Tree_[] = [];
     static activeInstances:Tree_[] = [];
     static defaults = {collapsed:false}
-    static argMap = {
+    static argMap:ArgMap = {
         string : ["label"],
     }
     static newNode(THIS:node_, ...Arguments:any){
         let newnode = new node_(...Arguments);
-        THIS.ParentNodeTree.onNodeCreation(newnode);
+        newnode.ParentNodeTree = THIS.ParentNodeTree;
+        if (THIS.ParentNodeTree) THIS.ParentNodeTree.onNodeCreation(newnode);
         return newnode;
     }
+    renderx:number;
+    rendery:number;
     retArgs:ArgsObj;   // <- this will appear
     label:string;
     Arguments:any;
@@ -55,18 +58,27 @@ class node_ extends Base {
         return returnObject;
     }
     newChild(...Arguments:any): node_{
-        //let newNode = new node_(...Arguments);
-        let newNode = node_.newNode(this, ...Arguments);
+        let newNode:node_;
+        if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
+            newNode = <node_>(Arguments[0]);
+        else 
+            newNode = node_.newNode(this, ...Arguments);
         newNode.ParentNodeTree = this.ParentNodeTree;
         newNode.ParentNode = this;
+        if (this.children.length) {
+            this.children[this.children.length-1].NextSibling = newNode
+            newNode.PreviousSibling = this.children[this.children.length-1];
+        }
         this.children.push(newNode);
         return newNode;
+        
     }
-    newSibling(...Arguments:any): node_{ // what if already a sibling?????
+    newSibling(...Arguments:any): node_ { 
         let previousNextSibling = this.NextSibling;
-
-        // this.NextSibling = new node_(...Arguments);
-        this.NextSibling = node_.newNode(this, ...Arguments);
+        if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
+            this.NextSibling = <node_>(Arguments[0]);
+        else
+            this.NextSibling = node_.newNode(this, ...Arguments);
         this.NextSibling.ParentNodeTree = this.ParentNodeTree;
         this.NextSibling.PreviousSibling = this;
         this.NextSibling.ParentNode = this.ParentNode;
@@ -84,12 +96,28 @@ class node_ extends Base {
         while (returnNode.nextSibling()) returnNode = returnNode.nextSibling()
         return returnNode;        
     }
+    pop(){
+        let index = this.ParentNode.children.indexOf(this);
+        this.ParentNode.children.splice(index, 1);
+        if (this.PreviousSibling) {
+            this.PreviousSibling.NextSibling = this.NextSibling;
+            if (this.NextSibling)
+                this.NextSibling.PreviousSibling = this.PreviousSibling;
+        } else if (this.NextSibling) this.NextSibling.PreviousSibling = undefined;
+        this.PreviousSibling = this.NextSibling = this.ParentNode = undefined;
+        return this;
+    }
     nextSibling(){return this.NextSibling}
     previousSibling(){return this.PreviousSibling}
     firstChild(){return this.children[0]}
     done(){return this.ParentNodeTree}
+    root(){
+        let node:node_ = this;
+        while(node.parent()){node = node.parent()}
+        return node
+    }
     parent(){return this.ParentNode}
-    collapse(value:boolean = true){this.collapsed = value;}
+    // collapse(value:boolean = true){this.collapsed = value;}
     log(){
         if (this.children.length) {
             console.group(this.label);
@@ -103,9 +131,9 @@ class node_ extends Base {
 }
 
 function sample(){
-    let sampleTree = new Tree_("SampleTree", function(node:node_){console.log(node.label)});
+    let sampleTree = new Tree_("SampleTree", /*function(node:node_){}*/);
     let node = sampleTree.rootNode;
-    node.newSibling("One")
+    node.newChild("One")
             .newChild("One-A")
                 .newChild("One-A-1")
                 .newSibling("One-A-2")
@@ -128,15 +156,42 @@ function sample(){
     return sampleTree;
 }
 
+const defaultArgMap:ArgMap = {
+    string : ["label"],
+    other: ["hello"]
+}
+
 class Tree_ extends Base {
     static labelNo = 0;
     static instances:Tree_[] = [];
     static activeInstances:Tree_[] = [];
-    static defaults = {height:15, indent:6, onNodeCreation:function(node:node_){
-        node.displaycell = I(`${node.label}_node`, `${node.label}`, node.ParentNodeTree.css,
-                                `${node.ParentNodeTree.height}px`, node.ParentNodeTree.events)
-        node.displaycell.coord.hideWidth = true;
-                        },}
+    static toggleCollapse(el:HTMLElement, node:node_, mouseEvent:MouseEvent){
+        if (!node.collapsed) node.ParentNodeTree.derenderChildren(node);
+        node.collapsed = !node.collapsed;
+        let iconDisplayCell:DisplayCell = DisplayCell.byLabel(`${node.label}_icon`);
+        iconDisplayCell.htmlBlock.innerHTML = (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon;
+        Handler.update();
+    }
+    static onNodeCreation(node:node_){
+        let nodeLabel = I(`${node.label}_node`, `${node.label}`,
+                            node.ParentNodeTree.css,
+                            node.ParentNodeTree.events);
+        nodeLabel.coord.hideWidth = true;                            
+        node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
+                                (node.children.length) ?
+                                    I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`,
+                                        (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon,
+                                        node.ParentNodeTree.iconClass,
+                                        events({onclick:function(mouseEvent:MouseEvent){ Tree_.toggleCollapse(this, node,mouseEvent) }})
+                                    )
+                                :   I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`),
+                                nodeLabel
+                            );
+        //node.displaycell.coord.hideWidth = true;
+                        }
+    static defaults = {height:20, indent:6, onNodeCreation:Tree_.onNodeCreation, topMargin:2, sideMargin:0, tabSize:8,
+                        collapsedIcon:DefaultTheme.rightArrowSVG, expandedIcon:DefaultTheme.downArrowSVG,
+                        iconClass: DefaultTheme.arrowSVGCss.classname}
     static argMap = {
         string : ["label", "css"],
         DisplayCell: ["parentDisplayCell"],
@@ -150,39 +205,67 @@ class Tree_ extends Base {
     retArgs:ArgsObj;   // <- this will appear
 
     label:string;
+    collapsedIcon: string;
+    expandedIcon: string;
+    iconClass: string;
 
     rootNode: node_; // = new node("Root");
     height:number;
     css:string;
     Css:Css;
     indent:number;
-    collapsedSVG:string;
-    expandedSVG:string;
+
     parentDisplayCell:DisplayCell;
     events: Events;
     offset:number;
     finalParentDisplayCellWidth:number;
+    node_arg_map:ArgMap;
+    topMargin:number;
+    sideMargin:number;
+    tabSize:number;
     onNodeCreation:(node: node_) => void;
 
-    traverse(tfunction:(node: node_) => void, node:node_ = this.rootNode) {
-        tfunction(node);
-        if (node.children)
-            for (let index = 0; index < node.children.length; index++)
-                this.traverse(tfunction, node.children[index]);    
-        if (node.NextSibling) this.traverse(tfunction, node.NextSibling);
+    traverse(traverseFunction:(node: node_) => void,
+            node:node_ = this.rootNode,
+            traverseChildren:(node: node_)=>boolean = function(){return true},
+            traverseNode:(node: node_)=>boolean = function(){return true}
+            ) {  // 
+        if (traverseNode(node)) {
+            traverseFunction(node);                
+            if (traverseChildren(node)) {    
+                if (node.children)
+                    for (let index = 0; index < node.children.length; index++)
+                        this.traverse(traverseFunction,
+                                        node.children[index],
+                                        traverseChildren,
+                                        traverseNode);
+            }
+        }
+        if (node.NextSibling) this.traverse(traverseFunction,
+                                            node.NextSibling,
+                                            traverseChildren,
+                                            traverseNode);
     }
 
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         let THIS = this;
-        if (this.Css && !this.css) this.css = this.Css.css;
+        if (this.Css && !this.css) {
+            //console.log("Here", this.Css)
+            this.css = this.Css.classname;
+        }
         if (this.rootNode)
-            this.traverse( function(node:node_){node.ParentNodeTree = THIS} );
+            this.traverse( function(node:node_){
+                                node.ParentNodeTree = THIS;
+                                THIS.onNodeCreation(node);
+                            } );
         else {
             this.rootNode = new node_(...Arguments)
             this.rootNode.ParentNodeTree = this;
             this.onNodeCreation(this.rootNode);
+            this.rootNode.ParentNodeTree = THIS;
         }
+        if (this.node_arg_map) node_.argMap = this.node_arg_map;
     }
     root(...Arguments:any){
         this.rootNode = new node_(...Arguments)
@@ -191,10 +274,45 @@ class Tree_ extends Base {
     log() {
         this.rootNode.log()
     }
+    derender(node:node_) {
+        this.traverse(
+            function traverseFunction(node:node_){
+                Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
+            },
+            node
+        )        
+    }
+    derenderChildren(node:node_){
+        for (let index = 0; index < node.children.length; index++)
+            this.derender(node.children[index]);
+    }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-        console.log(`rendering tree: ${this.label}`);
+        let THIS:Tree_ = this;
+        let PDScoord = THIS.parentDisplayCell.coord;
+        let x_=PDScoord.x + THIS.sideMargin
+        let y_=PDScoord.y + THIS.topMargin;
 
-        // Handler.renderDisplayCell(displaycell, undefined, undefined, derender){
+        this.traverse(
+            function traverseFunction(node:node_){
+                let x = x_ + (node.depth()-1)*THIS.tabSize;
+                let y = y_;
+                let width = PDScoord.width - x;
+                let height = THIS.height;
+                node.displaycell.coord.assign(x, y, width, height,
+                                            PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
+                                            Handler.currentZindex + Handler.zindexIncrement);
+                y_ += THIS.height;
+                Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender)
+            },
+            THIS.rootNode,
+            function traverseChildren(node: node_) {
+                console.log("TraverseChildrenCalled returning", !node.collapsed)
+                return (!node.collapsed)
+            },
+            // function traverseNode(node: node_) {return true}
+
+        );
+        //console.log(THIS.rootNode.displaycell)
     }
 }
 function tree(...Arguments:any) {
@@ -204,7 +322,7 @@ function tree(...Arguments:any) {
     parentDisplaycell.addOverlay(overlay);
     return parentDisplaycell;
 }
-Overlay.classes["DragBar"] = DragBar;
+Overlay.classes["Tree_"] = Tree_;
 
 
 
