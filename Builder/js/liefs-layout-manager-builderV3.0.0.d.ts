@@ -22,6 +22,11 @@ declare class Builder extends Base {
         string: string[];
     };
     constructor(...Arguments: any);
+    static makeHandlerTree(): node_;
+    static makeDisplayCell(node: node_, displaycell: DisplayCell): void;
+    static clientHandler: Handler;
+    static buildClientHandler(): void;
     static mainHandler: Handler;
     static buildMainHandler(): void;
+    static updateTree(): void;
 }

@@ -2435,10 +2435,6 @@ class node_ extends Base {
             newNode = node_.newNode(this, ...Arguments);
         newNode.ParentNodeTree = this.ParentNodeTree;
         newNode.ParentNode = this;
-        if (this.children.length) {
-            this.children[this.children.length - 1].NextSibling = newNode;
-            newNode.PreviousSibling = this.children[this.children.length - 1];
-        }
         this.children.push(newNode);
         return newNode;
     }
@@ -2595,7 +2591,6 @@ class Tree_ extends Base {
         (node.children.length) ?
             I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`, (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon, node.ParentNodeTree.iconClass, events({ onclick: function (mouseEvent) { Tree_.toggleCollapse(this, node, mouseEvent); } }))
             : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), nodeLabel);
-        //node.displaycell.coord.hideWidth = true;
     }
     traverse(traverseFunction, node = this.rootNode, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
         if (traverseNode(node)) {
@@ -2608,6 +2603,15 @@ class Tree_ extends Base {
         }
         if (node.NextSibling)
             this.traverse(traverseFunction, node.NextSibling, traverseChildren, traverseNode);
+    }
+    newRoot(node) {
+        let THIS = this;
+        this.derender(this.rootNode);
+        this.rootNode = node;
+        this.traverse(function (node) {
+            node.ParentNodeTree = THIS;
+            THIS.onNodeCreation(node);
+        });
     }
     root(...Arguments) {
         this.rootNode = new node_(...Arguments);
@@ -2630,6 +2634,7 @@ class Tree_ extends Base {
         let PDScoord = THIS.parentDisplayCell.coord;
         let x_ = PDScoord.x + THIS.sideMargin;
         let y_ = PDScoord.y + THIS.topMargin;
+        let max_x2 = 0;
         this.traverse(function traverseFunction(node) {
             let x = x_ + (node.depth() - 1) * THIS.tabSize;
             let y = y_;
@@ -2638,11 +2643,13 @@ class Tree_ extends Base {
             node.displaycell.coord.assign(x, y, width, height, PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height, Handler.currentZindex + Handler.zindexIncrement);
             y_ += THIS.height;
             Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender);
+            let bounding = displaycell.htmlBlock.el.getBoundingClientRect();
+            let x2 = bounding["x"] + bounding["width"];
+            if (x2 > max_x2)
+                max_x2 = x2;
         }, THIS.rootNode, function traverseChildren(node) {
-            console.log("TraverseChildrenCalled returning", !node.collapsed);
             return (!node.collapsed);
         });
-        //console.log(THIS.rootNode.displaycell)
     }
 }
 Tree_.labelNo = 0;
@@ -3279,3 +3286,33 @@ function toolBar(...Arguments) {
     return parentDisplaycell;
 }
 Overlay.classes["ToolBar"] = ToolBar;
+class BindHandler extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        BindHandler.makeLabel(this);
+    }
+    render(displaycell, parentDisplaygroup, index, derender) {
+        if (!this.handler.coord)
+            this.handler.coord = new Coord();
+        this.handler.coord.copy(this.parentDisplaycell.coord);
+    }
+}
+BindHandler.labelNo = 0;
+BindHandler.instances = [];
+BindHandler.activeInstances = [];
+BindHandler.defaults = {};
+BindHandler.argMap = {
+    string: ["label"],
+    DisplayCell: ["parentDisplaycell"],
+    Handler: ["handler"]
+};
+function bindHandler(...Arguments) {
+    let overlay = new Overlay("BindHandler", ...Arguments);
+    let newBindHandler = overlay.returnObj;
+    let parentDisplaycell = newBindHandler.parentDisplaycell;
+    // parentDisplaycell.overlay = overlay; // remove this line soon
+    parentDisplaycell.addOverlay(overlay);
+    return parentDisplaycell;
+}
+Overlay.classes["BindHandler"] = BindHandler;

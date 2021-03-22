@@ -31,6 +31,7 @@
         "ts/Tree.ts",
         "ts/Observe.ts",
         "ts/ToolBar.ts",
+        "ts/BindHandler.ts",
         // "ts/_Root.ts",
 
         // "ts/testscript.ts"

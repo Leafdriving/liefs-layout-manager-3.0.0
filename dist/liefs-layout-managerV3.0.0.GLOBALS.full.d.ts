@@ -770,6 +770,7 @@ declare class Tree_ extends Base {
     onNodeCreation: (node: node_) => void;
     traverse(traverseFunction: (node: node_) => void, node?: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
     constructor(...Arguments: any);
+    newRoot(node: node_): void;
     root(...Arguments: any): node_;
     log(): void;
     derender(node: node_): void;
@@ -860,3 +861,19 @@ declare class ToolBar extends Base {
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function toolBar(...Arguments: any): DisplayCell;
+declare class BindHandler extends Base {
+    static labelNo: number;
+    static instances: BindHandler[];
+    static activeInstances: BindHandler[];
+    static defaults: {};
+    static argMap: {
+        string: string[];
+        DisplayCell: string[];
+        Handler: string[];
+    };
+    parentDisplaycell: DisplayCell;
+    handler: Handler;
+    constructor(...Arguments: any);
+    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+}
+declare function bindHandler(...Arguments: any): DisplayCell;

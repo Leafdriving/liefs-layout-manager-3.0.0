@@ -42,28 +42,49 @@ class Builder extends Base {
         this.buildBase(...Arguments);
         Builder.makeLabel(this);
     }
+    // static handlerTree:Tree_ = new Tree_('Handlers')
+    static makeHandlerTree() {
+        let node = new node_();
+        for (let index = 0; index < Handler.activeInstances.length; index++) {
+            const handler = Handler.activeInstances[index];
+            if (handler.label != "Main Window") {
+                node = node.newSibling(handler.label, handler);
+                Builder.makeDisplayCell(node, handler.rootCell);
+            }
+        }
+        //Builder.handlerTree.newRoot(node);
+        // Builder.handlerTree.rootNode = node;
+        // Handler.update();
+        return node;
+    }
+    static makeDisplayCell(node, displaycell) {
+        if (displaycell.htmlBlock) {
+            let htmlnode = node.newChild(displaycell.htmlBlock.label, displaycell.htmlBlock);
+            // htmlnode.log();
+        }
+        if (displaycell.pages) {
+            let pagenode = node.newChild(displaycell.pages.label, displaycell.pages);
+            // pagenode.log();
+            for (let index = 0; index < displaycell.pages.displaycells.length; index++)
+                Builder.makeDisplayCell(pagenode, displaycell.pages.displaycells[index]);
+        }
+        if (displaycell.displaygroup) {
+            let groupnode = node.newChild(displaycell.displaygroup.label, displaycell.displaygroup);
+            // groupnode.log()
+            for (let index = 0; index < displaycell.displaygroup.cellArray.length; index++)
+                Builder.makeDisplayCell(groupnode, displaycell.displaygroup.cellArray[index]);
+        }
+    }
+    static buildClientHandler() {
+        Builder.clientHandler =
+            H("Client Window", h("Client_h", 5, I("Client_Main1", "left", bCss.bgCyan), v("Client_v", 5, I("Client_Top", "top", bCss.bgGreen), P("MainPages", I("Client_Bottom1", "bottom1", bCss.bgBlue), I("Client_Bottom2", "bottom2", bCss.bgLight)))), false);
+    }
     static buildMainHandler() {
-        Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), v("Main_Dockable", h("Tree_Body", 5, tree("TreeTree", I("Main_tree", "300px", bCss.bgLight), new node_("Top Node")
-            .newChild("One")
-            .newChild("One-A")
-            .newChild("One-A-1")
-            .newSibling("One-A-2")
-            .parent()
-            .newSibling("One-B")
-            .newChild("One-B-1")
-            .newSibling("One-B-2")
-            .newChild("One-B-2-1")
-            .parent()
-            .parent()
-            .newSibling("One-C")
-            .parent()
-            .newSibling("Two")
-            .newChild("Two-A")
-            .newChild("Two-A-1")
-            .parent()
-            .newSibling("Two-B")
-            .parent()
-            .newSibling("Three").root(), bCss.treeItem), I("Main_body", "Main Body")))));
+        // Builder.makeHandlerTree();
+        Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), v("Main_Dockable", h("Tree_Body", 5, tree("HandlerTree", dragbar(I("Main_tree", "300px", bCss.bgLight), 50, 800), bCss.treeItem), bindHandler(I("Main_body"), Builder.clientHandler)))));
+    }
+    static updateTree() {
+        Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
     }
 }
 Builder.labelNo = 0;
@@ -73,7 +94,10 @@ Builder.defaults = {};
 Builder.argMap = {
     string: ["label"],
 };
+Builder.buildClientHandler();
 Builder.buildMainHandler();
+Handler.activate(Builder.clientHandler);
+Builder.updateTree();
 // class RenderTree extends Base {
 //     static labelNo = 0;
 //     static instances:RenderTree[] = [];
