@@ -51,10 +51,10 @@ class Builder extends Base {
         Builder.clientHandler =
             H("Client Window",
                 h("Client_h", 5,
-                    I("Client_Main1","left", bCss.bgCyan),
+                    I("Client_Main1","left", bCss.bgCyan, "1000px"),
                     v("Client_v", 5,
                         I("Client_Top","top", bCss.bgGreen),
-                        P("MainPages",
+                        P("MainPages", "1000px",
                             I("Client_Bottom1","bottom1", bCss.bgBlue),
                             I("Client_Bottom2","bottom2", bCss.bgLight),
                         )
