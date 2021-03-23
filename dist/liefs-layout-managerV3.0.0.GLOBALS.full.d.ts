@@ -38,11 +38,14 @@ declare class Base {
     static buildBase(THIS: any, ...Arguments: any): void;
     static makeLabel(instance: any): void;
 }
+interface FStack {
+    [key: string]: [Function, string][];
+}
 declare class FunctionStack {
-    static instanceObj: {};
-    static push(label: string, function_: Function): void;
+    static instanceObj: FStack;
+    static push(label: string, function_: Function, name?: any): void;
     static function(label: string): (...Arguments: any) => void;
-    static pop(label: string): void;
+    static pop(label: string, name?: any): void;
 }
 declare class mf {
     /**
@@ -235,6 +238,7 @@ declare class DisplayCell extends Base {
     constructor(...Arguments: any);
     addOverlay(overlay: Overlay): void;
     getOverlay(label: string): Overlay;
+    getOverlays(label: string): Overlay[];
     popOverlay(label: string): void;
     hMenuBar(menuObj: object): void;
     vMenuBar(menuObj: object): void;
@@ -523,7 +527,6 @@ declare class ScrollBar extends Base {
         DisplayCell: string[];
         number: string[];
         boolean: string[];
-        Coord: string[];
     };
     static startoffset: number;
     label: string;
@@ -735,6 +738,8 @@ declare class Tree_ extends Base {
         collapsedIcon: string;
         expandedIcon: string;
         iconClass: string;
+        offsetx: number;
+        offsety: number;
     };
     static argMap: {
         string: string[];
@@ -751,6 +756,8 @@ declare class Tree_ extends Base {
     collapsedIcon: string;
     expandedIcon: string;
     iconClass: string;
+    offsetx: number;
+    offsety: number;
     rootNode: node_;
     height: number;
     css: string;
@@ -773,6 +780,8 @@ declare class Tree_ extends Base {
     derender(node: node_): void;
     derenderChildren(node: node_): void;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    popOverlay(ishor: boolean): void;
+    getScrollBarsFromOverlays(): ScrollBar[];
 }
 declare function tree(...Arguments: any): DisplayCell;
 declare class Observe extends Base {

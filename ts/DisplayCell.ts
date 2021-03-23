@@ -77,6 +77,13 @@ class DisplayCell extends Base {
                 return this.overlays[index];
         return undefined;    
     }
+    getOverlays(label:string){
+        let returnList:Overlay[] = []
+        for (let index = 0; index < this.overlays.length; index++)
+            if (this.overlays[index].sourceClassName == label)
+                returnList.push(this.overlays[index])
+        return returnList;    
+    }
     popOverlay(label:string) {
         for (let index = 0; index < this.overlays.length; index++)
             if (this.overlays[index].sourceClassName == label)

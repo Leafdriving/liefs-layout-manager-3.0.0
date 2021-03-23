@@ -171,20 +171,33 @@ class Base {
 //     }
 // }
 class FunctionStack {
-    static push(label, function_) {
+    static push(label, function_, name = undefined) {
         if (!(label in FunctionStack.instanceObj))
             FunctionStack.instanceObj[label] = [];
-        FunctionStack.instanceObj[label].push(function_);
+        FunctionStack.instanceObj[label].push([function_, name]);
     }
     static function(label) {
         return function (...Arguments) {
             let list = FunctionStack.instanceObj[label];
-            if (list)
+            if (list && list.length)
                 for (let index = 0; index < list.length; index++)
-                    list[index](...Arguments);
+                    list[index][0](...Arguments);
         };
     }
-    static pop(label) { FunctionStack.instanceObj[label] = []; }
+    static pop(label, name = undefined) {
+        let functionStack = FunctionStack.instanceObj[label];
+        if (name) {
+            for (let index = 0; index < functionStack.length; index++) {
+                let [function_, name_] = functionStack[index];
+                if (name == name_) {
+                    functionStack.splice(index, 1);
+                    index -= 1;
+                }
+            }
+        }
+        else
+            FunctionStack.instanceObj[label] = [];
+    }
 }
 FunctionStack.instanceObj = {};
 // export {FunctionStack}
@@ -726,6 +739,13 @@ class DisplayCell extends Base {
                 return this.overlays[index];
         return undefined;
     }
+    getOverlays(label) {
+        let returnList = [];
+        for (let index = 0; index < this.overlays.length; index++)
+            if (this.overlays[index].sourceClassName == label)
+                returnList.push(this.overlays[index]);
+        return returnList;
+    }
     popOverlay(label) {
         for (let index = 0; index < this.overlays.length; index++)
             if (this.overlays[index].sourceClassName == label)
@@ -1085,7 +1105,7 @@ class Handler extends Base {
         let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
         if (dimArrayTotal > maxpx + 2) {
             if (!scrollbarOverlay) {
-                scrollbar(parentDisplaycell, displaygroup.ishor, displaygroup.coord);
+                scrollbar(parentDisplaycell, displaygroup.ishor);
                 scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
             }
             /* this.offset = */
@@ -1763,6 +1783,15 @@ class ScrollBar extends Base {
         this.build();
         if (!this.coord)
             this.coord = this.parentDisplaycell.coord;
+        if (!this.parentDisplaycell.preRenderCallback) {
+            this.parentDisplaycell.preRenderCallback = FunctionStack.function(this.label);
+        }
+        let THIS = this;
+        FunctionStack.push(this.label, function (displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
+            let width = (THIS.ishor) ? THIS.coord.width : THIS.coord.width - THIS.barSize;
+            let height = (THIS.ishor) ? THIS.coord.height - THIS.barSize : THIS.coord.height;
+            THIS.coord.assign(undefined, undefined, width, height, undefined, undefined, width, height);
+        }, ((this.ishor) ? "ishorTrue" : "ishorFalse"));
     }
     build() {
         let THIS = this;
@@ -1797,12 +1826,12 @@ class ScrollBar extends Base {
         let ishor = this.ishor;
         let width = (ishor) ? this.coord.width : this.coord.width - this.barSize;
         let height = (ishor) ? this.coord.height - this.barSize : this.coord.height;
-        let sbx = (ishor) ? this.coord.x : this.coord.x + this.coord.width - this.barSize;
-        let sby = (ishor) ? this.coord.y + this.coord.height - this.barSize : this.coord.y;
+        let sbx = (ishor) ? this.coord.x : this.coord.x + this.coord.width;
+        let sby = (ishor) ? this.coord.y + this.coord.height : this.coord.y;
         let scw = (ishor) ? this.coord.width : this.barSize;
         let sch = (ishor) ? this.barSize : this.coord.height;
         this.scrollbarDisplayCell.coord.assign(sbx, sby, scw, sch, sbx, sby, scw, sch, this.coord.zindex);
-        this.coord.assign(undefined, undefined, width, height, undefined, undefined, width, height);
+        // this.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
         this.displaySize = displaySize;
         this.viewPortSize = (ishor) ? this.parentDisplaycell.coord.width : this.parentDisplaycell.coord.height;
         let scrollBarSize = this.viewPortSize - this.barSize * 2;
@@ -1816,6 +1845,7 @@ class ScrollBar extends Base {
     }
     delete() {
         // console.log(`ScrollBar :${this.label} destroyed`);
+        FunctionStack.pop(this.label, ((this.ishor) ? "ishorTrue" : "ishorFalse"));
         Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
         ScrollBar.deactivate(this);
     }
@@ -1872,7 +1902,7 @@ ScrollBar.argMap = {
     DisplayCell: ["parentDisplaycell"],
     number: ["barSize"],
     boolean: ["ishor"],
-    Coord: ["coord"]
+    // Coord: ["coord"]
 };
 function scrollbar(...Arguments) {
     let overlay = new Overlay("ScrollBar", ...Arguments);
@@ -2661,13 +2691,53 @@ class Tree_ extends Base {
             node.displaycell.coord.assign(x, y, width, height, PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height, Handler.currentZindex + Handler.zindexIncrement);
             y_ += THIS.height;
             Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender);
-            let bounding = displaycell.htmlBlock.el.getBoundingClientRect();
+            let cellArray = node.displaycell.displaygroup.cellArray;
+            let el = cellArray[cellArray.length - 1].htmlBlock.el;
+            // console.log(el)
+            let bounding = el.getBoundingClientRect();
+            // console.log(bounding)
             let x2 = bounding["x"] + bounding["width"];
             if (x2 > max_x2)
                 max_x2 = x2;
         }, THIS.rootNode, function traverseChildren(node) {
             return (!node.collapsed);
         });
+        let [scrollbarh, scrollbarv] = this.getScrollBarsFromOverlays();
+        // console.log(max_x2, PDScoord.x + PDScoord.width)
+        // check horizontal first
+        if (max_x2 > (PDScoord.x + PDScoord.width) + 2) {
+            if (!scrollbarh) {
+                scrollbar(this.parentDisplayCell, true);
+                [scrollbarh, scrollbarv] = this.getScrollBarsFromOverlays(); // defines scrollbarh
+            }
+            this.offsetx = scrollbarh.update(max_x2); ////
+        }
+        else {
+            if (scrollbarh) {
+                scrollbarh.delete();
+                this.popOverlay(true);
+                this.offsetx = 0;
+            }
+        }
+    }
+    popOverlay(ishor) {
+        let overlays = this.parentDisplayCell.overlays;
+        for (let index = 0; index < overlays.length; index++)
+            if (overlays[index].sourceClassName == "ScrollBar")
+                if (overlays[index].returnObj.ishor == ishor)
+                    overlays.splice(index, 1);
+    }
+    getScrollBarsFromOverlays() {
+        let scrollbarh, scrollbarv;
+        let scrollbarOverlays = this.parentDisplayCell.getOverlays("ScrollBar");
+        for (let index = 0; index < scrollbarOverlays.length; index++) {
+            let scrollbar_ = (scrollbarOverlays[index].returnObj);
+            if (scrollbar_.ishor)
+                scrollbarh = scrollbar_;
+            else
+                scrollbarv = scrollbar_;
+        }
+        return [scrollbarh, scrollbarv];
     }
 }
 Tree_.labelNo = 0;
@@ -2675,7 +2745,7 @@ Tree_.instances = [];
 Tree_.activeInstances = [];
 Tree_.defaults = { height: 20, indent: 6, onNodeCreation: Tree_.onNodeCreation, topMargin: 2, sideMargin: 0, tabSize: 8,
     collapsedIcon: DefaultTheme.rightArrowSVG("arrowIcon"), expandedIcon: DefaultTheme.downArrowSVG("arrowIcon"),
-    iconClass: DefaultTheme.arrowSVGCss.classname };
+    iconClass: DefaultTheme.arrowSVGCss.classname, offsetx: 0, offsety: 0 };
 Tree_.argMap = {
     string: ["label", "css"],
     DisplayCell: ["parentDisplayCell"],

@@ -17,7 +17,7 @@ class ScrollBar extends Base {
         DisplayCell : ["parentDisplaycell"],
         number: ["barSize"],
         boolean: ["ishor"],
-        Coord: ["coord"]
+        // Coord: ["coord"]
     }
     static startoffset:number; /// used during move bar
     // retArgs:ArgsObj;   // <- this will appear
@@ -46,6 +46,20 @@ class ScrollBar extends Base {
         this.label = `${this.parentDisplaycell.label}_${this.type}`;
         this.build()
         if (!this.coord) this.coord = this.parentDisplaycell.coord;
+        
+        if (!this.parentDisplaycell.preRenderCallback) {
+            this.parentDisplaycell.preRenderCallback = FunctionStack.function(this.label);
+        }
+        let THIS = this;
+        
+        FunctionStack.push(this.label,
+                    function(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
+                        let width = (THIS.ishor) ? THIS.coord.width : THIS.coord.width - THIS.barSize;
+                        let height = (THIS.ishor) ? THIS.coord.height - THIS.barSize : THIS.coord.height;
+                        THIS.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
+                    },
+              ((this.ishor) ? "ishorTrue" : "ishorFalse"));
+
     }
     build(){
         let THIS:ScrollBar = this
@@ -96,13 +110,13 @@ class ScrollBar extends Base {
         let width = (ishor) ? this.coord.width : this.coord.width - this.barSize;
         let height = (ishor) ? this.coord.height - this.barSize : this.coord.height;
 
-        let sbx = (ishor) ? this.coord.x : this.coord.x + this.coord.width - this.barSize;
-        let sby = (ishor) ? this.coord.y + this.coord.height - this.barSize : this.coord.y;
+        let sbx = (ishor) ? this.coord.x : this.coord.x + this.coord.width;
+        let sby = (ishor) ? this.coord.y + this.coord.height : this.coord.y;
         let scw = (ishor) ? this.coord.width : this.barSize;
         let sch = (ishor) ? this.barSize : this.coord.height;
 
         this.scrollbarDisplayCell.coord.assign(sbx, sby, scw, sch, sbx, sby, scw, sch, this.coord.zindex);
-        this.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
+        // this.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
 
         this.displaySize = displaySize;
         this.viewPortSize = (ishor) ? this.parentDisplaycell.coord.width : this.parentDisplaycell.coord.height;
@@ -118,6 +132,7 @@ class ScrollBar extends Base {
     }
     delete(){
         // console.log(`ScrollBar :${this.label} destroyed`);
+        FunctionStack.pop(this.label, ((this.ishor) ? "ishorTrue" : "ishorFalse"))
         Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
         ScrollBar.deactivate(this);
     }
