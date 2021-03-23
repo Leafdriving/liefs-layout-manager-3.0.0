@@ -81,50 +81,66 @@ class Dockable extends Base {
 
         }
     }
+    makeDropZones(width:number, height:number){
+        let ishor = this.displaygroup.ishor;
+        let cellArray = this.displaygroup.cellArray;
+        if (!this.dropZones) {                                       // define DropZones
+            this.dropZones = [];
+            for (let index = 0; index < cellArray.length; index++) {
+                let displaycell  = cellArray[index];  // note scope is lost each loop
+                let newCoord = new Coord();
+                newCoord.copy( displaycell.coord );
+                newCoord.assign(undefined, undefined,
+                            (ishor) ? width : undefined,
+                            (ishor) ? undefined : height);
+                this.dropZones.push(newCoord);
+            }
+            let displaycell = cellArray[cellArray.length-1];
+            let newCoord = new Coord();
+            newCoord.copy( displaycell.coord );
+
+            newCoord.assign((ishor) ? displaycell.coord.x + displaycell.coord.width - width : undefined,
+                            (ishor) ? undefined : displaycell.coord.y + displaycell.coord.height - height,
+                            (ishor) ? width : undefined,
+                            (ishor) ? undefined : height );
+
+            this.dropZones.push(newCoord);
+        }
+    }
+    openCloseDropZones(modal:Modal, width:number, height:number){
+        let ishor = this.displaygroup.ishor;
+        let cellArray = this.displaygroup.cellArray;
+        for (let index = 0; index < this.dropZones.length; index++) {
+            let dropCoord = this.dropZones[index];
+            if (!modal.coord.isCoordCompletelyOutside(dropCoord)) { // if hit zone, make zone
+                if (Dockable.activeDropZoneIndex == undefined){
+                    Dockable.DockableOwner = this.label;
+                    Dockable.activeDropZoneIndex = index;
+                    this.dummy.dim = `${(ishor) ? width : height}px`;
+                    cellArray.splice(index, 0, this.dummy);
+                }
+            } else {                                                                  // When inactive, pop zone
+                if (index == Dockable.activeDropZoneIndex && Dockable.DockableOwner == this.label) {
+                    Dockable.activeDropZoneIndex = undefined;
+                    cellArray.splice(index, 1);
+        }   }   }
+    }
     render(unuseddisplaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         if (Modal.movingInstace && Modal.movingInstace.type == ModalType.toolbar) {
             let modal = Modal.movingInstace;
             let toolbar = ToolBar.byLabel( modal.label.slice(0, -6) );
-            let ishor = this.displaygroup.ishor;
-            
-            let cellArray = this.displaygroup.cellArray;
-            if (!this.dropZones) {                                       // define DropZones
-                this.dropZones = [];
-                for (let index = 0; index < cellArray.length; index++) {
-                    let displaycell  = cellArray[index];  // note scope is lost each loop
-                    let newCoord = new Coord();
-                    newCoord.copy( displaycell.coord );
-                    newCoord.assign(undefined, undefined,
-                                (ishor) ? toolbar.width : undefined,
-                                (ishor) ? undefined : toolbar.height);
-                    this.dropZones.push(newCoord);
-                }
-                let displaycell = cellArray[cellArray.length-1];
-                let newCoord = new Coord();
-                newCoord.copy( displaycell.coord );
-
-                newCoord.assign((ishor) ? displaycell.coord.x + displaycell.coord.width - toolbar.width : undefined,
-                                (ishor) ? undefined : displaycell.coord.y + displaycell.coord.height - toolbar.height,
-                                (ishor) ? toolbar.width : undefined,
-                                (ishor) ? undefined : toolbar.height );
-
-                this.dropZones.push(newCoord);
-            }
-
-            for (let index = 0; index < this.dropZones.length; index++) {
-                let dropCoord = this.dropZones[index];
-                if (!toolbar.modal.coord.isCoordCompletelyOutside(dropCoord)) { // if hit zone, make zone
-                    if (Dockable.activeDropZoneIndex == undefined){
-                        Dockable.DockableOwner = this.label;
-                        Dockable.activeDropZoneIndex = index;
-                        this.dummy.dim = `${(ishor) ? toolbar.width : toolbar.height}px`;
-                        cellArray.splice(index, 0, this.dummy);
-                    }
-                } else {                                                                  // When inactive, pop zone
-                    if (index == Dockable.activeDropZoneIndex && Dockable.DockableOwner == this.label) {
-                        Dockable.activeDropZoneIndex = undefined;
-                        cellArray.splice(index, 1);
-}   }   }   }   }   }
+            if (!this.dropZones)                                        // define DropZones
+                this.makeDropZones(toolbar.width, toolbar.height);
+            this.openCloseDropZones(toolbar.modal, toolbar.width, toolbar.height);
+       }
+       if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
+            let modal = Modal.movingInstace;
+            // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
+            if (!this.dropZones)                                        // define DropZones
+                this.makeDropZones(modal.coord.width, modal.coord.height);
+            this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
+       }
+}   }
                 
 
 

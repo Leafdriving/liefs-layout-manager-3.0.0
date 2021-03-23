@@ -32,6 +32,8 @@
         "ts/Observe.ts",
         "ts/ToolBar.ts",
         "ts/BindHandler.ts",
+        "ts/winModal.ts",
+        "ts/ToString.ts",
         // "ts/_Root.ts",
 
         // "ts/testscript.ts"

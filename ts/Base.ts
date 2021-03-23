@@ -27,6 +27,7 @@ class BaseF {
         }
         return returnObject;
     }
+    static typeof(Argument:any) {return (Object.keys(BaseF.argumentsByType([Argument])))[0];}
     static argumentsByType(Args:any[],                                                 // 1st argument is a list of args.
         customTypes:Function[] = []) { // 2rd argument is a list of functions for custion types.
         customTypes= customTypes.concat(Base.defaultIsChecks) // assumed these are included.
@@ -102,6 +103,7 @@ class Base {
     static defaults: object;
     static argMap: object;
     retArgs:ArgsObj;
+    toString:Function;
 
     constructor(){
     }

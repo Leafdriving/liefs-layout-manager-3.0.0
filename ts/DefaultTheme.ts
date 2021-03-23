@@ -4,8 +4,12 @@ class DefaultTheme {
     static advisedBody = new Css("body","overflow: hidden;", false);
 
 // WinModal
-  static titleCss = css("modalTitle",`-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
-    border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
+  static titleCss = css("modalTitle",
+    `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
+      border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;`,
+      `cursor:pointer`,
+      `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
+      border: 1px solid black;background:yellow;color:black;text-align: center;`)
 
  // ScrollBar
 static ScrollBar_whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");

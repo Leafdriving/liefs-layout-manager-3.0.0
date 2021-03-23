@@ -16,6 +16,7 @@ interface Offset {
 declare class BaseF {
     static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
     static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
+    static typeof(Argument: any): string;
     static argumentsByType(Args: any[], // 1st argument is a list of args.
     customTypes?: Function[]): ArgsObj;
     static modifyClassProperties(argobj: object, targetobject: object): void;
@@ -33,6 +34,7 @@ declare class Base {
     static defaults: object;
     static argMap: object;
     retArgs: ArgsObj;
+    toString: Function;
     constructor();
     buildBase(...Arguments: any): void;
     static buildBase(THIS: any, ...Arguments: any): void;
@@ -168,7 +170,6 @@ declare class HtmlBlock extends Base {
         string: string[];
         dim: string[];
         Events: string[];
-        number: string[];
         boolean: string[];
     };
     label: string;
@@ -178,10 +179,6 @@ declare class HtmlBlock extends Base {
     dim: string;
     events: Events;
     el: HTMLElement;
-    marginLeft: number;
-    marginRight: number;
-    marginTop: number;
-    marginBottom: number;
     attributes: object;
     hideWidth: boolean;
     minDisplayGroupSize: number;
@@ -649,39 +646,6 @@ declare class Modal extends Base {
     dragWith(...Arguments: any): void;
     closeWith(...Arguments: any): void;
 }
-declare class winModal extends Base {
-    static labelNo: number;
-    static instances: winModal[];
-    static activeInstances: winModal[];
-    static defaults: {
-        headerHeight: number;
-        buttonsHeight: number;
-        footerHeight: number;
-        headerText: string;
-        bodyText: string;
-    };
-    static argMap: {
-        string: string[];
-    };
-    retArgs: ArgsObj;
-    label: string;
-    rootDisplayCell: DisplayCell;
-    header: DisplayCell;
-    headerHeight: number;
-    headerText: string;
-    body: DisplayCell;
-    bodyText: string;
-    footer: DisplayCell;
-    footerHeight: number;
-    footerText: string;
-    modal: Modal;
-    constructor(...Arguments: any);
-    buildClose(): DisplayCell;
-    buildHeader(): DisplayCell;
-    buildBody(): DisplayCell;
-    buildFooter(): DisplayCell;
-    build(): void;
-}
 declare class node_ extends Base {
     static labelNo: number;
     static instances: Tree_[];
@@ -825,6 +789,8 @@ declare class Dockable extends Base {
     constructor(...Arguments: any);
     undock(e: CustomEvent): void;
     dropped(e: CustomEvent): void;
+    makeDropZones(width: number, height: number): void;
+    openCloseDropZones(modal: Modal, width: number, height: number): void;
     render(unuseddisplaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function dockable(...Arguments: any): DisplayCell;
@@ -883,3 +849,73 @@ declare class BindHandler extends Base {
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
 }
 declare function bindHandler(...Arguments: any): DisplayCell;
+declare class winHolder extends Base {
+    static labelNo: number;
+    static instances: winHolder[];
+    static activeInstances: winHolder[];
+    static defaults: {
+        winModals: any[];
+    };
+    static argMap: {
+        string: string[];
+    };
+    retArgs: ArgsObj;
+    winModals: winModal[];
+    constructor(...Arguments: any);
+    add(winmodal: winModal, index?: number): void;
+    pop(winmodal: winModal): void;
+    disableWinModal(winmodal: winModal): void;
+    enableWinModal(winmodal: winModal): void;
+}
+declare class winModal extends Base {
+    static labelNo: number;
+    static instances: winModal[];
+    static activeInstances: winModal[];
+    static defaults: {
+        headerHeight: number;
+        buttonsHeight: number;
+        footerHeight: number;
+        headerText: string;
+        bodyText: string;
+    };
+    static argMap: {
+        string: string[];
+    };
+    retArgs: ArgsObj;
+    label: string;
+    parentHolder: winHolder;
+    rootDisplayCell: DisplayCell;
+    header: DisplayCell;
+    headerHeight: number;
+    headerText: string;
+    body: DisplayCell;
+    bodyText: string;
+    footer: DisplayCell;
+    footerHeight: number;
+    footerText: string;
+    hiddenCells: DisplayCell[];
+    modal: Modal;
+    previousModalHeight: number;
+    static validDropWinModalInstance: winModal;
+    constructor(...Arguments: any);
+    dropped(e: CustomEvent): void;
+    buildClose(): DisplayCell;
+    buildHeader(): DisplayCell;
+    buildBody(): DisplayCell;
+    buildFooter(): DisplayCell;
+    toggleCollapse(mouseEvent: MouseEvent): void;
+    toggleClose(): void;
+    toggleOpen(): void;
+    build(): void;
+    render(displaycell: DisplayCell, displayGroup: DisplayGroup, index: number, derender: boolean): void;
+    hightlightHeader(highlight?: boolean): void;
+}
+declare function winmodal(...Arguments: any): DisplayCell;
+declare class ToString {
+    static exemptions: string[];
+    static customs: {
+        attributes: (thisValue: object) => string;
+        css: (thisValue: string) => string;
+        dim: (thisValue: string) => string;
+    };
+}

@@ -29,4 +29,5 @@ declare class Builder extends Base {
     static mainHandler: Handler;
     static buildMainHandler(): void;
     static updateTree(): void;
+    static TOOLBAR: DisplayCell;
 }

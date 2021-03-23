@@ -20,8 +20,6 @@ class HtmlBlock extends Base {
         string : ["label", "innerHTML", "css"],
         dim : ["dim"],
         Events : ["events"],
-        number : ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-        // Tree: ["tree"],
         boolean: ["hideWidth"],
     }
 
@@ -32,10 +30,6 @@ class HtmlBlock extends Base {
     dim:string;
     events: Events;
     el:HTMLElement;
-    marginLeft : number;
-    marginRight : number;
-    marginTop : number;
-    marginBottom : number;
     attributes:object = {};
     hideWidth: boolean;
     minDisplayGroupSize: number;
@@ -56,15 +50,15 @@ class HtmlBlock extends Base {
         if ("string" in this.retArgs && this.retArgs.string.length > 3) 
             this.css += " " + this.retArgs.string.splice(3).join(' ');
 
-        if ("number" in this.retArgs) {
-            let length = this.retArgs["number"].length;
-            if (length == 1) {
-                this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
-            } else if (length == 2) {
-                this.marginRight = this.marginLeft;
-                this.marginBottom = this.marginTop;
-            }
-        }
+        // if ("number" in this.retArgs) {
+        //     let length = this.retArgs["number"].length;
+        //     if (length == 1) {
+        //         this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
+        //     } else if (length == 2) {
+        //         this.marginRight = this.marginLeft;
+        //         this.marginBottom = this.marginTop;
+        //     }
+        // }
         HtmlBlock.makeLabel(this);
     }
 }

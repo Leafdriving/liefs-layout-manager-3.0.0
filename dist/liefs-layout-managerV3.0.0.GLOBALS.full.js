@@ -40,6 +40,7 @@ class BaseF {
         }
         return returnObject;
     }
+    static typeof(Argument) { return (Object.keys(BaseF.argumentsByType([Argument])))[0]; }
     static argumentsByType(Args, // 1st argument is a list of args.
     customTypes = []) {
         customTypes = customTypes.concat(Base.defaultIsChecks); // assumed these are included.
@@ -601,16 +602,15 @@ class HtmlBlock extends Base {
                 this.css = (this.css + " " + css.classname).trim();
         if ("string" in this.retArgs && this.retArgs.string.length > 3)
             this.css += " " + this.retArgs.string.splice(3).join(' ');
-        if ("number" in this.retArgs) {
-            let length = this.retArgs["number"].length;
-            if (length == 1) {
-                this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
-            }
-            else if (length == 2) {
-                this.marginRight = this.marginLeft;
-                this.marginBottom = this.marginTop;
-            }
-        }
+        // if ("number" in this.retArgs) {
+        //     let length = this.retArgs["number"].length;
+        //     if (length == 1) {
+        //         this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
+        //     } else if (length == 2) {
+        //         this.marginRight = this.marginLeft;
+        //         this.marginBottom = this.marginTop;
+        //     }
+        // }
         HtmlBlock.makeLabel(this);
     }
 }
@@ -626,8 +626,6 @@ HtmlBlock.argMap = {
     string: ["label", "innerHTML", "css"],
     dim: ["dim"],
     Events: ["events"],
-    number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
-    // Tree: ["tree"],
     boolean: ["hideWidth"],
 };
 function html(...Arguments) {
@@ -1328,8 +1326,9 @@ class DefaultTheme {
 DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false);
 DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
 // WinModal
-DefaultTheme.titleCss = css("modalTitle", `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
-    border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`);
+DefaultTheme.titleCss = css("modalTitle", `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
+      border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;`, `cursor:pointer`, `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
+      border: 1px solid black;background:yellow;color:black;text-align: center;`);
 // ScrollBar
 DefaultTheme.ScrollBar_whiteBG = css("whiteBG", "background-color:white;outline: 1px solid black;outline-offset: -1px;");
 DefaultTheme.ScrollBar_blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
@@ -2393,55 +2392,6 @@ Modal.argMap = {
     string: ["label"],
     DisplayCell: ["rootDisplayCell"],
 };
-class winModal extends Base {
-    constructor(...Arguments) {
-        super();
-        this.buildBase(...Arguments);
-        winModal.makeLabel(this);
-        this.build();
-    }
-    buildClose() {
-        return I(`${this.label}_close`, DefaultTheme.closeSVG, DefaultTheme.closeCss, `${this.headerHeight}px`);
-    }
-    buildHeader() {
-        this.header = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_title`, this.headerText, DefaultTheme.titleCss), this.buildClose());
-        return this.header;
-    }
-    buildBody() {
-        this.body = I(`${this.label}_body`, this.bodyText, DefaultTheme.closeCss);
-        return this.body;
-    }
-    buildFooter() {
-        this.footer = I(`${this.label}_footer`, this.footerText, `${this.footerHeight}px`);
-        return this.footer;
-    }
-    build() {
-        this.buildHeader();
-        this.buildBody();
-        if (this.footerText)
-            this.buildFooter();
-        let cells = [this.header, this.body];
-        if (this.footer)
-            cells.push(this.footer);
-        this.rootDisplayCell = v(`${this.label}_V`, ...cells);
-        let numbers = this.retArgs["number"];
-        if (!numbers)
-            numbers = [];
-        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, { type: ModalType.winModal });
-        this.modal.dragWith(`${this.label}_title`);
-        this.modal.closeWith(`${this.label}_close`);
-        this.modal.show();
-    }
-}
-// static titleCss = css("modalTitle",`-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
-// border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
-winModal.labelNo = 0;
-winModal.instances = [];
-winModal.activeInstances = [];
-winModal.defaults = { headerHeight: 20, buttonsHeight: 50, footerHeight: 20, headerText: "Window", bodyText: "Body" };
-winModal.argMap = {
-    string: ["label"],
-};
 class node_ extends Base {
     // get $(){return node_.Proxy(this)}
     // get node(){return node_.Proxy(this)}
@@ -3251,44 +3201,60 @@ class Dockable extends Base {
             }
         }
     }
+    makeDropZones(width, height) {
+        let ishor = this.displaygroup.ishor;
+        let cellArray = this.displaygroup.cellArray;
+        if (!this.dropZones) { // define DropZones
+            this.dropZones = [];
+            for (let index = 0; index < cellArray.length; index++) {
+                let displaycell = cellArray[index]; // note scope is lost each loop
+                let newCoord = new Coord();
+                newCoord.copy(displaycell.coord);
+                newCoord.assign(undefined, undefined, (ishor) ? width : undefined, (ishor) ? undefined : height);
+                this.dropZones.push(newCoord);
+            }
+            let displaycell = cellArray[cellArray.length - 1];
+            let newCoord = new Coord();
+            newCoord.copy(displaycell.coord);
+            newCoord.assign((ishor) ? displaycell.coord.x + displaycell.coord.width - width : undefined, (ishor) ? undefined : displaycell.coord.y + displaycell.coord.height - height, (ishor) ? width : undefined, (ishor) ? undefined : height);
+            this.dropZones.push(newCoord);
+        }
+    }
+    openCloseDropZones(modal, width, height) {
+        let ishor = this.displaygroup.ishor;
+        let cellArray = this.displaygroup.cellArray;
+        for (let index = 0; index < this.dropZones.length; index++) {
+            let dropCoord = this.dropZones[index];
+            if (!modal.coord.isCoordCompletelyOutside(dropCoord)) { // if hit zone, make zone
+                if (Dockable.activeDropZoneIndex == undefined) {
+                    Dockable.DockableOwner = this.label;
+                    Dockable.activeDropZoneIndex = index;
+                    this.dummy.dim = `${(ishor) ? width : height}px`;
+                    cellArray.splice(index, 0, this.dummy);
+                }
+            }
+            else { // When inactive, pop zone
+                if (index == Dockable.activeDropZoneIndex && Dockable.DockableOwner == this.label) {
+                    Dockable.activeDropZoneIndex = undefined;
+                    cellArray.splice(index, 1);
+                }
+            }
+        }
+    }
     render(unuseddisplaycell, parentDisplaygroup, index, derender) {
         if (Modal.movingInstace && Modal.movingInstace.type == ModalType.toolbar) {
             let modal = Modal.movingInstace;
             let toolbar = ToolBar.byLabel(modal.label.slice(0, -6));
-            let ishor = this.displaygroup.ishor;
-            let cellArray = this.displaygroup.cellArray;
-            if (!this.dropZones) { // define DropZones
-                this.dropZones = [];
-                for (let index = 0; index < cellArray.length; index++) {
-                    let displaycell = cellArray[index]; // note scope is lost each loop
-                    let newCoord = new Coord();
-                    newCoord.copy(displaycell.coord);
-                    newCoord.assign(undefined, undefined, (ishor) ? toolbar.width : undefined, (ishor) ? undefined : toolbar.height);
-                    this.dropZones.push(newCoord);
-                }
-                let displaycell = cellArray[cellArray.length - 1];
-                let newCoord = new Coord();
-                newCoord.copy(displaycell.coord);
-                newCoord.assign((ishor) ? displaycell.coord.x + displaycell.coord.width - toolbar.width : undefined, (ishor) ? undefined : displaycell.coord.y + displaycell.coord.height - toolbar.height, (ishor) ? toolbar.width : undefined, (ishor) ? undefined : toolbar.height);
-                this.dropZones.push(newCoord);
-            }
-            for (let index = 0; index < this.dropZones.length; index++) {
-                let dropCoord = this.dropZones[index];
-                if (!toolbar.modal.coord.isCoordCompletelyOutside(dropCoord)) { // if hit zone, make zone
-                    if (Dockable.activeDropZoneIndex == undefined) {
-                        Dockable.DockableOwner = this.label;
-                        Dockable.activeDropZoneIndex = index;
-                        this.dummy.dim = `${(ishor) ? toolbar.width : toolbar.height}px`;
-                        cellArray.splice(index, 0, this.dummy);
-                    }
-                }
-                else { // When inactive, pop zone
-                    if (index == Dockable.activeDropZoneIndex && Dockable.DockableOwner == this.label) {
-                        Dockable.activeDropZoneIndex = undefined;
-                        cellArray.splice(index, 1);
-                    }
-                }
-            }
+            if (!this.dropZones) // define DropZones
+                this.makeDropZones(toolbar.width, toolbar.height);
+            this.openCloseDropZones(toolbar.modal, toolbar.width, toolbar.height);
+        }
+        if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
+            let modal = Modal.movingInstace;
+            // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
+            if (!this.dropZones) // define DropZones
+                this.makeDropZones(modal.coord.width, modal.coord.height);
+            this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
         }
     }
 }
@@ -3421,3 +3387,235 @@ function bindHandler(...Arguments) {
     return parentDisplaycell;
 }
 Overlay.classes["BindHandler"] = BindHandler;
+class winHolder extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        winHolder.makeLabel(this);
+        if ("winModal" in this.retArgs)
+            this.winModals = this.retArgs["winModal"];
+        for (let index = 0; index < this.winModals.length; index++)
+            this.disableWinModal(this.winModals[index]);
+    }
+    add(winmodal, index = undefined) {
+        this.disableWinModal(winmodal);
+        if (index != undefined)
+            this.winModals.splice(index, 0, winmodal);
+        else
+            this.winModals.push(winmodal);
+    }
+    pop(winmodal) {
+        this.enableWinModal(winmodal);
+        let index = this.winModals.indexOf(winmodal);
+        if (index > -1)
+            this.winModals.splice(index, 1);
+    }
+    disableWinModal(winmodal) {
+        winmodal.modal.hide();
+        winmodal.modal.rootDisplayCell.popOverlay("winModal");
+    }
+    enableWinModal(winmodal) {
+    }
+}
+winHolder.labelNo = 0;
+winHolder.instances = [];
+winHolder.activeInstances = [];
+winHolder.defaults = { winModals: [] };
+winHolder.argMap = {
+    string: ["label"],
+};
+class winModal extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        winModal.makeLabel(this);
+        this.build();
+        let THIS = this;
+        window.addEventListener('ModalDropped', function (e) { THIS.dropped(e); }, false);
+    }
+    dropped(e) {
+        let modal = e.detail;
+        if (winModal.validDropWinModalInstance == this) {
+            winModal.validDropWinModalInstance = undefined;
+            console.log("I Was Dropped On");
+            this.hightlightHeader(false);
+            //modal.hide();
+            //modal.rootDisplayCell.popOverlay("winModal");
+            // this.modal.coord.height += modal.coord.height;
+            // this.modal.rootDisplayCell = v(
+            //     this.modal.rootDisplayCell,
+            //     modal.rootDisplayCell,
+            // )
+            // console.log(this.modal.rootDisplayCell);
+            //modal.rootDisplayCell.dim = `${modal.coord.height}px`;
+            // this.modal.rootDisplayCell.displaygroup.cellArray.push(
+            //     modal.rootDisplayCell
+            // );
+            //Handler.update();
+            //console.log(this.modal.label, modal.label)
+            // let displaygroup = this.modal.rootDisplayCell.displaygroup;
+            // modal.rootDisplayCell.dim = `${modal.coord.height}px`;
+            // displaygroup.cellArray.push( modal.rootDisplayCell )
+        }
+    }
+    buildClose() {
+        return I(`${this.label}_close`, DefaultTheme.closeSVG, DefaultTheme.closeCss, `${this.headerHeight}px`);
+    }
+    buildHeader() {
+        let THIS = this;
+        this.header = h(`${this.label}_header`, `${this.headerHeight}px`, I(`${this.label}_title`, this.headerText, DefaultTheme.titleCss, events({ ondblclick: THIS.toggleCollapse.bind(THIS) })), this.buildClose());
+        return this.header;
+    }
+    buildBody() {
+        this.body = I(`${this.label}_body`, this.bodyText, DefaultTheme.closeCss);
+        return this.body;
+    }
+    buildFooter() {
+        this.footer = I(`${this.label}_footer`, this.footerText, `${this.footerHeight}px`);
+        return this.footer;
+    }
+    toggleCollapse(mouseEvent) {
+        // console.log("ArrayLength", this.rootDisplayCell.displaygroup.cellArray.length);
+        if (this.rootDisplayCell.displaygroup.cellArray.length > 1)
+            this.toggleClose();
+        else
+            this.toggleOpen();
+    }
+    toggleClose() {
+        for (let index = 1; index < this.rootDisplayCell.displaygroup.cellArray.length; index++)
+            Handler.renderDisplayCell(this.rootDisplayCell.displaygroup.cellArray[index], undefined, undefined, true);
+        this.hiddenCells = this.rootDisplayCell.displaygroup.cellArray;
+        this.rootDisplayCell.displaygroup.cellArray = [this.rootDisplayCell.displaygroup.cellArray[0]];
+        let coord = this.modal.coord;
+        this.previousModalHeight = coord.height;
+        this.modal.setSize(coord.x, coord.y, coord.width, this.headerHeight);
+        this.rootDisplayCell.dim = `${this.headerHeight}px`;
+        Handler.update();
+    }
+    toggleOpen() {
+        this.rootDisplayCell.displaygroup.cellArray = this.hiddenCells;
+        let coord = this.modal.coord;
+        this.rootDisplayCell.dim = `${this.previousModalHeight}px`;
+        this.modal.setSize(coord.x, coord.y, coord.width, this.previousModalHeight);
+        Handler.update();
+    }
+    build() {
+        this.buildHeader();
+        if (!this.body)
+            this.buildBody();
+        if (this.footerText)
+            this.buildFooter();
+        let cells = [this.header, this.body];
+        if (this.footer)
+            cells.push(this.footer);
+        this.rootDisplayCell = v(`${this.label}_V`, ...cells);
+        let numbers = this.retArgs["number"];
+        if (!numbers)
+            numbers = [];
+        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, { type: ModalType.winModal });
+        this.modal.dragWith(`${this.label}_title`);
+        this.modal.closeWith(`${this.label}_close`);
+        this.modal.show();
+    }
+    render(displaycell, displayGroup, index, derender) {
+        //console.log(this.label)
+        if (Modal.movingInstace && Modal.movingInstace != this.modal) {
+            let movingHeader = Modal.movingInstace.rootDisplayCell.displaygroup.cellArray[0];
+            let thisheader = this.header.displaygroup.cellArray[0];
+            if (!movingHeader.coord.isCoordCompletelyOutside(thisheader.coord)) {
+                if (!winModal.validDropWinModalInstance) {
+                    winModal.validDropWinModalInstance = this;
+                    this.hightlightHeader();
+                }
+            }
+            else {
+                if (winModal.validDropWinModalInstance == this) {
+                    winModal.validDropWinModalInstance = undefined;
+                    this.hightlightHeader(false);
+                }
+            }
+        }
+    }
+    hightlightHeader(highlight = true) {
+        let thisheader = this.header.displaygroup.cellArray[0];
+        let isHighlighted = thisheader.htmlBlock.css.endsWith("Selected");
+        if (highlight && !isHighlighted)
+            thisheader.htmlBlock.css += "Selected";
+        if (!highlight && isHighlighted)
+            thisheader.htmlBlock.css = thisheader.htmlBlock.css.slice(0, -8);
+    }
+}
+// static titleCss = css("modalTitle",`-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
+// border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
+winModal.labelNo = 0;
+winModal.instances = [];
+winModal.activeInstances = [];
+winModal.defaults = { headerHeight: 15, buttonsHeight: 50, footerHeight: 20, headerText: "Window", bodyText: "Body" };
+winModal.argMap = {
+    string: ["label"],
+};
+function winmodal(...Arguments) {
+    let overlay = new Overlay("winModal", ...Arguments);
+    let newWinModal = overlay.returnObj;
+    let parentDisplaycell = newWinModal.rootDisplayCell;
+    // parentDisplaycell.overlay = overlay; // remove this line soon
+    parentDisplaycell.addOverlay(overlay);
+    return parentDisplaycell;
+}
+Overlay.classes["winModal"] = winModal;
+class ToString {
+}
+ToString.exemptions = ["tag", "retArgs", "toString"];
+ToString.customs = {
+    attributes: function (thisValue) {
+        return ((Object.keys(thisValue).length == 0) ? "//" : "  ") +
+            ` attributes: ${JSON.stringify(thisValue)},\n`;
+    },
+    css: function (thisValue) {
+        return ((!thisValue.length) ? "//" : "  ") +
+            ` css: "${thisValue}",\n`;
+    },
+    dim: function (thisValue) {
+        return ((!thisValue.length) ? "//" : "  ") +
+            ` dim: "${thisValue}",\n`;
+    },
+};
+HtmlBlock.prototype.toString = function () {
+    let exemptions = ToString.exemptions.concat([]);
+    let THIS = this;
+    let CLASS = HtmlBlock;
+    let preText = "";
+    let definer = `let HTMLBlock_${this.label} = new HtmlBlock(\n`;
+    let inner = "";
+    let closer = ")";
+    let keyValue = [];
+    for (let key in this) {
+        if (exemptions.indexOf(key) == -1)
+            keyValue.push([key, BaseF.typeof(this[key])]);
+    }
+    inner += "  {\n";
+    for (let index = 0; index < keyValue.length; index++) {
+        let [key, type] = keyValue[index];
+        if (key in ToString.customs)
+            inner += ToString.customs[key](this[key]);
+        else {
+            switch (type) {
+                case "string":
+                    inner += `   ${key}: "${this[key]}",\n`;
+                    break;
+                case "number":
+                    inner += `   ${key}: ${this[key]},\n`;
+                    break;
+                case "object":
+                    inner += `   ${key}: ${JSON.stringify(this[key])},\n`;
+                    break;
+                default:
+                    inner += `// no handler for type "${type}"`;
+                    break;
+            }
+        }
+    }
+    inner += "  }\n";
+    let fullreturn = preText + definer + inner + closer;
+    console.log(fullreturn);
+};

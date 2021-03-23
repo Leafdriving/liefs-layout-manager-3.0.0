@@ -74,15 +74,16 @@ class Builder extends Base {
             I("MenuBar_Edit","Edit", "35px", bCss.menuItem),
             I("MenuBar_Spacer", "", bCss.menuSpace)
           ),
-          v("Main_Dockable", 
-            h("Tree_Body", 5,
+          dockable(v("Main_Dockable",
+            Builder.TOOLBAR,
+            dockable(h("Tree_Body", 5,
                 tree("HandlerTree",
                     dragbar(I("Main_tree", "300px", bCss.bgLight),50,800),
                     bCss.treeItem,
                     ),
                     bindHandler(I("Main_body"), Builder.clientHandler)
-            )
-          )
+            ))
+          ))
         )
       )
 
@@ -90,6 +91,11 @@ class Builder extends Base {
     static updateTree(){
         Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
     }
+    static TOOLBAR = toolBar("Main_toolbar", 40, 25,
+        I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
+        I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
+        I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
+    );
 }
 
 Builder.buildClientHandler();
