@@ -295,8 +295,8 @@ class Tree_ extends Base {
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         let THIS:Tree_ = this;
         let PDScoord = THIS.parentDisplayCell.coord;
-        let x_=PDScoord.x + THIS.sideMargin
-        let y_=PDScoord.y + THIS.topMargin;
+        let x_= PDScoord.x + THIS.sideMargin - this.offsetx;
+        let y_= PDScoord.y + THIS.topMargin;
         let max_x2:number = 0;
 
         this.traverse(
@@ -324,9 +324,7 @@ class Tree_ extends Base {
                 return (!node.collapsed)
             },
         );
-
         let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()
-
         // console.log(max_x2, PDScoord.x + PDScoord.width)
         // check horizontal first
         if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
@@ -342,6 +340,26 @@ class Tree_ extends Base {
                 this.offsetx = 0;
             }
         }
+        
+        // check vertical next
+        // if (y_ > (PDScoord.y + PDScoord.height) + 2) { 
+        //     console.log("VERT SCROLLBAR")
+        //     if (!scrollbarv) {
+        //         scrollbar(this.parentDisplayCell, false);
+        //         [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays(); // defines scrollbarh
+        //         console.log("scrollbarv", scrollbarv)
+        //      }
+        //     this.offsety = scrollbarv.update(y_); ////
+        // } else {
+        //     if (scrollbarv) {
+        //         scrollbarv.delete();
+        //         this.popOverlay(false);
+        //         this.offsety = 0;
+        //     }
+        // }
+
+
+
     }
     popOverlay(ishor:boolean){
         let overlays = this.parentDisplayCell.overlays;

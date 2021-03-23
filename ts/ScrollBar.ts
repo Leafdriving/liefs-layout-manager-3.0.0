@@ -59,7 +59,7 @@ class ScrollBar extends Base {
                         THIS.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
                     },
               ((this.ishor) ? "ishorTrue" : "ishorFalse"));
-
+        // Handler.update();
     }
     build(){
         let THIS:ScrollBar = this

@@ -1792,6 +1792,7 @@ class ScrollBar extends Base {
             let height = (THIS.ishor) ? THIS.coord.height - THIS.barSize : THIS.coord.height;
             THIS.coord.assign(undefined, undefined, width, height, undefined, undefined, width, height);
         }, ((this.ishor) ? "ishorTrue" : "ishorFalse"));
+        // Handler.update();
     }
     build() {
         let THIS = this;
@@ -2680,7 +2681,7 @@ class Tree_ extends Base {
     render(displaycell, parentDisplaygroup, index, derender) {
         let THIS = this;
         let PDScoord = THIS.parentDisplayCell.coord;
-        let x_ = PDScoord.x + THIS.sideMargin;
+        let x_ = PDScoord.x + THIS.sideMargin - this.offsetx;
         let y_ = PDScoord.y + THIS.topMargin;
         let max_x2 = 0;
         this.traverse(function traverseFunction(node) {
@@ -2719,6 +2720,22 @@ class Tree_ extends Base {
                 this.offsetx = 0;
             }
         }
+        // check vertical next
+        // if (y_ > (PDScoord.y + PDScoord.height) + 2) { 
+        //     console.log("VERT SCROLLBAR")
+        //     if (!scrollbarv) {
+        //         scrollbar(this.parentDisplayCell, false);
+        //         [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays(); // defines scrollbarh
+        //         console.log("scrollbarv", scrollbarv)
+        //      }
+        //     this.offsety = scrollbarv.update(y_); ////
+        // } else {
+        //     if (scrollbarv) {
+        //         scrollbarv.delete();
+        //         this.popOverlay(false);
+        //         this.offsety = 0;
+        //     }
+        // }
     }
     popOverlay(ishor) {
         let overlays = this.parentDisplayCell.overlays;
