@@ -1016,7 +1016,10 @@ class Handler extends Base {
                 displaygroup.coord.copy(displaycell.coord);
                 if (displaygroup && htmlBlock) {
                     Handler.currentZindex += Handler.zindexIncrement;
-                    displaycell.coord.applyMargins(pf.uis0(htmlBlock.marginLeft), pf.uis0(htmlBlock.marginTop), pf.uis0(htmlBlock.marginRight), pf.uis0(htmlBlock.marginBottom));
+                    // displaycell.coord.applyMargins( pf.uis0(htmlBlock.marginLeft),
+                    //                                 pf.uis0(htmlBlock.marginTop),
+                    //                                 pf.uis0(htmlBlock.marginRight),
+                    //                                 pf.uis0(htmlBlock.marginBottom));
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
@@ -3564,58 +3567,88 @@ function winmodal(...Arguments) {
 }
 Overlay.classes["winModal"] = winModal;
 class ToString {
-}
-ToString.exemptions = ["tag", "retArgs", "toString"];
-ToString.customs = {
-    attributes: function (thisValue) {
-        return ((Object.keys(thisValue).length == 0) ? "//" : "  ") +
-            ` attributes: ${JSON.stringify(thisValue)},\n`;
-    },
-    css: function (thisValue) {
-        return ((!thisValue.length) ? "//" : "  ") +
-            ` css: "${thisValue}",\n`;
-    },
-    dim: function (thisValue) {
-        return ((!thisValue.length) ? "//" : "  ") +
-            ` dim: "${thisValue}",\n`;
-    },
-};
-HtmlBlock.prototype.toString = function () {
-    let exemptions = ToString.exemptions.concat([]);
-    let THIS = this;
-    let CLASS = HtmlBlock;
-    let preText = "";
-    let definer = `let HTMLBlock_${this.label} = new HtmlBlock(\n`;
-    let inner = "";
-    let closer = ")";
-    let keyValue = [];
-    for (let key in this) {
-        if (exemptions.indexOf(key) == -1)
-            keyValue.push([key, BaseF.typeof(this[key])]);
+    static define(obj) {
+        for (let index = 0; index < ToString.definitions.length; index++) {
+            let { CLASS, NAME, VALUE } = ToString.definitions[index];
+            if (CLASS == obj.CLASS && NAME == obj.NAME)
+                return;
+        }
+        ToString.definitions.push(obj);
     }
-    inner += "  {\n";
-    for (let index = 0; index < keyValue.length; index++) {
-        let [key, type] = keyValue[index];
-        if (key in ToString.customs)
-            inner += ToString.customs[key](this[key]);
-        else {
-            switch (type) {
-                case "string":
-                    inner += `   ${key}: "${this[key]}",\n`;
-                    break;
-                case "number":
-                    inner += `   ${key}: ${this[key]},\n`;
-                    break;
-                case "object":
-                    inner += `   ${key}: ${JSON.stringify(this[key])},\n`;
-                    break;
-                default:
-                    inner += `// no handler for type "${type}"`;
-                    break;
+    static toCode() {
+        let returnString = "";
+        for (let index = 0; index < ToString.definitions.length; index++) {
+            let { CLASS, NAME, VALUE } = ToString.definitions[index];
+            returnString += `let ${CLASS}_${NAME} = ${VALUE}\n`;
+        }
+        return returnString;
+    }
+    static generic(CLASS, classInstance) {
+        let addKeys = ToString.addKey[CLASS];
+        let exemptions = ToString.exemptions;
+        let inner = "";
+        let keyValue = []; // [key, type]
+        for (let key in classInstance) { // get all variable from Class
+            if (exemptions.indexOf(key) == -1)
+                keyValue.push([key, BaseF.typeof(classInstance[key])]);
+        }
+        for (let index = 0; index < addKeys.length; index++) { // add keys from library by Class
+            let key = addKeys[index];
+            if (exemptions.indexOf(key) == -1)
+                keyValue.push([key, BaseF.typeof(classInstance[key])]);
+        }
+        inner += "{\n";
+        for (let index = 0; index < keyValue.length; index++) {
+            let [key, type] = keyValue[index];
+            if (key in ToString.customs) {
+                inner += ToString.customs[key].bind(classInstance)(classInstance[key], CLASS);
+            }
+            else {
+                if (type in ToString.processType) {
+                    inner += ToString.processType[type](key, classInstance[key], CLASS);
+                }
+                else
+                    inner += `// no manager for type "${type}" variable ${key}\n`;
             }
         }
+        inner += "});\n";
+        ToString.define({ CLASS, NAME: `${classInstance.label}`, VALUE: `new ${CLASS}(${inner}` });
     }
-    inner += "  }\n";
-    let fullreturn = preText + definer + inner + closer;
-    console.log(fullreturn);
+}
+ToString.exemptions = ["tag", "retArgs", "toString"];
+ToString.addKey = {
+    HtmlBlock: [],
+    DisplayCell: ["htmlBlock"],
+};
+ToString.customs = {
+    isRendered: function (value, CLASS = "") { return ""; },
+    attributes: function (value, CLASS = "") {
+        return ((Object.keys(value).length == 0) ? "" : `attributes: ${JSON.stringify(value)},\n`);
+    },
+    css: function (value, CLASS = "") {
+        return ((!value.length) ? "" : `  css: "${value}",\n`);
+    },
+    dim: function (value, CLASS = "") {
+        return ((!value.length) ? "" : `  dim: "${value}",\n`);
+    },
+    innerHTML: function (value, CLASS = "") {
+        ToString.define({ CLASS: CLASS, NAME: `${this.label}_innerHTML`, VALUE: `"${value}";\n` });
+        return `  innerHTML: ${CLASS}_${this.label}_innerHTML,\n`;
+    }
+};
+ToString.processType = {
+    string: function (key, value, CLASS = undefined) { return `  ${key}: "${value}",\n`; },
+    number: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
+    object: function (key, value, CLASS = undefined) { return `  ${key}: ${JSON.stringify(value)},\n`; },
+    boolean: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
+    HtmlBlock: function (key, value, CLASS = undefined) {
+        ToString.generic(value.constructor.name, value);
+        return `  ${key}: ${value.constructor.name}_${value.label},\n`;
+    },
+};
+Base.prototype.toString = function () {
+    let CLASS = this.constructor.name;
+    ToString.definitions = [];
+    ToString.generic(CLASS, this);
+    return ToString.toCode();
 };

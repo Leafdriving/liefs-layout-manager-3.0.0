@@ -167,10 +167,10 @@ class Handler extends Base {
                 displaygroup.coord.copy(displaycell.coord);
                 if (displaygroup && htmlBlock) {
                     Handler.currentZindex += Handler.zindexIncrement;
-                    displaycell.coord.applyMargins( pf.uis0(htmlBlock.marginLeft),
-                                                    pf.uis0(htmlBlock.marginTop),
-                                                    pf.uis0(htmlBlock.marginRight),
-                                                    pf.uis0(htmlBlock.marginBottom));
+                    // displaycell.coord.applyMargins( pf.uis0(htmlBlock.marginLeft),
+                    //                                 pf.uis0(htmlBlock.marginTop),
+                    //                                 pf.uis0(htmlBlock.marginRight),
+                    //                                 pf.uis0(htmlBlock.marginBottom));
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }

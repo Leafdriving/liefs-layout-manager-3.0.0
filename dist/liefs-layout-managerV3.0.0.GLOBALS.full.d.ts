@@ -911,11 +911,27 @@ declare class winModal extends Base {
     hightlightHeader(highlight?: boolean): void;
 }
 declare function winmodal(...Arguments: any): DisplayCell;
+interface custom1 {
+    [key: string]: (value: any, CLASS: string) => string;
+}
+interface custom2 {
+    [key: string]: (key: string, value: any, CLASS: string) => string;
+}
 declare class ToString {
+    static definitions: {
+        CLASS: string;
+        NAME: string;
+        VALUE: string;
+    }[];
+    static define(obj: {
+        CLASS: string;
+        NAME: string;
+        VALUE: string;
+    }): void;
+    static toCode(): string;
     static exemptions: string[];
-    static customs: {
-        attributes: (thisValue: object) => string;
-        css: (thisValue: string) => string;
-        dim: (thisValue: string) => string;
-    };
+    static addKey: ArgMap;
+    static customs: custom1;
+    static processType: custom2;
+    static generic(CLASS: string, classInstance: any): void;
 }
