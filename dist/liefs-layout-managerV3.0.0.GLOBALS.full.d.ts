@@ -101,6 +101,7 @@ declare class Within {
     constructor(...Arguments: any);
     clipStyleString(sub: Coord): string;
     reset(): void;
+    toString: Function;
 }
 declare class Coord extends Base {
     #private;
@@ -932,6 +933,9 @@ declare class ToString {
     static exemptions: string[];
     static addKey: ArgMap;
     static customs: custom1;
+    static callGeneric: (key: string, value: HtmlBlock, CLASS?: any) => string;
     static processType: custom2;
     static generic(CLASS: string, classInstance: any): void;
+    static labelNo: number;
 }
+declare let callFunction: () => string;

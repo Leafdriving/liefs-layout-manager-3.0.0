@@ -16,6 +16,7 @@ class Within{
         return Coord.clipStyleString(this, sub);
     }
     reset(){this.x = this.y = this.width = this.height = undefined};
+    toString:Function;
 }
 class Coord extends Base {
     static instances:Coord[] = [];

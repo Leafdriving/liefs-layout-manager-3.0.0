@@ -3584,7 +3584,7 @@ class ToString {
         return returnString;
     }
     static generic(CLASS, classInstance) {
-        let addKeys = ToString.addKey[CLASS];
+        let addKeys = (CLASS in ToString.addKey) ? ToString.addKey[CLASS] : [];
         let exemptions = ToString.exemptions;
         let inner = "";
         let keyValue = []; // [key, type]
@@ -3612,13 +3612,14 @@ class ToString {
             }
         }
         inner += "});\n";
-        ToString.define({ CLASS, NAME: `${classInstance.label}`, VALUE: `new ${CLASS}(${inner}` });
+        let label = (classInstance.label) ? classInstance.label : `label${++ToString.labelNo}`;
+        ToString.define({ CLASS, NAME: `${label}`, VALUE: `new ${CLASS}(${inner}` });
     }
 }
 ToString.exemptions = ["tag", "retArgs", "toString"];
 ToString.addKey = {
-    HtmlBlock: [],
-    DisplayCell: ["htmlBlock"],
+    DisplayCell: ["htmlBlock", "displaygroup"],
+    Coord: ["x", "y", "width", "height"],
 };
 ToString.customs = {
     isRendered: function (value, CLASS = "") { return ""; },
@@ -3636,19 +3637,27 @@ ToString.customs = {
         return `  innerHTML: ${CLASS}_${this.label}_innerHTML,\n`;
     }
 };
+ToString.callGeneric = function (key, value, CLASS = undefined) {
+    ToString.generic(value.constructor.name, value);
+    return `  ${key}: ${value.constructor.name}_` + ((value.label) ? value.label : `label${ToString.labelNo}`) + `,\n`;
+};
 ToString.processType = {
     string: function (key, value, CLASS = undefined) { return `  ${key}: "${value}",\n`; },
     number: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
     object: function (key, value, CLASS = undefined) { return `  ${key}: ${JSON.stringify(value)},\n`; },
     boolean: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
-    HtmlBlock: function (key, value, CLASS = undefined) {
-        ToString.generic(value.constructor.name, value);
-        return `  ${key}: ${value.constructor.name}_${value.label},\n`;
-    },
+    Array: function (key, value, CLASS = undefined) { return `  ${key}: [/* must fix! */],\n`; },
+    undefined: function (key, value, CLASS = undefined) { return `// ${key}: undefined,\n`; },
+    HtmlBlock: ToString.callGeneric,
+    Within: ToString.callGeneric,
+    Coord: ToString.callGeneric,
+    DisplayGroup: ToString.callGeneric,
 };
-Base.prototype.toString = function () {
+ToString.labelNo = 0;
+let callFunction = function () {
     let CLASS = this.constructor.name;
     ToString.definitions = [];
     ToString.generic(CLASS, this);
     return ToString.toCode();
 };
+Base.prototype.toString = Within.prototype.toString = callFunction;

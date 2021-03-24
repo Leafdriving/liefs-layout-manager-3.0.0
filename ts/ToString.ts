@@ -19,8 +19,9 @@ class ToString{
     }
     static exemptions = ["tag", "retArgs", "toString"];
     static addKey:ArgMap = {
-        HtmlBlock:[],
-        DisplayCell:["htmlBlock"],
+
+        DisplayCell:["htmlBlock", "displaygroup"],
+        Coord:["x", "y", "width", "height"],
     };
     static customs:custom1 = {
         isRendered:function(value:string, CLASS:string = ""){return ""},
@@ -38,17 +39,25 @@ class ToString{
             return `  innerHTML: ${CLASS}_${this.label}_innerHTML,\n`;
         }
     }
+    static callGeneric = function(key:string, value:HtmlBlock, CLASS=undefined){
+        ToString.generic(value.constructor.name, value);
+        return `  ${key}: ${value.constructor.name}_`+ ((value.label) ? value.label : `label${ToString.labelNo}`) + `,\n`;
+    }
     static processType:custom2 = {
         string:function(key:string, value:string, CLASS=undefined){return `  ${key}: "${value}",\n`},
         number:function(key:string, value:number, CLASS=undefined){return `  ${key}: ${value},\n`},
         object:function(key:string, value:object, CLASS=undefined){return `  ${key}: ${ JSON.stringify(value) },\n`},
         boolean:function(key:string, value:boolean, CLASS=undefined){return `  ${key}: ${value},\n`},
-        HtmlBlock:function(key:string, value:HtmlBlock, CLASS=undefined){
-            ToString.generic(value.constructor.name, value); return `  ${key}: ${value.constructor.name}_${value.label},\n`
-        },
+        Array:function(key:string, value:boolean, CLASS=undefined){return `  ${key}: [/* must fix! */],\n`},
+        undefined:function(key:string, value:boolean, CLASS=undefined){return `// ${key}: undefined,\n`},
+        HtmlBlock:ToString.callGeneric,
+        Within:ToString.callGeneric,
+        Coord:ToString.callGeneric,
+        DisplayGroup:ToString.callGeneric,
     }
+    
     static generic(CLASS:string, classInstance:any){
-        let addKeys = ToString.addKey[CLASS];
+        let addKeys = (CLASS in ToString.addKey) ? ToString.addKey[CLASS] : [];
         let exemptions = ToString.exemptions;
         let inner = "";
         let keyValue:[string, string][]=[];                 // [key, type]
@@ -76,12 +85,15 @@ class ToString{
             }
         }
         inner += "});\n";
-        ToString.define({CLASS, NAME:`${classInstance.label}`, VALUE:`new ${CLASS}(${inner}`});
+        let label = (classInstance.label) ? classInstance.label : `label${++ToString.labelNo}`;
+        ToString.define({CLASS, NAME:`${label}`, VALUE:`new ${CLASS}(${inner}`});
     }
+    static labelNo:number = 0;
 }
-Base.prototype.toString = function() {
+let callFunction = function() {
     let CLASS = this.constructor.name;
     ToString.definitions = [];
     ToString.generic(CLASS, this);
     return ToString.toCode();
 }
+Base.prototype.toString = Within.prototype.toString = callFunction;
