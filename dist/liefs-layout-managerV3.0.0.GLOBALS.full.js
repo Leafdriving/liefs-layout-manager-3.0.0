@@ -3399,6 +3399,34 @@ class winHolder extends Base {
             this.winModals = this.retArgs["winModal"];
         for (let index = 0; index < this.winModals.length; index++)
             this.disableWinModal(this.winModals[index]);
+        console.log("before Build");
+        this.build();
+        console.log("after Build");
+    }
+    build() {
+        let maxWidth = 0;
+        let height = 0;
+        let cellArray = [];
+        console.log("Before for");
+        for (let index = 0; index < this.winModals.length; index++) {
+            let wmodal = this.winModals[index];
+            wmodal.parentHolder = this;
+            let modal = wmodal.modal;
+            let displaycell = modal.rootDisplayCell;
+            if (modal.coord.x > maxWidth)
+                maxWidth = modal.coord.x;
+            displaycell.dim = `${modal.coord.y}px`;
+            cellArray.push(displaycell);
+            height += pf.pxAsNumber(displaycell.dim);
+        }
+        console.log("After For");
+        this.rootDisplayCell = v(`${this.label}_winHolder`, { cellArray });
+        // this.WinModal = new winModal(`${this.label}_winHolder_parent`,
+        //                                 {body:this.rootDisplayCell,
+        //                                 headerText:"MyGroup"},
+        //                                 this.winModals[0].modal.coord.x, this.winModals[0].modal.coord.y,
+        //                                 maxWidth, height);
+        console.log("Build Over");
     }
     add(winmodal, index = undefined) {
         this.disableWinModal(winmodal);
@@ -3414,6 +3442,7 @@ class winHolder extends Base {
             this.winModals.splice(index, 1);
     }
     disableWinModal(winmodal) {
+        console.log("Disabling ", winmodal.label);
         winmodal.modal.hide();
         winmodal.modal.rootDisplayCell.popOverlay("winModal");
     }
@@ -3438,27 +3467,14 @@ class winModal extends Base {
     }
     dropped(e) {
         let modal = e.detail;
-        if (winModal.validDropWinModalInstance == this) {
-            winModal.validDropWinModalInstance = undefined;
-            console.log("I Was Dropped On");
+        if (winModal.validDropWinModalInstance) {
+            if (winModal.validDropWinModalInstance.label == this.label) {
+                //console.log("Not Possible", winModal.movingInstance);
+                console.log(`${winModal.movingInstance.label} was dropped on ${this.label}`);
+            }
             this.hightlightHeader(false);
-            //modal.hide();
-            //modal.rootDisplayCell.popOverlay("winModal");
-            // this.modal.coord.height += modal.coord.height;
-            // this.modal.rootDisplayCell = v(
-            //     this.modal.rootDisplayCell,
-            //     modal.rootDisplayCell,
-            // )
-            // console.log(this.modal.rootDisplayCell);
-            //modal.rootDisplayCell.dim = `${modal.coord.height}px`;
-            // this.modal.rootDisplayCell.displaygroup.cellArray.push(
-            //     modal.rootDisplayCell
-            // );
-            //Handler.update();
-            //console.log(this.modal.label, modal.label)
-            // let displaygroup = this.modal.rootDisplayCell.displaygroup;
-            // modal.rootDisplayCell.dim = `${modal.coord.height}px`;
-            // displaygroup.cellArray.push( modal.rootDisplayCell )
+            // new winHolder(this, winModal.movingInstance);
+            // winModal.validDropWinModalInstance = undefined;
         }
     }
     buildClose() {
@@ -3537,6 +3553,10 @@ class winModal extends Base {
                     this.hightlightHeader(false);
                 }
             }
+        }
+        if (Modal.movingInstace && Modal.movingInstace == this.modal) {
+            winModal.movingInstance = this;
+            // console.log(`=${this.label}`)
         }
     }
     hightlightHeader(highlight = true) {

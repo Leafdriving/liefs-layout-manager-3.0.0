@@ -860,9 +860,13 @@ declare class winHolder extends Base {
     static argMap: {
         string: string[];
     };
+    label: string;
     retArgs: ArgsObj;
+    rootDisplayCell: DisplayCell;
+    WinModal: winModal;
     winModals: winModal[];
     constructor(...Arguments: any);
+    build(): void;
     add(winmodal: winModal, index?: number): void;
     pop(winmodal: winModal): void;
     disableWinModal(winmodal: winModal): void;
@@ -898,6 +902,7 @@ declare class winModal extends Base {
     modal: Modal;
     previousModalHeight: number;
     static validDropWinModalInstance: winModal;
+    static movingInstance: winModal;
     constructor(...Arguments: any);
     dropped(e: CustomEvent): void;
     buildClose(): DisplayCell;
