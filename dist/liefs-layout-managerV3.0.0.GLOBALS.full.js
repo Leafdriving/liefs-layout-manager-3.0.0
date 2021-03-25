@@ -1544,7 +1544,7 @@ class PageSelect extends Base {
         let label = this.pages.displaycells[0].label;
         let clickableName = I(`${this.label}_0`, label, DefaultTheme.context /*,events({onclick:contextObjFunction})*/);
         let downArrow = I(`${this.label}_arrow`, "20px", DefaultTheme.downArrowSVG("scrollArrows"));
-        this.rootDisplayCell = h("Prop_h", clickableName, downArrow);
+        this.rootDisplayCell = h(`${this.label}_PageSelect`, clickableName, downArrow);
         this.rootDisplayCell.dim = this.dim;
         let contextObjFunction = hMenuBar(this.menuObj, { launchcell: this.rootDisplayCell, css: DefaultTheme.context });
         let fullEvents = events({ ondrag: swipe({ left: THIS.breakFree.bind(THIS),
@@ -1563,17 +1563,14 @@ class PageSelect extends Base {
         let displaycell = this.pages.displaycells[index];
         this.pages.displaycells.splice(index, 1);
         this.pages.currentPage = 0;
-        let x = mouseEvent.clientX - 10;
-        let y = mouseEvent.clientY - 10;
+        let x = this.rootDisplayCell.coord.x + offset.x;
+        let y = this.rootDisplayCell.coord.y + offset.y;
         let width = displaycell.coord.width;
         let height = displaycell.coord.height;
         let [sw, sh] = pf.viewport();
-        displaycell.coord.within.x = 0;
-        displaycell.coord.within.y = 0;
-        displaycell.coord.within.width = sw;
-        displaycell.coord.within.height = sh;
-        console.log(displaycell);
-        let newWinModal = winmodal({ body: displaycell, headerText: displaycell.label }, x, y, width, height);
+        let overlay = new Overlay("winModal", { body: displaycell, headerText: displaycell.label }, x, y, width, height);
+        let newWinModal = overlay.returnObj;
+        newWinModal.rootDisplayCell.addOverlay(overlay);
         Handler.update();
     }
 }
@@ -2367,18 +2364,27 @@ class Modal extends Base {
         }
     }
     static events(THIS) {
-        return events({ ondrag: { onDown: function () {
-                    Modal.movingInstace = THIS;
-                    window.dispatchEvent(new CustomEvent('ModalStartDrag', { detail: THIS }));
-                    return Modal.startMoveModal(THIS);
-                }, onMove: function (offset) { return Modal.moveModal(THIS, offset); },
-                onUp: function (offset) {
-                    Modal.movingInstace = undefined;
-                    window.dispatchEvent(new CustomEvent('ModalDropped', { detail: THIS }));
-                }
+        return events({ ondrag: { onDown: Modal.onDown.bind(THIS),
+                onMove: Modal.onMove.bind(THIS),
+                onUp: Modal.onUp.bind(THIS),
             } });
     }
     ;
+    static onDown() {
+        let THIS = this;
+        Modal.movingInstace = THIS;
+        window.dispatchEvent(new CustomEvent('ModalStartDrag', { detail: THIS }));
+        return Modal.startMoveModal(THIS);
+    }
+    static onMove(offset) {
+        let THIS = this;
+        return Modal.moveModal(THIS, offset);
+    }
+    static onUp(offset) {
+        let THIS = this;
+        Modal.movingInstace = undefined;
+        window.dispatchEvent(new CustomEvent('ModalDropped', { detail: THIS }));
+    }
     static startMoveModal(THIS) {
         THIS.handler.toTop();
         Modal.x = THIS.handler.coord.x;
@@ -3548,8 +3554,10 @@ class winModal extends Base {
                 console.log(`${winModal.movingInstance.label} was dropped on ${this.label}`);
             }
             this.hightlightHeader(false);
-            // new winHolder(this, winModal.movingInstance);
-            // winModal.validDropWinModalInstance = undefined;
+        }
+        if (winModal.validpageSelectInstance) {
+            this.hightlightHeader(false);
+            console.log(`Dropped on ${winModal.validpageSelectInstance.label}`);
         }
     }
     buildClose() {
@@ -3613,25 +3621,50 @@ class winModal extends Base {
     }
     render(displaycell, displayGroup, index, derender) {
         //console.log(this.label)
+        let thisheader = this.header.displaygroup.cellArray[0];
         if (Modal.movingInstace && Modal.movingInstace != this.modal) {
             let movingHeader = Modal.movingInstace.rootDisplayCell.displaygroup.cellArray[0];
-            let thisheader = this.header.displaygroup.cellArray[0];
             if (!movingHeader.coord.isCoordCompletelyOutside(thisheader.coord)) {
                 if (!winModal.validDropWinModalInstance) {
                     winModal.validDropWinModalInstance = this;
-                    this.hightlightHeader();
+                    if (!this.highlightHeaderState1) {
+                        this.hightlightHeader();
+                        this.highlightHeaderState1 = true;
+                    }
                 }
             }
             else {
                 if (winModal.validDropWinModalInstance == this) {
                     winModal.validDropWinModalInstance = undefined;
-                    this.hightlightHeader(false);
+                    if (this.highlightHeaderState1) {
+                        this.hightlightHeader(false);
+                        this.highlightHeaderState1 = false;
+                    }
                 }
             }
         }
         if (Modal.movingInstace && Modal.movingInstace == this.modal) {
             winModal.movingInstance = this;
-            // console.log(`=${this.label}`)
+        }
+        for (let index = 0; index < PageSelect.instances.length; index++) {
+            const pageSelectInstance = PageSelect.instances[index];
+            let item = DisplayCell.byLabel(`${pageSelectInstance.label}_0`);
+            if (document.getElementById(`${pageSelectInstance.label}_0`)) {
+                if (!thisheader.coord.isCoordCompletelyOutside(item.coord)) {
+                    if (!this.highlightHeaderState2) {
+                        this.hightlightHeader();
+                        winModal.validpageSelectInstance = pageSelectInstance;
+                        this.highlightHeaderState2 = true;
+                    }
+                }
+                else {
+                    if (this.highlightHeaderState2) {
+                        this.hightlightHeader(false);
+                        winModal.validpageSelectInstance = undefined;
+                        this.highlightHeaderState2 = false;
+                    }
+                }
+            }
         }
     }
     hightlightHeader(highlight = true) {
@@ -3648,7 +3681,8 @@ class winModal extends Base {
 winModal.labelNo = 0;
 winModal.instances = [];
 winModal.activeInstances = [];
-winModal.defaults = { headerHeight: 15, buttonsHeight: 50, footerHeight: 20, headerText: "Window", bodyText: "Body" };
+winModal.defaults = { headerHeight: 15, buttonsHeight: 50, footerHeight: 20,
+    headerText: "Window", bodyText: "Body", highlightHeaderState1: false, highlightHeaderState2: false };
 winModal.argMap = {
     string: ["label", "headerText"],
     DisplayCell: ["body"]

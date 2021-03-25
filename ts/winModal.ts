@@ -76,7 +76,8 @@ class winModal extends Base {
     static labelNo = 0;
     static instances:winModal[] = [];
     static activeInstances:winModal[] = [];
-    static defaults = {headerHeight: 15, buttonsHeight: 50, footerHeight:20, headerText:"Window", bodyText:"Body"}
+    static defaults = {headerHeight: 15, buttonsHeight: 50, footerHeight:20,
+                        headerText:"Window", bodyText:"Body", highlightHeaderState1:false, highlightHeaderState2:false}
     static argMap = {
         string : ["label", "headerText"],
         DisplayCell : ["body"]
@@ -101,7 +102,10 @@ class winModal extends Base {
 
     modal: Modal;
     previousModalHeight:number;
+    highlightHeaderState1:boolean;
+    highlightHeaderState2:boolean;
     static validDropWinModalInstance:winModal;
+    static validpageSelectInstance:PageSelect;
     static movingInstance:winModal;
 
     constructor(...Arguments:any){
@@ -120,9 +124,10 @@ class winModal extends Base {
                 console.log(`${winModal.movingInstance.label} was dropped on ${this.label}`);
             }
             this.hightlightHeader(false);
-
-            // new winHolder(this, winModal.movingInstance);
-            // winModal.validDropWinModalInstance = undefined;
+        }
+        if (winModal.validpageSelectInstance) {
+            this.hightlightHeader(false);
+            console.log(`Dropped on ${winModal.validpageSelectInstance.label}`)
         }
     }
     buildClose(): DisplayCell {
@@ -188,24 +193,50 @@ class winModal extends Base {
     }
     render(displaycell:DisplayCell, displayGroup: DisplayGroup, index:number, derender:boolean) {
         //console.log(this.label)
+        let thisheader = this.header.displaygroup.cellArray[0];
         if (Modal.movingInstace && Modal.movingInstace != this.modal) {
             let movingHeader = Modal.movingInstace.rootDisplayCell.displaygroup.cellArray[0];
-            let thisheader = this.header.displaygroup.cellArray[0];
+            
             if(!movingHeader.coord.isCoordCompletelyOutside(thisheader.coord)){
                 if (!winModal.validDropWinModalInstance) {
                     winModal.validDropWinModalInstance = this;
-                    this.hightlightHeader()
+                    if (!this.highlightHeaderState1){
+                        this.hightlightHeader();
+                        this.highlightHeaderState1 = true;
+                    }
                 }
             }else{
                 if (winModal.validDropWinModalInstance == this) {
                     winModal.validDropWinModalInstance = undefined;
-                    this.hightlightHeader(false)
+                    if (this.highlightHeaderState1){
+                        this.hightlightHeader(false)
+                        this.highlightHeaderState1 = false;
+                    }
                 }
             }
         }
         if (Modal.movingInstace && Modal.movingInstace == this.modal) {
             winModal.movingInstance = this;
-            // console.log(`=${this.label}`)
+        }
+
+        for (let index = 0; index < PageSelect.instances.length; index++) {
+            const pageSelectInstance = PageSelect.instances[index];
+            let item = DisplayCell.byLabel(`${pageSelectInstance.label}_0`);
+            if(document.getElementById(`${pageSelectInstance.label}_0`)){
+                if(!thisheader.coord.isCoordCompletelyOutside(item.coord)){
+                    if (!this.highlightHeaderState2){
+                        this.hightlightHeader();
+                        winModal.validpageSelectInstance = pageSelectInstance;
+                        this.highlightHeaderState2 = true;
+                    }
+                } else {
+                    if (this.highlightHeaderState2){
+                        this.hightlightHeader(false)
+                        winModal.validpageSelectInstance = undefined;
+                        this.highlightHeaderState2 = false;
+                    }
+                }
+            }
         }
     }
     hightlightHeader(highlight:boolean=true) {
@@ -214,6 +245,7 @@ class winModal extends Base {
         if (highlight && !isHighlighted) thisheader.htmlBlock.css +="Selected";
         if (!highlight && isHighlighted) thisheader.htmlBlock.css = thisheader.htmlBlock.css.slice(0, -8);
     }
+    
 }
 function winmodal(...Arguments:any) {
     let overlay=new Overlay("winModal", ...Arguments);

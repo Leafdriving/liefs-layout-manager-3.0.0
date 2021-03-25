@@ -209,7 +209,7 @@ class PageSelect extends Base {
         let clickableName = I(`${this.label}_0`, label, DefaultTheme.context /*,events({onclick:contextObjFunction})*/)
         let downArrow = I(`${this.label}_arrow`,"20px" , DefaultTheme.downArrowSVG("scrollArrows"));
         
-        this.rootDisplayCell = h("Prop_h", 
+        this.rootDisplayCell = h(`${this.label}_PageSelect`, 
             clickableName,
             downArrow,
             )
@@ -234,18 +234,16 @@ class PageSelect extends Base {
         let displaycell = this.pages.displaycells[ index ];
         this.pages.displaycells.splice(index, 1);
         this.pages.currentPage = 0;
-        let x = mouseEvent.clientX-10;
-        let y = mouseEvent.clientY-10;
+        let x = this.rootDisplayCell.coord.x + offset.x;
+        let y = this.rootDisplayCell.coord.y + offset.y;
         let width = displaycell.coord.width;
         let height = displaycell.coord.height;
         let [sw,sh] = pf.viewport()
-        displaycell.coord.within.x = 0;
-        displaycell.coord.within.y =0
-        displaycell.coord.within.width = sw;
-        displaycell.coord.within.height = sh;
-        console.log(displaycell)
 
-        let newWinModal = winmodal({body: displaycell, headerText: displaycell.label}, x,y,width,height);
+        let overlay=new Overlay("winModal", {body: displaycell, headerText: displaycell.label}, x,y,width,height);
+        let newWinModal = <winModal>overlay.returnObj;
+        newWinModal.rootDisplayCell.addOverlay(overlay);
+
         Handler.update();
     }
 }

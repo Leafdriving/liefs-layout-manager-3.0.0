@@ -658,6 +658,15 @@ declare class Modal extends Base {
     static movingInstace: Modal;
     static setSize(THIS: Modal, ...numbers: number[]): void;
     static events(THIS: Modal): Events;
+    static onDown(): void;
+    static onMove(offset: {
+        x: number;
+        y: number;
+    }): void;
+    static onUp(offset: {
+        x: number;
+        y: number;
+    }): void;
     static startMoveModal(THIS: Modal): void;
     static moveModal(THIS: Modal, offset: {
         x: number;
@@ -919,6 +928,8 @@ declare class winModal extends Base {
         footerHeight: number;
         headerText: string;
         bodyText: string;
+        highlightHeaderState1: boolean;
+        highlightHeaderState2: boolean;
     };
     static argMap: {
         string: string[];
@@ -939,7 +950,10 @@ declare class winModal extends Base {
     hiddenCells: DisplayCell[];
     modal: Modal;
     previousModalHeight: number;
+    highlightHeaderState1: boolean;
+    highlightHeaderState2: boolean;
     static validDropWinModalInstance: winModal;
+    static validpageSelectInstance: PageSelect;
     static movingInstance: winModal;
     constructor(...Arguments: any);
     dropped(e: CustomEvent): void;

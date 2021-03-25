@@ -46,17 +46,27 @@ class Modal extends Base {
     }
     static events(THIS:Modal){
         return events({ondrag: 
-               {onDown : function(){
-                   Modal.movingInstace = THIS;
-                   window.dispatchEvent(new CustomEvent('ModalStartDrag', { detail: THIS }));
-                   return Modal.startMoveModal(THIS)},
-                onMove : function(offset:{x:number, y:number}) {return Modal.moveModal(THIS, offset)},
-                onUp   : function(offset:{x:number, y:number}) {
-                    Modal.movingInstace = undefined;
-                    window.dispatchEvent(new CustomEvent('ModalDropped', { detail: THIS }));
-                }
+             {onDown: Modal.onDown.bind(THIS),
+                onMove: Modal.onMove.bind(THIS),
+                onUp : Modal.onUp.bind(THIS),
             }});
     };
+    static onDown(){
+        let THIS = this as unknown as Modal;
+        Modal.movingInstace = THIS;
+        window.dispatchEvent(new CustomEvent('ModalStartDrag', { detail: THIS }));
+        return Modal.startMoveModal(THIS)
+    }
+    
+    static onMove(offset:{x:number, y:number}){
+        let THIS = this as unknown as Modal;
+        return Modal.moveModal(THIS, offset);
+    }
+    static onUp(offset:{x:number, y:number}){
+        let THIS = this as unknown as Modal;
+        Modal.movingInstace = undefined;
+        window.dispatchEvent(new CustomEvent('ModalDropped', { detail: THIS }));
+    }
     static startMoveModal(THIS:Modal){
         THIS.handler.toTop()
         Modal.x = THIS.handler.coord.x;
