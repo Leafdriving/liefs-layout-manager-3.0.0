@@ -220,7 +220,30 @@ class Tree_ extends Base {
     topMargin:number;
     sideMargin:number;
     tabSize:number;
+    preRenderCallback:Function;
     onNodeCreation:(node: node_) => void;
+
+    
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
+        let THIS = this;
+        if (this.Css && !this.css) {
+            //console.log("Here", this.Css)
+            this.css = this.Css.classname;
+        }
+        if (this.rootNode)
+            this.traverse( function(node:node_){
+                                node.ParentNodeTree = THIS;
+                                THIS.onNodeCreation(node);
+                            } );
+        else {
+            this.rootNode = new node_(...Arguments)
+            this.rootNode.ParentNodeTree = this;
+            this.onNodeCreation(this.rootNode);
+            this.rootNode.ParentNodeTree = THIS;
+        }
+        if (this.node_arg_map) node_.argMap = this.node_arg_map;
+    }
 
     traverse(traverseFunction:(node: node_) => void,
             node:node_ = this.rootNode,
@@ -244,26 +267,6 @@ class Tree_ extends Base {
                                             traverseNode);
     }
 
-    constructor(...Arguments:any){
-        super();this.buildBase(...Arguments);
-        let THIS = this;
-        if (this.Css && !this.css) {
-            //console.log("Here", this.Css)
-            this.css = this.Css.classname;
-        }
-        if (this.rootNode)
-            this.traverse( function(node:node_){
-                                node.ParentNodeTree = THIS;
-                                THIS.onNodeCreation(node);
-                            } );
-        else {
-            this.rootNode = new node_(...Arguments)
-            this.rootNode.ParentNodeTree = this;
-            this.onNodeCreation(this.rootNode);
-            this.rootNode.ParentNodeTree = THIS;
-        }
-        if (this.node_arg_map) node_.argMap = this.node_arg_map;
-    }
     newRoot(node:node_){
         let THIS = this;
         this.derender(this.rootNode);
@@ -293,6 +296,8 @@ class Tree_ extends Base {
             this.derender(node.children[index]);
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+        if (this.preRenderCallback) this.preRenderCallback();
+        // console.log("render Tree")
         let THIS:Tree_ = this;
         let PDScoord = THIS.parentDisplayCell.coord;
         let x_= PDScoord.x + THIS.sideMargin - this.offsetx;

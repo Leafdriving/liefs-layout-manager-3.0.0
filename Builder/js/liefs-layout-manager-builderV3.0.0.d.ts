@@ -12,6 +12,11 @@ declare class bCss {
     static ISVG: Css;
     static pagesSVG: Css;
     static treeItem: Css;
+    static bookSVGCss: Css;
+    static bookSVG(classname: string): string;
+    static htmlSVG(classname: string): string;
+    static horSVG(classname: string): string;
+    static verSVG(classname: string): string;
 }
 declare class Builder extends Base {
     static labelNo: number;
@@ -26,6 +31,7 @@ declare class Builder extends Base {
     static makeDisplayCell(node: node_, displaycell: DisplayCell): void;
     static clientHandler: Handler;
     static buildClientHandler(): void;
+    static onNodeCreation(node: node_): void;
     static mainHandler: Handler;
     static buildMainHandler(): void;
     static updateTree(): void;

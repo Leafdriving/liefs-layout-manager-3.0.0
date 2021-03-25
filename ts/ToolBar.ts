@@ -133,13 +133,13 @@ class Dockable extends Base {
                 this.makeDropZones(toolbar.width, toolbar.height);
             this.openCloseDropZones(toolbar.modal, toolbar.width, toolbar.height);
        }
-       if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
-            let modal = Modal.movingInstace;
-            // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
-            if (!this.dropZones)                                        // define DropZones
-                this.makeDropZones(modal.coord.width, modal.coord.height);
-            this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
-       }
+    //    if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
+    //         let modal = Modal.movingInstace;
+    //         // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
+    //         if (!this.dropZones)                                        // define DropZones
+    //             this.makeDropZones(modal.coord.width, modal.coord.height);
+    //         this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
+    //    }
 }   }
                 
 

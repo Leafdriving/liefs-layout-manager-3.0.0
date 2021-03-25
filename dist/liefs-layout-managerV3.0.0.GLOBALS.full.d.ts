@@ -302,6 +302,8 @@ declare class Handler extends Base {
     static currentZindex: number;
     static renderAgain: boolean;
     static activeOffset: boolean;
+    static preRenderCallback: Function;
+    static postRenderCallback: Function;
     label: string;
     rootCell: DisplayCell;
     coord: Coord;
@@ -736,9 +738,10 @@ declare class Tree_ extends Base {
     topMargin: number;
     sideMargin: number;
     tabSize: number;
+    preRenderCallback: Function;
     onNodeCreation: (node: node_) => void;
-    traverse(traverseFunction: (node: node_) => void, node?: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
     constructor(...Arguments: any);
+    traverse(traverseFunction: (node: node_) => void, node?: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
     newRoot(node: node_): void;
     root(...Arguments: any): node_;
     log(): void;

@@ -37,6 +37,8 @@ class Handler extends Base {
     static currentZindex:number;
     static renderAgain:boolean;
     static activeOffset: boolean;
+    static preRenderCallback: Function;
+    static postRenderCallback: Function
 
     label:string;
     rootCell:DisplayCell = undefined;
@@ -106,6 +108,7 @@ class Handler extends Base {
 
     static update(ArrayofHandlerInstances:Handler[] = Handler.activeInstances, instanceNo:number = 0, derender:boolean = false){
         // console.log("Update Fired");
+        if (Handler.preRenderCallback) Handler.preRenderCallback();
         Handler.updateScreenSize();
         Handler.renderAgain = false;
         Pages.activePages = [];
@@ -129,6 +132,7 @@ class Handler extends Base {
         if (Pages.activePages.length) Pages.applyOnclick();
         Observe.update();
         if (Handler.renderAgain) console.log("REDNDER AGAIN!");
+        if (Handler.postRenderCallback) Handler.postRenderCallback();
     }
 
     static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){

@@ -949,6 +949,8 @@ class Handler extends Base {
     }
     static update(ArrayofHandlerInstances = Handler.activeInstances, instanceNo = 0, derender = false) {
         // console.log("Update Fired");
+        if (Handler.preRenderCallback)
+            Handler.preRenderCallback();
         Handler.updateScreenSize();
         Handler.renderAgain = false;
         Pages.activePages = [];
@@ -975,6 +977,8 @@ class Handler extends Base {
         Observe.update();
         if (Handler.renderAgain)
             console.log("REDNDER AGAIN!");
+        if (Handler.postRenderCallback)
+            Handler.postRenderCallback();
     }
     static renderDisplayCell(displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
         if (displaycell.coord.offset)
@@ -2632,6 +2636,9 @@ class Tree_ extends Base {
             this.derender(node.children[index]);
     }
     render(displaycell, parentDisplaygroup, index, derender) {
+        if (this.preRenderCallback)
+            this.preRenderCallback();
+        // console.log("render Tree")
         let THIS = this;
         let PDScoord = THIS.parentDisplayCell.coord;
         let x_ = PDScoord.x + THIS.sideMargin - this.offsetx;
@@ -3252,13 +3259,13 @@ class Dockable extends Base {
                 this.makeDropZones(toolbar.width, toolbar.height);
             this.openCloseDropZones(toolbar.modal, toolbar.width, toolbar.height);
         }
-        if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
-            let modal = Modal.movingInstace;
-            // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
-            if (!this.dropZones) // define DropZones
-                this.makeDropZones(modal.coord.width, modal.coord.height);
-            this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
-        }
+        //    if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
+        //         let modal = Modal.movingInstace;
+        //         // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
+        //         if (!this.dropZones)                                        // define DropZones
+        //             this.makeDropZones(modal.coord.width, modal.coord.height);
+        //         this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
+        //    }
     }
 }
 Dockable.labelNo = 0;

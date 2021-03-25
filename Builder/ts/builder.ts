@@ -15,18 +15,23 @@ class Builder extends Base {
     }
     // static handlerTree:Tree_ = new Tree_('Handlers')
     static makeHandlerTree(){
-        let node = new node_();
+        let rootnode = new node_("Handlers");
         for (let index = 0; index < Handler.activeInstances.length; index++) {
             const handler = Handler.activeInstances[index];
-            if (handler.label != "Main Window") {
-                node = node.newSibling(handler.label, handler);
+            //if (handler.label != "Main Window") {
+                let node = rootnode.newChild(handler.label, handler);
                 Builder.makeDisplayCell(node, handler.rootCell);
-            }
+            //}
         }
         //Builder.handlerTree.newRoot(node);
         // Builder.handlerTree.rootNode = node;
         // Handler.update();
-        return node;
+        
+        //let tree = (<Tree_>Tree_.byLabel("HandlerTree"))
+        //tree.rootNode = rootnode;
+        //tree.render(undefined, undefined, undefined, false)
+        
+        return rootnode;
     }
     static makeDisplayCell(node:node_, displaycell:DisplayCell){
         if (displaycell.htmlBlock) {
@@ -64,6 +69,36 @@ class Builder extends Base {
                 false,
             );
     }
+    static onNodeCreation(node:node_){
+        let nodeLabel = I(`${node.label}_node`, `${node.label}`,
+                            node.ParentNodeTree.css,
+                            node.ParentNodeTree.events);
+        nodeLabel.coord.hideWidth = true;
+        let dataObj = node.Arguments[1];
+        let dataObjType = BaseF.typeof(dataObj);
+        let typeIcon:string;
+        if (dataObjType == "DisplayGroup")
+            typeIcon = ( (<DisplayGroup>dataObj).ishor ) ? bCss.horSVG("bookIcon"):bCss.verSVG("bookIcon");
+        else
+            typeIcon = {
+                    Handler:bCss.bookSVG("bookIcon"),
+                    HtmlBlock:bCss.htmlSVG("bookIcon"),
+                }[dataObjType];
+        node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
+
+                                (node.children.length) ?
+                                    I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`,
+                                        (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon,
+                                        node.ParentNodeTree.iconClass,
+                                        events({onclick:function(mouseEvent:MouseEvent){ Tree_.toggleCollapse(this, node,mouseEvent) }})
+                                    )
+                                :   I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`),
+
+                                I(`${node.label}_typeIcon`, `${node.ParentNodeTree.height}px`, typeIcon),
+                                nodeLabel
+                            );
+                        }
+
     static mainHandler: Handler;
     static buildMainHandler() {
         // Builder.makeHandlerTree();
@@ -77,9 +112,10 @@ class Builder extends Base {
           dockable(v("Main_Dockable",
             Builder.TOOLBAR,
             dockable(h("Tree_Body", 5,
-                tree("HandlerTree",
+                tree("HandlerTree", Builder.onNodeCreation,
                     dragbar(I("Main_tree", "300px", bCss.bgLight),50,800),
                     bCss.treeItem,
+                    //{preRenderCallback: function(){if (!Handler.firstRun)Builder.updateTree()}}
                     ),
                     bindHandler(I("Main_body"), Builder.clientHandler)
             ))
@@ -102,6 +138,7 @@ Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
 Builder.updateTree()
+// Handler.preRenderCallback = function(){ if (!Handler.firstRun)Builder.updateTree() }
 
 
 // class RenderTree extends Base {
