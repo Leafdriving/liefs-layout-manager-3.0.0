@@ -186,6 +186,7 @@ class Coord extends Base {
         return Coord.clipStyleString(this, COORD);
     }
     newClipStyleString(WITHIN: Coord|Within = this.within) {
+        //console.log("WITHIN",WITHIN)
         return Coord.clipStyleString(WITHIN, this);
     }
     static clipStyleString(WITHIN:Coord|Within, COORD: Coord) {

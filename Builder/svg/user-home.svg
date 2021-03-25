@@ -184,9 +184,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.28"
-     inkscape:cx="85.329833"
-     inkscape:cy="167.93619"
+     inkscape:zoom="2.56"
+     inkscape:cx="102.49804"
+     inkscape:cy="114.39109"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -248,102 +248,6 @@
        inkscape:r_cx="true"
        sodipodi:nodetypes="cccccccccscccccc"
        d="m 3.6162853,20.169999 c 0.00841,0.166171 -0.096396,0.276858 -0.2659294,0.221374 C 3.1808225,20.335889 3.0640545,20.225202 3.0553677,20.059087 L 2.5499057,2.98334 C 2.5414991,2.8174494 2.637895,2.7168502 2.8046263,2.7168502 l 7.6918877,-0.02522 c 0.167011,0 0.497083,0.1600059 0.604268,0.7041103 L 11.406923,4.895285 C 11.179103,4.64729 11.183587,4.6397241 11.066651,4.2791081 L 10.85004,3.6085402 C 10.733188,3.2210792 10.477767,3.1655395 10.311372,3.1655395 H 3.4376166 c -0.166451,0 -0.271814,0.1109673 -0.2631271,0.2771381 L 3.6747673,20.22551 3.6162013,20.17003 Z" />
-    <g
-       id="g3950"
-       transform="matrix(0.53680195,0,0,0.53680195,0.4022101,-0.5291974)">
-      <path
-         id="path9784"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.0422,18.562 h 30.447" />
-      <path
-         id="path9778"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 4.9807,12.562 h 30.507" />
-      <path
-         id="path9788"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.2266,22.562 h 30.265" />
-      <path
-         id="path9798"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.3862,32.562 h 30.109" />
-      <path
-         id="path9800"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.5091,34.562 h 29.988" />
-      <path
-         id="path9782"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.0422,16.562 h 30.447" />
-      <path
-         id="path9786"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.1959,20.562 h 30.296" />
-      <path
-         id="path9780"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.0114,14.562 h 30.478" />
-      <g
-         id="g220"
-         style="fill:#ffffff;fill-opacity:0.75706"
-         inkscape:r_cy="true"
-         inkscape:r_cx="true"
-         inkscape:export-ydpi="74.800003"
-         inkscape:export-filename="/home/jimmac/ximian_art/icons/nautilus/suse93/gnome-fs-directory.png"
-         transform="matrix(1.0534,0,0.055154,1.0401,-9.1633,2.4587)"
-         inkscape:export-xdpi="74.800003">
-        <path
-           id="path221"
-           style="fill:#ffffff;fill-opacity:0.50847"
-           inkscape:r_cy="true"
-           d="M 42.417,8.5152 C 42.422,8.4181 42.289,8.2682 42.182,8.2682 L 29.151,8.2661 c 0,0 0.911,0.5879 2.201,0.5962 l 11.054,0.071 c 0.011,-0.2117 0.003,-0.256 0.011,-0.4181 z"
-           sodipodi:nodetypes="cscscs"
-           inkscape:r_cx="true" />
-      </g>
-      <path
-         id="path9790"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.2266,24.562 h 30.265" />
-      <path
-         id="path9796"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.3247,30.562 h 30.169" />
-      <path
-         id="path9794"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.3247,28.562 h 30.169" />
-      <path
-         id="path9802"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.5091,36.562 h 29.988" />
-      <path
-         id="path9792"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 5.2881,26.562 h 30.205" />
-      <path
-         id="path9774"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 4.8738,8.5625 h 14.783" />
-      <path
-         id="path9776"
-         sodipodi:nodetypes="cc"
-         style="color:#000000;opacity:0.11364;fill:#729fcf;stroke:#000000;stroke-linecap:round;stroke-linejoin:round"
-         d="m 4.9221,10.562 h 15.281" />
-    </g>
     <path
        id="path233"
        style="color:#000000;display:block;fill:url(#linearGradient9772);stroke:#3465a4;stroke-width:0.536785;stroke-linejoin:round"

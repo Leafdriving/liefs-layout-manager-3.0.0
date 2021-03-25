@@ -144,18 +144,13 @@ class Handler extends Base {
             if (!derender) Pages.activePages.push(pages);
             let evalCurrentPage:number = pages.eval();
             if (evalCurrentPage != pages.previousPage){ // derender old page here
-                // console.log("pages.previousPage", pages.previousPage)
-                // console.log(pages.displaycells[pages.previousPage])
                 pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
                 pages.currentPage = pages.previousPage = evalCurrentPage;
                 Pages.pushHistory();
             }
-            // console.log("evalCurrentPage",evalCurrentPage);
             pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
-            /// new trial
-            // pages.dim = pages.displaycells[evalCurrentPage].dim
-            // new trial
+
             Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
@@ -163,7 +158,6 @@ class Handler extends Base {
         else {
             let htmlBlock = displaycell.htmlBlock;
             let displaygroup = displaycell.displaygroup;
-            // let overlays = displaycell.overlays;
             if (htmlBlock) {
                 Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup)
             }
@@ -171,30 +165,24 @@ class Handler extends Base {
                 displaygroup.coord.copy(displaycell.coord);
                 if (displaygroup && htmlBlock) {
                     Handler.currentZindex += Handler.zindexIncrement;
-                    // displaycell.coord.applyMargins( pf.uis0(htmlBlock.marginLeft),
-                    //                                 pf.uis0(htmlBlock.marginTop),
-                    //                                 pf.uis0(htmlBlock.marginRight),
-                    //                                 pf.uis0(htmlBlock.marginBottom));
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
         }
         if (displaycell.overlays.length) {
             for (let ovlay of displaycell.overlays) {
-                // console.log("rendering",displaycell.label)
                 ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
             }
         }
-        // if (derender) displaycell.coord.within.reset();
         if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
         if (displaycell.coord.offset) Handler.activeOffset = false;
+        //if (displaycell.label == "Main_toolbar_handle_h_DisplayCell") {console.clear();displaycell.coord.log();}
     }
     static renderDisplayGroup(parentDisplaycell: DisplayCell, derender:boolean) {
         let displaygroup: DisplayGroup = parentDisplaycell.displaygroup;
         let ishor:boolean = displaygroup.ishor;
         let coord:Coord = displaygroup.coord;
         let cellArraylength = displaygroup.cellArray.length;
-        // let overlay = displaygroup.overlay;
 
         let marginpx = (ishor) ? displaygroup.marginHor*(cellArraylength-1): displaygroup.marginVer*(cellArraylength-1);
         let maxpx:number = (ishor) ? coord.width - marginpx : coord.height - marginpx;
@@ -292,7 +280,7 @@ class Handler extends Base {
             height = (ishor) ? coord.height : cellsizepx;
 
             displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
-            displaycell.coord.cropWithin( displaygroup.coord.within );
+            displaycell.coord.cropWithin( displaygroup.coord.within ); /// is it within? or coord?
 
             Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
             

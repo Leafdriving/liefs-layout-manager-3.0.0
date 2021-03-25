@@ -303,14 +303,18 @@ class Tree_ extends Base {
         let x_= PDScoord.x + THIS.sideMargin - this.offsetx;
         let y_= PDScoord.y + THIS.topMargin;
         let max_x2:number = 0;
+        // let [sx, sy]=pf.viewport()
+        //console.log("parentDisplayCell", THIS.parentDisplayCell.label);
+        //PDScoord.log();
 
         this.traverse(
             function traverseFunction(node:node_){
                 let x = x_ + (node.depth()-1)*THIS.tabSize;
                 let y = y_;
-                let width = PDScoord.width - x;
+                let width = PDScoord.width// - x;
                 let height = THIS.height;
                 node.displaycell.coord.assign(x, y, width, height,
+                                            //undefined, undefined, undefined, undefined,
                                             PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
                                             Handler.currentZindex + Handler.zindexIncrement);
                 y_ += THIS.height;

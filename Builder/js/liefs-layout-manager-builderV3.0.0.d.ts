@@ -1,4 +1,18 @@
+declare class Properties extends Base {
+    static labelNo: number;
+    static instances: Properties[];
+    static activeInstances: Properties[];
+    static defaults: {
+        tag: string;
+    };
+    static argMap: {
+        string: string[];
+        number: string[];
+    };
+    constructor(...Arguments: any);
+}
 declare class bCss {
+    static bgwhite: Css;
     static bgLight: Css;
     static bgGreen: Css;
     static bgBlue: Css;
@@ -17,6 +31,7 @@ declare class bCss {
     static htmlSVG(classname: string): string;
     static horSVG(classname: string): string;
     static verSVG(classname: string): string;
+    static homeSVG(classname: string): string;
 }
 declare class Builder extends Base {
     static labelNo: number;
@@ -31,9 +46,19 @@ declare class Builder extends Base {
     static makeDisplayCell(node: node_, displaycell: DisplayCell): void;
     static clientHandler: Handler;
     static buildClientHandler(): void;
+    static propertiesModal: winModal;
+    static hoverModal: Modal;
+    static xboxSVG(boundCoord: Coord, Boxes: Coord[]): string;
+    static onClickTree(mouseEvent: MouseEvent, el: HTMLElement): void;
+    static onHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
+    static onLeaveHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
     static onNodeCreation(node: node_): void;
     static mainHandler: Handler;
     static buildMainHandler(): void;
     static updateTree(): void;
     static TOOLBAR: DisplayCell;
 }
+declare let outside: Modal;
+declare let inside: Modal;
+declare let show: (coord: Coord) => void;
+declare let hide: () => void;

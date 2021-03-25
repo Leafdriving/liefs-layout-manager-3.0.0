@@ -37,7 +37,9 @@
         // "../ts/Tree.ts",
         // "../ts/Observe.ts",
         // "../ts/ToolBar.ts",
+        "ts/Properties.ts",
         "ts/bCss.ts",
-        "ts/builder.ts"
+        "ts/builder.ts",
+        
     ]
 }

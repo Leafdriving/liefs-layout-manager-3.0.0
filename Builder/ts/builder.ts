@@ -35,17 +35,17 @@ class Builder extends Base {
     }
     static makeDisplayCell(node:node_, displaycell:DisplayCell){
         if (displaycell.htmlBlock) {
-            let htmlnode = node.newChild(displaycell.htmlBlock.label, displaycell.htmlBlock);
+            let htmlnode = node.newChild(displaycell.htmlBlock.label, displaycell.htmlBlock, displaycell);
             // htmlnode.log();
         }
         if (displaycell.pages) {
-            let pagenode = node.newChild(displaycell.pages.label, displaycell.pages);
+            let pagenode = node.newChild(displaycell.pages.label, displaycell.pages, displaycell);
             // pagenode.log();
             for (let index = 0; index < displaycell.pages.displaycells.length; index++)
                 Builder.makeDisplayCell(pagenode, displaycell.pages.displaycells[index]);
         }
         if (displaycell.displaygroup) {
-            let groupnode = node.newChild(displaycell.displaygroup.label, displaycell.displaygroup);
+            let groupnode = node.newChild(displaycell.displaygroup.label, displaycell.displaygroup, displaycell);
             // groupnode.log()
             for (let index = 0; index < displaycell.displaygroup.cellArray.length; index++)
                 Builder.makeDisplayCell(groupnode, displaycell.displaygroup.cellArray[index]);
@@ -69,6 +69,59 @@ class Builder extends Base {
                 false,
             );
     }
+    static propertiesModal: winModal;
+    static hoverModal=new Modal("BuilderHover",I("BuilderHoverDummy" /*,bCss.bgwhite*/ ));
+    static xboxSVG(boundCoord:Coord, Boxes:Coord[]){
+        let top:string = `<svg width="${boundCoord.width}" height="${boundCoord.height}">`;
+        let bottom:string = `</svg>`;
+        let mid:string = "";
+        for (let index = 0; index < Boxes.length; index++) {
+            const coord = Boxes[index];
+            let offset = 1;
+            let x = coord.x -boundCoord.x + offset;
+            let y = coord.y - boundCoord.y + offset;
+            let width = coord.width- offset*2;
+            let height = coord.height-offset*2;
+            mid += `<rect x="${x}" y="${y}" width="${width}" height="${height}" style="fill-opacity:0;stroke-width:3;stroke:red" />`
+                  +`<line x1="${x}" y1="${y}" x2="${x+width}" y2="${height}" style="stroke:red;stroke-width:3" />`
+                  +`<line x1="${x+width}" y1="${y}" x2="${x}" y2="${height}" style="stroke:red;stroke-width:3" />`
+        }
+        return top+mid+bottom
+    }
+    static onClickTree(mouseEvent:MouseEvent, el:HTMLElement){
+        let node = <node_>node_.byLabel(el.id.slice(0, -5));
+        console.log(node);
+        if (Builder.propertiesModal == undefined)
+            Builder.propertiesModal = new winModal("PropertiesModal",{headerText:"Properties:"}, 100,200);
+        
+    }
+    static onHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
+        let node = <node_>node_.byLabel(el.id.slice(0, -5));
+        let coord = node.Arguments[ node.Arguments.length-1 ].coord;
+        let type = BaseF.typeof(node.Arguments[1]);
+        // console.log(type)
+        if (coord == undefined) {
+            let [width, height] = pf.viewport();
+            coord = new Coord(0, 0, width, height)
+        }
+        Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+        let coordArray:Coord[] = [];
+        if (type != "DisplayGroup") coordArray.push(coord);
+        else {
+            let displaygroup = (<DisplayGroup>node.Arguments[1]);
+            for (let index = 0; index < displaygroup.cellArray.length; index++) {
+                const displaycell = displaygroup.cellArray[index];
+                coordArray.push(displaycell.coord);
+            }
+        }
+        Builder.hoverModal.rootDisplayCell.htmlBlock.innerHTML = Builder.xboxSVG(coord, coordArray)
+        
+        Builder.hoverModal.show();
+    }
+    static onLeaveHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
+        //let node = node_.byLabel(el.id.slice(0, -5));
+        Builder.hoverModal.hide();
+    }
     static onNodeCreation(node:node_){
         let nodeLabel = I(`${node.label}_node`, `${node.label}`,
                             node.ParentNodeTree.css,
@@ -81,7 +134,7 @@ class Builder extends Base {
             typeIcon = ( (<DisplayGroup>dataObj).ishor ) ? bCss.horSVG("bookIcon"):bCss.verSVG("bookIcon");
         else
             typeIcon = {
-                    Handler:bCss.bookSVG("bookIcon"),
+                    Handler:bCss.homeSVG("bookIcon"),
                     HtmlBlock:bCss.htmlSVG("bookIcon"),
                 }[dataObjType];
         node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
@@ -101,7 +154,21 @@ class Builder extends Base {
 
     static mainHandler: Handler;
     static buildMainHandler() {
-        // Builder.makeHandlerTree();
+        let treePages = P("TreePages",
+            // page 1
+            tree("HandlerTree", Builder.onNodeCreation,
+                I("Main_tree",  bCss.bgLight),
+                bCss.treeItem,
+                events({onmouseover:function(mouseEvent:MouseEvent){Builder.onHoverTree(mouseEvent, this)},
+                        onmouseleave:function(mouseEvent:MouseEvent){Builder.onLeaveHoverTree(mouseEvent, this)},
+                        onclick:function(mouseEvent:MouseEvent){Builder.onClickTree(mouseEvent, this)},
+                }),
+            ),
+            // page 2
+            I("Dummy2", "Dummy2"),
+            I("Dummy3", "Dummy3"),
+        )
+        let treePagesSelector = pageselect("TreePagesSelector", "20px", treePages)
         Builder.mainHandler = H("Main Window", 4,
         v("Main_v",
           h("MenuBar", "20px",
@@ -112,11 +179,24 @@ class Builder extends Base {
           dockable(v("Main_Dockable",
             Builder.TOOLBAR,
             dockable(h("Tree_Body", 5,
-                tree("HandlerTree", Builder.onNodeCreation,
-                    dragbar(I("Main_tree", "300px", bCss.bgLight),50,800),
-                    bCss.treeItem,
-                    //{preRenderCallback: function(){if (!Handler.firstRun)Builder.updateTree()}}
-                    ),
+
+                        v("TreeTops", "300px", 5,
+                            //pageselect("name","20px", new Pages("pagename",I(),I())),
+                            treePagesSelector,
+                            treePages,
+
+                            // tree("HandlerTree", Builder.onNodeCreation,
+                            //     /*dragbar(*/I("Main_tree", /*"300px",*/ bCss.bgLight), /*50,800),*/
+                            //     bCss.treeItem,
+                            //     events({onmouseover:function(mouseEvent:MouseEvent){Builder.onHoverTree(mouseEvent, this)},
+                            //             onmouseleave:function(mouseEvent:MouseEvent){Builder.onLeaveHoverTree(mouseEvent, this)},
+                            //             onclick:function(mouseEvent:MouseEvent){Builder.onClickTree(mouseEvent, this)},
+                            //     }),
+                            //     ),
+
+
+                        ),
+
                     bindHandler(I("Main_body"), Builder.clientHandler)
             ))
           ))
@@ -138,6 +218,19 @@ Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
 Builder.updateTree()
+
+let outside = new Modal("outside",I("outside_", css("outside","background:red;opacity:0.25")));
+let inside = new Modal("inside", I("inside_", css("inside","background:green;opacity:0.25")));
+let show = function(coord:Coord) {
+    outside.setSize(coord.x, coord.y, coord.width, coord.height);
+    inside.setSize(coord.within.x, coord.within.y, coord.within.width, coord.within.height);
+    outside.show()
+    inside.show()
+}
+let hide = function(){
+    outside.hide();
+    inside.hide();
+}
 // Handler.preRenderCallback = function(){ if (!Handler.firstRun)Builder.updateTree() }
 
 

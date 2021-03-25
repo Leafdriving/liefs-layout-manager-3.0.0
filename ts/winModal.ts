@@ -78,7 +78,8 @@ class winModal extends Base {
     static activeInstances:winModal[] = [];
     static defaults = {headerHeight: 15, buttonsHeight: 50, footerHeight:20, headerText:"Window", bodyText:"Body"}
     static argMap = {
-        string : ["label"],
+        string : ["label", "headerText"],
+        DisplayCell : ["body"]
     }
     retArgs:ArgsObj;   // <- this will appear
     label:string;

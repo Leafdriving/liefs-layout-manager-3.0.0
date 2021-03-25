@@ -35,12 +35,12 @@ class Drag extends Base {
 
             window.onmousemove = function(e:any){
                 THIS.mouseDiff = {x: e.clientX - THIS.mousePos["x"], y: e.clientY - THIS.mousePos["y"]}
-                THIS.onMove(THIS.mouseDiff);
+                THIS.onMove(THIS.mouseDiff, e);
             }
 
             window.onmouseup = function(e:any){
                 THIS.reset()
-                THIS.onUp(THIS.mouseDiff);
+                THIS.onUp(THIS.mouseDiff, e);
             }
         }
         Drag.makeLabel(this);
@@ -78,15 +78,15 @@ class Swipe extends Base {
 }
 function swipe(...Arguments:any){
     let swipeObj=new Swipe(...Arguments);
-    let retObj: object = {onMove :function(offset:object){let dragObj = this;
+    let retObj: object = {onMove :function(offset:object, e:MouseEvent){let dragObj = this;
                             if (swipeObj["left"] && (offset["x"] < -swipeObj.swipeDistance)){
-                                swipeObj["left"]();dragObj.reset();}
+                                swipeObj["left"](offset, e);dragObj.reset();}
                             if (swipeObj["right"] && (offset["x"] > swipeObj.swipeDistance)){
-                                swipeObj["right"]();dragObj.reset();}
+                                swipeObj["right"](offset, e);dragObj.reset();}
                             if (swipeObj["up"] && (offset["y"] < -swipeObj.swipeDistance)){
-                                swipeObj["up"]();dragObj.reset();}
+                                swipeObj["up"](offset, e);dragObj.reset();}
                             if (swipeObj["down"] && (offset["y"] > swipeObj.swipeDistance)){
-                                swipeObj["down"]();dragObj.reset();}                                                                                      
+                                swipeObj["down"](offset, e);dragObj.reset();}                                                                                      
                             }}
     return retObj;
 }

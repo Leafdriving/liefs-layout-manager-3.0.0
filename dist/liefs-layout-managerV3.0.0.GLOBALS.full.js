@@ -534,6 +534,7 @@ class Coord extends Base {
         return Coord.clipStyleString(this, COORD);
     }
     newClipStyleString(WITHIN = this.within) {
+        //console.log("WITHIN",WITHIN)
         return Coord.clipStyleString(WITHIN, this);
     }
     static clipStyleString(WITHIN, COORD) {
@@ -993,18 +994,12 @@ class Handler extends Base {
                 Pages.activePages.push(pages);
             let evalCurrentPage = pages.eval();
             if (evalCurrentPage != pages.previousPage) { // derender old page here
-                // console.log("pages.previousPage", pages.previousPage)
-                // console.log(pages.displaycells[pages.previousPage])
                 pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
                 pages.currentPage = pages.previousPage = evalCurrentPage;
                 Pages.pushHistory();
             }
-            // console.log("evalCurrentPage",evalCurrentPage);
             pages.displaycells[evalCurrentPage].coord.copy(displaycell.coord);
-            /// new trial
-            // pages.dim = pages.displaycells[evalCurrentPage].dim
-            // new trial
             Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
             pages.currentPage = evalCurrentPage;
             pages.addSelected();
@@ -1012,7 +1007,6 @@ class Handler extends Base {
         else {
             let htmlBlock = displaycell.htmlBlock;
             let displaygroup = displaycell.displaygroup;
-            // let overlays = displaycell.overlays;
             if (htmlBlock) {
                 Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup);
             }
@@ -1020,32 +1014,26 @@ class Handler extends Base {
                 displaygroup.coord.copy(displaycell.coord);
                 if (displaygroup && htmlBlock) {
                     Handler.currentZindex += Handler.zindexIncrement;
-                    // displaycell.coord.applyMargins( pf.uis0(htmlBlock.marginLeft),
-                    //                                 pf.uis0(htmlBlock.marginTop),
-                    //                                 pf.uis0(htmlBlock.marginRight),
-                    //                                 pf.uis0(htmlBlock.marginBottom));
                 }
                 Handler.renderDisplayGroup(displaycell, derender);
             }
         }
         if (displaycell.overlays.length) {
             for (let ovlay of displaycell.overlays) {
-                // console.log("rendering",displaycell.label)
                 ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
             }
         }
-        // if (derender) displaycell.coord.within.reset();
         if (displaycell.postRenderCallback)
             displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
         if (displaycell.coord.offset)
             Handler.activeOffset = false;
+        //if (displaycell.label == "Main_toolbar_handle_h_DisplayCell") {console.clear();displaycell.coord.log();}
     }
     static renderDisplayGroup(parentDisplaycell, derender) {
         let displaygroup = parentDisplaycell.displaygroup;
         let ishor = displaygroup.ishor;
         let coord = displaygroup.coord;
         let cellArraylength = displaygroup.cellArray.length;
-        // let overlay = displaygroup.overlay;
         let marginpx = (ishor) ? displaygroup.marginHor * (cellArraylength - 1) : displaygroup.marginVer * (cellArraylength - 1);
         let maxpx = (ishor) ? coord.width - marginpx : coord.height - marginpx;
         let totalFixedpx = displaygroup.totalPx();
@@ -1133,7 +1121,7 @@ class Handler extends Base {
             width = (ishor) ? cellsizepx : coord.width;
             height = (ishor) ? coord.height : cellsizepx;
             displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
-            displaycell.coord.cropWithin(displaygroup.coord.within);
+            displaycell.coord.cropWithin(displaygroup.coord.within); /// is it within? or coord?
             Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
             x += (ishor) ? width + displaygroup.marginHor : 0;
             y += (ishor) ? 0 : height + displaygroup.marginVer;
@@ -1332,6 +1320,7 @@ class DefaultTheme {
 }
 DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false);
 DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
+DefaultTheme.bgLight = css("bgLight", `background: #dcedf0`);
 // WinModal
 DefaultTheme.titleCss = css("modalTitle", `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
       border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;`, `cursor:pointer`, `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
@@ -1354,7 +1343,7 @@ DefaultTheme.closeSVG = `<svg class="closeIcon" width="100%" height="100%" versi
 DefaultTheme.horCss = css("db_hor", "background-color:black;cursor: ew-resize;");
 DefaultTheme.verCss = css("db_ver", "background-color:black;cursor: ns-resize;");
 // context
-DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "contxt:hover", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
 // static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
 // static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
 // static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");                         
@@ -1528,6 +1517,80 @@ function P(...Arguments) {
     return displaycell;
 }
 // export {P, Pages}
+// interface menuObject {
+//     [key: string]: ()=>void | menuObject
+// }
+class PageSelect extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        PageSelect.makeLabel(this);
+        if (this.whoops)
+            this.pages = this.whoops.pages;
+        this.build();
+    }
+    build() {
+        let THIS = this;
+        this.pages.evalFunction;
+        if (!this.menuObj) {
+            let obj = {};
+            let THIS = this;
+            for (let index = 0; index < this.pages.displaycells.length; index++) {
+                let displaycell = this.pages.displaycells[index];
+                obj[displaycell.label] = function () { THIS.pages.currentPage = index; Handler.update(); };
+            }
+            this.menuObj = { menuObj: obj };
+        }
+        let label = this.pages.displaycells[0].label;
+        let clickableName = I(`${this.label}_0`, label, DefaultTheme.context /*,events({onclick:contextObjFunction})*/);
+        let downArrow = I(`${this.label}_arrow`, "20px", DefaultTheme.downArrowSVG("scrollArrows"));
+        this.rootDisplayCell = h("Prop_h", clickableName, downArrow);
+        this.rootDisplayCell.dim = this.dim;
+        let contextObjFunction = hMenuBar(this.menuObj, { launchcell: this.rootDisplayCell, css: DefaultTheme.context });
+        let fullEvents = events({ ondrag: swipe({ left: THIS.breakFree.bind(THIS),
+                right: THIS.breakFree.bind(THIS),
+                up: THIS.breakFree.bind(THIS),
+                down: THIS.breakFree.bind(THIS),
+            }, 10),
+            onclick: contextObjFunction,
+        });
+        clickableName.htmlBlock.events = fullEvents;
+        downArrow.htmlBlock.events = events({ onclick: contextObjFunction });
+    }
+    breakFree(offset, mouseEvent) {
+        //console.log(offset,mouseEvent)
+        let index = this.pages.currentPage;
+        let displaycell = this.pages.displaycells[index];
+        this.pages.displaycells.splice(index, 1);
+        this.pages.currentPage = 0;
+        let x = mouseEvent.clientX - 10;
+        let y = mouseEvent.clientY - 10;
+        let width = displaycell.coord.width;
+        let height = displaycell.coord.height;
+        let [sw, sh] = pf.viewport();
+        displaycell.coord.within.x = 0;
+        displaycell.coord.within.y = 0;
+        displaycell.coord.within.width = sw;
+        displaycell.coord.within.height = sh;
+        console.log(displaycell);
+        let newWinModal = winmodal({ body: displaycell, headerText: displaycell.label }, x, y, width, height);
+        Handler.update();
+    }
+}
+PageSelect.labelNo = 0;
+PageSelect.instances = [];
+PageSelect.activeInstances = [];
+PageSelect.defaults = { cellArray: [], ishor: false };
+PageSelect.argMap = {
+    string: ["label"],
+    Pages: ["pages"],
+    dim: ["dim"],
+    DisplayCell: ["whoops"]
+};
+function pageselect(...Arguments) {
+    let ps = new PageSelect(...Arguments);
+    return ps.rootDisplayCell;
+}
 // import { Base } from './Base';
 class Drag extends Base {
     constructor(...Arguments) {
@@ -1554,11 +1617,11 @@ class Drag extends Base {
             window.addEventListener('selectstart', Drag.disableSelect);
             window.onmousemove = function (e) {
                 THIS.mouseDiff = { x: e.clientX - THIS.mousePos["x"], y: e.clientY - THIS.mousePos["y"] };
-                THIS.onMove(THIS.mouseDiff);
+                THIS.onMove(THIS.mouseDiff, e);
             };
             window.onmouseup = function (e) {
                 THIS.reset();
-                THIS.onUp(THIS.mouseDiff);
+                THIS.onUp(THIS.mouseDiff, e);
             };
         };
         Drag.makeLabel(this);
@@ -1599,22 +1662,22 @@ Swipe.argMap = {
 };
 function swipe(...Arguments) {
     let swipeObj = new Swipe(...Arguments);
-    let retObj = { onMove: function (offset) {
+    let retObj = { onMove: function (offset, e) {
             let dragObj = this;
             if (swipeObj["left"] && (offset["x"] < -swipeObj.swipeDistance)) {
-                swipeObj["left"]();
+                swipeObj["left"](offset, e);
                 dragObj.reset();
             }
             if (swipeObj["right"] && (offset["x"] > swipeObj.swipeDistance)) {
-                swipeObj["right"]();
+                swipeObj["right"](offset, e);
                 dragObj.reset();
             }
             if (swipeObj["up"] && (offset["y"] < -swipeObj.swipeDistance)) {
-                swipeObj["up"]();
+                swipeObj["up"](offset, e);
                 dragObj.reset();
             }
             if (swipeObj["down"] && (offset["y"] > swipeObj.swipeDistance)) {
-                swipeObj["down"]();
+                swipeObj["down"](offset, e);
                 dragObj.reset();
             }
         } };
@@ -2209,7 +2272,7 @@ class Context extends Base {
             x = mouseEvent.clientX - Context.subOverlapPx;
             y = mouseEvent.clientY - Context.subOverlapPx;
         }
-        this.coord.assign(x, y, this.width, this.height);
+        this.coord.assign(x, y, (this.launchcell) ? this.launchcell.coord.width : this.width, this.height);
         this.handler = H(this.displaycell, this.coord);
         let THIS = this;
         window.onmousemove = function (mouseEvent) { THIS.managePop(mouseEvent); };
@@ -2644,12 +2707,17 @@ class Tree_ extends Base {
         let x_ = PDScoord.x + THIS.sideMargin - this.offsetx;
         let y_ = PDScoord.y + THIS.topMargin;
         let max_x2 = 0;
+        // let [sx, sy]=pf.viewport()
+        //console.log("parentDisplayCell", THIS.parentDisplayCell.label);
+        //PDScoord.log();
         this.traverse(function traverseFunction(node) {
             let x = x_ + (node.depth() - 1) * THIS.tabSize;
             let y = y_;
-            let width = PDScoord.width - x;
+            let width = PDScoord.width; // - x;
             let height = THIS.height;
-            node.displaycell.coord.assign(x, y, width, height, PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height, Handler.currentZindex + Handler.zindexIncrement);
+            node.displaycell.coord.assign(x, y, width, height, 
+            //undefined, undefined, undefined, undefined,
+            PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height, Handler.currentZindex + Handler.zindexIncrement);
             y_ += THIS.height;
             Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender);
             let cellArray = node.displaycell.displaygroup.cellArray;
@@ -3582,7 +3650,8 @@ winModal.instances = [];
 winModal.activeInstances = [];
 winModal.defaults = { headerHeight: 15, buttonsHeight: 50, footerHeight: 20, headerText: "Window", bodyText: "Body" };
 winModal.argMap = {
-    string: ["label"],
+    string: ["label", "headerText"],
+    DisplayCell: ["body"]
 };
 function winmodal(...Arguments) {
     let overlay = new Overlay("winModal", ...Arguments);

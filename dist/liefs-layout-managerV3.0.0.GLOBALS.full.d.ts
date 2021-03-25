@@ -360,6 +360,7 @@ declare function css(...Arguments: any): Css;
 declare class DefaultTheme {
     static advisedDiv: Css;
     static advisedBody: Css;
+    static bgLight: Css;
     static titleCss: Css;
     static ScrollBar_whiteBG: Css;
     static ScrollBar_blackBG: Css;
@@ -414,6 +415,39 @@ declare class Pages extends Base {
     static popstate(event: PopStateEvent): void;
 }
 declare function P(...Arguments: any): DisplayCell;
+declare class PageSelect extends Base {
+    static labelNo: number;
+    static instances: PageSelect[];
+    static activeInstances: PageSelect[];
+    static defaults: {
+        cellArray: any[];
+        ishor: boolean;
+    };
+    static argMap: {
+        string: string[];
+        Pages: string[];
+        dim: string[];
+        DisplayCell: string[];
+    };
+    retArgs: ArgsObj;
+    dim: string;
+    label: string;
+    ishor: boolean;
+    rootDisplayCell: DisplayCell;
+    pages: Pages;
+    cellArray: DisplayCell[];
+    menuObj: {
+        [key: string]: any;
+    };
+    whoops: DisplayCell;
+    constructor(...Arguments: any);
+    build(): void;
+    breakFree(offset: {
+        x: number;
+        y: number;
+    }, mouseEvent: MouseEvent): void;
+}
+declare function pageselect(...Arguments: any): DisplayCell;
 declare class Drag extends Base {
     static instances: Drag[];
     static activeInstances: Drag[];
@@ -888,6 +922,7 @@ declare class winModal extends Base {
     };
     static argMap: {
         string: string[];
+        DisplayCell: string[];
     };
     retArgs: ArgsObj;
     label: string;

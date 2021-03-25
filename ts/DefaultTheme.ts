@@ -3,6 +3,8 @@ class DefaultTheme {
     static advisedDiv = new Css("div[llm]","position:absolute;", false);
     static advisedBody = new Css("body","overflow: hidden;", false);
 
+    static bgLight = css("bgLight", `background: #dcedf0`);
+
 // WinModal
   static titleCss = css("modalTitle",
     `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
@@ -49,7 +51,7 @@ static ScrollBar_blackBG = css("blackBG","background-color:black;color:white;cur
 
 // context
     static context = css("contxt","background-color:white;color: black;outline-style: solid;outline-width: 1px;",
-                         "contxt:hover","background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+                         "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
     // static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
     // static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
     // static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");                         
