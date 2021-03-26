@@ -441,11 +441,14 @@ declare class PageSelect extends Base {
     };
     whoops: DisplayCell;
     constructor(...Arguments: any);
+    updateContextLabel(THIS?: PageSelect, index?: number, mouseEvent?: PointerEvent): void;
+    buildMenuObj(): void;
     build(): void;
     breakFree(offset: {
         x: number;
         y: number;
     }, mouseEvent: MouseEvent): void;
+    acceptDrop(winModalInstance: winModal): void;
 }
 declare function pageselect(...Arguments: any): DisplayCell;
 declare class Drag extends Base {
@@ -627,7 +630,7 @@ declare class Context extends Base {
     launchcell: DisplayCell;
     parentContext: Context;
     constructor(...Arguments: any);
-    buildCell(): void;
+    changeMenuObject(menuObj?: object): void;
     popAll(): void;
     pop(): void;
     managePop(mouseEvent: MouseEvent): void;

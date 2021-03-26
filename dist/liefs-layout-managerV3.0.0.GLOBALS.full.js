@@ -994,8 +994,10 @@ class Handler extends Base {
                 Pages.activePages.push(pages);
             let evalCurrentPage = pages.eval();
             if (evalCurrentPage != pages.previousPage) { // derender old page here
-                pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
-                Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                if (pages.displaycells[pages.previousPage]) {
+                    pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
+                    Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                }
                 pages.currentPage = pages.previousPage = evalCurrentPage;
                 Pages.pushHistory();
             }
@@ -1529,24 +1531,38 @@ class PageSelect extends Base {
             this.pages = this.whoops.pages;
         this.build();
     }
+    updateContextLabel(THIS = this, index = this.pages.currentPage, mouseEvent = undefined) {
+        let displaycell = (DisplayCell.byLabel(`${this.label}_0`));
+        let newLabel = this.pages.displaycells[index].label;
+        displaycell.htmlBlock.innerHTML = newLabel;
+        THIS.pages.currentPage = index;
+        Handler.update();
+    }
+    buildMenuObj() {
+        let obj = {};
+        let THIS = this;
+        for (let index = 0; index < this.pages.displaycells.length; index++) {
+            let displaycell = this.pages.displaycells[index];
+            obj[displaycell.label] = function (mouseEvent) { THIS.updateContextLabel(THIS, index, mouseEvent); };
+        }
+        this.menuObj = { menuObj: obj };
+        let context = (Context.byLabel(`${this.label}_context`));
+        if (context)
+            context.changeMenuObject(this.menuObj.menuObj);
+        // if (context) context.menuObj = this.menuObj
+        // console.log(context)
+    }
     build() {
         let THIS = this;
         this.pages.evalFunction;
-        if (!this.menuObj) {
-            let obj = {};
-            let THIS = this;
-            for (let index = 0; index < this.pages.displaycells.length; index++) {
-                let displaycell = this.pages.displaycells[index];
-                obj[displaycell.label] = function () { THIS.pages.currentPage = index; Handler.update(); };
-            }
-            this.menuObj = { menuObj: obj };
-        }
+        if (!this.menuObj)
+            this.buildMenuObj();
         let label = this.pages.displaycells[0].label;
         let clickableName = I(`${this.label}_0`, label, DefaultTheme.context /*,events({onclick:contextObjFunction})*/);
         let downArrow = I(`${this.label}_arrow`, "20px", DefaultTheme.downArrowSVG("scrollArrows"));
         this.rootDisplayCell = h(`${this.label}_PageSelect`, clickableName, downArrow);
         this.rootDisplayCell.dim = this.dim;
-        let contextObjFunction = hMenuBar(this.menuObj, { launchcell: this.rootDisplayCell, css: DefaultTheme.context });
+        let contextObjFunction = hMenuBar(`${this.label}_context`, this.menuObj, { launchcell: this.rootDisplayCell, css: DefaultTheme.context });
         let fullEvents = events({ ondrag: swipe({ left: THIS.breakFree.bind(THIS),
                 right: THIS.breakFree.bind(THIS),
                 up: THIS.breakFree.bind(THIS),
@@ -1571,7 +1587,12 @@ class PageSelect extends Base {
         let overlay = new Overlay("winModal", { body: displaycell, headerText: displaycell.label }, x, y, width, height);
         let newWinModal = overlay.returnObj;
         newWinModal.rootDisplayCell.addOverlay(overlay);
+        this.updateContextLabel();
+        this.buildMenuObj();
         Handler.update();
+    }
+    acceptDrop(winModalInstance) {
+        console.log(`Hey, ${winModalInstance.label} was dropped on me!`);
     }
 }
 PageSelect.labelNo = 0;
@@ -2198,19 +2219,21 @@ class Context extends Base {
         this.buildBase(...Arguments);
         if (!this.menuObj)
             this.menuObj = Context.defaultObj;
-        this.height = Object.keys(this.menuObj).length * this.cellheight;
         Context.makeLabel(this);
-        this.buildCell();
+        this.changeMenuObject();
     }
-    buildCell() {
+    changeMenuObject(menuObj = this.menuObj) {
+        if (menuObj != this.menuObj)
+            this.menuObj = menuObj;
+        this.height = Object.keys(this.menuObj).length * this.cellheight;
         let THIS = this;
         let cellArray = [];
-        let numKeys = Object.keys(this.menuObj).length;
+        let numKeys = Object.keys(menuObj).length;
         let index = 0;
         let newContext;
         this.displaycell = v({ cellArray: [ /* filled at bottom */] });
-        for (let key in this.menuObj) {
-            let valueFunctionOrObject = this.menuObj[key];
+        for (let key in menuObj) {
+            let valueFunctionOrObject = menuObj[key];
             if (typeof (valueFunctionOrObject) == "function") {
                 cellArray.push(I(((index == numKeys - 1) ? "100%" : `${this.cellheight}px`), { innerHTML: key }, this.css, events({ onclick: function (mouseEvent) {
                         valueFunctionOrObject(mouseEvent);
@@ -3557,7 +3580,8 @@ class winModal extends Base {
         }
         if (winModal.validpageSelectInstance) {
             this.hightlightHeader(false);
-            console.log(`Dropped on ${winModal.validpageSelectInstance.label}`);
+            // console.log(`Dropped on ${winModal.validpageSelectInstance.label}`)
+            winModal.validpageSelectInstance.acceptDrop(this);
         }
     }
     buildClose() {

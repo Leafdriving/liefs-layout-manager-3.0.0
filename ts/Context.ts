@@ -47,20 +47,22 @@ class Context extends Base {
         super();this.buildBase(...Arguments);
 
         if (!this.menuObj) this.menuObj = Context.defaultObj;
-        this.height = Object.keys(this.menuObj).length*this.cellheight;
+        
         Context.makeLabel(this);
-        this.buildCell();
+        this.changeMenuObject();
     }
-    buildCell(){
+    changeMenuObject(menuObj = this.menuObj){
+        if (menuObj != this.menuObj) this.menuObj = menuObj;
+        this.height = Object.keys(this.menuObj).length*this.cellheight;
         let THIS = this;
         let cellArray:DisplayCell[] = [];
-        let numKeys = Object.keys(this.menuObj).length;
+        let numKeys = Object.keys(menuObj).length;
         let index = 0;
         let newContext: Context;
         this.displaycell = v({cellArray:[/* filled at bottom */]})
 
-        for (let key in this.menuObj) {
-            let valueFunctionOrObject = this.menuObj[key];
+        for (let key in menuObj) {
+            let valueFunctionOrObject = menuObj[key];
             if (typeof(valueFunctionOrObject) == "function"){
                 cellArray.push(I(   ( (index == numKeys-1)?"100%":`${this.cellheight}px`  ),
                                     {innerHTML: key},

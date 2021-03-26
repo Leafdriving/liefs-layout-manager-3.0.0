@@ -20,6 +20,7 @@ class Handler extends Base {
         addThisHandlerToStack: true,
         controlledBySomething: false,
         activeOffset: false,
+
     }
     static argMap = {
         string : ["label"],
@@ -40,6 +41,7 @@ class Handler extends Base {
     static preRenderCallback: Function;
     static postRenderCallback: Function
 
+
     label:string;
     rootCell:DisplayCell = undefined;
     coord:Coord; // =  new Coord();
@@ -48,6 +50,7 @@ class Handler extends Base {
     addThisHandlerToStack: boolean;
     preRenderCallback: Function;
     postRenderCallback: Function;
+    
 
 
     constructor(...Arguments: any) {
@@ -144,8 +147,10 @@ class Handler extends Base {
             if (!derender) Pages.activePages.push(pages);
             let evalCurrentPage:number = pages.eval();
             if (evalCurrentPage != pages.previousPage){ // derender old page here
-                pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
-                Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                if (pages.displaycells[pages.previousPage]) {
+                    pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
+                    Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                }
                 pages.currentPage = pages.previousPage = evalCurrentPage;
                 Pages.pushHistory();
             }

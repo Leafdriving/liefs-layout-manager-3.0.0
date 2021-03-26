@@ -127,7 +127,8 @@ class winModal extends Base {
         }
         if (winModal.validpageSelectInstance) {
             this.hightlightHeader(false);
-            console.log(`Dropped on ${winModal.validpageSelectInstance.label}`)
+            // console.log(`Dropped on ${winModal.validpageSelectInstance.label}`)
+            winModal.validpageSelectInstance.acceptDrop(this);
         }
     }
     buildClose(): DisplayCell {

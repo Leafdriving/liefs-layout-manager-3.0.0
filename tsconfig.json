@@ -21,6 +21,7 @@
         "ts/Css.ts",
         "ts/DefaultTheme.ts",
         "ts/Pages.ts",
+        "ts/PageSelect.ts",
         "ts/Drag.ts",
         "ts/Hold.ts",
         "ts/Overlay.ts",
