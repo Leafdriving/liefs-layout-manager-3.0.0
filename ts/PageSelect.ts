@@ -105,7 +105,6 @@ class PageSelect extends Base {
         this.updateContextLabel();
         this.buildMenuObj();
         Handler.update();
-
         //this.pages.displaycells[ index ];
     }
 }

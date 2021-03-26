@@ -1,4 +1,12 @@
 class bCss{
+    static editable = css("editable",`-moz-appearance: textfield;
+                                    -webkit-appearance: textfield;
+                                    background-color: white;
+                                    box-sizing: border-box;
+                                    border: 1px solid darkgray;
+                                    box-shadow: 1px 1px 1px 0 lightgray inset;  
+                                    font: -moz-field;
+                                    font: -webkit-small-control;`)
     static bgwhite = css("bgwhite", `background: white`);
     static bgLight = css("bgLight", `background: #dcedf0`);
     static bgGreen = css("bgGreen",`background: green;`);

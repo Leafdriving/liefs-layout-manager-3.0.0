@@ -785,6 +785,8 @@ declare class Tree_ extends Base {
     sideMargin: number;
     tabSize: number;
     preRenderCallback: Function;
+    scrollbarh: ScrollBar;
+    scrollbarv: ScrollBar;
     onNodeCreation: (node: node_) => void;
     constructor(...Arguments: any);
     traverse(traverseFunction: (node: node_) => void, node?: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
@@ -971,7 +973,7 @@ declare class winModal extends Base {
     render(displaycell: DisplayCell, displayGroup: DisplayGroup, index: number, derender: boolean): void;
     hightlightHeader(highlight?: boolean): void;
 }
-declare function winmodal(...Arguments: any): DisplayCell;
+declare function winmodal(...Arguments: any): winModal;
 interface custom1 {
     [key: string]: (value: any, CLASS: string) => string;
 }

@@ -2,16 +2,29 @@ declare class Properties extends Base {
     static labelNo: number;
     static instances: Properties[];
     static activeInstances: Properties[];
-    static defaults: {
-        tag: string;
-    };
+    static defaults: {};
     static argMap: {
         string: string[];
-        number: string[];
+        DisplayCell: string[];
+        winModal: string[];
+        function: string[];
+    };
+    static defaultsize: number[];
+    label: string;
+    rootDisplayCell: DisplayCell;
+    winModal: winModal;
+    modal: Modal;
+    process: (objectWithProperties: object) => void;
+    keyCells: {
+        [key: string]: DisplayCell;
     };
     constructor(...Arguments: any);
+    static processNode(node: node_): void;
+    static HtmlBlockChange(objectWithProperties: HtmlBlock, variable: string, value: string): void;
+    static HtmlBlock(objectWithProperties: HtmlBlock): void;
 }
 declare class bCss {
+    static editable: Css;
     static bgwhite: Css;
     static bgLight: Css;
     static bgGreen: Css;

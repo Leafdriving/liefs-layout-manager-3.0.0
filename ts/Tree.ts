@@ -67,6 +67,9 @@ class Tree_ extends Base {
     sideMargin:number;
     tabSize:number;
     preRenderCallback:Function;
+
+    scrollbarh:ScrollBar;
+    scrollbarv:ScrollBar;
     onNodeCreation:(node: node_) => void;
 
     
@@ -149,9 +152,6 @@ class Tree_ extends Base {
         let x_= PDScoord.x + THIS.sideMargin - this.offsetx;
         let y_= PDScoord.y + THIS.topMargin;
         let max_x2:number = 0;
-        // let [sx, sy]=pf.viewport()
-        //console.log("parentDisplayCell", THIS.parentDisplayCell.label);
-        //PDScoord.log();
 
         this.traverse(
             function traverseFunction(node:node_){
@@ -168,9 +168,7 @@ class Tree_ extends Base {
                 
                 let cellArray = node.displaycell.displaygroup.cellArray;
                 let el = cellArray[ cellArray.length-1 ].htmlBlock.el;
-                // console.log(el)
                 let bounding = el.getBoundingClientRect();
-                // console.log(bounding)
                 let x2 = bounding["x"] + bounding["width"];
                 if (x2 > max_x2) max_x2 = x2;
             },
@@ -179,22 +177,43 @@ class Tree_ extends Base {
                 return (!node.collapsed)
             },
         );
-        let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()
-        // console.log(max_x2, PDScoord.x + PDScoord.width)
+        // let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()
         // check horizontal first
         if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
-            if (!scrollbarh) {
-                scrollbar(this.parentDisplayCell, true);
-                [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays(); // defines scrollbarh
+            if (!this.scrollbarh) {
+                let overlay=new Overlay("ScrollBar", this.parentDisplayCell, true);
+                this.scrollbarh = <ScrollBar>overlay.returnObj;
+                let parentDisplaycell = this.scrollbarh.parentDisplaycell;
+                parentDisplaycell.addOverlay(overlay);
             }
-            this.offsetx = scrollbarh.update(max_x2); ////
+            this.offsetx = this.scrollbarh.update(max_x2);
         } else {
-            if (scrollbarh) {
-                scrollbarh.delete();
+            if (this.scrollbarh) {
+                this.scrollbarh.delete();
                 this.popOverlay(true);
                 this.offsetx = 0;
             }
         }
+
+        // check vertical next
+
+        // if (y_ > (PDScoord.y + PDScoord.height) + 2) {
+        //     console.log("vscrollbar");
+        //     if (!this.scrollbarv) {
+        //         let overlay=new Overlay("ScrollBar", this.parentDisplayCell, false);
+        //         this.scrollbarv = <ScrollBar>overlay.returnObj;
+        //         let parentDisplaycell = this.scrollbarv.parentDisplaycell;
+        //         parentDisplaycell.addOverlay(overlay);
+
+        //     }
+        //      this.offsety = this.scrollbarv.update(y_);
+        // } else {
+        //     if (this.scrollbarv){
+        //         this.scrollbarv.delete();
+        //         this.popOverlay(false);
+        //         this.offsety = 0;
+        //     }
+        // }
     }
     popOverlay(ishor:boolean){
         let overlays = this.parentDisplayCell.overlays;
@@ -204,6 +223,7 @@ class Tree_ extends Base {
                     overlays.splice(index, 1)
     }
     getScrollBarsFromOverlays(){
+        // console.log("getscrollbars");
         let scrollbarh:ScrollBar, scrollbarv:ScrollBar;
         let scrollbarOverlays:Overlay[] = this.parentDisplayCell.getOverlays("ScrollBar");
         for (let index = 0; index < scrollbarOverlays.length; index++) {

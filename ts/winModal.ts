@@ -248,12 +248,12 @@ class winModal extends Base {
     }
     
 }
-function winmodal(...Arguments:any) {
+function winmodal(...Arguments:any):winModal {
     let overlay=new Overlay("winModal", ...Arguments);
     let newWinModal = <winModal>overlay.returnObj;
     let parentDisplaycell = newWinModal.rootDisplayCell;
     // parentDisplaycell.overlay = overlay; // remove this line soon
     parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
+    return newWinModal;
 }
 Overlay.classes["winModal"] = winModal;

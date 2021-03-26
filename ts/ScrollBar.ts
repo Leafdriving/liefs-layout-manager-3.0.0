@@ -42,7 +42,7 @@ class ScrollBar extends Base {
 
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
-        //ScrollBar.makeLabel(this);
+        // console.log("scrollbar Created");
         this.label = `${this.parentDisplaycell.label}_${this.type}`;
         this.build()
         if (!this.coord) this.coord = this.parentDisplaycell.coord;
@@ -128,6 +128,7 @@ class ScrollBar extends Base {
         return this.offset;
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+        // console.log("render In Scrollbar")
         Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
     }
     delete(){

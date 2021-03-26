@@ -16,7 +16,7 @@ class Builder extends Base {
     // static handlerTree:Tree_ = new Tree_('Handlers')
     static makeHandlerTree(){
         let rootnode = new node_("Handlers");
-        for (let index = 0; index < Handler.activeInstances.length; index++) {
+        for (let index = 1; index < Handler.activeInstances.length; index++) {
             const handler = Handler.activeInstances[index];
             //if (handler.label != "Main Window") {
                 let node = rootnode.newChild(handler.label, handler);
@@ -90,10 +90,7 @@ class Builder extends Base {
     }
     static onClickTree(mouseEvent:MouseEvent, el:HTMLElement){
         let node = <node_>node_.byLabel(el.id.slice(0, -5));
-        console.log(node);
-        if (Builder.propertiesModal == undefined)
-            Builder.propertiesModal = new winModal("PropertiesModal",{headerText:"Properties:"}, 100,200);
-        
+        Properties.processNode(node)
     }
     static onHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
         let node = <node_>node_.byLabel(el.id.slice(0, -5));
@@ -179,25 +176,14 @@ class Builder extends Base {
           dockable(v("Main_Dockable",
             Builder.TOOLBAR,
             dockable(h("Tree_Body", 5,
-
-                        v("TreeTops", "300px", 5,
-                            //pageselect("name","20px", new Pages("pagename",I(),I())),
-                            treePagesSelector,
-                            treePages,
-
-                            // tree("HandlerTree", Builder.onNodeCreation,
-                            //     /*dragbar(*/I("Main_tree", /*"300px",*/ bCss.bgLight), /*50,800),*/
-                            //     bCss.treeItem,
-                            //     events({onmouseover:function(mouseEvent:MouseEvent){Builder.onHoverTree(mouseEvent, this)},
-                            //             onmouseleave:function(mouseEvent:MouseEvent){Builder.onLeaveHoverTree(mouseEvent, this)},
-                            //             onclick:function(mouseEvent:MouseEvent){Builder.onClickTree(mouseEvent, this)},
-                            //     }),
-                            //     ),
-
-
-                        ),
-
-                    bindHandler(I("Main_body"), Builder.clientHandler)
+                        dragbar(
+                            v("TreeTops", "300px", 5,
+                                //pageselect("name","20px", new Pages("pagename",I(),I())),
+                                treePagesSelector,
+                                treePages,
+                            ),
+                            200,1000),
+                        bindHandler(I("Main_body"), Builder.clientHandler)
             ))
           ))
         )

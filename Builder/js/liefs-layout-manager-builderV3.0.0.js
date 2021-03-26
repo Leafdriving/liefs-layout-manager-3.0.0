@@ -1,70 +1,62 @@
-// class PageSelect extends Base {
-//     static labelNo = 0;
-//     static instances:PageSelect[] = [];
-//     static activeInstances:PageSelect[] = [];
-//     static defaults = {cellArray:[], ishor:false}
-//     static argMap = {
-//         string : ["label"],
-//         Pages: ["pages"],
-//         dim: ["dim"],
-//     }
-//     retArgs:ArgsObj;   // <- this will appear
-//     dim:string;
-//     label:string;
-//     ishor:boolean;
-//     rootDisplayCell: DisplayCell;
-//     pages:Pages;
-//     cellArray: DisplayCell[];
-//     constructor(...Arguments:any){
-//         super();this.buildBase(...Arguments);
-//         PageSelect.makeLabel(this);
-//         this.build()
-//     }
-//     build(){
-//         let menuObj = {menuObj: {
-//             one:function(){console.log("one")},
-//             two:function(){console.log("two")},
-//             three: {a:function(){console.log("a")},
-//                     b:function(){console.log("b")},
-//                     c:function(){console.log("c")},
-//                     },
-//             four:function(){console.log("four")},
-//         }}
-//         let label = this.pages.displaycells[0].label;
-//         let clickableName = I(`${this.label}_0`, label, DefaultTheme.bgLight /*,events({onclick:contextObjFunction})*/)
-//         let downArrow = I(`${this.label}_arrow`,"20px" , DefaultTheme.downArrowSVG("scrollArrows"));
-//         this.rootDisplayCell = h("Prop_h", 
-//             clickableName,
-//             downArrow,
-//             )
-//         this.rootDisplayCell.dim = this.dim;
-//         let contextObjFunction = hMenuBar(menuObj, {launchcell:this.rootDisplayCell});
-//         clickableName.htmlBlock.events = events({onclick:contextObjFunction});
-//         downArrow.htmlBlock.events = events({onclick:contextObjFunction});
-//     }
-// }
-// function pageselect(...Arguments:any) {
-//     let ps = new PageSelect(...Arguments);
-//     return ps.rootDisplayCell;
-// }
 class Properties extends Base {
-    // retArgs:ArgsObj;   // <- this will appear
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
         Properties.makeLabel(this);
+        if (this.rootDisplayCell) {
+            let [width, height] = Properties.defaultsize;
+            this.winModal = winmodal(`HtmlBlock_prop_winModal`, width, height, { body: this.rootDisplayCell,
+                headerText: `HtmlBlock-`,
+            });
+        }
+    }
+    static processNode(node) {
+        console.log("Process Node");
+        let objectWithProperties = node.Arguments[1];
+        let objectType = BaseF.typeof(objectWithProperties);
+        if (!Properties.byLabel(objectType))
+            Properties[objectType](objectWithProperties);
+        let propInstance = Properties.byLabel(objectType);
+        if (!propInstance)
+            console.log("No Definion in Properties for type " + objectType);
+        else
+            propInstance.process(objectWithProperties);
+    }
+    static HtmlBlockChange(objectWithProperties, variable, value) {
+        console.log(`Change Htmlblock-${objectWithProperties.label} varialbe "${variable}" to "${value}"`);
+    }
+    static HtmlBlock(objectWithProperties) {
+        let process = function (objectWithProperties) {
+            let THIS = this;
+            let headerDisplay = THIS.winModal.header.displaygroup.cellArray[0];
+            headerDisplay.htmlBlock.innerHTML = `HtmlBlock - ${objectWithProperties.label}`;
+            THIS.keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
+            Handler.update();
+        };
+        let keyCells = {
+            label: I(`HtmlBlock_label`, objectWithProperties.label, bCss.editable, { attributes: { contenteditable: "true" } }, events({ onblur: function (e) { Properties.HtmlBlockChange(objectWithProperties, "label", e.target["innerHTML"]); /*console.log(e.target["innerHTML"])*/ },
+                onkeydown: function (e) { if (e.code == 'Enter') {
+                    e.preventDefault();
+                    e.target["blur"]();
+                } }
+            })),
+            two: I(`HtmlBlock_two`, `HtmlBlock_two`, bCss.bgwhite)
+        };
+        let rootcell = v(`HtmlBlock_prop_v`, h(`HtmlBlock_label_h`, "20px", I(`HtmlBlock_labelTag`, `Label:`, "50px", bCss.bgLight), keyCells.label), keyCells.two);
+        new Properties("HtmlBlock", rootcell, process, { keyCells });
     }
 }
 Properties.labelNo = 0;
 Properties.instances = [];
 Properties.activeInstances = [];
-Properties.defaults = {
-    tag: "DIV",
-};
+Properties.defaults = {};
 Properties.argMap = {
-    string: ["label", "innerHTML", "css"],
-    number: ["marginLeft", "marginTop", "marginRight", "marginBottom"],
+    string: ["label"],
+    DisplayCell: ["rootDisplayCell"],
+    winModal: ["winModal"],
+    function: ["process"],
 };
+Properties.defaultsize = [300, 600];
 class bCss {
     static bookSVG(classname) {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
@@ -158,6 +150,14 @@ class bCss {
     }
     ;
 }
+bCss.editable = css("editable", `-moz-appearance: textfield;
+                                    -webkit-appearance: textfield;
+                                    background-color: white;
+                                    box-sizing: border-box;
+                                    border: 1px solid darkgray;
+                                    box-shadow: 1px 1px 1px 0 lightgray inset;  
+                                    font: -moz-field;
+                                    font: -webkit-small-control;`);
 bCss.bgwhite = css("bgwhite", `background: white`);
 bCss.bgLight = css("bgLight", `background: #dcedf0`);
 bCss.bgGreen = css("bgGreen", `background: green;`);
@@ -205,7 +205,7 @@ class Builder extends Base {
     // static handlerTree:Tree_ = new Tree_('Handlers')
     static makeHandlerTree() {
         let rootnode = new node_("Handlers");
-        for (let index = 0; index < Handler.activeInstances.length; index++) {
+        for (let index = 1; index < Handler.activeInstances.length; index++) {
             const handler = Handler.activeInstances[index];
             //if (handler.label != "Main Window") {
             let node = rootnode.newChild(handler.label, handler);
@@ -261,9 +261,7 @@ class Builder extends Base {
     }
     static onClickTree(mouseEvent, el) {
         let node = node_.byLabel(el.id.slice(0, -5));
-        console.log(node);
-        if (Builder.propertiesModal == undefined)
-            Builder.propertiesModal = new winModal("PropertiesModal", { headerText: "Properties:" }, 100, 200);
+        Properties.processNode(node);
     }
     static onHoverTree(mouseEvent, el) {
         let node = node_.byLabel(el.id.slice(0, -5));
@@ -320,9 +318,9 @@ class Builder extends Base {
         // page 2
         I("Dummy2", "Dummy2"), I("Dummy3", "Dummy3"));
         let treePagesSelector = pageselect("TreePagesSelector", "20px", treePages);
-        Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", Builder.TOOLBAR, dockable(h("Tree_Body", 5, v("TreeTops", "300px", 5, 
+        Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", Builder.TOOLBAR, dockable(h("Tree_Body", 5, dragbar(v("TreeTops", "300px", 5, 
         //pageselect("name","20px", new Pages("pagename",I(),I())),
-        treePagesSelector, treePages), bindHandler(I("Main_body"), Builder.clientHandler)))))));
+        treePagesSelector, treePages), 200, 1000), bindHandler(I("Main_body"), Builder.clientHandler)))))));
     }
     static updateTree() {
         Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
