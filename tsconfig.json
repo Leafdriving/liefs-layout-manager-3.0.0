@@ -29,6 +29,7 @@
         "ts/ScrollBar.ts",
         "ts/Context.ts",
         "ts/Modal.ts",
+        "ts/node_.ts",
         "ts/Tree.ts",
         "ts/Observe.ts",
         "ts/ToolBar.ts",

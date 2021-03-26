@@ -44,9 +44,7 @@ class PageSelect extends Base {
         }
         this.menuObj = {menuObj : obj}
         let context = <Context>(Context.byLabel(`${this.label}_context`));
-        if (context) context.changeMenuObject(this.menuObj.menuObj)
-        // if (context) context.menuObj = this.menuObj
-        // console.log(context)
+        if (context) context.changeMenuObject(this.menuObj.menuObj);
     }
     build(){
         let THIS = this;
@@ -96,6 +94,19 @@ class PageSelect extends Base {
     }
     acceptDrop(winModalInstance:winModal){
         console.log(`Hey, ${winModalInstance.label} was dropped on me!`)
+        winModalInstance.modal.hide();
+        let displaycell = winModalInstance.body;
+        this.pages.displaycells.push(displaycell);
+
+        Modal.pop( winModalInstance.modal );
+        winModal.pop( winModalInstance);
+
+        this.pages.currentPage = this.pages.displaycells.length -1;
+        this.updateContextLabel();
+        this.buildMenuObj();
+        Handler.update();
+
+        //this.pages.displaycells[ index ];
     }
 }
 function pageselect(...Arguments:any) {
