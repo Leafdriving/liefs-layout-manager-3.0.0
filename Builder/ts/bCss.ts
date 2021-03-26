@@ -7,8 +7,22 @@ class bCss{
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
                                     font: -moz-field;
                                     font: -webkit-small-control;`)
+    static disabled = css("disabled",`-moz-appearance: textfield;
+                                    -webkit-appearance: textfield;
+                                    background-color: Azure;
+                                    box-sizing: border-box;
+                                    border: 1px solid darkgray;
+                                    box-shadow: 1px 1px 1px 0 lightgray inset;  
+                                    font: -moz-field;
+                                    font: -webkit-small-control;`)                                    
     static bgwhite = css("bgwhite", `background: white`);
     static bgLight = css("bgLight", `background: #dcedf0`);
+    static bgLightCenter = css("bgLightCenter",
+                                    `background: #dcedf0;
+                                    text-align:center;box-sizing: border-box;
+                                    border: 1px solid darkgray;
+                                    -moz-box-sizing: border-box;
+                                    -webkit-box-sizing: border-box;`);
     static bgGreen = css("bgGreen",`background: green;`);
     static bgBlue = css("bgBlue",`background: blue;`);
     static bgCyan = css("bgCyan",`background: cyan;`);

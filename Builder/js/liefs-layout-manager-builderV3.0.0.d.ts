@@ -14,19 +14,29 @@ declare class Properties extends Base {
     rootDisplayCell: DisplayCell;
     winModal: winModal;
     modal: Modal;
-    process: (objectWithProperties: object) => void;
+    process: () => void;
     keyCells: {
         [key: string]: DisplayCell;
     };
+    currentObject: object;
+    currentObjectParentDisplayCell: DisplayCell;
     constructor(...Arguments: any);
-    static processNode(node: node_): void;
-    static HtmlBlockChange(objectWithProperties: HtmlBlock, variable: string, value: string): void;
-    static HtmlBlock(objectWithProperties: HtmlBlock): void;
+    static processNode(node: node_ | object, parentDisplayCell?: DisplayCell): void;
+    static setHeaderText(propertiesInstance: Properties, text: string): void;
+    static HtmlBlockChange(variable: string, value: string): void;
+    static HtmlBlockProcess(): void;
+    static displayLabel(className: string, label: string, dim?: string): DisplayCell;
+    static displayValue(className: string, label: string, disabled?: boolean, dim?: any): DisplayCell;
+    static labelAndValue(className: string, label: string, keyCells: object, dim?: string): DisplayCell;
+    static Coord(className: string, keyCells: object): DisplayCell;
+    static HtmlBlock(): void;
 }
 declare class bCss {
     static editable: Css;
+    static disabled: Css;
     static bgwhite: Css;
     static bgLight: Css;
+    static bgLightCenter: Css;
     static bgGreen: Css;
     static bgBlue: Css;
     static bgCyan: Css;

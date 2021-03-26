@@ -10,40 +10,96 @@ class Properties extends Base {
             });
         }
     }
-    static processNode(node) {
-        console.log("Process Node");
-        let objectWithProperties = node.Arguments[1];
+    static processNode(node, parentDisplayCell = undefined /* not used with node */) {
+        let objectWithProperties;
+        if (BaseF.typeof(node) == "node_") {
+            objectWithProperties = node.Arguments[1];
+            parentDisplayCell = (node.Arguments[2]);
+        }
+        else
+            objectWithProperties = node;
         let objectType = BaseF.typeof(objectWithProperties);
-        if (!Properties.byLabel(objectType))
-            Properties[objectType](objectWithProperties);
+        if (!Properties.byLabel(objectType)) { // if instance doesn't exist...
+            if (Properties[objectType])
+                Properties[objectType](objectWithProperties); // then make it (Once only)
+            else
+                console.log(`Please create Properties.${objectType} [static] to handle ${objectWithProperties["label"]} type ${objectType}`);
+        }
         let propInstance = Properties.byLabel(objectType);
         if (!propInstance)
             console.log("No Definion in Properties for type " + objectType);
-        else
-            propInstance.process(objectWithProperties);
+        else {
+            propInstance.currentObject = objectWithProperties; // pass the objectwithProperties to propInstance
+            propInstance.currentObjectParentDisplayCell = parentDisplayCell;
+            propInstance.process(); // start processing it!
+        }
     }
-    static HtmlBlockChange(objectWithProperties, variable, value) {
-        console.log(`Change Htmlblock-${objectWithProperties.label} varialbe "${variable}" to "${value}"`);
+    static setHeaderText(propertiesInstance, text) {
+        let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
+        headerDisplay.htmlBlock.innerHTML = text;
     }
-    static HtmlBlock(objectWithProperties) {
-        let process = function (objectWithProperties) {
-            let THIS = this;
-            let headerDisplay = THIS.winModal.header.displaygroup.cellArray[0];
-            headerDisplay.htmlBlock.innerHTML = `HtmlBlock - ${objectWithProperties.label}`;
-            THIS.keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
-            Handler.update();
-        };
+    static HtmlBlockChange(variable, value) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let objectWithProperties = propertiesInstance.currentObject;
+        console.log(`Change Htmlblock-${objectWithProperties.label} variable "${variable}" to "${value}"`);
+        switch (variable) {
+            case "label":
+                objectWithProperties.label = value;
+                Builder.updateTree();
+                Properties.processNode(objectWithProperties);
+                break;
+            default:
+                console.log(`No way to handle ${variable} value ${value}`);
+                break;
+        }
+    }
+    static HtmlBlockProcess() {
+        let propertiesInstance = this;
+        let objectWithProperties = propertiesInstance.currentObject;
+        let coord = propertiesInstance.currentObjectParentDisplayCell.coord;
+        let keyCells = propertiesInstance.keyCells;
+        Properties.setHeaderText(propertiesInstance, `HtmlBlock - ${objectWithProperties.label}`);
+        keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
+        keyCells.minDisplayGroupSize.htmlBlock.innerHTML = (objectWithProperties.minDisplayGroupSize) ? objectWithProperties.minDisplayGroupSize.toString() : "undefined";
+        keyCells.x.htmlBlock.innerHTML = coord.x.toString();
+        keyCells.y.htmlBlock.innerHTML = coord.y.toString();
+        keyCells.width.htmlBlock.innerHTML = coord.width.toString();
+        keyCells.height.htmlBlock.innerHTML = coord.height.toString();
+        Handler.update();
+    }
+    static displayLabel(className, label, dim = "50px") {
+        return I(`${className}_${label}_label`, `${label}:`, dim, bCss.bgLight);
+    }
+    static displayValue(className, label, disabled = false, dim = undefined) {
+        let Change = Properties[`${className}Change`];
+        return I(`${className}_${label}_value`, dim, "<UNDEFINED>", (!disabled) ? bCss.editable : bCss.disabled, (!disabled) ? { attributes: { contenteditable: "true" } } : undefined, events({ onblur: function (e) { Change(label, e.target["innerHTML"]); },
+            onkeydown: function (e) { if (e.code == 'Enter') {
+                e.preventDefault();
+                e.target["blur"]();
+            } }
+        }));
+    }
+    static labelAndValue(className, label, keyCells, dim = "50px") {
+        return h(`${className}_${label}_h`, "20px", Properties.displayLabel(className, label, dim), // label
+        keyCells[label] // value
+        );
+    }
+    static Coord(className, keyCells) {
+        keyCells["x"] = Properties.displayValue("HtmlBlock", "x", true, "12.5%");
+        keyCells["y"] = Properties.displayValue("HtmlBlock", "y", true, "12.5%");
+        keyCells["width"] = Properties.displayValue("HtmlBlock", "width", true, "12.5%");
+        keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%");
+        return h(`${className}_Coord_h`, "20px", Properties.displayLabel("HtmlBlock", "x", "8.0%"), keyCells["x"], Properties.displayLabel("HtmlBlock", "y", "8.0%"), keyCells["y"], Properties.displayLabel("HtmlBlock", "width", "17.0%"), keyCells["width"], Properties.displayLabel("HtmlBlock", "height", "17.0%"), keyCells["height"]);
+    }
+    static HtmlBlock() {
         let keyCells = {
-            label: I(`HtmlBlock_label`, objectWithProperties.label, bCss.editable, { attributes: { contenteditable: "true" } }, events({ onblur: function (e) { Properties.HtmlBlockChange(objectWithProperties, "label", e.target["innerHTML"]); /*console.log(e.target["innerHTML"])*/ },
-                onkeydown: function (e) { if (e.code == 'Enter') {
-                    e.preventDefault();
-                    e.target["blur"]();
-                } }
-            })),
-            two: I(`HtmlBlock_two`, `HtmlBlock_two`, bCss.bgwhite)
+            label: Properties.displayValue("HtmlBlock", "label"),
+            minDisplayGroupSize: Properties.displayValue("HtmlBlock", "minDisplayGroupSize"), // true if disabled
         };
-        let rootcell = v(`HtmlBlock_prop_v`, h(`HtmlBlock_label_h`, "20px", I(`HtmlBlock_labelTag`, `Label:`, "50px", bCss.bgLight), keyCells.label), keyCells.two);
-        new Properties("HtmlBlock", rootcell, process, { keyCells });
+        let rootcell = v(`HtmlBlock_prop_v`, Properties.labelAndValue("HtmlBlock", "label", keyCells), // true if disabled
+        Properties.labelAndValue("HtmlBlock", "minDisplayGroupSize", keyCells, "150px"), // true if disabled
+        I(`HtmlBlock_DisplayCell`, `Parent DisplayCell`, bCss.bgLightCenter, "20px"), Properties.Coord("HtmlBlock", keyCells));
+        new Properties("HtmlBlock", rootcell, Properties.HtmlBlockProcess, { keyCells });
     }
 }
 Properties.labelNo = 0;
@@ -158,8 +214,21 @@ bCss.editable = css("editable", `-moz-appearance: textfield;
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
                                     font: -moz-field;
                                     font: -webkit-small-control;`);
+bCss.disabled = css("disabled", `-moz-appearance: textfield;
+                                    -webkit-appearance: textfield;
+                                    background-color: Azure;
+                                    box-sizing: border-box;
+                                    border: 1px solid darkgray;
+                                    box-shadow: 1px 1px 1px 0 lightgray inset;  
+                                    font: -moz-field;
+                                    font: -webkit-small-control;`);
 bCss.bgwhite = css("bgwhite", `background: white`);
 bCss.bgLight = css("bgLight", `background: #dcedf0`);
+bCss.bgLightCenter = css("bgLightCenter", `background: #dcedf0;
+                                    text-align:center;box-sizing: border-box;
+                                    border: 1px solid darkgray;
+                                    -moz-box-sizing: border-box;
+                                    -webkit-box-sizing: border-box;`);
 bCss.bgGreen = css("bgGreen", `background: green;`);
 bCss.bgBlue = css("bgBlue", `background: blue;`);
 bCss.bgCyan = css("bgCyan", `background: cyan;`);
