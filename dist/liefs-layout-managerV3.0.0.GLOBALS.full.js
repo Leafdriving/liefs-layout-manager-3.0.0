@@ -11,7 +11,6 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     privateMap.set(receiver, value);
     return value;
 };
-// export {ArgsObj, ArgsFunctions, Offset}
 // import {ArgsObj} from './Interfaces';
 class BaseF {
     static ifObjectMergeWithDefaults(THIS, CLASS) {
@@ -75,6 +74,10 @@ BaseF.mergeObjects = function (startObj, AddObj) {
 };
 class Base {
     constructor() {
+    }
+    static Render(instance, zindex, derender, node) {
+        console.log('render not implemented -> So make CLASS.Render()', this);
+        return { zindex: 0, children: [] };
     }
     // static instances:any[] = [];
     // static activeInstances:any[] = [];
@@ -366,6 +369,84 @@ pf.mergeObjects = function (startObj, AddObj) {
 };
 Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
 // export {mf, pf}
+class Render {
+    static update(source = undefined, derender = false) {
+        Render.oldRootnode = Render.node;
+        Render.node = new node_("Root");
+        let renderChildren = new RenderChildren;
+        if (source) {
+            if (BaseF.typeof(source) == "node_")
+                source = source.Arguments[1];
+            renderChildren.RenderSibling((BaseF.typeof(source) == "Array") ? source : [source], derender);
+            Render.RenderObjectList(renderChildren.siblings, Render.node);
+        }
+        else {
+            renderChildren.RenderSibling(Handler.RenderStartingpoint());
+            Render.RenderObjectList(renderChildren.siblings, Render.node);
+            Handler.RenderEndingPoint();
+        }
+    }
+    static RenderObjectList(renderChildren, node, zindex = 1, isSibling = false) {
+        for (let index = 0; index < renderChildren.length; index++) {
+            let object_ = renderChildren[index].child;
+            let objectType = BaseF.typeof(object_);
+            let CLASS = Render.classes[objectType];
+            if (CLASS) {
+                if (isSibling && index != 0)
+                    node = node.newSibling(`${objectType}_${object_["label"]}`, object_);
+                else
+                    node = node.newChild(`${objectType}_${object_["label"]}`, object_);
+                console.log(`Rendering ${objectType}_${object_["label"]}`);
+                let returnObj = CLASS.Render(object_, zindex, false, node); // this is render call
+                zindex = returnObj.zindex;
+                let children = returnObj.children;
+                let siblings = returnObj.siblings;
+                if (children && children.length)
+                    Render.RenderObjectList(children, node, zindex);
+                if (siblings && siblings.length)
+                    Render.RenderObjectList(siblings, node, zindex, true);
+            }
+            else
+                console.log(`Class:${objectType} not regestered`);
+            if (objectType == "Handler")
+                zindex = Math.trunc(zindex / 100) * 100 + Render.zHandlerIncrement;
+        }
+    }
+    static className(object_) {
+        for (const key in Render.classes)
+            if (object_ == Render.classes[key])
+                return key;
+        return undefined;
+    }
+    static register(label, object_) {
+        Render.classes[label] = object_;
+    }
+}
+Render.zIncrement = 5;
+Render.zHandlerIncrement = 100;
+Render.classes = {
+//    DragBar,for wxample... filled in when modules load.
+};
+class RenderChildren {
+    constructor() {
+        this.children = [];
+        this.siblings = [];
+    }
+    RenderChild(child, derender = false) {
+        if (BaseF.typeof(child) == "Array")
+            for (let index = 0; index < child.length; index++)
+                this.children.push({ child: child[index], derender });
+        else
+            this.children.push({ child, derender });
+    }
+    RenderSibling(child, derender = false) {
+        if (BaseF.typeof(child) == "Array")
+            for (let index = 0; index < child.length; index++)
+                this.siblings.push({ child: child[index], derender });
+        else
+            this.siblings.push({ child, derender });
+    }
+}
 // import {BaseF, Base} from './Base';
 // import {ArgsObj, ArgsFunctions, Offset} from './Interfaces';
 // import {Handler} from './Handler';
@@ -614,6 +695,53 @@ class HtmlBlock extends Base {
         // }
         HtmlBlock.makeLabel(this);
     }
+    // static renderHtmlBlock(displaycell:DisplayCell, derender=false, parentDisplaygroup:DisplayGroup){
+    // }
+    static renderHtmlAttributes(el, htmlblock, id) {
+        for (let key in htmlblock.attributes) {
+            let value = htmlblock.attributes[key];
+            if (key == "class")
+                value += " " + htmlblock.css;
+            if (key == "id")
+                value = id;
+            pf.setAttrib(el, key, value);
+        }
+        pf.setAttrib(el, "llm", "");
+    }
+    static Render(htmlBlock, zindex, derender = false, node) {
+        let displaycell = (node.parent().Arguments[1]);
+        let el = pf.elExists(displaycell.label);
+        let alreadyexists = (el) ? true : false;
+        derender = displaycell.coord.derender(derender);
+        let isNulDiv = (htmlBlock.css.trim() == "" &&
+            htmlBlock.innerHTML.trim() == "" &&
+            Object.keys(htmlBlock.attributes).length == 0 &&
+            !Handler.renderNullObjects);
+        if (derender || isNulDiv) {
+            if (alreadyexists)
+                el.remove();
+        }
+        else {
+            if (!alreadyexists)
+                el = document.createElement(htmlBlock.tag);
+            pf.setAttrib(el, "id", displaycell.label);
+            if (htmlBlock.css.trim())
+                pf.setAttrib(el, "class", htmlBlock.css);
+            HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
+            if (el.innerHTML != htmlBlock.innerHTML)
+                el.innerHTML = htmlBlock.innerHTML;
+            if (!alreadyexists) {
+                document.body.appendChild(el);
+                htmlBlock.el = el;
+                if (htmlBlock.events)
+                    htmlBlock.events.applyToHtmlBlock(htmlBlock);
+            }
+            let attrstring = displaycell.coord.newAsAttributeString(); // + clipString;
+            if (el.style.cssText != attrstring)
+                el.style.cssText = attrstring;
+        }
+        return { zindex };
+    }
 }
 HtmlBlock.instances = [];
 HtmlBlock.activeInstances = [];
@@ -629,6 +757,7 @@ HtmlBlock.argMap = {
     Events: ["events"],
     boolean: ["hideWidth"],
 };
+Render.register("HtmlBlock", HtmlBlock);
 function html(...Arguments) {
     let htmlblock = new HtmlBlock(...Arguments);
     // htmlblock.label = HtmlBlock.defaults["label"]();
@@ -695,6 +824,7 @@ var _htmlBlock_, _displaygroup_;
 class DisplayCell extends Base {
     constructor(...Arguments) {
         super();
+        // children:object[];
         _htmlBlock_.set(this, undefined);
         _displaygroup_.set(this, undefined);
         this.overlays = [];
@@ -760,14 +890,71 @@ class DisplayCell extends Base {
     }
     static concatArray(main, added) { for (let displaycell of added)
         main.push(displaycell); }
+    static Render(displaycell, zindex, derender = false, node) {
+        let renderChildren = new RenderChildren;
+        displaycell.renderNode = node;
+        if (displaycell.coord.offset)
+            Handler.activeOffset = true;
+        if (displaycell.preRenderCallback)
+            displaycell.preRenderCallback(displaycell, derender);
+        //if (derender) Observe.derender(displaycell);
+        let pages = displaycell.pages;
+        if (pages) {
+            if (!derender)
+                Pages.activePages.push(pages);
+            let evalCurrentPage = pages.eval();
+            if (evalCurrentPage != pages.previousPage) { // derender old page here
+                if (pages.displaycells[pages.previousPage]) {
+                    pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
+                    renderChildren.RenderSibling(pages.displaycells[pages.previousPage], true);
+                    //Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                }
+                pages.currentPage = pages.previousPage = evalCurrentPage;
+                Pages.pushHistory();
+            }
+            pages.displaycells[evalCurrentPage].coord.copy(displaycell.coord);
+            renderChildren.RenderSibling(pages.displaycells[evalCurrentPage], derender);
+            //Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
+            pages.currentPage = evalCurrentPage;
+            pages.addSelected();
+        }
+        else {
+            let htmlBlock = displaycell.htmlBlock;
+            let displaygroup = displaycell.displaygroup;
+            if (htmlBlock) {
+                renderChildren.RenderSibling(displaycell.htmlBlock, derender);
+                //Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup)
+            }
+            if (displaygroup) {
+                displaygroup.coord.copy(displaycell.coord);
+                if (displaygroup && htmlBlock) {
+                    Handler.currentZindex += Handler.zindexIncrement;
+                }
+                renderChildren.RenderSibling(displaygroup, derender);
+                //Handler.renderDisplayGroup(displaycell, derender);
+            }
+        }
+        // if (displaycell.overlays.length) {
+        //     for (let ovlay of displaycell.overlays) {
+        //         ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+        //     }
+        // }
+        if (displaycell.overlays.length)
+            for (let index = 0; index < displaycell.overlays.length; index++)
+                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
+        if (displaycell.postRenderCallback)
+            displaycell.postRenderCallback(displaycell, derender);
+        if (displaycell.coord.offset)
+            Handler.activeOffset = false;
+        return { zindex,
+            siblings: renderChildren.siblings };
+    }
 }
 _htmlBlock_ = new WeakMap(), _displaygroup_ = new WeakMap();
 DisplayCell.instances = [];
 DisplayCell.activeInstances = [];
 DisplayCell.minDisplayGroupSize = 1; // copied from htmlblock
-DisplayCell.defaults = {
-    dim: ""
-};
+DisplayCell.defaults = { dim: "", children: [] };
 DisplayCell.argMap = {
     string: ["label"],
     HtmlBlock: ["htmlBlock"],
@@ -776,6 +963,7 @@ DisplayCell.argMap = {
     Pages: ["pages"],
     function: ["preRenderCallback", "postRenderCallback"],
 };
+Render.register("DisplayCell", DisplayCell);
 function I(...Arguments) {
     return new DisplayCell(new HtmlBlock(...Arguments));
     // let newblock = new HtmlBlock(...Arguments);
@@ -855,184 +1043,11 @@ class DisplayGroup extends Base {
         }
         return totalFixedpx;
     }
-}
-DisplayGroup.defaultMargins = 0;
-DisplayGroup.instances = [];
-DisplayGroup.activeInstances = [];
-DisplayGroup.defaults = {
-    ishor: true,
-    marginHor: DisplayGroup.defaultMargins,
-    marginVer: DisplayGroup.defaultMargins,
-};
-DisplayGroup.argMap = {
-    string: ["label"],
-    boolean: ["ishor"],
-    number: ["marginHor", "marginVer"],
-    dim: ["dim"],
-    //Overlay: ["overlay"]
-};
-DisplayGroup.argCustomTypes = [];
-function h(...Arguments) {
-    return new DisplayCell(new DisplayGroup(...Arguments));
-}
-function v(...Arguments) {
-    return new DisplayCell(new DisplayGroup(false, ...Arguments));
-}
-// export {v, h, DisplayGroup}
-// import {Base} from './Base';
-// import {Coord} from './Coord';
-// import {DisplayCell} from './DisplayCell';
-// import {Css} from './Css';
-// import {DisplayGroup} from './DisplayGroup';
-// import {HtmlBlock} from './htmlBlock';
-// import {Observe} from './Observe'
-// import {Overlay} from './Overlay';
-// import {Pages} from './Pages';
-// import {mf, pf} from './PureFunctions';
-// import {ScrollBar} from './ScrollBar';
-class Handler extends Base {
-    constructor(...Arguments) {
-        super();
-        this.rootCell = undefined;
-        this.buildBase(...Arguments);
-        Handler.updateScreenSize();
-        if ("DisplayCell" in this.retArgs)
-            this.rootCell = this.retArgs["DisplayCell"][0];
-        else
-            pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
-        if (this.handlerMargin == undefined)
-            this.handlerMargin = Handler.handlerMarginDefault;
-        if (Handler.firstRun) {
-            setTimeout(Handler.update);
-            // setTimeout(Handler.update,200);
-            Handler.firstRun = false;
-            for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
-                element.remove();
-            window.onresize = function () { Handler.update(); };
-            window.onwheel = function (event) { ScrollBar.onWheel(event); };
-            window.addEventListener("popstate", function (event) { Pages.popstate(event); });
-            Pages.parseURL();
-        }
-        if (this.addThisHandlerToStack) {
-            Handler.activeInstances.push(this);
-        }
-        Handler.makeLabel(this);
-        Handler.update( /* [this] */);
-        Css.update();
-    }
-    pop() { return Handler.pop(this); }
-    toTop() {
-        let index = Handler.activeInstances.indexOf(this);
-        if (index > -1 && index != Handler.activeInstances.length - 1) {
-            Handler.activeInstances.splice(index, 1);
-            Handler.activeInstances.push(this);
-            Handler.update();
-        }
-    }
-    static pop(handlerInstance = Handler.activeInstances[Handler.activeInstances.length - 1]) {
-        let index = Handler.activeInstances.indexOf(handlerInstance);
-        let poppedInstance = undefined;
-        if (index != -1) {
-            poppedInstance = Handler.activeInstances[index];
-            Handler.update([handlerInstance], index, true);
-            Handler.activeInstances.splice(index, 1);
-        }
-        return poppedInstance;
-    }
-    static screensizeToCoord(dislaycell, handlerMargin) {
-        let viewport = pf.viewport();
-        dislaycell.coord.assign(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
-        //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
-    }
-    static updateScreenSize() {
-        let [width, height] = pf.viewport();
-        Handler.screenSizeCoord.assign(0, 0, width, height, 0, 0, width, height, 0);
-    }
-    static update(ArrayofHandlerInstances = Handler.activeInstances, instanceNo = 0, derender = false) {
-        // console.log("Update Fired");
-        if (Handler.preRenderCallback)
-            Handler.preRenderCallback();
-        Handler.updateScreenSize();
-        Handler.renderAgain = false;
-        Pages.activePages = [];
-        Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
-        for (let index = 0; index < ArrayofHandlerInstances.length; index++) {
-            let handlerInstance = ArrayofHandlerInstances[index];
-            if (handlerInstance.preRenderCallback)
-                handlerInstance.preRenderCallback(handlerInstance);
-            if (handlerInstance.coord) {
-                handlerInstance.rootCell.coord.copy(handlerInstance.coord);
-                handlerInstance.rootCell.coord.assign(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, Handler.currentZindex);
-            }
-            else {
-                Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
-            }
-            Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
-            instanceNo += 1;
-            Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement) * instanceNo;
-            if (handlerInstance.postRenderCallback)
-                handlerInstance.postRenderCallback(handlerInstance);
-        }
-        if (Pages.activePages.length)
-            Pages.applyOnclick();
-        Observe.update();
-        if (Handler.renderAgain)
-            console.log("REDNDER AGAIN!");
-        if (Handler.postRenderCallback)
-            Handler.postRenderCallback();
-    }
-    static renderDisplayCell(displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
-        if (displaycell.coord.offset)
-            Handler.activeOffset = true;
-        if (displaycell.preRenderCallback)
-            displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
-        if (derender)
-            Observe.derender(displaycell);
-        let pages = displaycell.pages;
-        if (pages) {
-            if (!derender)
-                Pages.activePages.push(pages);
-            let evalCurrentPage = pages.eval();
-            if (evalCurrentPage != pages.previousPage) { // derender old page here
-                if (pages.displaycells[pages.previousPage]) {
-                    pages.displaycells[pages.previousPage].coord.copy(displaycell.coord);
-                    Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
-                }
-                pages.currentPage = pages.previousPage = evalCurrentPage;
-                Pages.pushHistory();
-            }
-            pages.displaycells[evalCurrentPage].coord.copy(displaycell.coord);
-            Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
-            pages.currentPage = evalCurrentPage;
-            pages.addSelected();
-        }
-        else {
-            let htmlBlock = displaycell.htmlBlock;
-            let displaygroup = displaycell.displaygroup;
-            if (htmlBlock) {
-                Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup);
-            }
-            if (displaygroup) {
-                displaygroup.coord.copy(displaycell.coord);
-                if (displaygroup && htmlBlock) {
-                    Handler.currentZindex += Handler.zindexIncrement;
-                }
-                Handler.renderDisplayGroup(displaycell, derender);
-            }
-        }
-        if (displaycell.overlays.length) {
-            for (let ovlay of displaycell.overlays) {
-                ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
-            }
-        }
-        if (displaycell.postRenderCallback)
-            displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
-        if (displaycell.coord.offset)
-            Handler.activeOffset = false;
-        //if (displaycell.label == "Main_toolbar_handle_h_DisplayCell") {console.clear();displaycell.coord.log();}
-    }
-    static renderDisplayGroup(parentDisplaycell, derender) {
-        let displaygroup = parentDisplaycell.displaygroup;
+    static Render(displaygroup, zindex, derender = false, node) {
+        let parentDisplaycell = node.ParentNode.Arguments[1];
+        displaygroup.renderNode = node;
+        if (BaseF.typeof(parentDisplaycell) != "DisplayCell")
+            console.log(`DisplayGroup: ${displaygroup.label}  parent WASNT a displaycell????`);
         let ishor = displaygroup.ishor;
         let coord = displaygroup.coord;
         let cellArraylength = displaygroup.cellArray.length;
@@ -1117,6 +1132,7 @@ class Handler extends Base {
         let y = displaygroup.coord.y - ((ishor) ? 0 : displaygroup.offset);
         let width;
         let height;
+        let renderChildren = new RenderChildren;
         for (let index = 0; index < cellArraylength; index++) {
             let displaycell = displaygroup.cellArray[index];
             let cellsizepx = dimArray[index].px;
@@ -1124,54 +1140,341 @@ class Handler extends Base {
             height = (ishor) ? coord.height : cellsizepx;
             displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
             displaycell.coord.cropWithin(displaygroup.coord.within); /// is it within? or coord?
-            Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
+            renderChildren.RenderSibling(displaycell, derender);
+            //Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
             x += (ishor) ? width + displaygroup.marginHor : 0;
             y += (ishor) ? 0 : height + displaygroup.marginVer;
         }
+        return { zindex,
+            siblings: renderChildren.siblings };
     }
-    static renderHtmlBlock(displaycell, derender = false, parentDisplaygroup) {
-        let htmlBlock = displaycell.htmlBlock;
-        let el = pf.elExists(displaycell.label);
-        let alreadyexists = (el) ? true : false;
-        derender = displaycell.coord.derender(derender);
-        let isNulDiv = (htmlBlock.css.trim() == "" &&
-            htmlBlock.innerHTML.trim() == "" &&
-            Object.keys(htmlBlock.attributes).length == 0 &&
-            !Handler.renderNullObjects);
-        if (derender || isNulDiv) {
-            if (alreadyexists)
-                el.remove();
+}
+DisplayGroup.defaultMargins = 0;
+DisplayGroup.instances = [];
+DisplayGroup.activeInstances = [];
+DisplayGroup.defaults = {
+    ishor: true,
+    marginHor: DisplayGroup.defaultMargins,
+    marginVer: DisplayGroup.defaultMargins,
+};
+DisplayGroup.argMap = {
+    string: ["label"],
+    boolean: ["ishor"],
+    number: ["marginHor", "marginVer"],
+    dim: ["dim"],
+    //Overlay: ["overlay"]
+};
+DisplayGroup.argCustomTypes = [];
+Render.register("DisplayGroup", DisplayGroup);
+function h(...Arguments) {
+    return new DisplayCell(new DisplayGroup(...Arguments));
+}
+function v(...Arguments) {
+    return new DisplayCell(new DisplayGroup(false, ...Arguments));
+}
+// export {v, h, DisplayGroup}
+// import {Base} from './Base';
+// import {Coord} from './Coord';
+// import {DisplayCell} from './DisplayCell';
+// import {Css} from './Css';
+// import {DisplayGroup} from './DisplayGroup';
+// import {HtmlBlock} from './htmlBlock';
+// import {Observe} from './Observe'
+// import {Overlay} from './Overlay';
+// import {Pages} from './Pages';
+// import {mf, pf} from './PureFunctions';
+// import {ScrollBar} from './ScrollBar';
+class Handler extends Base {
+    constructor(...Arguments) {
+        super();
+        this.rootCell = undefined;
+        this.buildBase(...Arguments);
+        Handler.updateScreenSize();
+        if ("DisplayCell" in this.retArgs)
+            this.rootCell = this.retArgs["DisplayCell"][0];
+        else
+            pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
+        if (this.handlerMargin == undefined)
+            this.handlerMargin = Handler.handlerMarginDefault;
+        if (Handler.firstRun) {
+            setTimeout(Handler.update);
+            // setTimeout(Handler.update,200);
+            Handler.firstRun = false;
+            for (let element of document.querySelectorAll(Css.deleteOnFirstRunClassname))
+                element.remove();
+            window.onresize = function () { Handler.update(); };
+            window.onwheel = function (event) { ScrollBar.onWheel(event); };
+            window.addEventListener("popstate", function (event) { Pages.popstate(event); });
+            Pages.parseURL();
+        }
+        if (this.addThisHandlerToStack) {
+            Handler.activeInstances.push(this);
+        }
+        Handler.makeLabel(this);
+        Handler.update( /* [this] */);
+        Css.update();
+    }
+    pop() { return Handler.pop(this); }
+    toTop() {
+        let index = Handler.activeInstances.indexOf(this);
+        if (index > -1 && index != Handler.activeInstances.length - 1) {
+            Handler.activeInstances.splice(index, 1);
+            Handler.activeInstances.push(this);
+            Handler.update();
+        }
+    }
+    static pop(handlerInstance = Handler.activeInstances[Handler.activeInstances.length - 1]) {
+        let index = Handler.activeInstances.indexOf(handlerInstance);
+        let poppedInstance = undefined;
+        if (index != -1) {
+            poppedInstance = Handler.activeInstances[index];
+            Handler.update([handlerInstance], index, true);
+            Handler.activeInstances.splice(index, 1);
+        }
+        return poppedInstance;
+    }
+    static screensizeToCoord(dislaycell, handlerMargin) {
+        let viewport = pf.viewport();
+        dislaycell.coord.assign(handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, handlerMargin, handlerMargin, viewport[0] - handlerMargin * 2, viewport[1] - handlerMargin * 2, Handler.currentZindex);
+        //dislaycell.coord.copy(handlerMargin, handlerMargin, viewport[0]-handlerMargin*2, viewport[1]-handlerMargin*2, Handler.currentZindex);
+    }
+    static updateScreenSize() {
+        let [width, height] = pf.viewport();
+        Handler.screenSizeCoord.assign(0, 0, width, height, 0, 0, width, height, 0);
+    }
+    static update(ArrayofHandlerInstances = Handler.activeInstances, instanceNo = 0, derender = false) {
+        Render.update();
+    }
+    // static updateold(ArrayofHandlerInstances:Handler[] = Handler.activeInstances, instanceNo:number = 0, derender:boolean = false){
+    //     // console.log("Update Fired");
+    //     if (Handler.preRenderCallback) Handler.preRenderCallback();
+    //     Handler.updateScreenSize();
+    //     Handler.renderAgain = false;
+    //     Pages.activePages = [];
+    //     Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
+    //     for (let index = 0; index < ArrayofHandlerInstances.length; index++) {
+    //         let handlerInstance = ArrayofHandlerInstances[index];
+    //         if (handlerInstance.preRenderCallback) handlerInstance.preRenderCallback(handlerInstance);
+    //         if (handlerInstance.coord) {
+    //             handlerInstance.rootCell.coord.copy(handlerInstance.coord);
+    //             handlerInstance.rootCell.coord.assign( undefined,undefined,undefined,undefined, undefined,undefined,undefined,undefined, Handler.currentZindex)
+    //         }
+    //         else {
+    //             Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);  
+    //         }
+    //         Handler.renderDisplayCell(handlerInstance.rootCell, undefined, undefined, derender);
+    //         instanceNo += 1;
+    //         Handler.currentZindex = Handler.handlerZindexStart + (Handler.handlerZindexIncrement)*instanceNo;
+    //         if (handlerInstance.postRenderCallback) handlerInstance.postRenderCallback(handlerInstance);
+    //       }
+    //     if (Pages.activePages.length) Pages.applyOnclick();
+    //     Observe.update();
+    //     if (Handler.renderAgain) console.log("REDNDER AGAIN!");
+    //     if (Handler.postRenderCallback) Handler.postRenderCallback();
+    // }
+    // static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
+    //     if (displaycell.coord.offset) Handler.activeOffset = true;
+    //     if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, parentDisplaygroup, index, derender);
+    //     if (derender) Observe.derender(displaycell);
+    //     let pages = displaycell.pages;
+    //     if (pages){
+    //         if (!derender) Pages.activePages.push(pages);
+    //         let evalCurrentPage:number = pages.eval();
+    //         if (evalCurrentPage != pages.previousPage){ // derender old page here
+    //             if (pages.displaycells[pages.previousPage]) {
+    //                 pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
+    //                 Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+    //             }
+    //             pages.currentPage = pages.previousPage = evalCurrentPage;
+    //             Pages.pushHistory();
+    //         }
+    //         pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
+    //         Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
+    //         pages.currentPage = evalCurrentPage;
+    //         pages.addSelected();
+    //     }
+    //     else {
+    //         let htmlBlock = displaycell.htmlBlock;
+    //         let displaygroup = displaycell.displaygroup;
+    //         if (htmlBlock) {
+    //             Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup)
+    //         }
+    //         if (displaygroup) {
+    //             displaygroup.coord.copy(displaycell.coord);
+    //             if (displaygroup && htmlBlock) {
+    //                 Handler.currentZindex += Handler.zindexIncrement;
+    //             }
+    //             Handler.renderDisplayGroup(displaycell, derender);
+    //         }
+    //     }
+    //     if (displaycell.overlays.length) {
+    //         for (let ovlay of displaycell.overlays) {
+    //             ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+    //         }
+    //     }
+    //     if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, parentDisplaygroup, index, derender);
+    //     if (displaycell.coord.offset) Handler.activeOffset = false;
+    //     //if (displaycell.label == "Main_toolbar_handle_h_DisplayCell") {console.clear();displaycell.coord.log();}
+    // }
+    // static renderDisplayGroup(parentDisplaycell: DisplayCell, derender:boolean) {
+    //     let displaygroup: DisplayGroup = parentDisplaycell.displaygroup;
+    //     let ishor:boolean = displaygroup.ishor;
+    //     let coord:Coord = displaygroup.coord;
+    //     let cellArraylength = displaygroup.cellArray.length;
+    //     let marginpx = (ishor) ? displaygroup.marginHor*(cellArraylength-1): displaygroup.marginVer*(cellArraylength-1);
+    //     let maxpx:number = (ishor) ? coord.width - marginpx : coord.height - marginpx;
+    //     let totalFixedpx = displaygroup.totalPx();
+    //     let pxForPercent:number = maxpx - totalFixedpx;
+    //     let dimArray:{dim:string, min:number, px:number}[] = [];
+    //     // create dim array - Initialize.
+    //     for (let index = 0; index < cellArraylength; index++) {
+    //         let displaycell:DisplayCell = displaygroup.cellArray[index];
+    //         let dim = displaycell.dim;
+    //         let min = ((pf.isTypePx(displaycell.dim)) ? pf.pxAsNumber(displaycell.dim) : displaycell.minDisplayGroupSize)
+    //         let px = (pf.isTypePx(displaycell.dim) ? pf.pxAsNumber(displaycell.dim) : pf.percentAsNumber(displaycell.dim) * pxForPercent / 100);
+    //         // dimArrayTotal += px;            
+    //         dimArray.push({dim,min,px});   
+    //     }
+    //         // loop until all % are worked out
+    //     let percentReballancingRequired:boolean;
+    //     let dimArrayTotal: number;
+    //     do {
+    //         // If % less than min... assign it min
+    //         percentReballancingRequired = false;
+    //         let fixedPixels = 0;
+    //         dimArrayTotal = 0;
+    //         for (let index=0 ; index < dimArray.length; index++) {  
+    //             let dimObj = dimArray[index];
+    //             if (dimObj.px < dimObj.min) {
+    //                 dimObj.px = dimObj.min;
+    //                 dimObj.dim = `${dimObj.px}px`;
+    //                 percentReballancingRequired = true;
+    //             }
+    //             fixedPixels += ( pf.isTypePx(dimObj.dim) ? dimObj.px : 0 );
+    //             dimArrayTotal += dimObj.px;
+    //         }
+    //         let px4Percent:number = maxpx - fixedPixels;  // key
+    //         //console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`)
+    //         // console.log(maxpx, fixedPixels, px4Percent)
+    //         // if min was assigned - rebalance
+    //         if (percentReballancingRequired) {
+    //             let currentPercent = 0;
+    //             // calculate total percent (so less than 100)
+    //             for (let index = 0; index < dimArray.length; index++) {
+    //                 let dimObj = dimArray[index];
+    //                 if (pf.isTypePercent(dimObj.dim)) {
+    //                     currentPercent += pf.percentAsNumber(dimObj.dim);
+    //                 }
+    //             }
+    //             let mult = 100/currentPercent;
+    //             // and apply the difference over this code.
+    //             dimArrayTotal = 0;
+    //             for (let index = 0; index < dimArray.length; index++) {
+    //                 let dimObj = dimArray[index];
+    //                 if (pf.isTypePercent(dimObj.dim)) {
+    //                     dimObj.dim = `${pf.percentAsNumber(dimObj.dim) * mult}%`;
+    //                     dimObj.px = pf.percentAsNumber(dimObj.dim)* px4Percent / 100;
+    //                     //console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`)
+    //                 }
+    //                 dimArrayTotal += dimObj.px;
+    //             }
+    //         }
+    //     } while (percentReballancingRequired);
+    //     displaygroup.dimArrayTotal = dimArrayTotal;
+    //     // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
+    //     let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+    //     if (dimArrayTotal > maxpx + 2) { 
+    //         if (!scrollbarOverlay) {
+    //             scrollbar(parentDisplaycell, displaygroup.ishor);
+    //             scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+    //         }
+    //         /* this.offset = */ 
+    //         displaygroup.offset = (<ScrollBar>(scrollbarOverlay.returnObj)).update(dimArrayTotal); ////
+    //         /* this.offset = */ 
+    //     } else {
+    //         if (scrollbarOverlay)
+    //             (<ScrollBar>(scrollbarOverlay.returnObj)).delete();
+    //             parentDisplaycell.popOverlay("ScrollBar");
+    //             displaygroup.offset = 0;
+    //     }
+    //     let x:number = displaygroup.coord.x - ((ishor) ? displaygroup.offset : 0);
+    //     let y:number = displaygroup.coord.y- ((ishor) ? 0 : displaygroup.offset);
+    //     let width:number;
+    //     let height:number;
+    //     for (let index=0 ; index < cellArraylength; index++) {
+    //         let displaycell:DisplayCell = displaygroup.cellArray[index];
+    //         let cellsizepx = dimArray[index].px
+    //         width = (ishor) ? cellsizepx : coord.width;
+    //         height = (ishor) ? coord.height : cellsizepx;
+    //         displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
+    //         displaycell.coord.cropWithin( displaygroup.coord.within ); /// is it within? or coord?
+    //         Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
+    //         x += (ishor) ? width+displaygroup.marginHor : 0;
+    //         y += (ishor) ? 0 : height+displaygroup.marginVer;
+    //     }
+    // }
+    // static renderHtmlBlock(displaycell:DisplayCell, derender=false, parentDisplaygroup:DisplayGroup){
+    //     let htmlBlock = displaycell.htmlBlock;
+    //     let el:HTMLElement = pf.elExists(displaycell.label);
+    //     let alreadyexists:boolean = (el) ? true : false;
+    //     derender = displaycell.coord.derender( derender );
+    //     let isNulDiv = (htmlBlock.css.trim() == "" &&
+    //                     htmlBlock.innerHTML.trim() == "" &&
+    //                     Object.keys( htmlBlock.attributes ).length == 0 &&
+    //                     !Handler.renderNullObjects)
+    //     if (derender || isNulDiv) {
+    //         if (alreadyexists) el.remove();
+    //     } else {
+    //         if (!alreadyexists) el = document.createElement(htmlBlock.tag);
+    //         pf.setAttrib(el, "id", displaycell.label);
+    //         if (htmlBlock.css.trim()) pf.setAttrib(el, "class", htmlBlock.css);
+    //         Handler.renderHtmlAttributes(el, htmlBlock, displaycell.label);
+    //         if (el.innerHTML != htmlBlock.innerHTML) el.innerHTML = htmlBlock.innerHTML;
+    //         if (!alreadyexists) {
+    //             document.body.appendChild(el);
+    //             htmlBlock.el = el;
+    //             if (htmlBlock.events) htmlBlock.events.applyToHtmlBlock(htmlBlock);
+    //         }
+    //         let attrstring = displaycell.coord.newAsAttributeString() // + clipString;
+    //         if (el.style.cssText != attrstring) el.style.cssText = attrstring;
+    //     }
+    // }
+    // static renderHtmlAttributes(el:HTMLElement, htmlblock: HtmlBlock, id:string){
+    //     for (let key in htmlblock.attributes) {
+    //         let value = htmlblock.attributes[key];
+    //         if (key == "class") value += " " +htmlblock.css;
+    //         if (key == "id") value = id;
+    //         pf.setAttrib(el, key, value);
+    //     }
+    //     pf.setAttrib(el, "llm", "");
+    // }
+    static RenderStartingpoint() {
+        if (Handler.preRenderCallback)
+            Handler.preRenderCallback();
+        Handler.updateScreenSize();
+        return Handler.activeInstances;
+    }
+    static RenderEndingPoint() {
+        if (Handler.postRenderCallback)
+            Handler.postRenderCallback();
+    }
+    static Render(handlerInstance, zindex, derender = false, node) {
+        handlerInstance.renderNode = node;
+        if (handlerInstance.preRenderCallback)
+            handlerInstance.preRenderCallback(handlerInstance);
+        if (handlerInstance.coord) {
+            handlerInstance.rootCell.coord.copy(handlerInstance.coord);
+            handlerInstance.rootCell.coord.assign(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, zindex);
         }
         else {
-            if (!alreadyexists)
-                el = document.createElement(htmlBlock.tag);
-            pf.setAttrib(el, "id", displaycell.label);
-            if (htmlBlock.css.trim())
-                pf.setAttrib(el, "class", htmlBlock.css);
-            Handler.renderHtmlAttributes(el, htmlBlock, displaycell.label);
-            if (el.innerHTML != htmlBlock.innerHTML)
-                el.innerHTML = htmlBlock.innerHTML;
-            if (!alreadyexists) {
-                document.body.appendChild(el);
-                htmlBlock.el = el;
-                if (htmlBlock.events)
-                    htmlBlock.events.applyToHtmlBlock(htmlBlock);
-            }
-            let attrstring = displaycell.coord.newAsAttributeString(); // + clipString;
-            if (el.style.cssText != attrstring)
-                el.style.cssText = attrstring;
+            Handler.screensizeToCoord(handlerInstance.rootCell, handlerInstance.handlerMargin);
         }
-    }
-    static renderHtmlAttributes(el, htmlblock, id) {
-        for (let key in htmlblock.attributes) {
-            let value = htmlblock.attributes[key];
-            if (key == "class")
-                value += " " + htmlblock.css;
-            if (key == "id")
-                value = id;
-            pf.setAttrib(el, key, value);
-        }
-        pf.setAttrib(el, "llm", "");
+        if (handlerInstance.postRenderCallback)
+            handlerInstance.postRenderCallback(handlerInstance);
+        let renderChildren = new RenderChildren;
+        renderChildren.RenderSibling(handlerInstance.rootCell, derender);
+        return { zindex,
+            siblings: renderChildren.siblings };
     }
 }
 Handler.handlerMarginDefault = 0;
@@ -1197,6 +1500,7 @@ Handler.argCustomTypes = [];
 Handler.handlerZindexStart = 1;
 Handler.zindexIncrement = 1;
 Handler.handlerZindexIncrement = 100;
+Render.register("Handler", Handler);
 function H(...Arguments) {
     return new Handler(...Arguments);
 }
@@ -1795,6 +2099,7 @@ class DragBar extends Base {
         super();
         this.buildBase(...Arguments);
         let dragbar = this;
+        DragBar.makeLabel(this);
         this.displaycell = I(`${this.label}_dragbar`, "", events({ ondrag: { onDown: function (xmouseDiff) {
                     if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
                         dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
@@ -1812,13 +2117,36 @@ class DragBar extends Base {
                 },
                 // onUp: function(ouxmouseDifftput:object){}
             } }));
-        DragBar.makeLabel(this);
     }
-    render(displaycell, parentDisplaygroup, index, derender) {
+    // render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+    //     // console.log(parentDisplaygroup);
+    //     if (!this.parentDisplaygroup) this.parentDisplaygroup = parentDisplaygroup;
+    //     let dragbar:DragBar = this;
+    //     let dragcell:DisplayCell = dragbar.displaycell;
+    //     let ishor:boolean = parentDisplaygroup.ishor;
+    //     dragbar.ishor = ishor;
+    //     let pxsize:number = (dragbar.pxsize) ? dragbar.pxsize : ((ishor) ? parentDisplaygroup.marginHor : parentDisplaygroup.marginVer)
+    //     let isLast:boolean = (index == parentDisplaygroup.cellArray.length-1) ? true : false;
+    //     dragbar.isLast = isLast;
+    //     let pcoord:Coord = displaycell.coord;
+    //     let x:number= (ishor) ? ((isLast)? pcoord.x-pxsize:pcoord.x+pcoord.width) : pcoord.x;
+    //     let y:number= (ishor) ? pcoord.y : ((isLast)? pcoord.y-pxsize:pcoord.y+pcoord.height);
+    //     let width:number = (ishor) ? pxsize : pcoord.width;
+    //     let height:number = (ishor) ? pcoord.height : pxsize;
+    //     dragcell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex + Handler.zindexIncrement);
+    //     dragcell.htmlBlock.css = (ishor) ? dragbar.horcss.classname : dragbar.vercss.classname;
+    //     if (parentDisplaygroup.coord.isCoordCompletelyOutside( dragcell.coord )) derender = true;
+    //     Handler.renderDisplayCell(dragcell, parentDisplaygroup, undefined, derender)
+    // }
+    static Render(dragbar_, zindex, derender = false, node) {
+        let displaycell = (node.parent().Arguments[1]);
+        let parentDisplaygroup = node.parent().parent().Arguments[1];
+        let index = parentDisplaygroup.cellArray.indexOf(displaycell);
+        zindex += Render.zIncrement;
         // console.log(parentDisplaygroup);
-        if (!this.parentDisplaygroup)
-            this.parentDisplaygroup = parentDisplaygroup;
-        let dragbar = this;
+        if (!dragbar_.parentDisplaygroup)
+            dragbar_.parentDisplaygroup = parentDisplaygroup;
+        let dragbar = dragbar_;
         let dragcell = dragbar.displaycell;
         let ishor = parentDisplaygroup.ishor;
         dragbar.ishor = ishor;
@@ -1830,11 +2158,15 @@ class DragBar extends Base {
         let y = (ishor) ? pcoord.y : ((isLast) ? pcoord.y - pxsize : pcoord.y + pcoord.height);
         let width = (ishor) ? pxsize : pcoord.width;
         let height = (ishor) ? pcoord.height : pxsize;
-        dragcell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex + Handler.zindexIncrement);
+        dragcell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, zindex);
         dragcell.htmlBlock.css = (ishor) ? dragbar.horcss.classname : dragbar.vercss.classname;
         if (parentDisplaygroup.coord.isCoordCompletelyOutside(dragcell.coord))
             derender = true;
-        Handler.renderDisplayCell(dragcell, parentDisplaygroup, undefined, derender);
+        let renderChildren = new RenderChildren;
+        renderChildren.RenderSibling(dragcell, derender);
+        // Handler.renderDisplayCell(dragcell, parentDisplaygroup, undefined, derender)
+        return { zindex,
+            siblings: renderChildren.siblings };
     }
 }
 // static horCss = css("db_hor","background-color:black;cursor: ew-resize;");
@@ -1851,6 +2183,7 @@ DragBar.argMap = {
     number: ["min", "max", "pxsize"],
     Css: ["horcss", "vercss"]
 };
+Render.register("DragBar", DragBar);
 function dragbar(...Arguments) {
     let overlay = new Overlay("DragBar", ...Arguments);
     let newDragBar = overlay.returnObj;
@@ -1938,12 +2271,14 @@ class ScrollBar extends Base {
     }
     render(displaycell, parentDisplaygroup, index, derender) {
         // console.log("render In Scrollbar")
-        Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
+        Render.update(this.scrollbarDisplayCell, derender);
+        //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
     }
     delete() {
         // console.log(`ScrollBar :${this.label} destroyed`);
         FunctionStack.pop(this.label, ((this.ishor) ? "ishorTrue" : "ishorFalse"));
-        Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
+        Render.update(this.scrollbarDisplayCell, true);
+        //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
         ScrollBar.deactivate(this);
     }
     onWheel(event) {
@@ -2307,6 +2642,9 @@ class Context extends Base {
         window.onmousemove = function (mouseEvent) { THIS.managePop(mouseEvent); };
         Context.lastRendered = this;
     }
+    // static Render(displaygroup:DisplayGroup, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+    //     return {zindex}
+    // }
     hMenuBarx() { return this.launchcell.coord.x; }
     hMenuBary() { return this.launchcell.coord.y + this.launchcell.coord.height; }
     vMenuBarx() { return this.launchcell.coord.x + this.launchcell.coord.width; }
@@ -2331,6 +2669,7 @@ Context.argMap = {
     string: ["label"],
     number: ["width", "cellheight"]
 };
+//Render.register("Context", Context);
 let context = function (...Arguments) {
     let newcontext = new Context(...Arguments);
     return function (mouseEvent) { newcontext.render(mouseEvent); return false; };
@@ -2729,7 +3068,8 @@ class Tree_ extends Base {
     }
     derender(node) {
         this.traverse(function traverseFunction(node) {
-            Handler.renderDisplayCell(node.displaycell, undefined, undefined, true);
+            Render.update(node.displaycell, true);
+            // Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
         }, node);
     }
     derenderChildren(node) {
@@ -2754,7 +3094,8 @@ class Tree_ extends Base {
             //undefined, undefined, undefined, undefined,
             PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height, Handler.currentZindex + Handler.zindexIncrement);
             y_ += THIS.height;
-            Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender);
+            Render.update(node.displaycell, derender);
+            //Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender)
             let cellArray = node.displaycell.displaygroup.cellArray;
             let el = cellArray[cellArray.length - 1].htmlBlock.el;
             let bounding = el.getBoundingClientRect();
@@ -2899,7 +3240,8 @@ class Observe extends Base {
                 }
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);
-                Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true);
+                Render.update(handler.rootCell, true);
+                //Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true)
                 index -= 1;
             }
         }
@@ -3177,6 +3519,12 @@ class BindHandler extends Base {
             this.handler.coord = new Coord();
         this.handler.coord.copy(this.parentDisplaycell.coord);
     }
+    static Render(bindHandler, zindex, derender = false, node) {
+        if (!bindHandler.handler.coord)
+            bindHandler.handler.coord = new Coord();
+        bindHandler.handler.coord.copy(bindHandler.parentDisplaycell.coord);
+        return { zindex };
+    }
 }
 BindHandler.labelNo = 0;
 BindHandler.instances = [];
@@ -3187,6 +3535,7 @@ BindHandler.argMap = {
     DisplayCell: ["parentDisplaycell"],
     Handler: ["handler"]
 };
+Render.register("BindHandler", BindHandler);
 function bindHandler(...Arguments) {
     let overlay = new Overlay("BindHandler", ...Arguments);
     let newBindHandler = overlay.returnObj;
@@ -3311,7 +3660,8 @@ class winModal extends Base {
     }
     toggleClose() {
         for (let index = 1; index < this.rootDisplayCell.displaygroup.cellArray.length; index++)
-            Handler.renderDisplayCell(this.rootDisplayCell.displaygroup.cellArray[index], undefined, undefined, true);
+            Render.update(this.rootDisplayCell.displaygroup.cellArray[index], true);
+        //Handler.renderDisplayCell(this.rootDisplayCell.displaygroup.cellArray[index], undefined, undefined, true);
         this.hiddenCells = this.rootDisplayCell.displaygroup.cellArray;
         this.rootDisplayCell.displaygroup.cellArray = [this.rootDisplayCell.displaygroup.cellArray[0]];
         let coord = this.modal.coord;

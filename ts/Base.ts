@@ -57,6 +57,11 @@ class BaseF {
     };
 }
 class Base {
+    static Render(instance:object, zindex:number, derender:boolean, node:node_): zindexAndRenderChildren {
+        console.log('render not implemented -> So make CLASS.Render()', this);
+        return {zindex:0, children:[]};
+    }
+
     static defaultIsChecks:any // = [pf.isArray, pf.isObjectAClass, pf.isDim];
     // static instances:any[] = [];
     // static activeInstances:any[] = [];
@@ -104,6 +109,8 @@ class Base {
     static argMap: object;
     retArgs:ArgsObj;
     toString:Function;
+    label:string;
+    renderNode:node_;
 
     constructor(){
     }

@@ -12,6 +12,7 @@
         "ts/Base.ts",
         "ts/FunctionStack.ts",        
         "ts/PureFunctions.ts",
+        "ts/Render.ts",
         "ts/Coord.ts",
         "ts/htmlBlock.ts",
         "ts/Events.ts",

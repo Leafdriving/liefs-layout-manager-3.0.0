@@ -12,9 +12,7 @@ class DisplayCell extends Base {
     static instances:DisplayCell[] = [];
     static activeInstances:DisplayCell[] = [];
     static minDisplayGroupSize = 1; // copied from htmlblock
-    static defaults = {
-        dim : ""
-    }
+    static defaults = {dim : "", children:[]}
     static argMap = {
         string : ["label"],
         HtmlBlock : ["htmlBlock"],
@@ -26,6 +24,7 @@ class DisplayCell extends Base {
 
     label:string;
     coord: Coord;
+    // children:object[];
 
     #htmlBlock_ : HtmlBlock = undefined;
     get htmlBlock(): HtmlBlock {return this.#htmlBlock_;}
@@ -98,7 +97,68 @@ class DisplayCell extends Base {
         this.htmlBlock.events = events({onmouseover:vMenuBar(menuObj)})            //////////////// COME BACK HERE!!!!
     }
     static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
+    static Render(displaycell:DisplayCell, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        let renderChildren = new RenderChildren;
+        displaycell.renderNode = node;
+
+        if (displaycell.coord.offset) Handler.activeOffset = true;
+        if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, derender);
+        //if (derender) Observe.derender(displaycell);
+        let pages = displaycell.pages;
+        if (pages){
+            if (!derender) Pages.activePages.push(pages);
+            let evalCurrentPage:number = pages.eval();
+            if (evalCurrentPage != pages.previousPage){ // derender old page here
+                if (pages.displaycells[pages.previousPage]) {
+                    pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
+
+                    renderChildren.RenderSibling(pages.displaycells[pages.previousPage], true)
+                    //Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
+                }
+                pages.currentPage = pages.previousPage = evalCurrentPage;
+                Pages.pushHistory();
+            }
+            pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
+
+            renderChildren.RenderSibling(pages.displaycells[evalCurrentPage], derender);
+            //Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
+
+            pages.currentPage = evalCurrentPage;
+            pages.addSelected();
+        }
+        else {
+            let htmlBlock = displaycell.htmlBlock;
+            let displaygroup = displaycell.displaygroup;
+            if (htmlBlock) {
+                renderChildren.RenderSibling(displaycell.htmlBlock, derender)
+                //Handler.renderHtmlBlock(displaycell, derender, parentDisplaygroup)
+            }
+            if (displaygroup) {
+                displaygroup.coord.copy(displaycell.coord);
+                if (displaygroup && htmlBlock) {
+                    Handler.currentZindex += Handler.zindexIncrement;
+                }
+                renderChildren.RenderSibling(displaygroup, derender)
+                //Handler.renderDisplayGroup(displaycell, derender);
+            }
+        }
+        // if (displaycell.overlays.length) {
+        //     for (let ovlay of displaycell.overlays) {
+        //         ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
+        //     }
+        // }
+        if (displaycell.overlays.length) 
+            for (let index = 0; index < displaycell.overlays.length; index++) 
+                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
+
+        if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, derender);
+        if (displaycell.coord.offset) Handler.activeOffset = false;
+
+        return {zindex,
+            siblings: renderChildren.siblings};
+    }
 }
+Render.register("DisplayCell", DisplayCell);
 function I(...Arguments:any) : DisplayCell {
     return new DisplayCell( new HtmlBlock(...Arguments) )
     // let newblock = new HtmlBlock(...Arguments);

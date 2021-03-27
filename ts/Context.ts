@@ -133,12 +133,16 @@ class Context extends Base {
         window.onmousemove = function(mouseEvent:MouseEvent){THIS.managePop(mouseEvent);}
         Context.lastRendered = this;
     }
+    // static Render(displaygroup:DisplayGroup, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+    //     return {zindex}
+    // }
     hMenuBarx(){return this.launchcell.coord.x}
     hMenuBary(){return this.launchcell.coord.y+this.launchcell.coord.height}
 
     vMenuBarx(){return this.launchcell.coord.x + this.launchcell.coord.width}
     vMenuBary(){return this.launchcell.coord.y}
 }
+//Render.register("Context", Context);
 let context = function(...Arguments:any){
     let newcontext=new Context(...Arguments);
     return function(mouseEvent:MouseEvent){newcontext.render(mouseEvent);return false;}

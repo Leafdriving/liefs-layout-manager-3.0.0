@@ -61,7 +61,52 @@ class HtmlBlock extends Base {
         // }
         HtmlBlock.makeLabel(this);
     }
+    // static renderHtmlBlock(displaycell:DisplayCell, derender=false, parentDisplaygroup:DisplayGroup){
+      
+    // }
+    static renderHtmlAttributes(el:HTMLElement, htmlblock: HtmlBlock, id:string){
+        for (let key in htmlblock.attributes) {
+            let value = htmlblock.attributes[key];
+            if (key == "class") value += " " +htmlblock.css;
+            if (key == "id") value = id;
+            pf.setAttrib(el, key, value);
+        }
+        pf.setAttrib(el, "llm", "");
+    }
+    static Render(htmlBlock:HtmlBlock, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        let displaycell = <DisplayCell>(node.parent().Arguments[1])
+
+        let el:HTMLElement = pf.elExists(displaycell.label);
+        let alreadyexists:boolean = (el) ? true : false;
+
+        derender = displaycell.coord.derender( derender );
+
+        let isNulDiv = (htmlBlock.css.trim() == "" &&
+                        htmlBlock.innerHTML.trim() == "" &&
+                        Object.keys( htmlBlock.attributes ).length == 0 &&
+                        !Handler.renderNullObjects)
+
+        if (derender || isNulDiv) {
+            if (alreadyexists) el.remove();
+        } else {
+            if (!alreadyexists) el = document.createElement(htmlBlock.tag);
+            pf.setAttrib(el, "id", displaycell.label);
+            if (htmlBlock.css.trim()) pf.setAttrib(el, "class", htmlBlock.css);
+            HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
+            if (el.innerHTML != htmlBlock.innerHTML) el.innerHTML = htmlBlock.innerHTML;
+            if (!alreadyexists) {
+                document.body.appendChild(el);
+                htmlBlock.el = el;
+                if (htmlBlock.events) htmlBlock.events.applyToHtmlBlock(htmlBlock);
+            }
+            let attrstring = displaycell.coord.newAsAttributeString() // + clipString;
+            if (el.style.cssText != attrstring) el.style.cssText = attrstring;
+        }
+
+        return {zindex}
+    }
 }
+Render.register("HtmlBlock", HtmlBlock);
 function html(...Arguments:any){
     let htmlblock = new HtmlBlock(...Arguments)
     // htmlblock.label = HtmlBlock.defaults["label"]();

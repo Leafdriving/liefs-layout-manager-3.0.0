@@ -159,7 +159,8 @@ class winModal extends Base {
     }
     toggleClose(){
         for (let index = 1; index < this.rootDisplayCell.displaygroup.cellArray.length; index++)
-            Handler.renderDisplayCell(this.rootDisplayCell.displaygroup.cellArray[index], undefined, undefined, true);
+            Render.update(this.rootDisplayCell.displaygroup.cellArray[index], true);
+            //Handler.renderDisplayCell(this.rootDisplayCell.displaygroup.cellArray[index], undefined, undefined, true);
         this.hiddenCells = this.rootDisplayCell.displaygroup.cellArray
         this.rootDisplayCell.displaygroup.cellArray = [this.rootDisplayCell.displaygroup.cellArray[0]];
         let coord = this.modal.coord;

@@ -100,7 +100,126 @@ class DisplayGroup extends Base {
         }
         return totalFixedpx;
     }
+    static Render(displaygroup:DisplayGroup, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        let parentDisplaycell = <DisplayCell>node.ParentNode.Arguments[1];
+        displaygroup.renderNode = node;
+        if (BaseF.typeof(parentDisplaycell) != "DisplayCell") console.log(`DisplayGroup: ${displaygroup.label}  parent WASNT a displaycell????`);
+
+        let ishor:boolean = displaygroup.ishor;
+        let coord:Coord = displaygroup.coord;
+        let cellArraylength = displaygroup.cellArray.length;
+
+        let marginpx = (ishor) ? displaygroup.marginHor*(cellArraylength-1): displaygroup.marginVer*(cellArraylength-1);
+        let maxpx:number = (ishor) ? coord.width - marginpx : coord.height - marginpx;
+        let totalFixedpx = displaygroup.totalPx();
+        let pxForPercent:number = maxpx - totalFixedpx;
+
+        let dimArray:{dim:string, min:number, px:number}[] = [];
+
+        // create dim array - Initialize.
+        for (let index = 0; index < cellArraylength; index++) {
+            let displaycell:DisplayCell = displaygroup.cellArray[index];
+            let dim = displaycell.dim;
+            let min = ((pf.isTypePx(displaycell.dim)) ? pf.pxAsNumber(displaycell.dim) : displaycell.minDisplayGroupSize)
+            let px = (pf.isTypePx(displaycell.dim) ? pf.pxAsNumber(displaycell.dim) : pf.percentAsNumber(displaycell.dim) * pxForPercent / 100);
+            // dimArrayTotal += px;            
+            dimArray.push({dim,min,px});   
+        }
+            // loop until all % are worked out
+        let percentReballancingRequired:boolean;
+        let dimArrayTotal: number;
+        do {
+            // If % less than min... assign it min
+            percentReballancingRequired = false;
+            let fixedPixels = 0;
+            dimArrayTotal = 0;
+            for (let index=0 ; index < dimArray.length; index++) {  
+                let dimObj = dimArray[index];
+                if (dimObj.px < dimObj.min) {
+                    dimObj.px = dimObj.min;
+                    dimObj.dim = `${dimObj.px}px`;
+                    percentReballancingRequired = true;
+                }
+                fixedPixels += ( pf.isTypePx(dimObj.dim) ? dimObj.px : 0 );
+                dimArrayTotal += dimObj.px;
+            }
+            let px4Percent:number = maxpx - fixedPixels;  // key
+            //console.log(`maxpx: ${maxpx} fixedPixels: ${fixedPixels} px4Percent:${px4Percent}`)
+            // console.log(maxpx, fixedPixels, px4Percent)
+            // if min was assigned - rebalance
+            if (percentReballancingRequired) {
+                let currentPercent = 0;
+                // calculate total percent (so less than 100)
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        currentPercent += pf.percentAsNumber(dimObj.dim);
+                    }
+                }
+                let mult = 100/currentPercent;
+                // and apply the difference over this code.
+                dimArrayTotal = 0;
+                for (let index = 0; index < dimArray.length; index++) {
+                    let dimObj = dimArray[index];
+                    if (pf.isTypePercent(dimObj.dim)) {
+                        dimObj.dim = `${pf.percentAsNumber(dimObj.dim) * mult}%`;
+                        dimObj.px = pf.percentAsNumber(dimObj.dim)* px4Percent / 100;
+                        //console.log(`percent ${pf.percentAsNumber(dimObj.dim)} * ${px4Percent}/100 = ${dimObj.px}`)
+                    }
+                    dimArrayTotal += dimObj.px;
+                }
+            }
+        } while (percentReballancingRequired);
+        displaygroup.dimArrayTotal = dimArrayTotal;
+        
+        // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
+
+
+        let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+        if (dimArrayTotal > maxpx + 2) { 
+            if (!scrollbarOverlay) {
+                scrollbar(parentDisplaycell, displaygroup.ishor);
+                scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+            }
+            /* this.offset = */ 
+            displaygroup.offset = (<ScrollBar>(scrollbarOverlay.returnObj)).update(dimArrayTotal); ////
+            /* this.offset = */ 
+        } else {
+            if (scrollbarOverlay)
+                (<ScrollBar>(scrollbarOverlay.returnObj)).delete();
+                parentDisplaycell.popOverlay("ScrollBar");
+                displaygroup.offset = 0;
+        }
+
+
+        let x:number = displaygroup.coord.x - ((ishor) ? displaygroup.offset : 0);
+        let y:number = displaygroup.coord.y- ((ishor) ? 0 : displaygroup.offset);
+        let width:number;
+        let height:number;
+
+        let renderChildren = new RenderChildren;
+        for (let index=0 ; index < cellArraylength; index++) {
+            let displaycell:DisplayCell = displaygroup.cellArray[index];
+
+            let cellsizepx = dimArray[index].px
+            width = (ishor) ? cellsizepx : coord.width;
+            height = (ishor) ? coord.height : cellsizepx;
+
+            displaycell.coord.assign(x, y, width, height, undefined, undefined, undefined, undefined, Handler.currentZindex);
+            displaycell.coord.cropWithin( displaygroup.coord.within ); /// is it within? or coord?
+
+            renderChildren.RenderSibling(displaycell, derender);
+            //Handler.renderDisplayCell(displaycell, displaygroup, index, derender);
+            
+            x += (ishor) ? width+displaygroup.marginHor : 0;
+            y += (ishor) ? 0 : height+displaygroup.marginVer;
+        }
+   
+        return {zindex,
+            siblings: renderChildren.siblings};
+    }
 }
+Render.register("DisplayGroup", DisplayGroup);
 function h(...Arguments: any){
     return new DisplayCell( new DisplayGroup(...Arguments) )
 }

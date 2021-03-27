@@ -135,7 +135,8 @@ class Tree_ extends Base {
     derender(node:node_) {
         this.traverse(
             function traverseFunction(node:node_){
-                Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
+                Render.update(node.displaycell, true);
+                // Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
             },
             node
         )        
@@ -164,7 +165,8 @@ class Tree_ extends Base {
                                             PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
                                             Handler.currentZindex + Handler.zindexIncrement);
                 y_ += THIS.height;
-                Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender)
+                Render.update(node.displaycell, derender);
+                //Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender)
                 
                 let cellArray = node.displaycell.displaygroup.cellArray;
                 let el = cellArray[ cellArray.length-1 ].htmlBlock.el;

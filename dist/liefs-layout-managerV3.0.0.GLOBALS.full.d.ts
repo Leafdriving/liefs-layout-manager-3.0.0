@@ -13,6 +13,15 @@ interface Offset {
     width: number;
     height: number;
 }
+interface RenderChild {
+    child: object;
+    derender: boolean;
+}
+interface zindexAndRenderChildren {
+    zindex: number;
+    children?: RenderChild[];
+    siblings?: RenderChild[];
+}
 declare class BaseF {
     static ifObjectMergeWithDefaults(THIS: any, CLASS: any): object;
     static retArgsMapped(updatedDefaults: object, THIS: any, CLASS: any): object;
@@ -23,6 +32,7 @@ declare class BaseF {
     static mergeObjects: (startObj: object, AddObj: object) => object;
 }
 declare class Base {
+    static Render(instance: object, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     static defaultIsChecks: any;
     static byLabel(label: string): any;
     static pop(instance?: any): void;
@@ -35,6 +45,8 @@ declare class Base {
     static argMap: object;
     retArgs: ArgsObj;
     toString: Function;
+    label: string;
+    renderNode: node_;
     constructor();
     buildBase(...Arguments: any): void;
     static buildBase(THIS: any, ...Arguments: any): void;
@@ -88,6 +100,23 @@ declare class pf {
     static errorReporting(errString: string): void;
     static uis0(num: number): number;
     static parseURLParams(url?: string): {};
+}
+declare class Render {
+    static oldRootnode: node_;
+    static node: node_;
+    static zIncrement: number;
+    static zHandlerIncrement: number;
+    static update(source?: any, derender?: boolean): void;
+    static RenderObjectList(renderChildren: RenderChild[], node: node_, zindex?: number, isSibling?: boolean): void;
+    static classes: {};
+    static className(object_: object): string;
+    static register(label: string, object_: object): void;
+}
+declare class RenderChildren {
+    children: RenderChild[];
+    siblings: RenderChild[];
+    RenderChild(child: object | object[], derender?: boolean): void;
+    RenderSibling(child: object | object[], derender?: boolean): void;
 }
 declare class Point {
     x: number;
@@ -184,6 +213,8 @@ declare class HtmlBlock extends Base {
     hideWidth: boolean;
     minDisplayGroupSize: number;
     constructor(...Arguments: any);
+    static renderHtmlAttributes(el: HTMLElement, htmlblock: HtmlBlock, id: string): void;
+    static Render(htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function html(...Arguments: any): HtmlBlock;
 declare class Events extends Base {
@@ -209,6 +240,7 @@ declare class DisplayCell extends Base {
     static minDisplayGroupSize: number;
     static defaults: {
         dim: string;
+        children: any[];
     };
     static argMap: {
         string: string[];
@@ -241,6 +273,7 @@ declare class DisplayCell extends Base {
     hMenuBar(menuObj: object): void;
     vMenuBar(menuObj: object): void;
     static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
+    static Render(displaycell: DisplayCell, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function I(...Arguments: any): DisplayCell;
 declare class DisplayGroup extends Base {
@@ -272,6 +305,7 @@ declare class DisplayGroup extends Base {
     constructor(...Arguments: any);
     percentToPx(displaycell: DisplayCell): void;
     totalPx(addMin?: boolean): number;
+    static Render(displaygroup: DisplayGroup, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function h(...Arguments: any): DisplayCell;
 declare function v(...Arguments: any): DisplayCell;
@@ -319,10 +353,9 @@ declare class Handler extends Base {
     static screensizeToCoord(dislaycell: DisplayCell, handlerMargin: number): void;
     static updateScreenSize(): void;
     static update(ArrayofHandlerInstances?: Handler[], instanceNo?: number, derender?: boolean): void;
-    static renderDisplayCell(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
-    static renderDisplayGroup(parentDisplaycell: DisplayCell, derender: boolean): void;
-    static renderHtmlBlock(displaycell: DisplayCell, derender: boolean, parentDisplaygroup: DisplayGroup): void;
-    static renderHtmlAttributes(el: HTMLElement, htmlblock: HtmlBlock, id: string): void;
+    static RenderStartingpoint(): Handler[];
+    static RenderEndingPoint(): void;
+    static Render(handlerInstance: Handler, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function H(...Arguments: any): Handler;
 declare class Css extends Base {
@@ -547,7 +580,7 @@ declare class DragBar extends Base {
     ishor: boolean;
     isLast: boolean;
     constructor(...Arguments: any);
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static Render(dragbar_: DragBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function dragbar(...Arguments: any): DisplayCell;
 declare class ScrollBar extends Base {
@@ -899,6 +932,7 @@ declare class BindHandler extends Base {
     handler: Handler;
     constructor(...Arguments: any);
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static Render(bindHandler: BindHandler, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function bindHandler(...Arguments: any): DisplayCell;
 declare class winHolder extends Base {

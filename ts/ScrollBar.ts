@@ -129,12 +129,14 @@ class ScrollBar extends Base {
     }
     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         // console.log("render In Scrollbar")
-        Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
+        Render.update(this.scrollbarDisplayCell, derender);
+        //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
     }
     delete(){
         // console.log(`ScrollBar :${this.label} destroyed`);
         FunctionStack.pop(this.label, ((this.ishor) ? "ishorTrue" : "ishorFalse"))
-        Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
+        Render.update(this.scrollbarDisplayCell, true);
+        //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
         ScrollBar.deactivate(this);
     }
     onWheel(event:WheelEvent) {

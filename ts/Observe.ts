@@ -74,7 +74,8 @@ class Observe extends Base {
                 }
                 let Oindex = Observe.instances.indexOf(observeInstance);
                 Observe.instances.splice(Oindex, 1);
-                Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true)
+                Render.update(handler.rootCell, true)
+                //Handler.renderDisplayCell(handler.rootCell, undefined, undefined, true)
                 index -= 1;
             }
         }

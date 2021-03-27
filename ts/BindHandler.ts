@@ -20,8 +20,13 @@ class BindHandler extends Base {
         if (!this.handler.coord) this.handler.coord = new Coord();
         this.handler.coord.copy( this.parentDisplaycell.coord );
     }
-
+    static Render(bindHandler:BindHandler, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        if (!bindHandler.handler.coord) bindHandler.handler.coord = new Coord();
+        bindHandler.handler.coord.copy( bindHandler.parentDisplaycell.coord );
+        return {zindex}
+    }
 }
+Render.register("BindHandler", BindHandler);
 function bindHandler(...Arguments:any) {
     let overlay=new Overlay("BindHandler", ...Arguments);
     let newBindHandler = <BindHandler>overlay.returnObj;
