@@ -68,7 +68,9 @@ class Builder extends Base {
       )
     }
     static updateTree(){
-        // Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
+        let node = node_.byLabel("Handler_Client Window");
+        if (node)Tree_.byLabel("HandlerTree").newRoot( node );
+
     }
     static TOOLBAR = toolBar("Main_toolbar", 40, 25,
         I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
@@ -80,7 +82,10 @@ class Builder extends Base {
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
-Builder.updateTree()
+setTimeout(() => {
+    Builder.updateTree();Render.update();
+}, 0);
+
 
 let outside = new Modal("outside",I("outside_", css("outside","background:red;opacity:0.25")));
 let inside = new Modal("inside", I("inside_", css("inside","background:green;opacity:0.25")));

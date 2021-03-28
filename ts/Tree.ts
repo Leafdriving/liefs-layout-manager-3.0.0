@@ -98,19 +98,27 @@ class Tree_ extends Base {
             node:node_ = this.rootNode,
             traverseChildren:(node: node_)=>boolean = function(){return true},
             traverseNode:(node: node_)=>boolean = function(){return true}
-            ) {  // 
+    ){Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this)}
+
+    static traverse(traverseFunction:(node: node_) => void,
+            node:node_,
+            traverseChildren:(node: node_)=>boolean = function(){return true},
+            traverseNode:(node: node_)=>boolean = function(){return true},
+            TreeInstance:Tree_
+            ) {  //
+         
         if (traverseNode(node)) {
             traverseFunction(node);                
             if (traverseChildren(node)) {    
                 if (node.children)
                     for (let index = 0; index < node.children.length; index++)
-                        this.traverse(traverseFunction,
+                    TreeInstance.traverse(traverseFunction,
                                         node.children[index],
                                         traverseChildren,
                                         traverseNode);
             }
         }
-        if (node.NextSibling) this.traverse(traverseFunction,
+        if (node.NextSibling) TreeInstance.traverse(traverseFunction,
                                             node.NextSibling,
                                             traverseChildren,
                                             traverseNode);

@@ -72,8 +72,22 @@ BaseF.mergeObjects = function (startObj, AddObj) {
         returnObject[j] = AddObj[j];
     return returnObject;
 };
-class Base {
-    constructor() {
+// class foo extends Function {
+//     constructor() {
+//       super("...args", "return this.bar(...args)");
+//       this._pos = 0;
+//       return this.bind(this);
+//     }
+//     bar(arg) {
+//       console.log(arg + this._pos);
+//     }
+//   }
+//   const obj = new foo();
+//   let var1 = obj('something ');
+class Base /* extends Function */ {
+    constructor(...neverRead) {
+        //super("...args", "return this.bar(...args)");
+        //return this.bind(this);
     }
     static Render(instance, zindex, derender, node) {
         console.log('render not implemented -> So make CLASS.Render()', this);
@@ -154,6 +168,15 @@ class Base {
             CLASS["labelNo"] += 1;
             instance["label"] = `${CLASS["name"]}_${CLASS["labelNo"]}`;
         }
+    }
+    static recycle(label, ArgsObj = {}) {
+        let CLASS = this, newObject = CLASS.byLabel(label);
+        if (!newObject)
+            newObject = new CLASS(label, ArgsObj);
+        else
+            for (const key in ArgsObj)
+                newObject[key] = ArgsObj[key];
+        return newObject;
     }
 }
 // export {BaseF, Base};
@@ -381,6 +404,8 @@ class Render {
         }
         else {
             Render.oldRootnode = Render.node;
+            // let temp = new Tree_();
+            // Render.node = temp.rootNode;
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);
             Render.RenderObjectList(renderChildren.siblings, Render.node, zindex, true);
@@ -2796,6 +2821,15 @@ class node_ extends Base {
             this.NextSibling.log();
     }
     byLabel(label) { return node_.byLabel(label); }
+    static copy(node, suffix = "_copy") {
+        let newNode = node_.recycle(`${node.label}${suffix}`); // new node_(`${node}${suffix}`);
+        if (node.children && node.children.length)
+            for (let index = 0; index < node.children.length; index++)
+                newNode.newChild(node_.copy(node.children[index]));
+        if (node.NextSibling)
+            newNode.newSibling(node_.copy(node.NextSibling));
+        return newNode;
+    }
 }
 // static Proxy(THIS:node_){
 //     return new Proxy(THIS, {
@@ -2887,17 +2921,18 @@ class Tree_ extends Base {
             I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`, (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon, node.ParentNodeTree.iconClass, events({ onclick: function (mouseEvent) { Tree_.toggleCollapse(this, node, mouseEvent); } }))
             : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), nodeLabel);
     }
-    traverse(traverseFunction, node = this.rootNode, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
+    traverse(traverseFunction, node = this.rootNode, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) { Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this); }
+    static traverse(traverseFunction, node, traverseChildren = function () { return true; }, traverseNode = function () { return true; }, TreeInstance) {
         if (traverseNode(node)) {
             traverseFunction(node);
             if (traverseChildren(node)) {
                 if (node.children)
                     for (let index = 0; index < node.children.length; index++)
-                        this.traverse(traverseFunction, node.children[index], traverseChildren, traverseNode);
+                        TreeInstance.traverse(traverseFunction, node.children[index], traverseChildren, traverseNode);
             }
         }
         if (node.NextSibling)
-            this.traverse(traverseFunction, node.NextSibling, traverseChildren, traverseNode);
+            TreeInstance.traverse(traverseFunction, node.NextSibling, traverseChildren, traverseNode);
     }
     newRoot(node) {
         let THIS = this;

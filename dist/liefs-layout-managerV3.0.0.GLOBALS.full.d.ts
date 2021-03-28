@@ -47,10 +47,11 @@ declare class Base {
     toString: Function;
     label: string;
     renderNode: node_;
-    constructor();
+    constructor(...neverRead: any);
     buildBase(...Arguments: any): void;
     static buildBase(THIS: any, ...Arguments: any): void;
     static makeLabel(instance: any): void;
+    static recycle(label: string, ArgsObj?: object): object;
 }
 interface FStack {
     [key: string]: [Function, string][];
@@ -767,6 +768,7 @@ declare class node_ extends Base {
     parent(): node_;
     log(): void;
     byLabel(label: string): any;
+    static copy(node: node_, suffix?: string): node_;
 }
 declare function sample(): Tree_;
 declare const defaultArgMap: ArgMap;
@@ -825,6 +827,7 @@ declare class Tree_ extends Base {
     onNodeCreation: (node: node_) => void;
     constructor(...Arguments: any);
     traverse(traverseFunction: (node: node_) => void, node?: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
+    static traverse(traverseFunction: (node: node_) => void, node: node_, traverseChildren: (node: node_) => boolean, traverseNode: (node: node_) => boolean, TreeInstance: Tree_): void;
     newRoot(node: node_): void;
     root(...Arguments: any): node_;
     log(): void;

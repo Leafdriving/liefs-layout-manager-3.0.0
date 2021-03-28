@@ -13,6 +13,8 @@ class Render {
             Render.RenderObjectList( renderChildren.siblings, Render.node, zindex );
         } else {
             Render.oldRootnode = Render.node;
+            // let temp = new Tree_();
+            // Render.node = temp.rootNode;
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);
             Render.RenderObjectList( renderChildren.siblings, Render.node , zindex, true);

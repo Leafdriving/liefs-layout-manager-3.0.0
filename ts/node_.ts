@@ -124,6 +124,15 @@ class node_ extends Base {
         if (this.NextSibling) this.NextSibling.log();
     }
     byLabel(label:string){return node_.byLabel(label);}
+    static copy(node:node_, suffix = "_copy") {
+        let newNode = <node_>node_.recycle(`${node.label}${suffix}`) // new node_(`${node}${suffix}`);
+        if (node.children && node.children.length)
+            for (let index = 0; index < node.children.length; index++) 
+                newNode.newChild( node_.copy(node.children[index]) );
+        if (node.NextSibling)
+            newNode.newSibling( node_.copy(node.NextSibling) )
+        return newNode;
+    }
 }
 
 function sample(){

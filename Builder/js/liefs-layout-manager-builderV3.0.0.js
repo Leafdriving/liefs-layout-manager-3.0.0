@@ -280,7 +280,9 @@ class Builder extends Base {
         Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", Builder.TOOLBAR, dockable(h("Tree_Body", 5, dragbar(v("TreeTops", "300px", 5, pageselect("name", "20px", treePagesDisplayCell), treePagesDisplayCell), 200, 1000), bindHandler(I("Main_body"), Builder.clientHandler)))))));
     }
     static updateTree() {
-        // Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
+        let node = node_.byLabel("Handler_Client Window");
+        if (node)
+            Tree_.byLabel("HandlerTree").newRoot(node);
     }
 }
 Builder.labelNo = 0;
@@ -295,7 +297,10 @@ Builder.TOOLBAR = toolBar("Main_toolbar", 40, 25, I("toolbarb1", `<button style=
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
-Builder.updateTree();
+setTimeout(() => {
+    Builder.updateTree();
+    Render.update();
+}, 0);
 let outside = new Modal("outside", I("outside_", css("outside", "background:red;opacity:0.25")));
 let inside = new Modal("inside", I("inside_", css("inside", "background:green;opacity:0.25")));
 let show = function (coord) {

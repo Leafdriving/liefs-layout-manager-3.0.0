@@ -57,7 +57,28 @@ class BaseF {
     };
 }
 
-class Base {
+
+
+
+// class foo extends Function {
+//     constructor() {
+//       super("...args", "return this.bar(...args)");
+//       this._pos = 0;
+//       return this.bind(this);
+//     }
+    
+//     bar(arg) {
+//       console.log(arg + this._pos);
+//     }
+//   }
+  
+//   const obj = new foo();
+  
+//   let var1 = obj('something ');
+
+
+
+class Base /* extends Function */ {
     static Render(instance:object, zindex:number, derender:boolean, node:node_): zindexAndRenderChildren {
         console.log('render not implemented -> So make CLASS.Render()', this);
         return {zindex:0, children:[]};
@@ -113,7 +134,9 @@ class Base {
     label:string;
     renderNode:node_;
 
-    constructor(){
+    constructor(...neverRead:any){
+        //super("...args", "return this.bar(...args)");
+        //return this.bind(this);
     }
     buildBase(...Arguments:any){this.constructor["buildBase"](this, ...Arguments);}
     static buildBase(THIS:any, ...Arguments:any){
@@ -135,6 +158,12 @@ class Base {
             CLASS["labelNo"] += 1;
             instance["label"] = `${CLASS["name"]}_${CLASS["labelNo"]}`
         }
+    }
+    static recycle(label:string, ArgsObj:object = {}){
+        let CLASS = this, newObject:object = CLASS.byLabel(label);
+        if (!newObject) newObject = new CLASS(label, ArgsObj);
+        else for (const key in ArgsObj) newObject[key] = ArgsObj[key];
+        return newObject;
     }
 }
 // export {BaseF, Base};
