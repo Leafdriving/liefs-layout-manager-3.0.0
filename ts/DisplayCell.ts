@@ -158,7 +158,7 @@ class DisplayCell extends Base {
         if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, derender);
         if (displaycell.coord.offset) Handler.activeOffset = false;
 
-        return {zindex,
+        return {zindex:zindex+Render.zIncrement,
             siblings: renderChildren.siblings};
     }
 }

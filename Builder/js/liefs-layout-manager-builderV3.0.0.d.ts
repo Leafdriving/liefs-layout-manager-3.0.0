@@ -65,17 +65,10 @@ declare class Builder extends Base {
         string: string[];
     };
     constructor(...Arguments: any);
-    static makeHandlerTree(): node_;
-    static makeDisplayCell(node: node_, displaycell: DisplayCell): void;
     static clientHandler: Handler;
     static buildClientHandler(): void;
     static propertiesModal: winModal;
     static hoverModal: Modal;
-    static xboxSVG(boundCoord: Coord, Boxes: Coord[]): string;
-    static onClickTree(mouseEvent: MouseEvent, el: HTMLElement): void;
-    static onHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
-    static onLeaveHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
-    static onNodeCreation(node: node_): void;
     static mainHandler: Handler;
     static buildMainHandler(): void;
     static updateTree(): void;

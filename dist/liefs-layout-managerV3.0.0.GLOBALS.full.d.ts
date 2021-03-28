@@ -106,11 +106,12 @@ declare class Render {
     static node: node_;
     static zIncrement: number;
     static zHandlerIncrement: number;
-    static update(source?: any, derender?: boolean): void;
+    static update(source?: any, derender?: boolean, zindex?: number): void;
     static RenderObjectList(renderChildren: RenderChild[], node: node_, zindex?: number, isSibling?: boolean): void;
     static classes: {};
     static className(object_: object): string;
     static register(label: string, object_: object): void;
+    static log(): void;
 }
 declare class RenderChildren {
     children: RenderChild[];
@@ -829,7 +830,6 @@ declare class Tree_ extends Base {
     log(): void;
     derender(node: node_): void;
     derenderChildren(node: node_): void;
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
     static Render(thisTree: Tree_, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     popOverlay(ishor: boolean): void;
     getScrollBarsFromOverlays(): ScrollBar[];
