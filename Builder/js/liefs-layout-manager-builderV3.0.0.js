@@ -65,7 +65,7 @@ class Properties extends Base {
         keyCells.y.htmlBlock.innerHTML = coord.y.toString();
         keyCells.width.htmlBlock.innerHTML = coord.width.toString();
         keyCells.height.htmlBlock.innerHTML = coord.height.toString();
-        Handler.update();
+        Render.update();
     }
     static displayLabel(className, label, dim = "50px") {
         return I(`${className}_${label}_label`, `${label}:`, dim, bCss.bgLight);
@@ -309,7 +309,7 @@ class Builder extends Base {
     }
     static buildClientHandler() {
         Builder.clientHandler =
-            H("Client Window", h("Client_h", 5, I("Client_Main1", "left", bCss.bgCyan, "500px"), I("Client_Main2", "right", bCss.bgCyan, "500px")), false);
+            H("Client Window", h("Client_h", 5, I("Client_Main1", "left", /*bCss.bgCyan,*/ "500px"), I("Client_Main2", "right", bCss.bgCyan, "500px")), false);
     }
     static xboxSVG(boundCoord, Boxes) {
         let top = `<svg width="${boundCoord.width}" height="${boundCoord.height}">`;
@@ -378,21 +378,29 @@ class Builder extends Base {
             : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), I(`${node.label}_typeIcon`, `${node.ParentNodeTree.height}px`, typeIcon), nodeLabel);
     }
     static buildMainHandler() {
-        let treePages = P("TreePages", 
-        // page 1
-        tree("HandlerTree", Builder.onNodeCreation, I("Main_tree", bCss.bgLight), bCss.treeItem, events({ onmouseover: function (mouseEvent) { Builder.onHoverTree(mouseEvent, this); },
-            onmouseleave: function (mouseEvent) { Builder.onLeaveHoverTree(mouseEvent, this); },
-            onclick: function (mouseEvent) { Builder.onClickTree(mouseEvent, this); },
-        })), 
-        // page 2
-        I("Dummy2", "Dummy2"), I("Dummy3", "Dummy3"));
-        let treePagesSelector = pageselect("TreePagesSelector", "20px", treePages);
+        // let treePages = P("TreePages",
+        //     // page 1
+        //     tree("HandlerTree", Builder.onNodeCreation,
+        //         I("Main_tree",  bCss.bgLight),
+        //         bCss.treeItem,
+        //         events({onmouseover:function(mouseEvent:MouseEvent){Builder.onHoverTree(mouseEvent, this)},
+        //                 onmouseleave:function(mouseEvent:MouseEvent){Builder.onLeaveHoverTree(mouseEvent, this)},
+        //                 onclick:function(mouseEvent:MouseEvent){Builder.onClickTree(mouseEvent, this)},
+        //         }),
+        //     ),
+        //     // page 2
+        //     I("Dummy2", "Dummy2"),
+        //     I("Dummy3", "Dummy3"),
+        // )
+        // let treePagesSelector = pageselect("TreePagesSelector", "20px", treePages)
         Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", Builder.TOOLBAR, dockable(h("Tree_Body", 5, dragbar(v("TreeTops", "300px", 5, 
         //pageselect("name","20px", new Pages("pagename",I(),I())),
-        treePagesSelector, treePages), 200, 1000), bindHandler(I("Main_body"), Builder.clientHandler)))))));
+        //treePagesSelector,
+        //treePages,
+        I("Temp", "temp")), 200, 1000), bindHandler(I("Main_body"), Builder.clientHandler)))))));
     }
     static updateTree() {
-        Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
+        // Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
     }
 }
 Builder.labelNo = 0;

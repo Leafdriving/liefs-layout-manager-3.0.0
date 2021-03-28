@@ -1,70 +1,70 @@
 
-class winHolder extends Base {
-    static labelNo = 0;
-    static instances:winHolder[] = [];
-    static activeInstances:winHolder[] = [];
-    static defaults = {winModals:[]}
-    static argMap = {
-        string : ["label"],
-    }
-    label:string;
-    retArgs:ArgsObj;   // <- this will appear
-    rootDisplayCell: DisplayCell;
-    WinModal:winModal;  // root
-    winModals:winModal[]; // children
-    constructor(...Arguments:any){
-        super();this.buildBase(...Arguments);        
-        winHolder.makeLabel(this);
-        if ("winModal" in this.retArgs) this.winModals = this.retArgs["winModal"];
-        for (let index = 0; index < this.winModals.length; index++)
-            this.disableWinModal(this.winModals[index]);
-        console.log("before Build");
-        this.build();
-        console.log("after Build");
-    }
-    build(){
-        let maxWidth = 0;
-        let height = 0;
-        let cellArray:DisplayCell[] = [];
-        console.log("Before for")
-        for (let index = 0; index < this.winModals.length; index++) {
-            let wmodal = this.winModals[index];
-            wmodal.parentHolder = this;
-            let modal = wmodal.modal
-            let displaycell = modal.rootDisplayCell;
-            if (modal.coord.x > maxWidth) maxWidth = modal.coord.x;
-            displaycell.dim = `${modal.coord.y}px`;
-            cellArray.push( displaycell );
-            height += pf.pxAsNumber(displaycell.dim);
-        }
-        console.log("After For")
-        this.rootDisplayCell = v(`${this.label}_winHolder`,{cellArray})
-        // this.WinModal = new winModal(`${this.label}_winHolder_parent`,
-        //                                 {body:this.rootDisplayCell,
-        //                                 headerText:"MyGroup"},
-        //                                 this.winModals[0].modal.coord.x, this.winModals[0].modal.coord.y,
-        //                                 maxWidth, height);
-        console.log("Build Over")
-    }
-    add(winmodal:winModal, index:number = undefined) {
-        this.disableWinModal(winmodal);
-        if (index != undefined) this.winModals.splice(index, 0, winmodal);
-        else this.winModals.push(winmodal);
-    }
-    pop(winmodal:winModal) {
-        this.enableWinModal(winmodal);
-        let index = this.winModals.indexOf(winmodal);
-        if (index > -1) this.winModals.splice(index, 1);
-    }
-    disableWinModal(winmodal:winModal){
-        console.log("Disabling ", winmodal.label)
-            winmodal.modal.hide();
-            winmodal.modal.rootDisplayCell.popOverlay("winModal");
-    }
-    enableWinModal(winmodal:winModal){
+// class winHolder extends Base {
+//     static labelNo = 0;
+//     static instances:winHolder[] = [];
+//     static activeInstances:winHolder[] = [];
+//     static defaults = {winModals:[]}
+//     static argMap = {
+//         string : ["label"],
+//     }
+//     label:string;
+//     retArgs:ArgsObj;   // <- this will appear
+//     rootDisplayCell: DisplayCell;
+//     WinModal:winModal;  // root
+//     winModals:winModal[]; // children
+//     constructor(...Arguments:any){
+//         super();this.buildBase(...Arguments);        
+//         winHolder.makeLabel(this);
+//         if ("winModal" in this.retArgs) this.winModals = this.retArgs["winModal"];
+//         for (let index = 0; index < this.winModals.length; index++)
+//             this.disableWinModal(this.winModals[index]);
+//         console.log("before Build");
+//         this.build();
+//         console.log("after Build");
+//     }
+//     build(){
+//         let maxWidth = 0;
+//         let height = 0;
+//         let cellArray:DisplayCell[] = [];
+//         console.log("Before for")
+//         for (let index = 0; index < this.winModals.length; index++) {
+//             let wmodal = this.winModals[index];
+//             wmodal.parentHolder = this;
+//             let modal = wmodal.modal
+//             let displaycell = modal.rootDisplayCell;
+//             if (modal.coord.x > maxWidth) maxWidth = modal.coord.x;
+//             displaycell.dim = `${modal.coord.y}px`;
+//             cellArray.push( displaycell );
+//             height += pf.pxAsNumber(displaycell.dim);
+//         }
+//         console.log("After For")
+//         this.rootDisplayCell = v(`${this.label}_winHolder`,{cellArray})
+//         // this.WinModal = new winModal(`${this.label}_winHolder_parent`,
+//         //                                 {body:this.rootDisplayCell,
+//         //                                 headerText:"MyGroup"},
+//         //                                 this.winModals[0].modal.coord.x, this.winModals[0].modal.coord.y,
+//         //                                 maxWidth, height);
+//         console.log("Build Over")
+//     }
+//     add(winmodal:winModal, index:number = undefined) {
+//         this.disableWinModal(winmodal);
+//         if (index != undefined) this.winModals.splice(index, 0, winmodal);
+//         else this.winModals.push(winmodal);
+//     }
+//     pop(winmodal:winModal) {
+//         this.enableWinModal(winmodal);
+//         let index = this.winModals.indexOf(winmodal);
+//         if (index > -1) this.winModals.splice(index, 1);
+//     }
+//     disableWinModal(winmodal:winModal){
+//         console.log("Disabling ", winmodal.label)
+//             winmodal.modal.hide();
+//             winmodal.modal.rootDisplayCell.popOverlay("winModal");
+//     }
+//     enableWinModal(winmodal:winModal){
 
-    }
-}
+//     }
+// }
 
 
 
@@ -84,7 +84,7 @@ class winModal extends Base {
     }
     retArgs:ArgsObj;   // <- this will appear
     label:string;
-    parentHolder: winHolder;
+    // parentHolder: winHolder;
 
     rootDisplayCell: DisplayCell;
 
@@ -167,14 +167,14 @@ class winModal extends Base {
         this.previousModalHeight = coord.height;
         this.modal.setSize(coord.x, coord.y, coord.width, this.headerHeight);
         this.rootDisplayCell.dim = `${this.headerHeight}px`;
-        Handler.update();
+        Render.update();
     }
     toggleOpen(){
         this.rootDisplayCell.displaygroup.cellArray = this.hiddenCells;
         let coord = this.modal.coord;
         this.rootDisplayCell.dim = `${this.previousModalHeight}px`;
         this.modal.setSize(coord.x, coord.y, coord.width, this.previousModalHeight);
-        Handler.update();
+        Render.update();
     }
     build(){
         this.buildHeader();
@@ -188,7 +188,7 @@ class winModal extends Base {
         let numbers = this.retArgs["number"];
         
         if (!numbers) numbers = [];
-        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, {type: ModalType.winModal});
+        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, {type: HandlerType.winModal});
         this.modal.dragWith(`${this.label}_title`);
         this.modal.closeWith(`${this.label}_close`);
         this.modal.show();
@@ -241,6 +241,56 @@ class winModal extends Base {
             }
         }
     }
+    static Render(winmodal_:winModal, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        //console.log(this.label)
+        let thisheader = winmodal_.header.displaygroup.cellArray[0];
+        if (Modal.movingInstace && Modal.movingInstace != winmodal_.modal) {
+            let movingHeader = Modal.movingInstace.rootDisplayCell.displaygroup.cellArray[0];
+            
+            if(!movingHeader.coord.isCoordCompletelyOutside(thisheader.coord)){
+                if (!winModal.validDropWinModalInstance) {
+                    winModal.validDropWinModalInstance = winmodal_;
+                    if (!winmodal_.highlightHeaderState1){
+                        winmodal_.hightlightHeader();
+                        winmodal_.highlightHeaderState1 = true;
+                    }
+                }
+            }else{
+                if (winModal.validDropWinModalInstance == winmodal_) {
+                    winModal.validDropWinModalInstance = undefined;
+                    if (winmodal_.highlightHeaderState1){
+                        winmodal_.hightlightHeader(false)
+                        winmodal_.highlightHeaderState1 = false;
+                    }
+                }
+            }
+        }
+        if (Modal.movingInstace && Modal.movingInstace == winmodal_.modal) {
+            winModal.movingInstance = winmodal_;
+        }
+
+        for (let index = 0; index < PageSelect.instances.length; index++) {
+            const pageSelectInstance = PageSelect.instances[index];
+            let item = DisplayCell.byLabel(`${pageSelectInstance.label}_0`);
+            if(document.getElementById(`${pageSelectInstance.label}_0`)){
+                if(!thisheader.coord.isCoordCompletelyOutside(item.coord)){
+                    if (!winmodal_.highlightHeaderState2){
+                        winmodal_.hightlightHeader();
+                        winModal.validpageSelectInstance = pageSelectInstance;
+                        winmodal_.highlightHeaderState2 = true;
+                    }
+                } else {
+                    if (winmodal_.highlightHeaderState2){
+                        winmodal_.hightlightHeader(false)
+                        winModal.validpageSelectInstance = undefined;
+                        winmodal_.highlightHeaderState2 = false;
+                    }
+                }
+            }
+        }
+
+        return {zindex}
+    }
     hightlightHeader(highlight:boolean=true) {
         let thisheader = this.header.displaygroup.cellArray[0];
         let isHighlighted = thisheader.htmlBlock.css.endsWith("Selected")
@@ -249,6 +299,7 @@ class winModal extends Base {
     }
     
 }
+Render.register("winModal", winModal);
 function winmodal(...Arguments:any):winModal {
     let overlay=new Overlay("winModal", ...Arguments);
     let newWinModal = <winModal>overlay.returnObj;

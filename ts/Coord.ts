@@ -206,14 +206,14 @@ class Coord extends Base {
         return returnString;
     }
     isPointIn(x:number, y:number): boolean {return (this.x <= x && x <= this.x+this.width && this.y <= y && y <= this.y+this.height)}
-    asAttributeString(){
-        return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; ` + 
-               `z-index:${this.zindex};`;
-    }
-    newAsAttributeString(){
+    // asAttributeString(){
+    //     return `left: ${this.x}px; top:${this.y}px; width:${this.width}px; height:${this.height}px; ` + 
+    //            `z-index:${this.zindex};`;
+    // }
+    newAsAttributeString(zindex:number){
         return `left: ${this.x}px; top:${this.y}px;`
          +`${ (this.hideWidth) ? "" : "width:" + this.width + "px; " }`
-        +`height:${this.height}px; z-index:${this.zindex + ((Handler.activeOffset) ? Handler.zindexIncrement*3 : 0)};${this.newClipStyleString()}`
+        +`height:${this.height}px; z-index:${zindex};${this.newClipStyleString()}`
     }
 }
 // export {Point, Within, Coord}

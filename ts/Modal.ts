@@ -7,11 +7,7 @@
 // import {events, Events} from './Events';
 // import {Overlay} from './Overlay';
 // import {mf, pf} from './PureFunctions';
-enum ModalType {
-    winModal = "winModal",
-    toolbar = "toolbar",
-    other = "other",
-}
+
 
 class Modal extends Base {
 //     static closeCss = css("closeCss",`-moz-box-sizing: border-box;
@@ -52,6 +48,7 @@ class Modal extends Base {
             }});
     };
     static onDown(){
+        // console.log("ondown")
         let THIS = this as unknown as Modal;
         Modal.movingInstace = THIS;
         window.dispatchEvent(new CustomEvent('ModalStartDrag', { detail: THIS }));
@@ -59,10 +56,12 @@ class Modal extends Base {
     }
     
     static onMove(offset:{x:number, y:number}){
+        //console.log("onmove")
         let THIS = this as unknown as Modal;
         return Modal.moveModal(THIS, offset);
     }
     static onUp(offset:{x:number, y:number}){
+        // console.log("onup")
         let THIS = this as unknown as Modal;
         Modal.movingInstace = undefined;
         window.dispatchEvent(new CustomEvent('ModalDropped', { detail: THIS }));
@@ -74,6 +73,7 @@ class Modal extends Base {
     }
     static moveModal(THIS:Modal, offset:{x:number, y:number}){
         let handler = THIS.handler
+        // console.log(handler)
         Modal.offset = offset;
         let [width, height]=pf.viewport()
         let x=Modal.x + offset["x"];
@@ -85,9 +85,10 @@ class Modal extends Base {
         if (y < 0) y = 0;
         if (y + handler.coord.height > height) y = height - handler.coord.height;
         handler.coord.y = y;
-        Handler.update();
+        // console.log(handler.coord.x, handler.coord.y)
+        Render.update();
     }
-    static defaults = {type:ModalType.other}
+    static defaults = {type:HandlerType.other}
     static argMap = {
         string : ["label"],
         DisplayCell : ["rootDisplayCell"],
@@ -96,21 +97,24 @@ class Modal extends Base {
     label:string;
     rootDisplayCell: DisplayCell;
     handler:Handler
-    type: ModalType;
+    type: HandlerType;
     get coord():Coord {return this.handler.coord}
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
 
         Modal.makeLabel(this);
 
-        this.handler = new Handler(`${this.label}_handler`, false, this.rootDisplayCell, new Coord());
+        this.handler = new Handler(`${this.label}_handler`, false, this.rootDisplayCell, new Coord(),{type:this.type});
         if ("number" in this.retArgs){
             this.setSize(...this.retArgs["number"]);
         } else this.setSize();
     }
     setSize(...numbers:number[]){Modal.setSize(this, ...numbers)}
-    show(){Handler.activate(this.handler);Handler.update();}
-    hide(){this.handler.pop();}
+    show(){Handler.activate(this.handler);Render.update();}
+    hide(){
+        // console.log("Modal Hide Called");
+        this.handler.pop();
+    }
     isShown(){return Handler.isActive(this.handler)}
     dragWith(...Arguments:any){
         let retArgs = BaseF.argumentsByType(Arguments);

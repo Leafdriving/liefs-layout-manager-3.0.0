@@ -87,7 +87,7 @@ class Properties extends Base {
         keyCells.width.htmlBlock.innerHTML = coord.width.toString();
         keyCells.height.htmlBlock.innerHTML = coord.height.toString();
 
-        Handler.update();
+        Render.update();
     }
     static displayLabel(className:string, label:string, dim = "50px"){
         return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLight);

@@ -101,7 +101,7 @@ class ScrollBar extends Base {
         if (this.offset < 0) this.offset = 0;
         let max = this.displaySize-this.viewPortSize;
         if (this.offset > max) this.offset = max;
-        Handler.update();
+        Render.update();
     }
 
     update(displaySize:number){
@@ -127,10 +127,15 @@ class ScrollBar extends Base {
         this.Bar.dim = `${ Math.round(this.viewPortSize*this.scaleFactor) }px`;
         return this.offset;
     }
-    render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-        // console.log("render In Scrollbar")
-        Render.update(this.scrollbarDisplayCell, derender);
-        //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
+    // render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+    //     // console.log("render In Scrollbar")
+    //     Render.update(this.scrollbarDisplayCell, derender);
+    //     //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
+    // }
+
+    static Render(scrollbar_:ScrollBar, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        Render.update(scrollbar_.scrollbarDisplayCell, derender);
+        return {zindex}
     }
     delete(){
         // console.log(`ScrollBar :${this.label} destroyed`);
@@ -176,6 +181,7 @@ class ScrollBar extends Base {
         return dist;
     }
 }
+Render.register("ScrollBar", ScrollBar);
 function scrollbar(...Arguments:any) {
     let overlay=new Overlay("ScrollBar", ...Arguments);
     let newScrollBar = <ScrollBar>overlay.returnObj;

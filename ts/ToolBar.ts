@@ -54,6 +54,7 @@ class Dockable extends Base {
         if (toolbar) {
             let index = this.displaygroup.cellArray.indexOf(toolbar.rootDisplayCell);
             if (index > -1) {        // is in this cellArray
+                // console.log("Undock")
                 modal.coord.x = toolbar.rootDisplayCell.coord.x;
                 modal.coord.y = toolbar.rootDisplayCell.coord.y;
                 toolbar.state = (ishor) ? TBState.modalWasDockedInHor : TBState.modalWasDockedInVer;
@@ -68,6 +69,7 @@ class Dockable extends Base {
         let toolbar = <ToolBar>ToolBar.byLabel( modal.label.slice(0, -6) );
         if (this.dropZones) {
             if (Dockable.activeDropZoneIndex != undefined && Dockable.DockableOwner == this.label) { // DOCK IT!
+                // console.log("Docked! -> and HIDE")
                 toolbar.modal.hide();
                 let ishor = this.displaygroup.ishor;
                 toolbar.state = (ishor) ? TBState.dockedInHorizontal :TBState.dockedInVertical;
@@ -76,7 +78,7 @@ class Dockable extends Base {
                 Dockable.activeDropZoneIndex = undefined;
                 toolbar.parentDisplayGroup = this.displaygroup;
                 this.dropZones = undefined;
-                Handler.update();
+                Render.update();
             }
 
         }
@@ -125,25 +127,35 @@ class Dockable extends Base {
                     cellArray.splice(index, 1);
         }   }   }
     }
-    render(unuseddisplaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-        if (Modal.movingInstace && Modal.movingInstace.type == ModalType.toolbar) {
+    // render(unuseddisplaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
+    //     if (Modal.movingInstace && Modal.movingInstace.type == ModalType.toolbar) {
+    //         let modal = Modal.movingInstace;
+    //         let toolbar = ToolBar.byLabel( modal.label.slice(0, -6) );
+    //         if (!this.dropZones)                                        // define DropZones
+    //             this.makeDropZones(toolbar.width, toolbar.height);
+    //         this.openCloseDropZones(toolbar.modal, toolbar.width, toolbar.height);
+    //    }
+    // //    if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
+    // //         let modal = Modal.movingInstace;
+    // //         // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
+    // //         if (!this.dropZones)                                        // define DropZones
+    // //             this.makeDropZones(modal.coord.width, modal.coord.height);
+    // //         this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
+    // //    }
+    // }   
+    static Render(dockable_:Dockable, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        if (Modal.movingInstace && Modal.movingInstace.type == HandlerType.toolbar) {
             let modal = Modal.movingInstace;
             let toolbar = ToolBar.byLabel( modal.label.slice(0, -6) );
-            if (!this.dropZones)                                        // define DropZones
-                this.makeDropZones(toolbar.width, toolbar.height);
-            this.openCloseDropZones(toolbar.modal, toolbar.width, toolbar.height);
+            if (!dockable_.dropZones)                                        // define DropZones
+            dockable_.makeDropZones(toolbar.width, toolbar.height);
+            dockable_.openCloseDropZones(toolbar.modal, toolbar.width, toolbar.height);
        }
-    //    if (Modal.movingInstace && Modal.movingInstace.type == ModalType.winModal && this.displaygroup.ishor) {
-    //         let modal = Modal.movingInstace;
-    //         // let winmodal = winModal.byLabel( modal.label.slice(0, -6) );
-    //         if (!this.dropZones)                                        // define DropZones
-    //             this.makeDropZones(modal.coord.width, modal.coord.height);
-    //         this.openCloseDropZones(modal, modal.coord.width, modal.coord.height);
-    //    }
-}   }
-                
-
-
+        return {zindex:zindex+Render.zIncrement}
+    }
+}
+    
+Render.register("Dockable", Dockable);
 function dockable(...Arguments:any) {
     let overlay=new Overlay("Dockable", ...Arguments);
     let newDockable = <Dockable>overlay.returnObj;
@@ -201,7 +213,7 @@ class ToolBar extends Base {
                 ),
                 ...this.displayCells
             );
-        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...this.size(), {type: ModalType.toolbar});
+        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...this.size(), {type: HandlerType.toolbar});
         this.modal.dragWith(`${this.label}_handle`);
     }
     size(){
@@ -214,7 +226,7 @@ class ToolBar extends Base {
         if (this.state == TBState.modalWasDockedInHor || this.state == TBState.modalWasDockedInVer){
             this.state = (this.state == TBState.modalWasDockedInHor) ? TBState.modalWasDockedInVer : TBState.modalWasDockedInHor;
             this.resizeForModal();
-            Handler.update();
+            Render.update();
         }
     }
     resizeForModal() {
@@ -238,20 +250,42 @@ class ToolBar extends Base {
         for (let index = 1; index < cellArray.length; index++) 
             cellArray[index].dim = `${(isHor) ? this.width : this.height}px`;
     }
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
-        if (parentDisplaygroup) {
-            if (parentDisplaygroup != this.parentDisplayGroup){
-                // This only happens when docked at start!
-                this.parentDisplayGroup = parentDisplaygroup;
+    // render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
+    //     if (parentDisplaygroup) {
+    //         if (parentDisplaygroup != this.parentDisplayGroup){
+    //             // This only happens when docked at start!
+    //             this.parentDisplayGroup = parentDisplaygroup;
 
-                this.modal.hide();
+    //             this.modal.hide();
+    //             let ishor = parentDisplaygroup.ishor;
+    //             this.state = (ishor) ? TBState.dockedInHorizontal :TBState.dockedInVertical;
+    //             this.resizeFordock();
+    //         }
+    //     }
+    // }
+    static Render(toolbar_:ToolBar, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        
+        let parentDisplaygroup = <DisplayGroup>(node.parent().parent().Arguments[1]);
+        //console.log(parentDisplaygroup)
+        
+        if (parentDisplaygroup) {
+            // console.log(parentDisplaygroup)
+            if (toolbar_.parentDisplayGroup == undefined){
+                // This only happens when docked at start!
+                toolbar_.parentDisplayGroup = parentDisplaygroup;
+                // console.log("Toolbar Render Hide");
+                // console.log(parentDisplaygroup.label, toolbar_.parentDisplayGroup.label)
+                toolbar_.modal.hide();
                 let ishor = parentDisplaygroup.ishor;
-                this.state = (ishor) ? TBState.dockedInHorizontal :TBState.dockedInVertical;
-                this.resizeFordock();
+                toolbar_.state = (ishor) ? TBState.dockedInHorizontal :TBState.dockedInVertical;
+                toolbar_.resizeFordock();
             }
         }
+        // console.log(toolbar_.state);
+        return {zindex:zindex+Render.zIncrement}
     }
 }
+Render.register("ToolBar", ToolBar);
 function toolBar(...Arguments:any) {
     let overlay=new Overlay("ToolBar", ...Arguments);
     let newToolBar = <ToolBar>overlay.returnObj;

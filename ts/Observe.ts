@@ -59,7 +59,7 @@ class Observe extends Base {
                 hCoord.within.height=dCoord.height- ((el.scrollWidth > el.clientWidth) ? Observe.Os_ScrollbarSize : 0 );
 
             });
-        Handler.update()
+        Render.update()
     }
     static derender(displaycell:DisplayCell){
         let handler:Handler;
@@ -85,7 +85,7 @@ class Observe extends Base {
         for (let index = 0; index < Observe.instances.length; index++) {
             const observeInstance = Observe.instances[index];
             observeInstance.parentDisplayCell.postRenderCallback(observeInstance.parentDisplayCell);
-            Handler.update();
+            Render.update();
         }
     }
     static update(){

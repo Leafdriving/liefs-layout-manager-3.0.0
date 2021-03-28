@@ -56,6 +56,7 @@ class BaseF {
         return returnObject;
     };
 }
+
 class Base {
     static Render(instance:object, zindex:number, derender:boolean, node:node_): zindexAndRenderChildren {
         console.log('render not implemented -> So make CLASS.Render()', this);

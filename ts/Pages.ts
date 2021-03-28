@@ -49,7 +49,7 @@ class Pages extends Base {
         if (pageNumber != this.currentPage){
             // this.previousPage = this.currentPage;
             this.currentPage = pageNumber;
-            Handler.update();
+            Render.update();
         }
     }
     byLabel(label:string): number {
@@ -147,7 +147,7 @@ class Pages extends Base {
             page.currentPage = 0;
         }
         Pages.parseURL();
-        Handler.update();
+        Render.update();
     }
 }
 function P(...Arguments:any){

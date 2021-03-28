@@ -181,8 +181,7 @@ declare class Coord extends Base {
     newClipStyleString(WITHIN?: Coord | Within): string;
     static clipStyleString(WITHIN: Coord | Within, COORD: Coord): string;
     isPointIn(x: number, y: number): boolean;
-    asAttributeString(): string;
-    newAsAttributeString(): string;
+    newAsAttributeString(zindex: number): string;
 }
 /**
  * This Class Holds the HTMLElement
@@ -309,6 +308,12 @@ declare class DisplayGroup extends Base {
 }
 declare function h(...Arguments: any): DisplayCell;
 declare function v(...Arguments: any): DisplayCell;
+declare enum HandlerType {
+    winModal = "winModal",
+    modal = "modal",
+    toolbar = "toolbar",
+    other = "other"
+}
 declare class Handler extends Base {
     static handlerMarginDefault: number;
     static firstRun: boolean;
@@ -319,6 +324,7 @@ declare class Handler extends Base {
         addThisHandlerToStack: boolean;
         controlledBySomething: boolean;
         activeOffset: boolean;
+        type: HandlerType;
     };
     static argMap: {
         string: string[];
@@ -338,6 +344,7 @@ declare class Handler extends Base {
     static activeOffset: boolean;
     static preRenderCallback: Function;
     static postRenderCallback: Function;
+    type: HandlerType;
     label: string;
     rootCell: DisplayCell;
     coord: Coord;
@@ -352,7 +359,6 @@ declare class Handler extends Base {
     static pop(handlerInstance?: Handler): Handler;
     static screensizeToCoord(dislaycell: DisplayCell, handlerMargin: number): void;
     static updateScreenSize(): void;
-    static update(ArrayofHandlerInstances?: Handler[], instanceNo?: number, derender?: boolean): void;
     static RenderStartingpoint(): Handler[];
     static RenderEndingPoint(): void;
     static Render(handlerInstance: Handler, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
@@ -623,7 +629,7 @@ declare class ScrollBar extends Base {
     onForwardArrow(mouseEvent?: MouseEvent): void;
     validateOffsetAndRender(): void;
     update(displaySize: number): number;
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static Render(scrollbar_: ScrollBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     delete(): void;
     onWheel(event: WheelEvent): void;
     static onWheel(event: WheelEvent): void;
@@ -676,11 +682,6 @@ declare class Context extends Base {
 declare let context: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
 declare let hMenuBar: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
 declare let vMenuBar: (...Arguments: any) => (mouseEvent: MouseEvent) => boolean;
-declare enum ModalType {
-    winModal = "winModal",
-    toolbar = "toolbar",
-    other = "other"
-}
 declare class Modal extends Base {
     static labelNo: number;
     static instances: Modal[];
@@ -709,7 +710,7 @@ declare class Modal extends Base {
         y: number;
     }): void;
     static defaults: {
-        type: ModalType;
+        type: HandlerType;
     };
     static argMap: {
         string: string[];
@@ -718,7 +719,7 @@ declare class Modal extends Base {
     label: string;
     rootDisplayCell: DisplayCell;
     handler: Handler;
-    type: ModalType;
+    type: HandlerType;
     get coord(): Coord;
     constructor(...Arguments: any);
     setSize(...numbers: number[]): void;
@@ -829,6 +830,7 @@ declare class Tree_ extends Base {
     derender(node: node_): void;
     derenderChildren(node: node_): void;
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static Render(thisTree: Tree_, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     popOverlay(ishor: boolean): void;
     getScrollBarsFromOverlays(): ScrollBar[];
 }
@@ -876,7 +878,7 @@ declare class Dockable extends Base {
     dropped(e: CustomEvent): void;
     makeDropZones(width: number, height: number): void;
     openCloseDropZones(modal: Modal, width: number, height: number): void;
-    render(unuseddisplaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static Render(dockable_: Dockable, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function dockable(...Arguments: any): DisplayCell;
 declare enum TBState {
@@ -915,7 +917,7 @@ declare class ToolBar extends Base {
     toggleDirection(e: MouseEvent): void;
     resizeForModal(): void;
     resizeFordock(): void;
-    render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static Render(toolbar_: ToolBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function toolBar(...Arguments: any): DisplayCell;
 declare class BindHandler extends Base {
@@ -935,28 +937,6 @@ declare class BindHandler extends Base {
     static Render(bindHandler: BindHandler, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function bindHandler(...Arguments: any): DisplayCell;
-declare class winHolder extends Base {
-    static labelNo: number;
-    static instances: winHolder[];
-    static activeInstances: winHolder[];
-    static defaults: {
-        winModals: any[];
-    };
-    static argMap: {
-        string: string[];
-    };
-    label: string;
-    retArgs: ArgsObj;
-    rootDisplayCell: DisplayCell;
-    WinModal: winModal;
-    winModals: winModal[];
-    constructor(...Arguments: any);
-    build(): void;
-    add(winmodal: winModal, index?: number): void;
-    pop(winmodal: winModal): void;
-    disableWinModal(winmodal: winModal): void;
-    enableWinModal(winmodal: winModal): void;
-}
 declare class winModal extends Base {
     static labelNo: number;
     static instances: winModal[];
@@ -976,7 +956,6 @@ declare class winModal extends Base {
     };
     retArgs: ArgsObj;
     label: string;
-    parentHolder: winHolder;
     rootDisplayCell: DisplayCell;
     header: DisplayCell;
     headerHeight: number;
@@ -1005,6 +984,7 @@ declare class winModal extends Base {
     toggleOpen(): void;
     build(): void;
     render(displaycell: DisplayCell, displayGroup: DisplayGroup, index: number, derender: boolean): void;
+    static Render(winmodal_: winModal, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     hightlightHeader(highlight?: boolean): void;
 }
 declare function winmodal(...Arguments: any): winModal;

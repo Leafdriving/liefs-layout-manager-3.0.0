@@ -56,7 +56,7 @@ class Builder extends Base {
         Builder.clientHandler =
             H("Client Window",
                 h("Client_h", 5,
-                    I("Client_Main1","left", bCss.bgCyan, "500px"),
+                    I("Client_Main1","left", /*bCss.bgCyan,*/ "500px"),
                     I("Client_Main2","right", bCss.bgCyan, "500px"),
                     // v("Client_v", 5,
                     //     I("Client_Top","top", bCss.bgGreen),
@@ -151,21 +151,21 @@ class Builder extends Base {
 
     static mainHandler: Handler;
     static buildMainHandler() {
-        let treePages = P("TreePages",
-            // page 1
-            tree("HandlerTree", Builder.onNodeCreation,
-                I("Main_tree",  bCss.bgLight),
-                bCss.treeItem,
-                events({onmouseover:function(mouseEvent:MouseEvent){Builder.onHoverTree(mouseEvent, this)},
-                        onmouseleave:function(mouseEvent:MouseEvent){Builder.onLeaveHoverTree(mouseEvent, this)},
-                        onclick:function(mouseEvent:MouseEvent){Builder.onClickTree(mouseEvent, this)},
-                }),
-            ),
-            // page 2
-            I("Dummy2", "Dummy2"),
-            I("Dummy3", "Dummy3"),
-        )
-        let treePagesSelector = pageselect("TreePagesSelector", "20px", treePages)
+        // let treePages = P("TreePages",
+        //     // page 1
+        //     tree("HandlerTree", Builder.onNodeCreation,
+        //         I("Main_tree",  bCss.bgLight),
+        //         bCss.treeItem,
+        //         events({onmouseover:function(mouseEvent:MouseEvent){Builder.onHoverTree(mouseEvent, this)},
+        //                 onmouseleave:function(mouseEvent:MouseEvent){Builder.onLeaveHoverTree(mouseEvent, this)},
+        //                 onclick:function(mouseEvent:MouseEvent){Builder.onClickTree(mouseEvent, this)},
+        //         }),
+        //     ),
+        //     // page 2
+        //     I("Dummy2", "Dummy2"),
+        //     I("Dummy3", "Dummy3"),
+        // )
+        // let treePagesSelector = pageselect("TreePagesSelector", "20px", treePages)
         Builder.mainHandler = H("Main Window", 4,
         v("Main_v",
           h("MenuBar", "20px",
@@ -179,8 +179,9 @@ class Builder extends Base {
                         dragbar(
                             v("TreeTops", "300px", 5,
                                 //pageselect("name","20px", new Pages("pagename",I(),I())),
-                                treePagesSelector,
-                                treePages,
+                                //treePagesSelector,
+                                //treePages,
+                                I("Temp","temp",/*bCss.bgLight*/)
                             ),
                             200,1000),
                         bindHandler(I("Main_body"), Builder.clientHandler)
@@ -191,7 +192,7 @@ class Builder extends Base {
 
     }
     static updateTree(){
-        Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
+        // Tree_.byLabel("HandlerTree").newRoot(Builder.makeHandlerTree());
     }
     static TOOLBAR = toolBar("Main_toolbar", 40, 25,
         I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),

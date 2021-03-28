@@ -52,7 +52,7 @@ class DragBar extends Base {
                                 if (newdim > dragbar.max) newdim = dragbar.max;
                                 if (newdim < dragbar.min) newdim = dragbar.min;
                                 dragbar.parentDisplaycell.dim = `${newdim}px`;
-                                Handler.update();
+                                Render.update();
                             },
                             // onUp: function(ouxmouseDifftput:object){}
                      } }),

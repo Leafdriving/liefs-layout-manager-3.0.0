@@ -99,7 +99,7 @@ class HtmlBlock extends Base {
                 htmlBlock.el = el;
                 if (htmlBlock.events) htmlBlock.events.applyToHtmlBlock(htmlBlock);
             }
-            let attrstring = displaycell.coord.newAsAttributeString() // + clipString;
+            let attrstring = displaycell.coord.newAsAttributeString(zindex) // + clipString;
             if (el.style.cssText != attrstring) el.style.cssText = attrstring;
         }
 

@@ -33,7 +33,7 @@ class PageSelect extends Base {
         let newLabel = this.pages.displaycells[index].label;
         displaycell.htmlBlock.innerHTML = newLabel;
         THIS.pages.currentPage = index;
-        Handler.update();
+        Render.update();
     }
     buildMenuObj(){
         let obj = {};
@@ -90,7 +90,7 @@ class PageSelect extends Base {
         newWinModal.rootDisplayCell.addOverlay(overlay);
         this.updateContextLabel();
         this.buildMenuObj();
-        Handler.update();
+        Render.update();
     }
     acceptDrop(winModalInstance:winModal){
         console.log(`Hey, ${winModalInstance.label} was dropped on me!`)
@@ -104,7 +104,7 @@ class PageSelect extends Base {
         this.pages.currentPage = this.pages.displaycells.length -1;
         this.updateContextLabel();
         this.buildMenuObj();
-        Handler.update();
+        Render.update();
         //this.pages.displaycells[ index ];
     }
 }

@@ -12,7 +12,7 @@ class Tree_ extends Base {
         node.collapsed = !node.collapsed;
         let iconDisplayCell:DisplayCell = DisplayCell.byLabel(`${node.label}_icon`);
         iconDisplayCell.htmlBlock.innerHTML = (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon;
-        Handler.update();
+        Render.update();
     }
     static onNodeCreation(node:node_){
         let nodeLabel = I(`${node.label}_node`, `${node.label}`,
@@ -217,6 +217,60 @@ class Tree_ extends Base {
         //     }
         // }
     }
+    static Render(thisTree:Tree_, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
+        if (thisTree.preRenderCallback) thisTree.preRenderCallback();
+        // console.log("render Tree")
+        let THIS:Tree_ = thisTree;
+        let PDScoord = THIS.parentDisplayCell.coord;
+        let x_= PDScoord.x + THIS.sideMargin - thisTree.offsetx;
+        let y_= PDScoord.y + THIS.topMargin;
+        let max_x2:number = 0;
+
+        thisTree.traverse(
+            function traverseFunction(node:node_){
+                let x = x_ + (node.depth()-1)*THIS.tabSize;
+                let y = y_;
+                let width = PDScoord.width// - x;
+                let height = THIS.height;
+                node.displaycell.coord.assign(x, y, width, height,
+                                            //undefined, undefined, undefined, undefined,
+                                            PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
+                                            Handler.currentZindex + Handler.zindexIncrement);
+                y_ += THIS.height;
+                Render.update(node.displaycell, derender);
+                //Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender)
+                
+                let cellArray = node.displaycell.displaygroup.cellArray;
+                let el = cellArray[ cellArray.length-1 ].htmlBlock.el;
+                let bounding = el.getBoundingClientRect();
+                let x2 = bounding["x"] + bounding["width"];
+                if (x2 > max_x2) max_x2 = x2;
+            },
+            THIS.rootNode,
+            function traverseChildren(node: node_) {
+                return (!node.collapsed)
+            },
+        );
+        // let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()
+        // check horizontal first
+        if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
+            if (!thisTree.scrollbarh) {
+                let overlay=new Overlay("ScrollBar", thisTree.parentDisplayCell, true);
+                thisTree.scrollbarh = <ScrollBar>overlay.returnObj;
+                let parentDisplaycell = thisTree.scrollbarh.parentDisplaycell;
+                parentDisplaycell.addOverlay(overlay);
+            }
+            thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
+        } else {
+            if (thisTree.scrollbarh) {
+                thisTree.scrollbarh.delete();
+                thisTree.popOverlay(true);
+                thisTree.offsetx = 0;
+            }
+        }
+
+        return {zindex};
+    }
     popOverlay(ishor:boolean){
         let overlays = this.parentDisplayCell.overlays;
         for (let index = 0; index < overlays.length; index++)
@@ -236,6 +290,7 @@ class Tree_ extends Base {
         return [scrollbarh, scrollbarv]
     }
 }
+Render.register("Tree_", Tree_);
 function tree(...Arguments:any) {
     let overlay=new Overlay("Tree_", ...Arguments);
     let newTree_ = <Tree_>overlay.returnObj;
