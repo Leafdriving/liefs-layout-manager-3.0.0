@@ -375,20 +375,22 @@ class Render {
         Render.node = new node_("Root");
         let renderChildren = new RenderChildren;
         if (source) {
+            // if (derender) console.log("Render Derender", source.label)
             if (BaseF.typeof(source) == "node_")
                 source = source.Arguments[1];
             renderChildren.RenderSibling((BaseF.typeof(source) == "Array") ? source : [source], derender);
             Render.RenderObjectList(renderChildren.siblings, Render.node);
         }
         else {
-            renderChildren.RenderSibling(Handler.RenderStartingpoint());
-            Render.RenderObjectList(renderChildren.siblings, Render.node);
+            renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);
+            Render.RenderObjectList(renderChildren.siblings, Render.node, 1, true);
             Handler.RenderEndingPoint();
         }
     }
     static RenderObjectList(renderChildren, node, zindex = 1, isSibling = false) {
         for (let index = 0; index < renderChildren.length; index++) {
             let object_ = renderChildren[index].child;
+            let derender = renderChildren[index].derender; /////////////////////////////////// HERE!!!!!!!!!!!!!!!!!!!!
             let objectType = BaseF.typeof(object_);
             // if (objectType == "Handler" && (<Handler>object_).type !='other') console.log((<Handler>object_).type)
             let CLASS = Render.classes[objectType];
@@ -398,7 +400,7 @@ class Render {
                 else
                     node = node.newChild(`${objectType}_${object_["label"]}`, object_);
                 // console.log(`Rendering ${objectType}_${object_["label"]}`)
-                let returnObj = CLASS.Render(object_, zindex, false, node); // this is render call
+                let returnObj = CLASS.Render(object_, zindex, derender, node); // this is render call
                 zindex = returnObj.zindex;
                 //console.log("zindex", zindex)
                 let children = returnObj.children;
@@ -450,6 +452,7 @@ class RenderChildren {
                 this.siblings.push({ child: child[index], derender });
         else
             this.siblings.push({ child, derender });
+        // if (derender) console.log("RenderSibling Derender", derender)
     }
 }
 // import {BaseF, Base} from './Base';
@@ -715,6 +718,7 @@ class HtmlBlock extends Base {
     }
     static Render(htmlBlock, zindex, derender = false, node) {
         let displaycell = (node.parent().Arguments[1]);
+        // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
         let el = pf.elExists(displaycell.label);
         let alreadyexists = (el) ? true : false;
         derender = displaycell.coord.derender(derender);
@@ -722,9 +726,12 @@ class HtmlBlock extends Base {
             htmlBlock.innerHTML.trim() == "" &&
             Object.keys(htmlBlock.attributes).length == 0 &&
             !Handler.renderNullObjects);
+        // if (displaycell.label == "Client_h_DisplayCell_Unknown_backArrow") console.log("********", derender)
         if (derender || isNulDiv) {
+            // console.log(el)
             if (alreadyexists)
                 el.remove();
+            // console.log("HTMLBLOCK Derender: CONFIRMED!", displaycell.label, pf.elExists(displaycell.label))
         }
         else {
             if (!alreadyexists)
@@ -903,6 +910,9 @@ class DisplayCell extends Base {
         if (displaycell.preRenderCallback)
             displaycell.preRenderCallback(displaycell, derender);
         //if (derender) Observe.derender(displaycell);
+        if (displaycell.overlays.length)
+            for (let index = 0; index < displaycell.overlays.length; index++)
+                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
         let pages = displaycell.pages;
         if (pages) {
             if (!derender)
@@ -944,9 +954,6 @@ class DisplayCell extends Base {
         //         ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
         //     }
         // }
-        if (displaycell.overlays.length)
-            for (let index = 0; index < displaycell.overlays.length; index++)
-                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
         if (displaycell.postRenderCallback)
             displaycell.postRenderCallback(displaycell, derender);
         if (displaycell.coord.offset)
@@ -2106,15 +2113,18 @@ class ScrollBar extends Base {
     //     //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
     // }
     static Render(scrollbar_, zindex, derender = false, node) {
-        Render.update(scrollbar_.scrollbarDisplayCell, derender);
-        return { zindex };
+        // Render.update(scrollbar_.scrollbarDisplayCell, derender);
+        let renderChildren = new RenderChildren;
+        renderChildren.RenderSibling(scrollbar_.scrollbarDisplayCell, derender);
+        return { zindex,
+            siblings: renderChildren.siblings };
     }
     delete() {
         // console.log(`ScrollBar :${this.label} destroyed`);
         FunctionStack.pop(this.label, ((this.ishor) ? "ishorTrue" : "ishorFalse"));
         Render.update(this.scrollbarDisplayCell, true);
         //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
-        ScrollBar.deactivate(this);
+        ScrollBar.pop(this);
     }
     onWheel(event) {
         //console.log("Wheel Event", event.deltaY);
@@ -2774,7 +2784,7 @@ class node_ extends Base {
     // collapse(value:boolean = true){this.collapsed = value;}
     log() {
         if (this.children.length) {
-            console.group(this.label);
+            console.groupCollapsed(this.label);
             for (let index = 0; index < this.children.length; index++)
                 this.children[index].log();
             console.groupEnd();

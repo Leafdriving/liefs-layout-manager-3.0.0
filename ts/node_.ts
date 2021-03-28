@@ -116,7 +116,7 @@ class node_ extends Base {
     // collapse(value:boolean = true){this.collapsed = value;}
     log(){
         if (this.children.length) {
-            console.group(this.label);
+            console.groupCollapsed(this.label);
             for (let index = 0; index < this.children.length; index++) 
                 this.children[index].log();
             console.groupEnd();

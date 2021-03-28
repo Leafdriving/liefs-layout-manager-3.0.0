@@ -104,6 +104,12 @@ class DisplayCell extends Base {
         if (displaycell.coord.offset) Handler.activeOffset = true;
         if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, derender);
         //if (derender) Observe.derender(displaycell);
+
+        if (displaycell.overlays.length) 
+            for (let index = 0; index < displaycell.overlays.length; index++) 
+                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
+
+
         let pages = displaycell.pages;
         if (pages){
             if (!derender) Pages.activePages.push(pages);
@@ -147,9 +153,7 @@ class DisplayCell extends Base {
         //         ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
         //     }
         // }
-        if (displaycell.overlays.length) 
-            for (let index = 0; index < displaycell.overlays.length; index++) 
-                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
+
 
         if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, derender);
         if (displaycell.coord.offset) Handler.activeOffset = false;

@@ -75,6 +75,7 @@ class HtmlBlock extends Base {
     }
     static Render(htmlBlock:HtmlBlock, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let displaycell = <DisplayCell>(node.parent().Arguments[1])
+        // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
 
         let el:HTMLElement = pf.elExists(displaycell.label);
         let alreadyexists:boolean = (el) ? true : false;
@@ -86,8 +87,13 @@ class HtmlBlock extends Base {
                         Object.keys( htmlBlock.attributes ).length == 0 &&
                         !Handler.renderNullObjects)
 
+        // if (displaycell.label == "Client_h_DisplayCell_Unknown_backArrow") console.log("********", derender)
+
         if (derender || isNulDiv) {
+            
+            // console.log(el)
             if (alreadyexists) el.remove();
+            // console.log("HTMLBLOCK Derender: CONFIRMED!", displaycell.label, pf.elExists(displaycell.label))
         } else {
             if (!alreadyexists) el = document.createElement(htmlBlock.tag);
             pf.setAttrib(el, "id", displaycell.label);

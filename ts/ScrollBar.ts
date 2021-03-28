@@ -134,15 +134,18 @@ class ScrollBar extends Base {
     // }
 
     static Render(scrollbar_:ScrollBar, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
-        Render.update(scrollbar_.scrollbarDisplayCell, derender);
-        return {zindex}
+        // Render.update(scrollbar_.scrollbarDisplayCell, derender);
+        let renderChildren = new RenderChildren;
+        renderChildren.RenderSibling(scrollbar_.scrollbarDisplayCell, derender);
+        return {zindex,
+            siblings: renderChildren.siblings};
     }
     delete(){
         // console.log(`ScrollBar :${this.label} destroyed`);
         FunctionStack.pop(this.label, ((this.ishor) ? "ishorTrue" : "ishorFalse"))
         Render.update(this.scrollbarDisplayCell, true);
         //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
-        ScrollBar.deactivate(this);
+        ScrollBar.pop(this);
     }
     onWheel(event:WheelEvent) {
         //console.log("Wheel Event", event.deltaY);
