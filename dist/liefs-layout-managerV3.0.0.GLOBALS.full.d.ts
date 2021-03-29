@@ -768,7 +768,7 @@ declare class node_ extends Base {
     parent(): node_;
     log(): void;
     byLabel(label: string): any;
-    static copy(node: node_, suffix?: string): node_;
+    static copy(node: node_, suffix?: string, onNodeCreation?: (node: node_, newNode: node_) => void): node_;
 }
 declare function sample(): Tree_;
 declare const defaultArgMap: ArgMap;

@@ -152,6 +152,16 @@ class bCss {
         </svg>`;
     }
     ;
+    static displaycellSVG(classname) {
+        return `<svg class="${classname}" width="100%" height="100%" enable-background="new 0 0 48 48" version="1.1" viewBox="0 0 130.21 130.21" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+    <g id="color_21_" transform="matrix(2.8344 0 0 2.8344 -6.2627 -5.5033)">
+            <path d="m44 5h-37c-0.553 0-1 0.447-1 1v38c0 0.553 0.447 1 1 1h37c0.553 0 1-0.447 1-1v-38c0-0.553-0.447-1-1-1z" fill="#ffda8e"/>
+    </g>
+    <g id="outline_20_" transform="matrix(2.8344 0 0 2.8344 -2.2548 -2.6688)">
+            <path d="m45 2h-42c-0.553 0-1 0.447-1 1v42c0 0.553 0.447 1 1 1h42c0.553 0 1-0.447 1-1v-42c0-0.553-0.447-1-1-1zm-2.414 2-4 4h-29.172l-4-4zm-32.586 30.087v-4.67l28-16.078v4.67zm28-13.748v17.661h-5v-14.79zm-7 4.019v13.642h-6v-10.196zm-8 4.594v9.048h-6v-5.603zm-8 4.594v4.454h-5v-1.583zm-5-6.459v-17.087h5v14.216zm7-4.02v-13.067h6v9.622zm14.05-8.067-6.05 3.474v-8.474h6v5zm1.95-1.12v-3.88h5v1.009zm-29-8.466 4 4v29.172l-4 4zm1.414 38.586 4-4h29.172l4 4zm38.586-1.414-4-4v-29.172l4-4z" fill="#384d68"/>
+    </g>
+    </svg>`;
+    }
     static homeSVG(classname) {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
@@ -276,13 +286,39 @@ class Builder extends Base {
             H("Client Window", h("Client_h", 5, I("Client_Main1", "left", /*bCss.bgCyan,*/ "500px"), I("Client_Main2", "right", bCss.bgCyan, "500px")), false);
     }
     static buildMainHandler() {
-        let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.bgCyan, sample().rootNode), I("TWO", "TWO", bCss.bgCyan));
+        let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.bgCyan, sample().rootNode, function onNodeCreation(node) {
+            let nodeLabel = I(`${node.label}_node`, `${node.label}`, node.ParentNodeTree.css, node.ParentNodeTree.events);
+            nodeLabel.coord.hideWidth = true;
+            let dataObj = node.Arguments[1];
+            let dataObjType = BaseF.typeof(dataObj);
+            let typeIcon;
+            if (dataObjType == "DisplayGroup")
+                typeIcon = (dataObj.ishor) ? bCss.horSVG("bookIcon") : bCss.verSVG("bookIcon");
+            else
+                typeIcon = {
+                    Handler: bCss.homeSVG("bookIcon"),
+                    HtmlBlock: bCss.htmlSVG("bookIcon"),
+                    DisplayCell: bCss.displaycellSVG("bookIcon"),
+                }[dataObjType];
+            node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
+            (node.children.length) ?
+                I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`, (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon, node.ParentNodeTree.iconClass, events({ onclick: function (mouseEvent) { Tree_.toggleCollapse(this, node, mouseEvent); } }))
+                : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), I(`${node.label}_typeIcon`, `${node.ParentNodeTree.height}px`, typeIcon), nodeLabel);
+        }), I("TWO", "TWO", bCss.bgCyan));
         Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", Builder.TOOLBAR, dockable(h("Tree_Body", 5, dragbar(v("TreeTops", "300px", 5, pageselect("name", "20px", treePagesDisplayCell), treePagesDisplayCell), 200, 1000), bindHandler(I("Main_body"), Builder.clientHandler)))))));
     }
     static updateTree() {
-        let node = node_.byLabel("Handler_Client Window");
-        if (node)
+        Render.update();
+        const node = node_.byLabel("Handler_Client Window");
+        if (node) {
+            // let builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
+            //     newNode["type"] = BaseF.typeof(node.Arguments[1]);
+            //     newNode[ newNode["type"] ] = node.Arguments[1];
+            //     if (node.Arguments.length > 2) newNode["DisplayCell"] = node.Arguments[2];
+            // })
             Tree_.byLabel("HandlerTree").newRoot(node);
+        }
+        Render.update();
     }
 }
 Builder.labelNo = 0;
@@ -299,7 +335,6 @@ Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
 setTimeout(() => {
     Builder.updateTree();
-    Render.update();
 }, 0);
 let outside = new Modal("outside", I("outside_", css("outside", "background:red;opacity:0.25")));
 let inside = new Modal("inside", I("inside_", css("inside", "background:green;opacity:0.25")));
@@ -359,30 +394,3 @@ let hide = function () {
 // static onLeaveHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
 //     Builder.hoverModal.hide();
 // }
-// static onNodeCreation(node:node_){
-//     let nodeLabel = I(`${node.label}_node`, `${node.label}`,
-//                         node.ParentNodeTree.css,
-//                         node.ParentNodeTree.events);
-//     nodeLabel.coord.hideWidth = true;
-//     let dataObj = node.Arguments[1];
-//     let dataObjType = BaseF.typeof(dataObj);
-//     let typeIcon:string;
-//     if (dataObjType == "DisplayGroup")
-//         typeIcon = ( (<DisplayGroup>dataObj).ishor ) ? bCss.horSVG("bookIcon"):bCss.verSVG("bookIcon");
-//     else
-//         typeIcon = {
-//                 Handler:bCss.homeSVG("bookIcon"),
-//                 HtmlBlock:bCss.htmlSVG("bookIcon"),
-//             }[dataObjType];
-//     node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
-//                             (node.children.length) ?
-//                                 I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`,
-//                                     (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon,
-//                                     node.ParentNodeTree.iconClass,
-//                                     events({onclick:function(mouseEvent:MouseEvent){ Tree_.toggleCollapse(this, node,mouseEvent) }})
-//                                 )
-//                             :   I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`),
-//                             I(`${node.label}_typeIcon`, `${node.ParentNodeTree.height}px`, typeIcon),
-//                             nodeLabel
-//                         );
-//                     }

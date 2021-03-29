@@ -124,13 +124,15 @@ class node_ extends Base {
         if (this.NextSibling) this.NextSibling.log();
     }
     byLabel(label:string){return node_.byLabel(label);}
-    static copy(node:node_, suffix = "_copy") {
+    // copy isnt working!!!!!
+    static copy(node:node_, suffix = "_copy", onNodeCreation:(node:node_, newNode:node_)=>void = function(node,newNode){}) {
         let newNode = <node_>node_.recycle(`${node.label}${suffix}`) // new node_(`${node}${suffix}`);
+        onNodeCreation(node, newNode);
         if (node.children && node.children.length)
             for (let index = 0; index < node.children.length; index++) 
-                newNode.newChild( node_.copy(node.children[index]) );
+                newNode.newChild( node_.copy(node.children[index], suffix, onNodeCreation) );
         if (node.NextSibling)
-            newNode.newSibling( node_.copy(node.NextSibling) )
+            newNode.newSibling( node_.copy(node.NextSibling, suffix, onNodeCreation) )
         return newNode;
     }
 }

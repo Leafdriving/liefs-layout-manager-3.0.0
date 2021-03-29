@@ -54,6 +54,7 @@ declare class bCss {
     static htmlSVG(classname: string): string;
     static horSVG(classname: string): string;
     static verSVG(classname: string): string;
+    static displaycellSVG(classname: string): string;
     static homeSVG(classname: string): string;
 }
 declare class Builder extends Base {

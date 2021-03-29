@@ -153,78 +153,6 @@ class Tree_ extends Base {
         for (let index = 0; index < node.children.length; index++)
             this.derender(node.children[index]);
     }
-    // render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-    //     if (this.preRenderCallback) this.preRenderCallback();
-    //     // console.log("render Tree")
-    //     let THIS:Tree_ = this;
-    //     let PDScoord = THIS.parentDisplayCell.coord;
-    //     let x_= PDScoord.x + THIS.sideMargin - this.offsetx;
-    //     let y_= PDScoord.y + THIS.topMargin;
-    //     let max_x2:number = 0;
-
-    //     this.traverse(
-    //         function traverseFunction(node:node_){
-    //             let x = x_ + (node.depth()-1)*THIS.tabSize;
-    //             let y = y_;
-    //             let width = PDScoord.width// - x;
-    //             let height = THIS.height;
-    //             node.displaycell.coord.assign(x, y, width, height,
-    //                                         //undefined, undefined, undefined, undefined,
-    //                                         PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
-    //                                         Handler.currentZindex + Handler.zindexIncrement);
-    //             y_ += THIS.height;
-    //             Render.update(node.displaycell, derender);
-    //             //Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender)
-                
-    //             let cellArray = node.displaycell.displaygroup.cellArray;
-    //             let el = cellArray[ cellArray.length-1 ].htmlBlock.el;
-    //             let bounding = el.getBoundingClientRect();
-    //             let x2 = bounding["x"] + bounding["width"];
-    //             if (x2 > max_x2) max_x2 = x2;
-    //         },
-    //         THIS.rootNode,
-    //         function traverseChildren(node: node_) {
-    //             return (!node.collapsed)
-    //         },
-    //     );
-    //     // let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()
-    //     // check horizontal first
-    //     if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
-    //         if (!this.scrollbarh) {
-    //             let overlay=new Overlay("ScrollBar", this.parentDisplayCell, true);
-    //             this.scrollbarh = <ScrollBar>overlay.returnObj;
-    //             let parentDisplaycell = this.scrollbarh.parentDisplaycell;
-    //             parentDisplaycell.addOverlay(overlay);
-    //         }
-    //         this.offsetx = this.scrollbarh.update(max_x2);
-    //     } else {
-    //         if (this.scrollbarh) {
-    //             this.scrollbarh.delete();
-    //             this.popOverlay(true);
-    //             this.offsetx = 0;
-    //         }
-    //     }
-
-    //     // check vertical next
-
-    //     // if (y_ > (PDScoord.y + PDScoord.height) + 2) {
-    //     //     console.log("vscrollbar");
-    //     //     if (!this.scrollbarv) {
-    //     //         let overlay=new Overlay("ScrollBar", this.parentDisplayCell, false);
-    //     //         this.scrollbarv = <ScrollBar>overlay.returnObj;
-    //     //         let parentDisplaycell = this.scrollbarv.parentDisplaycell;
-    //     //         parentDisplaycell.addOverlay(overlay);
-
-    //     //     }
-    //     //      this.offsety = this.scrollbarv.update(y_);
-    //     // } else {
-    //     //     if (this.scrollbarv){
-    //     //         this.scrollbarv.delete();
-    //     //         this.popOverlay(false);
-    //     //         this.offsety = 0;
-    //     //     }
-    //     // }
-    // }
     static Render(thisTree:Tree_, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         if (thisTree.preRenderCallback) thisTree.preRenderCallback();
         // console.log("render Tree")
@@ -235,6 +163,7 @@ class Tree_ extends Base {
         let max_x2:number = 0;
         let renderChildren = new RenderChildren;
         zindex += Render.zIncrement;
+        //node.log();
 
         thisTree.traverse(
             function traverseFunction(node:node_){
@@ -252,13 +181,12 @@ class Tree_ extends Base {
                 
                 let cellArray = node.displaycell.displaygroup.cellArray;
                 let el = cellArray[ cellArray.length-1 ].htmlBlock.el;
-                if (!el) {
-                    Render.update(node.displaycell, false, zindex);
-                    el = cellArray[ cellArray.length-1 ].htmlBlock.el;
+                if (el) {
+                    let bounding = el.getBoundingClientRect();
+                    let x2 = bounding["x"] + bounding["width"];
+                    if (x2 > max_x2) max_x2 = x2;
                 }
-                let bounding = el.getBoundingClientRect();
-                let x2 = bounding["x"] + bounding["width"];
-                if (x2 > max_x2) max_x2 = x2;
+                
             },
             THIS.rootNode,
             function traverseChildren(node: node_) {

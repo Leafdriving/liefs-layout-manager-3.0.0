@@ -41,7 +41,39 @@ class Builder extends Base {
         let treePagesDisplayCell = P("pagename",
                                         tree("HandlerTree", 
                                             I("Handler_Tree", bCss.bgLight),
-                                            bCss.bgCyan, sample().rootNode ),
+                                            bCss.bgCyan, sample().rootNode,                                     
+
+function onNodeCreation(node:node_){
+    let nodeLabel = I(`${node.label}_node`, `${node.label}`,
+                        node.ParentNodeTree.css,
+                        node.ParentNodeTree.events);
+    nodeLabel.coord.hideWidth = true;
+    let dataObj = node.Arguments[1];
+    let dataObjType = BaseF.typeof(dataObj);
+    let typeIcon:string;
+    if (dataObjType == "DisplayGroup")
+        typeIcon = ( (<DisplayGroup>dataObj).ishor ) ? bCss.horSVG("bookIcon"):bCss.verSVG("bookIcon");
+    else
+        typeIcon = {
+                Handler:bCss.homeSVG("bookIcon"),
+                HtmlBlock:bCss.htmlSVG("bookIcon"),
+                DisplayCell:bCss.displaycellSVG("bookIcon"),
+            }[dataObjType];
+    node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
+                            (node.children.length) ?
+                                I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`,
+                                    (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon,
+                                    node.ParentNodeTree.iconClass,
+                                    events({onclick:function(mouseEvent:MouseEvent){ Tree_.toggleCollapse(this, node,mouseEvent) }})
+                                )
+                            :   I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`),
+
+                            I(`${node.label}_typeIcon`, `${node.ParentNodeTree.height}px`, typeIcon),
+                            nodeLabel
+                        );
+                    },                                            
+
+                                            ),
                                         I("TWO","TWO",bCss.bgCyan)
                                     );
 
@@ -68,9 +100,17 @@ class Builder extends Base {
       )
     }
     static updateTree(){
-        let node = node_.byLabel("Handler_Client Window");
-        if (node)Tree_.byLabel("HandlerTree").newRoot( node );
-
+        Render.update();
+        const node = node_.byLabel("Handler_Client Window");
+        if (node) {
+            // let builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
+            //     newNode["type"] = BaseF.typeof(node.Arguments[1]);
+            //     newNode[ newNode["type"] ] = node.Arguments[1];
+            //     if (node.Arguments.length > 2) newNode["DisplayCell"] = node.Arguments[2];
+            // })
+            Tree_.byLabel("HandlerTree").newRoot( node );
+        }
+        Render.update();
     }
     static TOOLBAR = toolBar("Main_toolbar", 40, 25,
         I("toolbarb1",`<button style="width:100%; height:100%">1</button>`),
@@ -83,7 +123,7 @@ Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
 setTimeout(() => {
-    Builder.updateTree();Render.update();
+    Builder.updateTree();
 }, 0);
 
 
@@ -154,33 +194,3 @@ let hide = function(){
 
 
 
-
-// static onNodeCreation(node:node_){
-//     let nodeLabel = I(`${node.label}_node`, `${node.label}`,
-//                         node.ParentNodeTree.css,
-//                         node.ParentNodeTree.events);
-//     nodeLabel.coord.hideWidth = true;
-//     let dataObj = node.Arguments[1];
-//     let dataObjType = BaseF.typeof(dataObj);
-//     let typeIcon:string;
-//     if (dataObjType == "DisplayGroup")
-//         typeIcon = ( (<DisplayGroup>dataObj).ishor ) ? bCss.horSVG("bookIcon"):bCss.verSVG("bookIcon");
-//     else
-//         typeIcon = {
-//                 Handler:bCss.homeSVG("bookIcon"),
-//                 HtmlBlock:bCss.htmlSVG("bookIcon"),
-//             }[dataObjType];
-//     node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
-
-//                             (node.children.length) ?
-//                                 I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`,
-//                                     (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon,
-//                                     node.ParentNodeTree.iconClass,
-//                                     events({onclick:function(mouseEvent:MouseEvent){ Tree_.toggleCollapse(this, node,mouseEvent) }})
-//                                 )
-//                             :   I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`),
-
-//                             I(`${node.label}_typeIcon`, `${node.ParentNodeTree.height}px`, typeIcon),
-//                             nodeLabel
-//                         );
-//                     }

@@ -394,9 +394,9 @@ Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
 // export {mf, pf}
 class Render {
     static update(source = undefined, derender = false, zindex = 1) {
+        // if (source) console.log(`${BaseF.typeof(source)}:${source["label"]} ${derender}`)
         let renderChildren = new RenderChildren;
         if (source) {
-            // if (derender) console.log("Render Derender", source.label)
             if (BaseF.typeof(source) == "node_")
                 source = source.Arguments[1];
             renderChildren.RenderSibling((BaseF.typeof(source) == "Array") ? source : [source], derender);
@@ -404,8 +404,6 @@ class Render {
         }
         else {
             Render.oldRootnode = Render.node;
-            // let temp = new Tree_();
-            // Render.node = temp.rootNode;
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);
             Render.RenderObjectList(renderChildren.siblings, Render.node, zindex, true);
@@ -2821,13 +2819,15 @@ class node_ extends Base {
             this.NextSibling.log();
     }
     byLabel(label) { return node_.byLabel(label); }
-    static copy(node, suffix = "_copy") {
+    // copy isnt working!!!!!
+    static copy(node, suffix = "_copy", onNodeCreation = function (node, newNode) { }) {
         let newNode = node_.recycle(`${node.label}${suffix}`); // new node_(`${node}${suffix}`);
+        onNodeCreation(node, newNode);
         if (node.children && node.children.length)
             for (let index = 0; index < node.children.length; index++)
-                newNode.newChild(node_.copy(node.children[index]));
+                newNode.newChild(node_.copy(node.children[index], suffix, onNodeCreation));
         if (node.NextSibling)
-            newNode.newSibling(node_.copy(node.NextSibling));
+            newNode.newSibling(node_.copy(node.NextSibling, suffix, onNodeCreation));
         return newNode;
     }
 }
@@ -2960,73 +2960,6 @@ class Tree_ extends Base {
         for (let index = 0; index < node.children.length; index++)
             this.derender(node.children[index]);
     }
-    // render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-    //     if (this.preRenderCallback) this.preRenderCallback();
-    //     // console.log("render Tree")
-    //     let THIS:Tree_ = this;
-    //     let PDScoord = THIS.parentDisplayCell.coord;
-    //     let x_= PDScoord.x + THIS.sideMargin - this.offsetx;
-    //     let y_= PDScoord.y + THIS.topMargin;
-    //     let max_x2:number = 0;
-    //     this.traverse(
-    //         function traverseFunction(node:node_){
-    //             let x = x_ + (node.depth()-1)*THIS.tabSize;
-    //             let y = y_;
-    //             let width = PDScoord.width// - x;
-    //             let height = THIS.height;
-    //             node.displaycell.coord.assign(x, y, width, height,
-    //                                         //undefined, undefined, undefined, undefined,
-    //                                         PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
-    //                                         Handler.currentZindex + Handler.zindexIncrement);
-    //             y_ += THIS.height;
-    //             Render.update(node.displaycell, derender);
-    //             //Handler.renderDisplayCell(node.displaycell, undefined, undefined, derender)
-    //             let cellArray = node.displaycell.displaygroup.cellArray;
-    //             let el = cellArray[ cellArray.length-1 ].htmlBlock.el;
-    //             let bounding = el.getBoundingClientRect();
-    //             let x2 = bounding["x"] + bounding["width"];
-    //             if (x2 > max_x2) max_x2 = x2;
-    //         },
-    //         THIS.rootNode,
-    //         function traverseChildren(node: node_) {
-    //             return (!node.collapsed)
-    //         },
-    //     );
-    //     // let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()
-    //     // check horizontal first
-    //     if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
-    //         if (!this.scrollbarh) {
-    //             let overlay=new Overlay("ScrollBar", this.parentDisplayCell, true);
-    //             this.scrollbarh = <ScrollBar>overlay.returnObj;
-    //             let parentDisplaycell = this.scrollbarh.parentDisplaycell;
-    //             parentDisplaycell.addOverlay(overlay);
-    //         }
-    //         this.offsetx = this.scrollbarh.update(max_x2);
-    //     } else {
-    //         if (this.scrollbarh) {
-    //             this.scrollbarh.delete();
-    //             this.popOverlay(true);
-    //             this.offsetx = 0;
-    //         }
-    //     }
-    //     // check vertical next
-    //     // if (y_ > (PDScoord.y + PDScoord.height) + 2) {
-    //     //     console.log("vscrollbar");
-    //     //     if (!this.scrollbarv) {
-    //     //         let overlay=new Overlay("ScrollBar", this.parentDisplayCell, false);
-    //     //         this.scrollbarv = <ScrollBar>overlay.returnObj;
-    //     //         let parentDisplaycell = this.scrollbarv.parentDisplaycell;
-    //     //         parentDisplaycell.addOverlay(overlay);
-    //     //     }
-    //     //      this.offsety = this.scrollbarv.update(y_);
-    //     // } else {
-    //     //     if (this.scrollbarv){
-    //     //         this.scrollbarv.delete();
-    //     //         this.popOverlay(false);
-    //     //         this.offsety = 0;
-    //     //     }
-    //     // }
-    // }
     static Render(thisTree, zindex, derender = false, node) {
         if (thisTree.preRenderCallback)
             thisTree.preRenderCallback();
@@ -3038,6 +2971,7 @@ class Tree_ extends Base {
         let max_x2 = 0;
         let renderChildren = new RenderChildren;
         zindex += Render.zIncrement;
+        //node.log();
         thisTree.traverse(function traverseFunction(node) {
             let x = x_ + (node.depth() - 1) * THIS.tabSize;
             let y = y_;
@@ -3050,14 +2984,12 @@ class Tree_ extends Base {
             renderChildren.RenderSibling(node.displaycell, derender);
             let cellArray = node.displaycell.displaygroup.cellArray;
             let el = cellArray[cellArray.length - 1].htmlBlock.el;
-            if (!el) {
-                Render.update(node.displaycell, false, zindex);
-                el = cellArray[cellArray.length - 1].htmlBlock.el;
+            if (el) {
+                let bounding = el.getBoundingClientRect();
+                let x2 = bounding["x"] + bounding["width"];
+                if (x2 > max_x2)
+                    max_x2 = x2;
             }
-            let bounding = el.getBoundingClientRect();
-            let x2 = bounding["x"] + bounding["width"];
-            if (x2 > max_x2)
-                max_x2 = x2;
         }, THIS.rootNode, function traverseChildren(node) {
             return (!node.collapsed);
         });
