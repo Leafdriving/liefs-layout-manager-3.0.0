@@ -2718,8 +2718,6 @@ class node_ extends Base {
         super();
         this.ParentNodeTree = undefined;
         this.ParentNode = undefined;
-        this.PreviousSibling = undefined;
-        this.NextSibling = undefined;
         this.children = [];
         this.buildBase(...Arguments);
         this.Arguments = Arguments;
@@ -2731,20 +2729,35 @@ class node_ extends Base {
             THIS.ParentNodeTree.onNodeCreation(newnode);
         return newnode;
     }
+    static traverse(node, traverseFunction, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
+        if (traverseNode(node)) {
+            traverseFunction(node);
+            if (traverseChildren(node))
+                if (node.children)
+                    for (let index = 0; index < node.children.length; index++)
+                        node_.traverse(node.children[index], traverseFunction, traverseChildren, traverseNode);
+        }
+    }
+    get PreviousSibling() {
+        let index = this.ParentNode.children.indexOf(this);
+        return (index > 0) ? this.ParentNode.children[index - 1] : undefined;
+    }
+    set PreviousSibling(newNode) {
+        let index = this.ParentNode.children.indexOf(this);
+        this.ParentNode.children.splice(index, 0, newNode);
+    }
+    get NextSibling() {
+        let index = this.ParentNode.children.indexOf(this);
+        return (index > -1 && index < this.ParentNode.children.length - 1) ? this.ParentNode.children[index + 1] : undefined;
+    }
+    set NextSibling(newNode) {
+        let index = this.ParentNode.children.indexOf(this);
+        this.ParentNode.children.splice(index + 1, 0, newNode);
+    }
     depth(node = this, deep = 0) { while (node) {
         deep += 1;
         node = node.parent();
     } ; return deep; }
-    siblingObject(top = this, returnObject = {}) {
-        while (top.PreviousSibling) {
-            top = top.PreviousSibling;
-        }
-        do {
-            returnObject[top.label] = top;
-            top = top.NextSibling;
-        } while (top);
-        return returnObject;
-    }
     newChild(...Arguments) {
         let newNode;
         if (typeof (Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
@@ -2757,57 +2770,16 @@ class node_ extends Base {
         return newNode;
     }
     newSibling(...Arguments) {
-        let previousNextSibling = this.NextSibling;
+        let newNode;
         if (typeof (Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
-            this.NextSibling = (Arguments[0]);
+            newNode = (Arguments[0]);
         else
-            this.NextSibling = node_.newNode(this, ...Arguments);
-        this.NextSibling.ParentNodeTree = this.ParentNodeTree;
-        this.NextSibling.PreviousSibling = this;
-        this.NextSibling.ParentNode = this.ParentNode;
-        this.NextSibling.NextSibling = previousNextSibling;
-        return this.NextSibling;
+            newNode = node_.newNode(this, ...Arguments);
+        newNode.ParentNodeTree = this.ParentNodeTree;
+        newNode.ParentNode = this.ParentNode;
+        this.NextSibling = newNode;
+        return newNode;
     }
-    // newSibling(...Arguments:any): node_ { 
-    //     let previousNextSibling = this.NextSibling;
-    //     if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
-    //         this.NextSibling = <node_>(Arguments[0]);
-    //     else
-    //         this.NextSibling = node_.newNode(this, ...Arguments);
-    //     this.NextSibling.ParentNodeTree = this.ParentNodeTree;
-    //     this.NextSibling.PreviousSibling = this;
-    //     this.NextSibling.ParentNode = this.ParentNode;
-    //     this.NextSibling.NextSibling = previousNextSibling;
-    //     return this.NextSibling;
-    // }
-    topSibling() {
-        let returnNode = this;
-        while (returnNode.previousSibling())
-            returnNode = returnNode.previousSibling();
-        return returnNode;
-    }
-    bottomSibling() {
-        let returnNode = this;
-        while (returnNode.nextSibling())
-            returnNode = returnNode.nextSibling();
-        return returnNode;
-    }
-    pop() {
-        let index = this.ParentNode.children.indexOf(this);
-        this.ParentNode.children.splice(index, 1);
-        if (this.PreviousSibling) {
-            this.PreviousSibling.NextSibling = this.NextSibling;
-            if (this.NextSibling)
-                this.NextSibling.PreviousSibling = this.PreviousSibling;
-        }
-        else if (this.NextSibling)
-            this.NextSibling.PreviousSibling = undefined;
-        this.PreviousSibling = this.NextSibling = this.ParentNode = undefined;
-        return this;
-    }
-    nextSibling() { return this.NextSibling; }
-    previousSibling() { return this.PreviousSibling; }
-    firstChild() { return this.children[0]; }
     done() { return this.ParentNodeTree; }
     root() {
         let node = this;
@@ -2817,7 +2789,6 @@ class node_ extends Base {
         return node;
     }
     parent() { return this.ParentNode; }
-    // collapse(value:boolean = true){this.collapsed = value;}
     log() {
         if (this.children.length) {
             console.groupCollapsed(this.label);
@@ -2827,17 +2798,17 @@ class node_ extends Base {
         }
         else
             console.log(this.label);
-        if (this.NextSibling)
-            this.NextSibling.log();
     }
     byLabel(label) { return node_.byLabel(label); }
-    // copy isnt working!!!!!
     static copy(node, suffix = "_copy", onNodeCreation = function (node, newNode) { }) {
         let newNode = new node_(`${node.label}${suffix}`);
+        if (BaseF.typeof(node) == "Tree_") {
+            node = (node.rootNode);
+            console.log(`node_.copy() was passes a TREE not a node... assuming rootNode`);
+        }
+        else
+            node = node;
         onNodeCreation(node, newNode);
-        //let tnode = node;
-        if (node.NextSibling)
-            newNode.newSibling(node_.copy(node.NextSibling, suffix, onNodeCreation));
         if (node.children && node.children.length)
             for (let index = 0; index < node.children.length; index++)
                 newNode.newChild(node_.copy(node.children[index], suffix, onNodeCreation));
@@ -2905,10 +2876,10 @@ class Tree_ extends Base {
             this.css = this.Css.classname;
         }
         if (this.rootNode)
-            Tree_.traverse(function (node) {
+            node_.traverse(this.rootNode, function (node) {
                 node.ParentNodeTree = THIS;
                 THIS.onNodeCreation(node);
-            }, this.rootNode);
+            });
         else {
             this.rootNode = new node_(...Arguments);
             this.rootNode.ParentNodeTree = this;
@@ -2934,31 +2905,14 @@ class Tree_ extends Base {
             I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`, (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon, node.ParentNodeTree.iconClass, events({ onclick: function (mouseEvent) { Tree_.toggleCollapse(this, node, mouseEvent); } }))
             : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), nodeLabel);
     }
-    // traverse(traverseFunction:(node: node_) => void,
-    //         node:node_ = this.rootNode,
-    //         traverseChildren:(node: node_)=>boolean = function(){return true},
-    //         traverseNode:(node: node_)=>boolean = function(){return true}
-    // ){Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this)}
-    static traverse(traverseFunction, node, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
-        if (traverseNode(node)) {
-            traverseFunction(node);
-            if (traverseChildren(node)) {
-                if (node.children)
-                    for (let index = 0; index < node.children.length; index++)
-                        Tree_.traverse(traverseFunction, node.children[index], traverseChildren, traverseNode);
-            }
-        }
-        if (node.NextSibling)
-            Tree_.traverse(traverseFunction, node.NextSibling, traverseChildren, traverseNode);
-    }
     newRoot(node) {
         let THIS = this;
         this.derender(this.rootNode);
         this.rootNode = node;
-        Tree_.traverse(function (node) {
+        node_.traverse(this.rootNode, function (node) {
             node.ParentNodeTree = THIS;
             THIS.onNodeCreation(node);
-        }, this.rootNode);
+        });
     }
     root(...Arguments) {
         this.rootNode = new node_(...Arguments);
@@ -2968,10 +2922,7 @@ class Tree_ extends Base {
         this.rootNode.log();
     }
     derender(node) {
-        Tree_.traverse(function traverseFunction(node) {
-            Render.update(node.displaycell, true);
-            // Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
-        }, node);
+        node_.traverse(node, function traverseFunction(node) { Render.update(node.displaycell, true); });
     }
     derenderChildren(node) {
         for (let index = 0; index < node.children.length; index++)
@@ -2989,7 +2940,7 @@ class Tree_ extends Base {
         let renderChildren = new RenderChildren;
         zindex += Render.zIncrement;
         //node.log();
-        Tree_.traverse(function traverseFunction(node) {
+        node_.traverse(THIS.rootNode, function traverseFunction(node) {
             let x = x_ + (node.depth() - 1) * THIS.tabSize;
             let y = y_;
             let width = PDScoord.width; // - x;
@@ -3007,7 +2958,7 @@ class Tree_ extends Base {
                 if (x2 > max_x2)
                     max_x2 = x2;
             }
-        }, THIS.rootNode, function traverseChildren(node) {
+        }, function traverseChildren(node) {
             return (!node.collapsed);
         });
         // let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()

@@ -81,10 +81,10 @@ class Tree_ extends Base {
             this.css = this.Css.classname;
         }
         if (this.rootNode)
-            Tree_.traverse( function(node:node_){
+            node_.traverse( this.rootNode, function(node:node_){
                                 node.ParentNodeTree = THIS;
                                 THIS.onNodeCreation(node);
-                            }, this.rootNode );
+                            });
         else {
             this.rootNode = new node_(...Arguments)
             this.rootNode.ParentNodeTree = this;
@@ -94,44 +94,14 @@ class Tree_ extends Base {
         if (this.node_arg_map) node_.argMap = this.node_arg_map;
     }
 
-    // traverse(traverseFunction:(node: node_) => void,
-    //         node:node_ = this.rootNode,
-    //         traverseChildren:(node: node_)=>boolean = function(){return true},
-    //         traverseNode:(node: node_)=>boolean = function(){return true}
-    // ){Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this)}
-
-    static traverse(traverseFunction:(node: node_) => void,
-            node:node_,
-            traverseChildren:(node: node_)=>boolean = function(){return true},
-            traverseNode:(node: node_)=>boolean = function(){return true},
-            // TreeInstance:Tree_
-            ) {  //
-         
-        if (traverseNode(node)) {
-            traverseFunction(node);                
-            if (traverseChildren(node)) {    
-                if (node.children)
-                    for (let index = 0; index < node.children.length; index++)
-                    Tree_.traverse(traverseFunction,
-                                        node.children[index],
-                                        traverseChildren,
-                                        traverseNode);
-            }
-        }
-        if (node.NextSibling) Tree_.traverse(traverseFunction,
-                                            node.NextSibling,
-                                            traverseChildren,
-                                            traverseNode);
-    }
-
     newRoot(node:node_){
         let THIS = this;
         this.derender(this.rootNode);
         this.rootNode = node;
-        Tree_.traverse( function(node:node_){
+        node_.traverse(this.rootNode, function(node:node_){
             node.ParentNodeTree = THIS;
             THIS.onNodeCreation(node);
-        }, this.rootNode );
+        } );
     }
     root(...Arguments:any){
         this.rootNode = new node_(...Arguments)
@@ -141,13 +111,7 @@ class Tree_ extends Base {
         this.rootNode.log()
     }
     derender(node:node_) {
-        Tree_.traverse(
-            function traverseFunction(node:node_){
-                Render.update(node.displaycell, true);
-                // Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
-            },
-            node
-        )        
+        node_.traverse( node, function traverseFunction(node:node_){Render.update(node.displaycell, true);})        
     }
     derenderChildren(node:node_){
         for (let index = 0; index < node.children.length; index++)
@@ -165,7 +129,7 @@ class Tree_ extends Base {
         zindex += Render.zIncrement;
         //node.log();
 
-        Tree_.traverse(
+        node_.traverse( THIS.rootNode,
             function traverseFunction(node:node_){
                 let x = x_ + (node.depth()-1)*THIS.tabSize;
                 let y = y_;
@@ -188,7 +152,6 @@ class Tree_ extends Base {
                 }
                 
             },
-            THIS.rootNode,
             function traverseChildren(node: node_) {
                 return (!node.collapsed)
             },

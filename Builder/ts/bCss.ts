@@ -65,7 +65,10 @@ class bCss{
     static treeItem = css("treeItem",`background: transparent; color:black; cursor:pointer`,
                                      `background:DeepSkyBlue;`)
 
-    static bookSVGCss = css(`bookIcon`,`stroke: black;`,`fill: white;`);
+    static bookSVGCss = css(`bookIcon`,`stroke: black;`,`fill: white;background:white`);
+    static buttonsSVGCss = css(`buttonIcons`,`fill: white;stroke:black; background-color:white`,
+                                             `fill: black;stroke:white; background-color:black`,
+                                             `fill: white;stroke:black; background-color:gray`,);
     static bookSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
         <g transform="matrix(.069039 0 0 .048212 -4.1849 .6616)">
         <path d="m131.75 409.1c-28.8 0-52.1 18.3-52.1 40.4 0 22.6 23.3 40.4 52.1 40.4h278.4c-22.6-24.1-22.6-56.8 0-80.9h-278.4z"/>
@@ -150,4 +153,13 @@ class bCss{
     <path d="m5.6905 8.1985-0.62192 8.3796s4.4228-2.222 9.9507-2.222 8.2923-6.1576 8.2923-6.1576h-17.621z" fill="#fff" fill-opacity=".089286" fill-rule="evenodd" stroke-width=".53438"/>
     <path d="m9.8186 14.248-0.37533 4.0109h4.168l0.30365-3.242h2.2685l-0.30368 3.242h2.5913l0.37533-4.0109h1.4175l-5.5265-4.0399-6.2831 4.0399z" fill="url(#linearGradient2296)" fill-rule="evenodd" stroke-width="1.5885pt"/>
    </svg>`;};
+
+    static matchSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="m5 15h-1a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>`;};
+    static cursorSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" stroke-width="10" version="1.1" viewBox="0 0 12.207 12.207" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+        <g transform="matrix(.019665 0 0 .019665 1.636 .85503)">
+        <polygon points="82.489 0 82.258 471.74 187.63 370.92 249.52 512 346.08 469.64 284.19 328.56 429.74 319.31"/></g></svg>
+        `}
 }

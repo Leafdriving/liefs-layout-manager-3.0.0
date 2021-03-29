@@ -27,6 +27,19 @@ class node_ extends Base {
         if (THIS.ParentNodeTree) THIS.ParentNodeTree.onNodeCreation(newnode);
         return newnode;
     }
+    static traverse(node:node_, traverseFunction:(node: node_) => void,
+            traverseChildren:(node: node_)=>boolean = function(){return true},
+            traverseNode:(node: node_)=>boolean = function(){return true}) {
+        if (traverseNode(node)) {
+            traverseFunction(node);                
+            if (traverseChildren(node))
+                if (node.children)
+                    for (let index = 0; index < node.children.length; index++)
+                        node_.traverse(node.children[index], traverseFunction,
+                                            traverseChildren,
+                                            traverseNode);
+        }
+    }
     renderx:number;
     rendery:number;
     retArgs:ArgsObj;   // <- this will appear
@@ -35,12 +48,25 @@ class node_ extends Base {
 
     ParentNodeTree: Tree_ = undefined;
     ParentNode:node_ = undefined;
-    PreviousSibling:node_ = undefined;
-    NextSibling:node_ = undefined;
+
+    get PreviousSibling() {let index = this.ParentNode.children.indexOf(this);
+        return (index > 0) ? this.ParentNode.children[index-1] : undefined}
+    set PreviousSibling(newNode:node_) {
+        let index = this.ParentNode.children.indexOf(this);
+        this.ParentNode.children.splice(index, 0, newNode);
+    }
+
+    get NextSibling() {let index = this.ParentNode.children.indexOf(this);
+        return (index > -1 && index < this.ParentNode.children.length-1) ? this.ParentNode.children[index + 1] : undefined}
+    set NextSibling(newNode:node_) {
+        let index = this.ParentNode.children.indexOf(this);
+        this.ParentNode.children.splice(index + 1, 0, newNode);
+    }
+
+
+
     collapsed: boolean;
-
     displaycell:DisplayCell;
-
     children:node_[] = [];
     // get $(){return node_.Proxy(this)}
     // get node(){return node_.Proxy(this)}
@@ -49,14 +75,7 @@ class node_ extends Base {
         this.Arguments = Arguments;
     }
     depth(node:node_ = this, deep=0){while(node){deep += 1;node = node.parent()};return deep;}
-    siblingObject(top:node_ = this, returnObject = {}){
-        while (top.PreviousSibling) {top = top.PreviousSibling}
-        do {
-            returnObject[top.label] = top
-            top = top.NextSibling
-        } while (top);
-        return returnObject;
-    }
+
     newChild(...Arguments:any): node_{
         let newNode:node_;
         if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
@@ -69,56 +88,18 @@ class node_ extends Base {
         return newNode;
         
     }
-    newSibling(...Arguments:any): node_ { 
-        let previousNextSibling = this.NextSibling;
+    newSibling(...Arguments:any): node_ {
+        let newNode:node_;
         if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
-            this.NextSibling = <node_>(Arguments[0]);
+            newNode = <node_>(Arguments[0]);
         else
-            this.NextSibling = node_.newNode(this, ...Arguments);
-        this.NextSibling.ParentNodeTree = this.ParentNodeTree;
-        this.NextSibling.PreviousSibling = this;
-        this.NextSibling.ParentNode = this.ParentNode;
-
-        this.NextSibling.NextSibling = previousNextSibling;
-        return this.NextSibling;
+            newNode = node_.newNode(this, ...Arguments);
+        newNode.ParentNodeTree = this.ParentNodeTree;
+        newNode.ParentNode = this.ParentNode;
+        this.NextSibling = newNode;
+        return newNode;
     }
-    // newSibling(...Arguments:any): node_ { 
-    //     let previousNextSibling = this.NextSibling;
-    //     if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
-    //         this.NextSibling = <node_>(Arguments[0]);
-    //     else
-    //         this.NextSibling = node_.newNode(this, ...Arguments);
-    //     this.NextSibling.ParentNodeTree = this.ParentNodeTree;
-    //     this.NextSibling.PreviousSibling = this;
-    //     this.NextSibling.ParentNode = this.ParentNode;
-
-    //     this.NextSibling.NextSibling = previousNextSibling;
-    //     return this.NextSibling;
-    // }
-    topSibling(){
-        let returnNode:node_ = this;
-        while (returnNode.previousSibling()) returnNode = returnNode.previousSibling()
-        return returnNode;
-    }
-    bottomSibling(){
-        let returnNode:node_ = this;
-        while (returnNode.nextSibling()) returnNode = returnNode.nextSibling()
-        return returnNode;        
-    }
-    pop(){
-        let index = this.ParentNode.children.indexOf(this);
-        this.ParentNode.children.splice(index, 1);
-        if (this.PreviousSibling) {
-            this.PreviousSibling.NextSibling = this.NextSibling;
-            if (this.NextSibling)
-                this.NextSibling.PreviousSibling = this.PreviousSibling;
-        } else if (this.NextSibling) this.NextSibling.PreviousSibling = undefined;
-        this.PreviousSibling = this.NextSibling = this.ParentNode = undefined;
-        return this;
-    }
-    nextSibling(){return this.NextSibling}
-    previousSibling(){return this.PreviousSibling}
-    firstChild(){return this.children[0]}
+  
     done(){return this.ParentNodeTree}
     root(){
         let node:node_ = this;
@@ -126,7 +107,6 @@ class node_ extends Base {
         return node
     }
     parent(){return this.ParentNode}
-    // collapse(value:boolean = true){this.collapsed = value;}
     log(){
         if (this.children.length) {
             console.groupCollapsed(this.label);
@@ -134,20 +114,20 @@ class node_ extends Base {
                 this.children[index].log();
             console.groupEnd();
         } else console.log(this.label);
-        if (this.NextSibling) this.NextSibling.log();
     }
     byLabel(label:string){return node_.byLabel(label);}
-    // copy isnt working!!!!!
-    static copy(node:node_, suffix = "_copy", onNodeCreation:(node:node_, newNode:node_)=>void = function(node,newNode){}) {
+
+    static copy(node:node_|Tree_, suffix = "_copy", onNodeCreation:(node:node_, newNode:node_)=>void = function(node,newNode){}) {
         let newNode = new node_(`${node.label}${suffix}`);
+        if (BaseF.typeof(node) == "Tree_"){
+            node = <node_>((<Tree_>node).rootNode);
+            console.log(`node_.copy() was passes a TREE not a node... assuming rootNode`);
+        }
+        else node = (<node_>node)
         onNodeCreation(node, newNode);
-        //let tnode = node;
-        if (node.NextSibling)
-            newNode.newSibling( node_.copy(node.NextSibling, suffix, onNodeCreation) )
         if (node.children && node.children.length)
             for (let index = 0; index < node.children.length; index++) 
                 newNode.newChild( node_.copy(node.children[index], suffix, onNodeCreation) );
-
         return newNode;
     }
 }

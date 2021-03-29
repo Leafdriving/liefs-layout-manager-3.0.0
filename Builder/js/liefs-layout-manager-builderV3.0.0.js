@@ -215,6 +215,19 @@ class bCss {
    </svg>`;
     }
     ;
+    static matchSVG(classname) {
+        return `<svg class="${classname}" width="100%" height="100%" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="m5 15h-1a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>`;
+    }
+    ;
+    static cursorSVG(classname) {
+        return `<svg class="${classname}" width="100%" height="100%" stroke-width="10" version="1.1" viewBox="0 0 12.207 12.207" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+        <g transform="matrix(.019665 0 0 .019665 1.636 .85503)">
+        <polygon points="82.489 0 82.258 471.74 187.63 370.92 249.52 512 346.08 469.64 284.19 328.56 429.74 319.31"/></g></svg>
+        `;
+    }
 }
 bCss.editable = css("editable", `-moz-appearance: textfield;
                                     -webkit-appearance: textfield;
@@ -273,7 +286,8 @@ bCss.pagesSVG = css("pagesSVG", `background-image: url("svg/bookOPT.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
 bCss.treeItem = css("treeItem", `background: transparent; color:black; cursor:pointer`, `background:DeepSkyBlue;`);
-bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;`);
+bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;background:white`);
+bCss.buttonsSVGCss = css(`buttonIcons`, `fill: white;stroke:black; background-color:white`, `fill: black;stroke:white; background-color:black`, `fill: white;stroke:black; background-color:gray`);
 class Builder extends Base {
     // retArgs:ArgsObj;   // <- this will appear
     constructor(...Arguments) {
@@ -286,8 +300,10 @@ class Builder extends Base {
             H("Client Window", h("Client_h", 5, I("Client_Main1", "left", /*bCss.bgCyan,*/ "500px"), I("Client_Main2", "right", bCss.bgCyan, "500px")), false);
     }
     static buildMainHandler() {
-        let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.bgCyan, sample().rootNode, function onNodeCreation(node) {
-            let nodeLabel = I(`${node.label}_node`, `${node.label}`, node.ParentNodeTree.css, node.ParentNodeTree.events);
+        let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.bgCyan, sample().rootNode, events({ onmouseover: function (e) {
+                Builder.onHoverTree(e, this);
+            } }), function onNodeCreation(node) {
+            let nodeLabel = I(`${node.label}_node`, `${node.Arguments[0]}`, node.ParentNodeTree.css, node.ParentNodeTree.events);
             nodeLabel.coord.hideWidth = true;
             let dataObj = node.Arguments[1];
             let dataObjType = BaseF.typeof(dataObj);
@@ -311,17 +327,90 @@ class Builder extends Base {
         Render.update();
         const node = node_.byLabel("Client Window");
         if (node) {
-            // let builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
-            //     newNode["Arguments"] = node.Arguments;
-            //     // newNode["type"] = BaseF.typeof(node.Arguments[1]);
-            //     // newNode[ newNode["type"] ] = node.Arguments[1];
-            //     // if (node.Arguments.length > 2) newNode["DisplayCell"] = node.Arguments[2];
-            // })
-            // let nodecopy = nodeCopy(node);
-            Tree_.byLabel("HandlerTree").newRoot(node);
-            // console.log("NODE", nodecopy)
+            Builder.builderTreeRootNode = node_.copy(node, "_", function (node, newNode) {
+                newNode["Arguments"] = node.Arguments;
+                newNode["typeof"] = BaseF.typeof(node.Arguments[1]);
+            });
+            Builder.noDisplayCellnode = Builder.noDisplayCells();
+            Tree_.byLabel("HandlerTree").newRoot(Builder.noDisplayCellnode);
         }
         Render.update();
+    }
+    static noDisplayCells(node = Builder.builderTreeRootNode, newNode = new node_("noDisplayCells")) {
+        let childNode;
+        if (node["typeof"] != "DisplayCell") {
+            childNode = newNode.newChild("_" + node.label);
+            childNode.Arguments = node.Arguments;
+            childNode["typeof"] = node["typeof"];
+        }
+        else
+            childNode = newNode;
+        for (let index = 0; index < node.children.length; index++)
+            Builder.noDisplayCells(node.children[index], childNode);
+        return childNode;
+    }
+    static TOOLBAR_events(buttonName) {
+        return events({
+            onclick: function (e) {
+                let el = this.children[0];
+                let currentClass = (el.className.baseVal);
+                if (!currentClass.endsWith("Selected")) {
+                    if (Builder.TOOLBAR_currentButton && Builder.TOOLBAR_currentButton.className["baseVal"].endsWith("Selected"))
+                        Builder.TOOLBAR_currentButton.className["baseVal"] = Builder.TOOLBAR_currentButton.className["baseVal"].slice(0, -8);
+                    el.className.baseVal = currentClass + "Selected";
+                    Builder.TOOLBAR_currentButton = el;
+                    Builder.TOOLBAR_currentButtonName = buttonName;
+                }
+            },
+            //onmouseover: function(e){console.log(e)}
+        });
+    }
+    static xboxSVG(boundCoord, Boxes) {
+        let top = `<svg width="${boundCoord.width}" height="${boundCoord.height}">`;
+        let bottom = `</svg>`;
+        let mid = "";
+        for (let index = 0; index < Boxes.length; index++) {
+            const coord = Boxes[index];
+            let offset = 1;
+            let x = coord.x - boundCoord.x + offset;
+            let y = coord.y - boundCoord.y + offset;
+            let width = coord.width - offset * 2;
+            let height = coord.height - offset * 2;
+            mid += `<rect x="${x}" y="${y}" width="${width}" height="${height}" style="fill-opacity:0;stroke-width:3;stroke:red" />`
+                + `<line x1="${x}" y1="${y}" x2="${x + width}" y2="${height}" style="stroke:red;stroke-width:3" />`
+                + `<line x1="${x + width}" y1="${y}" x2="${x}" y2="${height}" style="stroke:red;stroke-width:3" />`;
+        }
+        return top + mid + bottom;
+    }
+    static onClickTree(mouseEvent, el) {
+        let node = node_.byLabel(el.id.slice(0, -5));
+        Properties.processNode(node);
+    }
+    static onHoverTree(mouseEvent, el) {
+        console.log(el.innerText);
+        // let node = <node_>node_.byLabel(el.id.slice(0, -5));
+        // let coord = node.Arguments[ node.Arguments.length-1 ].coord;
+        // let type = BaseF.typeof(node.Arguments[1]);
+        // // console.log(type)
+        // if (coord == undefined) {
+        //     let [width, height] = pf.viewport();
+        //     coord = new Coord(0, 0, width, height)
+        // }
+        // Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+        // let coordArray:Coord[] = [];
+        // if (type != "DisplayGroup") coordArray.push(coord);
+        // else {
+        //     let displaygroup = (<DisplayGroup>node.Arguments[1]);
+        //     for (let index = 0; index < displaygroup.cellArray.length; index++) {
+        //         const displaycell = displaygroup.cellArray[index];
+        //         coordArray.push(displaycell.coord);
+        //     }
+        // }
+        // Builder.hoverModal.rootDisplayCell.htmlBlock.innerHTML = Builder.xboxSVG(coord, coordArray)
+        // Builder.hoverModal.show();
+    }
+    static onLeaveHoverTree(mouseEvent, el) {
+        Builder.hoverModal.hide();
     }
 }
 Builder.labelNo = 0;
@@ -332,25 +421,25 @@ Builder.argMap = {
     string: ["label"],
 };
 Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgwhite*/));
-Builder.TOOLBAR = toolBar("Main_toolbar", 40, 25, I("toolbarb1", `<button style="width:100%; height:100%">1</button>`), I("toolbarb2", `<button style="width:100%; height:100%">2</button>`), I("toolbarb3", `<button style="width:100%; height:100%">3</button>`));
-function nodeCopy(node, postFix = "_copy") {
-    let newNode = new node_(node.label + postFix);
-    newNode["Arguments"] = [];
-    for (let index = 0; index < node["Arguments"].length; index++) {
-        newNode["Arguments"].push(node["Arguments"][index]);
-    }
-    if (node.children && node.children.length) {
-        for (let index = 0; index < node.children.length; index++) {
-            let childNode = node.children[index];
-            newNode.newChild(nodeCopy(childNode));
-        }
-    }
-    if (node.NextSibling) {
-        newNode.newSibling(nodeCopy(node.NextSibling));
-    }
-    console.log("Created " + newNode.label + " parent " + newNode.ParentNode);
-    return newNode;
-}
+Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, I("toolbarCursor", bCss.cursorSVG("buttonIcons"), Builder.TOOLBAR_events("pointer")), I("toolbarMatch", bCss.matchSVG("buttonIcons"), Builder.TOOLBAR_events("match")), I("toolbarb1", `<button style="width:100%; height:100%">1</button>`), I("toolbarb2", `<button style="width:100%; height:100%">2</button>`), I("toolbarb3", `<button style="width:100%; height:100%">3</button>`));
+// function nodeCopy(node:node_, postFix = "_copy") {
+//     let newNode = new node_(node.label + postFix);
+//     newNode["Arguments"] = [];
+//     for (let index = 0; index < node["Arguments"].length; index++) {
+//         newNode["Arguments"].push(node["Arguments"][index]);
+//     }
+//     if (node.children && node.children.length) {
+//         for (let index = 0; index < node.children.length; index++) {
+//             let childNode = node.children[index];
+//             newNode.newChild(   nodeCopy(childNode)      )
+//         }
+//     }
+//     if (node.NextSibling) {
+//         newNode.newSibling(  nodeCopy(node.NextSibling)  );
+//     }
+//     console.log("Created " + newNode.label + " parent " + newNode.ParentNode)
+//     return newNode;
+// }
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
@@ -369,49 +458,3 @@ let hide = function () {
     outside.hide();
     inside.hide();
 };
-// static xboxSVG(boundCoord:Coord, Boxes:Coord[]){
-//     let top:string = `<svg width="${boundCoord.width}" height="${boundCoord.height}">`;
-//     let bottom:string = `</svg>`;
-//     let mid:string = "";
-//     for (let index = 0; index < Boxes.length; index++) {
-//         const coord = Boxes[index];
-//         let offset = 1;
-//         let x = coord.x -boundCoord.x + offset;
-//         let y = coord.y - boundCoord.y + offset;
-//         let width = coord.width- offset*2;
-//         let height = coord.height-offset*2;
-//         mid += `<rect x="${x}" y="${y}" width="${width}" height="${height}" style="fill-opacity:0;stroke-width:3;stroke:red" />`
-//               +`<line x1="${x}" y1="${y}" x2="${x+width}" y2="${height}" style="stroke:red;stroke-width:3" />`
-//               +`<line x1="${x+width}" y1="${y}" x2="${x}" y2="${height}" style="stroke:red;stroke-width:3" />`
-//     }
-//     return top+mid+bottom
-// }
-// static onClickTree(mouseEvent:MouseEvent, el:HTMLElement){
-//     let node = <node_>node_.byLabel(el.id.slice(0, -5));
-//     Properties.processNode(node)
-// }
-// static onHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
-//     let node = <node_>node_.byLabel(el.id.slice(0, -5));
-//     let coord = node.Arguments[ node.Arguments.length-1 ].coord;
-//     let type = BaseF.typeof(node.Arguments[1]);
-//     // console.log(type)
-//     if (coord == undefined) {
-//         let [width, height] = pf.viewport();
-//         coord = new Coord(0, 0, width, height)
-//     }
-//     Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-//     let coordArray:Coord[] = [];
-//     if (type != "DisplayGroup") coordArray.push(coord);
-//     else {
-//         let displaygroup = (<DisplayGroup>node.Arguments[1]);
-//         for (let index = 0; index < displaygroup.cellArray.length; index++) {
-//             const displaycell = displaygroup.cellArray[index];
-//             coordArray.push(displaycell.coord);
-//         }
-//     }
-//     Builder.hoverModal.rootDisplayCell.htmlBlock.innerHTML = Builder.xboxSVG(coord, coordArray)
-//     Builder.hoverModal.show();
-// }
-// static onLeaveHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
-//     Builder.hoverModal.hide();
-// }

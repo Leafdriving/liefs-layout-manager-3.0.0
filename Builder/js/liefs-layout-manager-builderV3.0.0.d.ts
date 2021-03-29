@@ -50,12 +50,15 @@ declare class bCss {
     static pagesSVG: Css;
     static treeItem: Css;
     static bookSVGCss: Css;
+    static buttonsSVGCss: Css;
     static bookSVG(classname: string): string;
     static htmlSVG(classname: string): string;
     static horSVG(classname: string): string;
     static verSVG(classname: string): string;
     static displaycellSVG(classname: string): string;
     static homeSVG(classname: string): string;
+    static matchSVG(classname: string): string;
+    static cursorSVG(classname: string): string;
 }
 declare class Builder extends Base {
     static labelNo: number;
@@ -72,10 +75,19 @@ declare class Builder extends Base {
     static hoverModal: Modal;
     static mainHandler: Handler;
     static buildMainHandler(): void;
+    static builderTreeRootNode: node_;
     static updateTree(): void;
+    static noDisplayCellnode: node_;
+    static noDisplayCells(node?: node_, newNode?: node_): node_;
+    static TOOLBAR_events(buttonName: string): Events;
+    static TOOLBAR_currentButton: Element;
+    static TOOLBAR_currentButtonName: string;
     static TOOLBAR: DisplayCell;
+    static xboxSVG(boundCoord: Coord, Boxes: Coord[]): string;
+    static onClickTree(mouseEvent: MouseEvent, el: HTMLElement): void;
+    static onHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
+    static onLeaveHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
 }
-declare function nodeCopy(node: node_, postFix?: string): node_;
 declare let outside: Modal;
 declare let inside: Modal;
 declare let show: (coord: Coord) => void;
