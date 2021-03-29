@@ -82,6 +82,19 @@ class node_ extends Base {
         this.NextSibling.NextSibling = previousNextSibling;
         return this.NextSibling;
     }
+    // newSibling(...Arguments:any): node_ { 
+    //     let previousNextSibling = this.NextSibling;
+    //     if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
+    //         this.NextSibling = <node_>(Arguments[0]);
+    //     else
+    //         this.NextSibling = node_.newNode(this, ...Arguments);
+    //     this.NextSibling.ParentNodeTree = this.ParentNodeTree;
+    //     this.NextSibling.PreviousSibling = this;
+    //     this.NextSibling.ParentNode = this.ParentNode;
+
+    //     this.NextSibling.NextSibling = previousNextSibling;
+    //     return this.NextSibling;
+    // }
     topSibling(){
         let returnNode:node_ = this;
         while (returnNode.previousSibling()) returnNode = returnNode.previousSibling()
@@ -126,13 +139,15 @@ class node_ extends Base {
     byLabel(label:string){return node_.byLabel(label);}
     // copy isnt working!!!!!
     static copy(node:node_, suffix = "_copy", onNodeCreation:(node:node_, newNode:node_)=>void = function(node,newNode){}) {
-        let newNode = <node_>node_.recycle(`${node.label}${suffix}`) // new node_(`${node}${suffix}`);
+        let newNode = new node_(`${node.label}${suffix}`);
         onNodeCreation(node, newNode);
+        //let tnode = node;
+        if (node.NextSibling)
+            newNode.newSibling( node_.copy(node.NextSibling, suffix, onNodeCreation) )
         if (node.children && node.children.length)
             for (let index = 0; index < node.children.length; index++) 
                 newNode.newChild( node_.copy(node.children[index], suffix, onNodeCreation) );
-        if (node.NextSibling)
-            newNode.newSibling( node_.copy(node.NextSibling, suffix, onNodeCreation) )
+
         return newNode;
     }
 }

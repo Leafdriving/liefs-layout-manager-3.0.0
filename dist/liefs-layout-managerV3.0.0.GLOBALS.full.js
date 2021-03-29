@@ -419,9 +419,9 @@ class Render {
             let CLASS = Render.classes[objectType];
             if (CLASS) {
                 if (isSibling && index != 0)
-                    node = node.newSibling(`${objectType}_${object_["label"]}`, object_);
+                    node = node.newSibling(`${object_["label"]}${(objectType == "DisplayCell") ? "_" : ""}`, object_);
                 else
-                    node = node.newChild(`${objectType}_${object_["label"]}`, object_);
+                    node = node.newChild(`${object_["label"]}${(objectType == "DisplayCell") ? "_" : ""}`, object_);
                 // console.log(`Rendering ${objectType}_${object_["label"]}`)
                 let returnObj = CLASS.Render(object_, zindex, derender, node); // this is render call
                 zindex = returnObj.zindex;
@@ -2768,6 +2768,18 @@ class node_ extends Base {
         this.NextSibling.NextSibling = previousNextSibling;
         return this.NextSibling;
     }
+    // newSibling(...Arguments:any): node_ { 
+    //     let previousNextSibling = this.NextSibling;
+    //     if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
+    //         this.NextSibling = <node_>(Arguments[0]);
+    //     else
+    //         this.NextSibling = node_.newNode(this, ...Arguments);
+    //     this.NextSibling.ParentNodeTree = this.ParentNodeTree;
+    //     this.NextSibling.PreviousSibling = this;
+    //     this.NextSibling.ParentNode = this.ParentNode;
+    //     this.NextSibling.NextSibling = previousNextSibling;
+    //     return this.NextSibling;
+    // }
     topSibling() {
         let returnNode = this;
         while (returnNode.previousSibling())
@@ -2821,13 +2833,14 @@ class node_ extends Base {
     byLabel(label) { return node_.byLabel(label); }
     // copy isnt working!!!!!
     static copy(node, suffix = "_copy", onNodeCreation = function (node, newNode) { }) {
-        let newNode = node_.recycle(`${node.label}${suffix}`); // new node_(`${node}${suffix}`);
+        let newNode = new node_(`${node.label}${suffix}`);
         onNodeCreation(node, newNode);
+        //let tnode = node;
+        if (node.NextSibling)
+            newNode.newSibling(node_.copy(node.NextSibling, suffix, onNodeCreation));
         if (node.children && node.children.length)
             for (let index = 0; index < node.children.length; index++)
                 newNode.newChild(node_.copy(node.children[index], suffix, onNodeCreation));
-        if (node.NextSibling)
-            newNode.newSibling(node_.copy(node.NextSibling, suffix, onNodeCreation));
         return newNode;
     }
 }
@@ -2892,10 +2905,10 @@ class Tree_ extends Base {
             this.css = this.Css.classname;
         }
         if (this.rootNode)
-            this.traverse(function (node) {
+            Tree_.traverse(function (node) {
                 node.ParentNodeTree = THIS;
                 THIS.onNodeCreation(node);
-            });
+            }, this.rootNode);
         else {
             this.rootNode = new node_(...Arguments);
             this.rootNode.ParentNodeTree = this;
@@ -2921,27 +2934,31 @@ class Tree_ extends Base {
             I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`, (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon, node.ParentNodeTree.iconClass, events({ onclick: function (mouseEvent) { Tree_.toggleCollapse(this, node, mouseEvent); } }))
             : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), nodeLabel);
     }
-    traverse(traverseFunction, node = this.rootNode, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) { Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this); }
-    static traverse(traverseFunction, node, traverseChildren = function () { return true; }, traverseNode = function () { return true; }, TreeInstance) {
+    // traverse(traverseFunction:(node: node_) => void,
+    //         node:node_ = this.rootNode,
+    //         traverseChildren:(node: node_)=>boolean = function(){return true},
+    //         traverseNode:(node: node_)=>boolean = function(){return true}
+    // ){Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this)}
+    static traverse(traverseFunction, node, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
         if (traverseNode(node)) {
             traverseFunction(node);
             if (traverseChildren(node)) {
                 if (node.children)
                     for (let index = 0; index < node.children.length; index++)
-                        TreeInstance.traverse(traverseFunction, node.children[index], traverseChildren, traverseNode);
+                        Tree_.traverse(traverseFunction, node.children[index], traverseChildren, traverseNode);
             }
         }
         if (node.NextSibling)
-            TreeInstance.traverse(traverseFunction, node.NextSibling, traverseChildren, traverseNode);
+            Tree_.traverse(traverseFunction, node.NextSibling, traverseChildren, traverseNode);
     }
     newRoot(node) {
         let THIS = this;
         this.derender(this.rootNode);
         this.rootNode = node;
-        this.traverse(function (node) {
+        Tree_.traverse(function (node) {
             node.ParentNodeTree = THIS;
             THIS.onNodeCreation(node);
-        });
+        }, this.rootNode);
     }
     root(...Arguments) {
         this.rootNode = new node_(...Arguments);
@@ -2951,7 +2968,7 @@ class Tree_ extends Base {
         this.rootNode.log();
     }
     derender(node) {
-        this.traverse(function traverseFunction(node) {
+        Tree_.traverse(function traverseFunction(node) {
             Render.update(node.displaycell, true);
             // Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
         }, node);
@@ -2972,7 +2989,7 @@ class Tree_ extends Base {
         let renderChildren = new RenderChildren;
         zindex += Render.zIncrement;
         //node.log();
-        thisTree.traverse(function traverseFunction(node) {
+        Tree_.traverse(function traverseFunction(node) {
             let x = x_ + (node.depth() - 1) * THIS.tabSize;
             let y = y_;
             let width = PDScoord.width; // - x;

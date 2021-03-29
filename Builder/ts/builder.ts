@@ -101,14 +101,17 @@ function onNodeCreation(node:node_){
     }
     static updateTree(){
         Render.update();
-        const node = node_.byLabel("Handler_Client Window");
+        const node = node_.byLabel("Client Window");
         if (node) {
             // let builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
-            //     newNode["type"] = BaseF.typeof(node.Arguments[1]);
-            //     newNode[ newNode["type"] ] = node.Arguments[1];
-            //     if (node.Arguments.length > 2) newNode["DisplayCell"] = node.Arguments[2];
+            //     newNode["Arguments"] = node.Arguments;
+            //     // newNode["type"] = BaseF.typeof(node.Arguments[1]);
+            //     // newNode[ newNode["type"] ] = node.Arguments[1];
+            //     // if (node.Arguments.length > 2) newNode["DisplayCell"] = node.Arguments[2];
             // })
+            // let nodecopy = nodeCopy(node);
             Tree_.byLabel("HandlerTree").newRoot( node );
+            // console.log("NODE", nodecopy)
         }
         Render.update();
     }
@@ -117,6 +120,26 @@ function onNodeCreation(node:node_){
         I("toolbarb2",`<button style="width:100%; height:100%">2</button>`),
         I("toolbarb3",`<button style="width:100%; height:100%">3</button>`),
     );
+}
+
+function nodeCopy(node:node_, postFix = "_copy") {
+    let newNode = new node_(node.label + postFix);
+    newNode["Arguments"] = [];
+    for (let index = 0; index < node["Arguments"].length; index++) {
+        newNode["Arguments"].push(node["Arguments"][index]);
+    }
+    if (node.children && node.children.length) {
+        for (let index = 0; index < node.children.length; index++) {
+            let childNode = node.children[index];
+            newNode.newChild(   nodeCopy(childNode)      )
+            
+        }
+    }
+    if (node.NextSibling) {
+        newNode.newSibling(  nodeCopy(node.NextSibling)  );
+    }
+    console.log("Created " + newNode.label + " parent " + newNode.ParentNode)
+    return newNode;
 }
 
 Builder.buildClientHandler();

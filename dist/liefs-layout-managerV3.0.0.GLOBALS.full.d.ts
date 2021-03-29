@@ -826,8 +826,7 @@ declare class Tree_ extends Base {
     scrollbarv: ScrollBar;
     onNodeCreation: (node: node_) => void;
     constructor(...Arguments: any);
-    traverse(traverseFunction: (node: node_) => void, node?: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
-    static traverse(traverseFunction: (node: node_) => void, node: node_, traverseChildren: (node: node_) => boolean, traverseNode: (node: node_) => boolean, TreeInstance: Tree_): void;
+    static traverse(traverseFunction: (node: node_) => void, node: node_, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
     newRoot(node: node_): void;
     root(...Arguments: any): node_;
     log(): void;

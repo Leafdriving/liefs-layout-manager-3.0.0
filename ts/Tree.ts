@@ -81,10 +81,10 @@ class Tree_ extends Base {
             this.css = this.Css.classname;
         }
         if (this.rootNode)
-            this.traverse( function(node:node_){
+            Tree_.traverse( function(node:node_){
                                 node.ParentNodeTree = THIS;
                                 THIS.onNodeCreation(node);
-                            } );
+                            }, this.rootNode );
         else {
             this.rootNode = new node_(...Arguments)
             this.rootNode.ParentNodeTree = this;
@@ -94,17 +94,17 @@ class Tree_ extends Base {
         if (this.node_arg_map) node_.argMap = this.node_arg_map;
     }
 
-    traverse(traverseFunction:(node: node_) => void,
-            node:node_ = this.rootNode,
-            traverseChildren:(node: node_)=>boolean = function(){return true},
-            traverseNode:(node: node_)=>boolean = function(){return true}
-    ){Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this)}
+    // traverse(traverseFunction:(node: node_) => void,
+    //         node:node_ = this.rootNode,
+    //         traverseChildren:(node: node_)=>boolean = function(){return true},
+    //         traverseNode:(node: node_)=>boolean = function(){return true}
+    // ){Tree_.traverse(traverseFunction, node, traverseChildren, traverseNode, this)}
 
     static traverse(traverseFunction:(node: node_) => void,
             node:node_,
             traverseChildren:(node: node_)=>boolean = function(){return true},
             traverseNode:(node: node_)=>boolean = function(){return true},
-            TreeInstance:Tree_
+            // TreeInstance:Tree_
             ) {  //
          
         if (traverseNode(node)) {
@@ -112,13 +112,13 @@ class Tree_ extends Base {
             if (traverseChildren(node)) {    
                 if (node.children)
                     for (let index = 0; index < node.children.length; index++)
-                    TreeInstance.traverse(traverseFunction,
+                    Tree_.traverse(traverseFunction,
                                         node.children[index],
                                         traverseChildren,
                                         traverseNode);
             }
         }
-        if (node.NextSibling) TreeInstance.traverse(traverseFunction,
+        if (node.NextSibling) Tree_.traverse(traverseFunction,
                                             node.NextSibling,
                                             traverseChildren,
                                             traverseNode);
@@ -128,10 +128,10 @@ class Tree_ extends Base {
         let THIS = this;
         this.derender(this.rootNode);
         this.rootNode = node;
-        this.traverse( function(node:node_){
+        Tree_.traverse( function(node:node_){
             node.ParentNodeTree = THIS;
             THIS.onNodeCreation(node);
-        } );
+        }, this.rootNode );
     }
     root(...Arguments:any){
         this.rootNode = new node_(...Arguments)
@@ -141,7 +141,7 @@ class Tree_ extends Base {
         this.rootNode.log()
     }
     derender(node:node_) {
-        this.traverse(
+        Tree_.traverse(
             function traverseFunction(node:node_){
                 Render.update(node.displaycell, true);
                 // Handler.renderDisplayCell(node.displaycell, undefined, undefined, true)
@@ -165,7 +165,7 @@ class Tree_ extends Base {
         zindex += Render.zIncrement;
         //node.log();
 
-        thisTree.traverse(
+        Tree_.traverse(
             function traverseFunction(node:node_){
                 let x = x_ + (node.depth()-1)*THIS.tabSize;
                 let y = y_;

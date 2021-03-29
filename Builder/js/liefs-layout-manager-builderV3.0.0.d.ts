@@ -75,6 +75,7 @@ declare class Builder extends Base {
     static updateTree(): void;
     static TOOLBAR: DisplayCell;
 }
+declare function nodeCopy(node: node_, postFix?: string): node_;
 declare let outside: Modal;
 declare let inside: Modal;
 declare let show: (coord: Coord) => void;
