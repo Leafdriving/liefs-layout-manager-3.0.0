@@ -69,6 +69,8 @@ class bCss{
     static buttonsSVGCss = css(`buttonIcons`,`fill: white;stroke:black; background-color:white`,
                                              `fill: black;stroke:white; background-color:black`,
                                              `fill: white;stroke:black; background-color:gray`,);
+    static treenodeCss = css(`treenode`,`background:#dcedf0; cursor:pointer;`,
+                                        `background:white`)
     static bookSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
         <g transform="matrix(.069039 0 0 .048212 -4.1849 .6616)">
         <path d="m131.75 409.1c-28.8 0-52.1 18.3-52.1 40.4 0 22.6 23.3 40.4 52.1 40.4h278.4c-22.6-24.1-22.6-56.8 0-80.9h-278.4z"/>

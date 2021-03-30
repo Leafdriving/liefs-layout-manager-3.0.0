@@ -26,9 +26,9 @@ class Properties extends Base {
         Properties.makeLabel(this);
         if (this.rootDisplayCell) {
             let [width, height] = Properties.defaultsize;
-            this.winModal = winmodal(`HtmlBlock_prop_winModal`, width, height,
+            this.winModal = winmodal(`${this.label}_prop_winModal`, width, height,
                                         {body: this.rootDisplayCell,
-                                         headerText:`HtmlBlock-`,
+                                         headerText:`${this.label}-`,
                                         });
         }
     }
@@ -58,36 +58,6 @@ class Properties extends Base {
     static setHeaderText(propertiesInstance:Properties, text:string){
         let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
         headerDisplay.htmlBlock.innerHTML = text;
-    }
-    static HtmlBlockChange(variable:string, value:string){
-        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
-        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
-        console.log(`Change Htmlblock-${objectWithProperties.label} variable "${variable}" to "${value}"`)
-        switch (variable) {
-            case "label":
-                objectWithProperties.label = value;
-                Builder.updateTree();                
-                Properties.processNode(objectWithProperties);
-                break;
-            default:
-                console.log(`No way to handle ${variable} value ${value}`);
-                break;
-        }
-    }
-    static HtmlBlockProcess() {
-        let propertiesInstance:Properties = this as unknown as Properties;
-        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
-        let coord = propertiesInstance.currentObjectParentDisplayCell.coord;
-        let keyCells = propertiesInstance.keyCells;
-        Properties.setHeaderText(propertiesInstance, `HtmlBlock - ${objectWithProperties.label}`)
-        keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
-        keyCells.minDisplayGroupSize.htmlBlock.innerHTML = (objectWithProperties.minDisplayGroupSize) ? objectWithProperties.minDisplayGroupSize.toString() : "undefined"
-        keyCells.x.htmlBlock.innerHTML = coord.x.toString();
-        keyCells.y.htmlBlock.innerHTML = coord.y.toString();
-        keyCells.width.htmlBlock.innerHTML = coord.width.toString();
-        keyCells.height.htmlBlock.innerHTML = coord.height.toString();
-
-        Render.update();
     }
     static displayLabel(className:string, label:string, dim = "50px"){
         return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLight);
@@ -136,6 +106,37 @@ class Properties extends Base {
             Properties.Coord("HtmlBlock", keyCells),
         )
         new Properties("HtmlBlock", rootcell, Properties.HtmlBlockProcess, {keyCells});
+    }
+    static HtmlBlockProcess() { // update values ??? 
+        let propertiesInstance:Properties = this as unknown as Properties;
+        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+        console.log(objectWithProperties)
+        // let coord = propertiesInstance.currentObjectParentDisplayCell.coord;
+        // let keyCells = propertiesInstance.keyCells;
+        // Properties.setHeaderText(propertiesInstance, `HtmlBlock - ${objectWithProperties.label}`)
+        // keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
+        // keyCells.minDisplayGroupSize.htmlBlock.innerHTML = (objectWithProperties.minDisplayGroupSize) ? objectWithProperties.minDisplayGroupSize.toString() : "undefined"
+        // keyCells.x.htmlBlock.innerHTML = coord.x.toString();
+        // keyCells.y.htmlBlock.innerHTML = coord.y.toString();
+        // keyCells.width.htmlBlock.innerHTML = coord.width.toString();
+        // keyCells.height.htmlBlock.innerHTML = coord.height.toString();
+
+        //Render.update();
+    }
+    static HtmlBlockChange(variable:string, value:string){ // called when an input on Properties is changed
+        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
+        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+        console.log(`Change Htmlblock-${objectWithProperties.label} variable "${variable}" to "${value}"`)
+        switch (variable) {
+            case "label":
+                objectWithProperties.label = value;
+                Builder.updateTree();                
+                Properties.processNode(objectWithProperties);
+                break;
+            default:
+                console.log(`No way to handle ${variable} value ${value}`);
+                break;
+        }
     }
 }
 

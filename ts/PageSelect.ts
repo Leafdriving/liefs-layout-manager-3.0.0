@@ -12,6 +12,8 @@ class PageSelect extends Base {
     }
     retArgs:ArgsObj;   // <- this will appear
 
+    renderNode:node_; // render node
+
     dim:string;
     label:string;
     ishor:boolean;
@@ -53,7 +55,7 @@ class PageSelect extends Base {
 
         let label = this.pages.displaycells[0].label;
         let clickableName = I(`${this.label}_0`, label, DefaultTheme.context /*,events({onclick:contextObjFunction})*/)
-        let downArrow = I(`${this.label}_arrow`,"20px" , DefaultTheme.downArrowSVG("scrollArrows"));
+        let downArrow = I(`${this.label}_arrow`,"20px" , DefaultTheme.downArrowSVG("scrollArrows"), DefaultTheme.arrowSVGCss);
         
         this.rootDisplayCell = h(`${this.label}_PageSelect`, 
             clickableName,

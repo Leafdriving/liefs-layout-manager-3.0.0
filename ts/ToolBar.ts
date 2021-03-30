@@ -26,6 +26,8 @@ class Dockable extends Base {
     }
     retArgs:ArgsObj;   // <- this will appear
 
+    renderNode:node_; // render node
+
     label:string;
     displaycell: DisplayCell;
     displaygroup: DisplayGroup;
@@ -187,6 +189,8 @@ class ToolBar extends Base {
         function : ["onSelect", "onUnselect"],
     }
     retArgs:ArgsObj;   // <- this will appear
+
+    renderNode:node_; // render node
 
     label:string;
     state: TBState;

@@ -22,6 +22,8 @@ class Pages extends Base {
         // DisplayCell: ["displaycells"] <- but the whole array done in constructor
     }
 
+    renderNode:node_; // render node
+
     label:string;
     displaycells: DisplayCell[];
     currentPage: number;

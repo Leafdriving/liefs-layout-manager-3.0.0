@@ -5,8 +5,8 @@ class Properties extends Base {
         Properties.makeLabel(this);
         if (this.rootDisplayCell) {
             let [width, height] = Properties.defaultsize;
-            this.winModal = winmodal(`HtmlBlock_prop_winModal`, width, height, { body: this.rootDisplayCell,
-                headerText: `HtmlBlock-`,
+            this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, { body: this.rootDisplayCell,
+                headerText: `${this.label}-`,
             });
         }
     }
@@ -37,35 +37,6 @@ class Properties extends Base {
     static setHeaderText(propertiesInstance, text) {
         let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
         headerDisplay.htmlBlock.innerHTML = text;
-    }
-    static HtmlBlockChange(variable, value) {
-        let propertiesInstance = Properties.byLabel("HtmlBlock");
-        let objectWithProperties = propertiesInstance.currentObject;
-        console.log(`Change Htmlblock-${objectWithProperties.label} variable "${variable}" to "${value}"`);
-        switch (variable) {
-            case "label":
-                objectWithProperties.label = value;
-                Builder.updateTree();
-                Properties.processNode(objectWithProperties);
-                break;
-            default:
-                console.log(`No way to handle ${variable} value ${value}`);
-                break;
-        }
-    }
-    static HtmlBlockProcess() {
-        let propertiesInstance = this;
-        let objectWithProperties = propertiesInstance.currentObject;
-        let coord = propertiesInstance.currentObjectParentDisplayCell.coord;
-        let keyCells = propertiesInstance.keyCells;
-        Properties.setHeaderText(propertiesInstance, `HtmlBlock - ${objectWithProperties.label}`);
-        keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
-        keyCells.minDisplayGroupSize.htmlBlock.innerHTML = (objectWithProperties.minDisplayGroupSize) ? objectWithProperties.minDisplayGroupSize.toString() : "undefined";
-        keyCells.x.htmlBlock.innerHTML = coord.x.toString();
-        keyCells.y.htmlBlock.innerHTML = coord.y.toString();
-        keyCells.width.htmlBlock.innerHTML = coord.width.toString();
-        keyCells.height.htmlBlock.innerHTML = coord.height.toString();
-        Render.update();
     }
     static displayLabel(className, label, dim = "50px") {
         return I(`${className}_${label}_label`, `${label}:`, dim, bCss.bgLight);
@@ -100,6 +71,36 @@ class Properties extends Base {
         Properties.labelAndValue("HtmlBlock", "minDisplayGroupSize", keyCells, "150px"), // true if disabled
         I(`HtmlBlock_DisplayCell`, `Parent DisplayCell`, bCss.bgLightCenter, "20px"), Properties.Coord("HtmlBlock", keyCells));
         new Properties("HtmlBlock", rootcell, Properties.HtmlBlockProcess, { keyCells });
+    }
+    static HtmlBlockProcess() {
+        let propertiesInstance = this;
+        let objectWithProperties = propertiesInstance.currentObject;
+        console.log(objectWithProperties);
+        // let coord = propertiesInstance.currentObjectParentDisplayCell.coord;
+        // let keyCells = propertiesInstance.keyCells;
+        // Properties.setHeaderText(propertiesInstance, `HtmlBlock - ${objectWithProperties.label}`)
+        // keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
+        // keyCells.minDisplayGroupSize.htmlBlock.innerHTML = (objectWithProperties.minDisplayGroupSize) ? objectWithProperties.minDisplayGroupSize.toString() : "undefined"
+        // keyCells.x.htmlBlock.innerHTML = coord.x.toString();
+        // keyCells.y.htmlBlock.innerHTML = coord.y.toString();
+        // keyCells.width.htmlBlock.innerHTML = coord.width.toString();
+        // keyCells.height.htmlBlock.innerHTML = coord.height.toString();
+        //Render.update();
+    }
+    static HtmlBlockChange(variable, value) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let objectWithProperties = propertiesInstance.currentObject;
+        console.log(`Change Htmlblock-${objectWithProperties.label} variable "${variable}" to "${value}"`);
+        switch (variable) {
+            case "label":
+                objectWithProperties.label = value;
+                Builder.updateTree();
+                Properties.processNode(objectWithProperties);
+                break;
+            default:
+                console.log(`No way to handle ${variable} value ${value}`);
+                break;
+        }
     }
 }
 Properties.labelNo = 0;
@@ -288,6 +289,7 @@ bCss.pagesSVG = css("pagesSVG", `background-image: url("svg/bookOPT.svg");
 bCss.treeItem = css("treeItem", `background: transparent; color:black; cursor:pointer`, `background:DeepSkyBlue;`);
 bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;background:white`);
 bCss.buttonsSVGCss = css(`buttonIcons`, `fill: white;stroke:black; background-color:white`, `fill: black;stroke:white; background-color:black`, `fill: white;stroke:black; background-color:gray`);
+bCss.treenodeCss = css(`treenode`, `background:#dcedf0; cursor:pointer;`, `background:white`);
 class Builder extends Base {
     // retArgs:ArgsObj;   // <- this will appear
     constructor(...Arguments) {
@@ -300,9 +302,10 @@ class Builder extends Base {
             H("Client Window", h("Client_h", 5, I("Client_Main1", "left", /*bCss.bgCyan,*/ "500px"), I("Client_Main2", "right", bCss.bgCyan, "500px")), false);
     }
     static buildMainHandler() {
-        let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.bgCyan, sample().rootNode, events({ onmouseover: function (e) {
-                Builder.onHoverTree(e, this);
-            } }), function onNodeCreation(node) {
+        let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
+            onmouseleave: function (e) { Builder.onLeaveHoverTree(e, this); },
+            onclick: function (e) { Builder.onClickTree(e, this); },
+        }), function onNodeCreation(node) {
             let nodeLabel = I(`${node.label}_node`, `${node.Arguments[0]}`, node.ParentNodeTree.css, node.ParentNodeTree.events);
             nodeLabel.coord.hideWidth = true;
             let dataObj = node.Arguments[1];
@@ -349,32 +352,6 @@ class Builder extends Base {
             Builder.noDisplayCells(node.children[index], childNode);
         return childNode;
     }
-    static TOOLBAR_events(buttonName) {
-        return events({
-            onclick: function (e) {
-                let el = this.children[0];
-                if (Builder.TOOLBAR_currentButton_el != el) {
-                    let currentClass = (el.className.baseVal);
-                    // delete old button
-                    let old_el = Builder.TOOLBAR_currentButton_el;
-                    if (old_el) {
-                        old_el.className["baseVal"] = old_el.className["baseVal"].slice(0, -8);
-                        let old_htmlBlock = HtmlBlock.byLabel(old_el.parentElement.id);
-                        console.log(old_htmlBlock);
-                    }
-                    // change new button
-                    el.className.baseVal = currentClass + "Selected";
-                    // console.log(el.parentElement)
-                    let new_htmlBlock = HtmlBlock.byLabel(el.parentElement.id);
-                    new_htmlBlock.innerHTML = new_htmlBlock.innerHTML.replace("buttonIcons", "buttonIconsSelected");
-                    //console.log(new_htmlBlock);
-                    Builder.TOOLBAR_currentButton_el = el;
-                    Builder.TOOLBAR_currentButtonName = buttonName;
-                }
-            },
-            //onmouseover: function(e){console.log(e)}
-        });
-    }
     static onSelect(displaycell) {
         let htmlblock = displaycell.htmlBlock;
         let el = htmlblock.el;
@@ -414,8 +391,9 @@ class Builder extends Base {
         let node = node_.byLabel(el.id.slice(0, -5));
         Properties.processNode(node);
     }
+    static get buttonIndex() { return ToolBar.byLabel("Main_toolbar").selected.currentButtonIndex; }
     static onHoverTree(mouseEvent, el) {
-        if (Builder.TOOLBAR_currentButtonName == "match") {
+        if (Builder.buttonIndex == 1) {
             let node = node_.byLabel(el.innerText);
             // console.log(node)
             let object_ = node.Arguments[node.Arguments.length - 1];
@@ -426,7 +404,7 @@ class Builder extends Base {
                     coord = possibleDisplayCell.coord;
             }
             let type = BaseF.typeof(node.Arguments[1]);
-            console.log(coord, node.Arguments);
+            // console.log(coord, node.Arguments)
             if (coord == undefined) {
                 let [width, height] = pf.viewport();
                 coord = new Coord(0, 0, width, height);
@@ -458,30 +436,10 @@ Builder.argMap = {
     string: ["label"],
 };
 Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgwhite*/));
+//static TOOLBAR_currentButtonName:string;
 Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }));
 Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"));
-Builder.TOOLBAR_B3 = I("toolbarb1", `<button style="width:100%; height:100%">1</button>`);
-Builder.TOOLBAR_B4 = I("toolbarb2", `<button style="width:100%; height:100%">2</button>`);
-Builder.TOOLBAR_B5 = I("toolbarb3", `<button style="width:100%; height:100%">3</button>`);
-Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2, Builder.TOOLBAR_B3, Builder.TOOLBAR_B4, Builder.TOOLBAR_B5);
-// function nodeCopy(node:node_, postFix = "_copy") {
-//     let newNode = new node_(node.label + postFix);
-//     newNode["Arguments"] = [];
-//     for (let index = 0; index < node["Arguments"].length; index++) {
-//         newNode["Arguments"].push(node["Arguments"][index]);
-//     }
-//     if (node.children && node.children.length) {
-//         for (let index = 0; index < node.children.length; index++) {
-//             let childNode = node.children[index];
-//             newNode.newChild(   nodeCopy(childNode)      )
-//         }
-//     }
-//     if (node.NextSibling) {
-//         newNode.newSibling(  nodeCopy(node.NextSibling)  );
-//     }
-//     console.log("Created " + newNode.label + " parent " + newNode.ParentNode)
-//     return newNode;
-// }
+Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2);
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);

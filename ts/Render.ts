@@ -30,6 +30,7 @@ class Render {
                 if (isSibling && index != 0) node = node.newSibling(`${object_["label"]}${(objectType == "DisplayCell")?"_":""}`, object_);
                 else node = node.newChild(`${object_["label"]}${(objectType == "DisplayCell")?"_":""}`, object_);
                 // console.log(`Rendering ${objectType}_${object_["label"]}`)
+                object_["renderNode"] = node;
                 let returnObj:zindexAndRenderChildren = CLASS.Render(object_, zindex, derender, node); // this is render call
                 zindex = returnObj.zindex;
                 //console.log("zindex", zindex)

@@ -84,7 +84,8 @@ class winModal extends Base {
     }
     retArgs:ArgsObj;   // <- this will appear
     label:string;
-    // parentHolder: winHolder;
+
+    renderNode:node_; // render node
 
     rootDisplayCell: DisplayCell;
 

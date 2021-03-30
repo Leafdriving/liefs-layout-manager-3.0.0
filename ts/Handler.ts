@@ -56,6 +56,8 @@ class Handler extends Base {
     static preRenderCallback: Function;
     static postRenderCallback: Function
 
+    renderNode:node_; // render node
+
     type:HandlerType
     label:string;
     rootCell:DisplayCell = undefined;
@@ -149,7 +151,7 @@ class Handler extends Base {
     }
     static Render(handlerInstance:Handler, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         // console.log(handlerInstance.label)
-        handlerInstance.renderNode = node;
+        //handlerInstance.renderNode = node;
 
         if (handlerInstance.preRenderCallback) handlerInstance.preRenderCallback(handlerInstance);
         if (handlerInstance.coord) {

@@ -40,6 +40,8 @@ class DisplayCell extends Base {
         if (this.#displaygroup_.dim) this.dim = this.#displaygroup_.dim;
     }
 
+    renderNode:node_; // render node
+
     overlays: Overlay[] = [];
     dim: string;
     isRendered: boolean = false;
@@ -99,7 +101,6 @@ class DisplayCell extends Base {
     static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static Render(displaycell:DisplayCell, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let renderChildren = new RenderChildren;
-        displaycell.renderNode = node;
 
         if (displaycell.coord.offset) Handler.activeOffset = true;
         if (displaycell.preRenderCallback) displaycell.preRenderCallback(displaycell, derender);

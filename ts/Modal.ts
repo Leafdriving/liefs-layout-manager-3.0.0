@@ -94,6 +94,9 @@ class Modal extends Base {
         DisplayCell : ["rootDisplayCell"],
     }
     // retArgs:ArgsObj;   // <- this will appear
+
+    renderNode:node_; // render node
+
     label:string;
     rootDisplayCell: DisplayCell;
     handler:Handler

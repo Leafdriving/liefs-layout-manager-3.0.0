@@ -23,6 +23,8 @@ class HtmlBlock extends Base {
         boolean: ["hideWidth"],
     }
 
+    renderNode:node_; // render node
+
     label:string;
     tag:string;
     innerHTML:string;

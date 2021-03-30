@@ -203,6 +203,7 @@ declare class HtmlBlock extends Base {
         Events: string[];
         boolean: string[];
     };
+    renderNode: node_;
     label: string;
     tag: string;
     innerHTML: string;
@@ -257,6 +258,7 @@ declare class DisplayCell extends Base {
     set htmlBlock(htmlblock: HtmlBlock);
     get displaygroup(): DisplayGroup;
     set displaygroup(displaygroup: DisplayGroup);
+    renderNode: node_;
     overlays: Overlay[];
     dim: string;
     isRendered: boolean;
@@ -293,6 +295,7 @@ declare class DisplayGroup extends Base {
         dim: string[];
     };
     static argCustomTypes: Function[];
+    renderNode: node_;
     label: string;
     ishor: boolean;
     cellArray: DisplayCell[];
@@ -346,6 +349,7 @@ declare class Handler extends Base {
     static activeOffset: boolean;
     static preRenderCallback: Function;
     static postRenderCallback: Function;
+    renderNode: node_;
     type: HandlerType;
     label: string;
     rootCell: DisplayCell;
@@ -459,6 +463,7 @@ declare class Pages extends Base {
         function: string[];
         dim: string[];
     };
+    renderNode: node_;
     label: string;
     displaycells: DisplayCell[];
     currentPage: number;
@@ -496,6 +501,7 @@ declare class PageSelect extends Base {
         DisplayCell: string[];
     };
     retArgs: ArgsObj;
+    renderNode: node_;
     dim: string;
     label: string;
     ishor: boolean;
@@ -600,6 +606,7 @@ declare class DragBar extends Base {
         number: string[];
         Css: string[];
     };
+    renderNode: node_;
     label: string;
     parentDisplaycell: DisplayCell;
     parentDisplaygroup: DisplayGroup;
@@ -632,6 +639,7 @@ declare class ScrollBar extends Base {
         boolean: string[];
     };
     static startoffset: number;
+    renderNode: node_;
     label: string;
     type: string;
     displaySize: number;
@@ -743,6 +751,7 @@ declare class Modal extends Base {
         string: string[];
         DisplayCell: string[];
     };
+    renderNode: node_;
     label: string;
     rootDisplayCell: DisplayCell;
     handler: Handler;
@@ -823,6 +832,7 @@ declare class Tree_ extends Base {
     };
     Arguments: any;
     retArgs: ArgsObj;
+    renderNode: node_;
     label: string;
     collapsedIcon: string;
     expandedIcon: string;
@@ -889,6 +899,7 @@ declare class Dockable extends Base {
         DisplayCell: string[];
     };
     retArgs: ArgsObj;
+    renderNode: node_;
     label: string;
     displaycell: DisplayCell;
     displaygroup: DisplayGroup;
@@ -924,6 +935,7 @@ declare class ToolBar extends Base {
         function: string[];
     };
     retArgs: ArgsObj;
+    renderNode: node_;
     label: string;
     state: TBState;
     displayCells: DisplayCell[];
@@ -982,6 +994,7 @@ declare class winModal extends Base {
     };
     retArgs: ArgsObj;
     label: string;
+    renderNode: node_;
     rootDisplayCell: DisplayCell;
     header: DisplayCell;
     headerHeight: number;

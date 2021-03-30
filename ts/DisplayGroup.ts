@@ -24,6 +24,8 @@ class DisplayGroup extends Base {
     }
     static argCustomTypes:Function[] = [];
 
+    renderNode:node_; // render node
+
     label:string;
     ishor:boolean;
     cellArray: DisplayCell[] = [];
@@ -102,7 +104,7 @@ class DisplayGroup extends Base {
     }
     static Render(displaygroup:DisplayGroup, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let parentDisplaycell = <DisplayCell>node.ParentNode.Arguments[1];
-        displaygroup.renderNode = node;
+
         if (BaseF.typeof(parentDisplaycell) != "DisplayCell") console.log(`DisplayGroup: ${displaygroup.label}  parent WASNT a displaycell????`);
 
         let ishor:boolean = displaygroup.ishor;

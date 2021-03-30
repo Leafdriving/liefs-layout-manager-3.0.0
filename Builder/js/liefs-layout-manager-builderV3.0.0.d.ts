@@ -23,13 +23,13 @@ declare class Properties extends Base {
     constructor(...Arguments: any);
     static processNode(node: node_ | object, parentDisplayCell?: DisplayCell): void;
     static setHeaderText(propertiesInstance: Properties, text: string): void;
-    static HtmlBlockChange(variable: string, value: string): void;
-    static HtmlBlockProcess(): void;
     static displayLabel(className: string, label: string, dim?: string): DisplayCell;
     static displayValue(className: string, label: string, disabled?: boolean, dim?: any): DisplayCell;
     static labelAndValue(className: string, label: string, keyCells: object, dim?: string): DisplayCell;
     static Coord(className: string, keyCells: object): DisplayCell;
     static HtmlBlock(): void;
+    static HtmlBlockProcess(): void;
+    static HtmlBlockChange(variable: string, value: string): void;
 }
 declare class bCss {
     static editable: Css;
@@ -51,6 +51,7 @@ declare class bCss {
     static treeItem: Css;
     static bookSVGCss: Css;
     static buttonsSVGCss: Css;
+    static treenodeCss: Css;
     static bookSVG(classname: string): string;
     static htmlSVG(classname: string): string;
     static horSVG(classname: string): string;
@@ -79,19 +80,15 @@ declare class Builder extends Base {
     static updateTree(): void;
     static noDisplayCellnode: node_;
     static noDisplayCells(node?: node_, newNode?: node_): node_;
-    static TOOLBAR_events(buttonName: string): Events;
     static onSelect(displaycell: DisplayCell): void;
     static onUnselect(displaycell: DisplayCell): void;
     static TOOLBAR_currentButton_el: Element;
-    static TOOLBAR_currentButtonName: string;
     static TOOLBAR_B1: DisplayCell;
     static TOOLBAR_B2: DisplayCell;
-    static TOOLBAR_B3: DisplayCell;
-    static TOOLBAR_B4: DisplayCell;
-    static TOOLBAR_B5: DisplayCell;
     static TOOLBAR: DisplayCell;
     static xboxSVG(boundCoord: Coord, Boxes: Coord[]): string;
     static onClickTree(mouseEvent: MouseEvent, el: HTMLElement): void;
+    static get buttonIndex(): number;
     static onHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
     static onLeaveHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
 }

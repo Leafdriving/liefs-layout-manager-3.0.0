@@ -423,6 +423,7 @@ class Render {
                 else
                     node = node.newChild(`${object_["label"]}${(objectType == "DisplayCell") ? "_" : ""}`, object_);
                 // console.log(`Rendering ${objectType}_${object_["label"]}`)
+                object_["renderNode"] = node;
                 let returnObj = CLASS.Render(object_, zindex, derender, node); // this is render call
                 zindex = returnObj.zindex;
                 //console.log("zindex", zindex)
@@ -928,7 +929,6 @@ class DisplayCell extends Base {
         main.push(displaycell); }
     static Render(displaycell, zindex, derender = false, node) {
         let renderChildren = new RenderChildren;
-        displaycell.renderNode = node;
         if (displaycell.coord.offset)
             Handler.activeOffset = true;
         if (displaycell.preRenderCallback)
@@ -1081,7 +1081,6 @@ class DisplayGroup extends Base {
     }
     static Render(displaygroup, zindex, derender = false, node) {
         let parentDisplaycell = node.ParentNode.Arguments[1];
-        displaygroup.renderNode = node;
         if (BaseF.typeof(parentDisplaycell) != "DisplayCell")
             console.log(`DisplayGroup: ${displaygroup.label}  parent WASNT a displaycell????`);
         let ishor = displaygroup.ishor;
@@ -1320,7 +1319,7 @@ class Handler extends Base {
     }
     static Render(handlerInstance, zindex, derender = false, node) {
         // console.log(handlerInstance.label)
-        handlerInstance.renderNode = node;
+        //handlerInstance.renderNode = node;
         if (handlerInstance.preRenderCallback)
             handlerInstance.preRenderCallback(handlerInstance);
         if (handlerInstance.coord) {
@@ -1555,7 +1554,7 @@ DefaultTheme.ScrollBar_whiteBG = css("whiteBG", "background-color:white;outline:
 DefaultTheme.ScrollBar_blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
 // arrows  //scrollArrows
 DefaultTheme.scrollArrowsSVGCss = css(`scrollArrows`, `stroke: black;`, `fill: white;`);
-DefaultTheme.arrowSVGCss = css(`arrowIcon`, `stroke: black;`, `fill: white;`);
+DefaultTheme.arrowSVGCss = css(`arrowIcon`, `stroke: black;cursor:pointer;`, `fill: white;`);
 // Modal
 DefaultTheme.closeCss = css("closeCss", `-moz-box-sizing: border-box;
       -webkit-box-sizing: border-box;
@@ -1780,7 +1779,7 @@ class PageSelect extends Base {
             this.buildMenuObj();
         let label = this.pages.displaycells[0].label;
         let clickableName = I(`${this.label}_0`, label, DefaultTheme.context /*,events({onclick:contextObjFunction})*/);
-        let downArrow = I(`${this.label}_arrow`, "20px", DefaultTheme.downArrowSVG("scrollArrows"));
+        let downArrow = I(`${this.label}_arrow`, "20px", DefaultTheme.downArrowSVG("scrollArrows"), DefaultTheme.arrowSVGCss);
         this.rootDisplayCell = h(`${this.label}_PageSelect`, clickableName, downArrow);
         this.rootDisplayCell.dim = this.dim;
         let contextObjFunction = hMenuBar(`${this.label}_context`, this.menuObj, { launchcell: this.rootDisplayCell, css: DefaultTheme.context });

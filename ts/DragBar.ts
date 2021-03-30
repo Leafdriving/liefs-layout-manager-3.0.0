@@ -23,6 +23,9 @@ class DragBar extends Base {
         number: ["min", "max", "pxsize"],
         Css: ["horcss", "vercss"]
     }
+
+    renderNode:node_; // render node
+
     label:string;
     parentDisplaycell: DisplayCell;
     parentDisplaygroup: DisplayGroup;

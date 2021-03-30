@@ -22,6 +22,8 @@ class ScrollBar extends Base {
     static startoffset:number; /// used during move bar
     // retArgs:ArgsObj;   // <- this will appear
 
+    renderNode:node_; // render node
+
     label:string;
     type:string // DisplayGroup
 

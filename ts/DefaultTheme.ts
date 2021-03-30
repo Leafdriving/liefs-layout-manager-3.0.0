@@ -19,7 +19,7 @@ static ScrollBar_blackBG = css("blackBG","background-color:black;color:white;cur
 
 // arrows  //scrollArrows
   static scrollArrowsSVGCss = css(`scrollArrows`,`stroke: black;`,`fill: white;`);
-  static arrowSVGCss = css(`arrowIcon`,`stroke: black;`,`fill: white;`);
+  static arrowSVGCss = css(`arrowIcon`,`stroke: black;cursor:pointer;`,`fill: white;`);
   static leftArrowSVG(classname:string) {return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
     <path transform="rotate(182.31 12.399 12.341)" d="m21.167 11.793-16.891 10.81-0.91654-20.033 8.9037 4.6114z" stroke-linecap="round" stroke-width=".84667"/>
     </svg>`;}

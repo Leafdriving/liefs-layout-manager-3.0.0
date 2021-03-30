@@ -41,10 +41,11 @@ class Builder extends Base {
         let treePagesDisplayCell = P("pagename",
                                         tree("HandlerTree", 
                                             I("Handler_Tree", bCss.bgLight),
-                                            bCss.bgCyan, sample().rootNode,
-                                            events({onmouseover: function(e:MouseEvent){
-                                                Builder.onHoverTree(e, this)
-                                            }}),
+                                            bCss.treenodeCss, sample().rootNode,
+                                            events({onmouseover: function(e:MouseEvent){Builder.onHoverTree(e, this)},
+                                                    onmouseleave: function(e:MouseEvent){Builder.onLeaveHoverTree(e,this)},
+                                                    onclick: function(e:MouseEvent){ Builder.onClickTree(e, this) },
+                                            }),
 
 function onNodeCreation(node:node_){
     let nodeLabel = I(`${node.label}_node`, `${node.Arguments[0]}`,
@@ -129,33 +130,7 @@ function onNodeCreation(node:node_){
             Builder.noDisplayCells(node.children[index], childNode)
         return childNode;
     }
-    static TOOLBAR_events(buttonName:string){
-        return events({
-                    onclick: function(e:PointerEvent){
-                        let el = this.children[0]
-                        if (Builder.TOOLBAR_currentButton_el != el) {
-                            let currentClass = <string>(el.className.baseVal);
-                            // delete old button
-                            let old_el = Builder.TOOLBAR_currentButton_el
-                            if (old_el) {
-                                old_el.className["baseVal"] = old_el.className["baseVal"].slice(0, -8);
-                                let old_htmlBlock = <HtmlBlock>HtmlBlock.byLabel(old_el.parentElement.id);
-                                console.log(old_htmlBlock);
-                            }
-                            // change new button
-                            el.className.baseVal = currentClass + "Selected";
-                            // console.log(el.parentElement)
-                            let new_htmlBlock = <HtmlBlock>HtmlBlock.byLabel(el.parentElement.id);
-                            new_htmlBlock.innerHTML = new_htmlBlock.innerHTML.replace("buttonIcons", "buttonIconsSelected")
-                            //console.log(new_htmlBlock);
 
-                            Builder.TOOLBAR_currentButton_el = el;
-                            Builder.TOOLBAR_currentButtonName = buttonName
-                        }
-                    },
-                    //onmouseover: function(e){console.log(e)}
-                })
-    }
     static onSelect(displaycell:DisplayCell){
         let htmlblock = displaycell.htmlBlock;
         let el=htmlblock.el;
@@ -175,18 +150,12 @@ function onNodeCreation(node:node_){
         htmlblock.innerHTML = htmlblock.innerHTML.replace(oldClassName, oldClassName.slice(0, -8))
     }
     static TOOLBAR_currentButton_el:Element;
-    static TOOLBAR_currentButtonName:string;
+    //static TOOLBAR_currentButtonName:string;
     static TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({onclick:function(e){console.log("hello")}}));
     static TOOLBAR_B2 = I("toolbarMatch",bCss.matchSVG("buttonIcons"));
-    static TOOLBAR_B3 = I("toolbarb1",`<button style="width:100%; height:100%">1</button>`);
-    static TOOLBAR_B4 = I("toolbarb2",`<button style="width:100%; height:100%">2</button>`);
-    static TOOLBAR_B5 = I("toolbarb3",`<button style="width:100%; height:100%">3</button>`);
     static TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect,
         Builder.TOOLBAR_B1,
         Builder.TOOLBAR_B2,
-        Builder.TOOLBAR_B3,
-        Builder.TOOLBAR_B4,
-        Builder.TOOLBAR_B5,
     );
    static xboxSVG(boundCoord:Coord, Boxes:Coord[]){
         let top:string = `<svg width="${boundCoord.width}" height="${boundCoord.height}">`;
@@ -209,8 +178,9 @@ function onNodeCreation(node:node_){
         let node = <node_>node_.byLabel(el.id.slice(0, -5));
         Properties.processNode(node)
     }
+    static get buttonIndex():number{return (<ToolBar>ToolBar.byLabel("Main_toolbar")).selected.currentButtonIndex;}
     static onHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
-        if(Builder.TOOLBAR_currentButtonName == "match") {
+        if(Builder.buttonIndex == 1) {
             let node = <node_>node_.byLabel(el.innerText);
             // console.log(node)
             let object_ = node.Arguments[ node.Arguments.length-1 ]
@@ -220,7 +190,7 @@ function onNodeCreation(node:node_){
                 if (possibleDisplayCell) coord = possibleDisplayCell.coord;
             }
             let type = BaseF.typeof(node.Arguments[1]);
-            console.log(coord, node.Arguments)
+            // console.log(coord, node.Arguments)
             if (coord == undefined) {
                 let [width, height] = pf.viewport();
                 coord = new Coord(0, 0, width, height)
@@ -244,26 +214,6 @@ function onNodeCreation(node:node_){
         Builder.hoverModal.hide();
     }
 }
-
-// function nodeCopy(node:node_, postFix = "_copy") {
-//     let newNode = new node_(node.label + postFix);
-//     newNode["Arguments"] = [];
-//     for (let index = 0; index < node["Arguments"].length; index++) {
-//         newNode["Arguments"].push(node["Arguments"][index]);
-//     }
-//     if (node.children && node.children.length) {
-//         for (let index = 0; index < node.children.length; index++) {
-//             let childNode = node.children[index];
-//             newNode.newChild(   nodeCopy(childNode)      )
-            
-//         }
-//     }
-//     if (node.NextSibling) {
-//         newNode.newSibling(  nodeCopy(node.NextSibling)  );
-//     }
-//     console.log("Created " + newNode.label + " parent " + newNode.ParentNode)
-//     return newNode;
-// }
 
 Builder.buildClientHandler();
 Builder.buildMainHandler();
