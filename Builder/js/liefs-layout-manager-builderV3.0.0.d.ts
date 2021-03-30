@@ -80,8 +80,15 @@ declare class Builder extends Base {
     static noDisplayCellnode: node_;
     static noDisplayCells(node?: node_, newNode?: node_): node_;
     static TOOLBAR_events(buttonName: string): Events;
-    static TOOLBAR_currentButton: Element;
+    static onSelect(displaycell: DisplayCell): void;
+    static onUnselect(displaycell: DisplayCell): void;
+    static TOOLBAR_currentButton_el: Element;
     static TOOLBAR_currentButtonName: string;
+    static TOOLBAR_B1: DisplayCell;
+    static TOOLBAR_B2: DisplayCell;
+    static TOOLBAR_B3: DisplayCell;
+    static TOOLBAR_B4: DisplayCell;
+    static TOOLBAR_B5: DisplayCell;
     static TOOLBAR: DisplayCell;
     static xboxSVG(boundCoord: Coord, Boxes: Coord[]): string;
     static onClickTree(mouseEvent: MouseEvent, el: HTMLElement): void;

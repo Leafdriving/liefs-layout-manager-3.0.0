@@ -353,17 +353,45 @@ class Builder extends Base {
         return events({
             onclick: function (e) {
                 let el = this.children[0];
-                let currentClass = (el.className.baseVal);
-                if (!currentClass.endsWith("Selected")) {
-                    if (Builder.TOOLBAR_currentButton && Builder.TOOLBAR_currentButton.className["baseVal"].endsWith("Selected"))
-                        Builder.TOOLBAR_currentButton.className["baseVal"] = Builder.TOOLBAR_currentButton.className["baseVal"].slice(0, -8);
+                if (Builder.TOOLBAR_currentButton_el != el) {
+                    let currentClass = (el.className.baseVal);
+                    // delete old button
+                    let old_el = Builder.TOOLBAR_currentButton_el;
+                    if (old_el) {
+                        old_el.className["baseVal"] = old_el.className["baseVal"].slice(0, -8);
+                        let old_htmlBlock = HtmlBlock.byLabel(old_el.parentElement.id);
+                        console.log(old_htmlBlock);
+                    }
+                    // change new button
                     el.className.baseVal = currentClass + "Selected";
-                    Builder.TOOLBAR_currentButton = el;
+                    // console.log(el.parentElement)
+                    let new_htmlBlock = HtmlBlock.byLabel(el.parentElement.id);
+                    new_htmlBlock.innerHTML = new_htmlBlock.innerHTML.replace("buttonIcons", "buttonIconsSelected");
+                    //console.log(new_htmlBlock);
+                    Builder.TOOLBAR_currentButton_el = el;
                     Builder.TOOLBAR_currentButtonName = buttonName;
                 }
             },
             //onmouseover: function(e){console.log(e)}
         });
+    }
+    static onSelect(displaycell) {
+        let htmlblock = displaycell.htmlBlock;
+        let el = htmlblock.el;
+        let svgEl = el.children[0];
+        let oldClassName = svgEl.className["baseVal"];
+        if (!oldClassName.endsWith("Selected"))
+            svgEl.className["baseVal"] = oldClassName + "Selected";
+        htmlblock.innerHTML = htmlblock.innerHTML.replace(oldClassName, oldClassName + "Selected");
+    }
+    static onUnselect(displaycell) {
+        let htmlblock = displaycell.htmlBlock;
+        let el = htmlblock.el;
+        let svgEl = el.children[0];
+        let oldClassName = svgEl.className["baseVal"];
+        if (oldClassName.endsWith("Selected"))
+            svgEl.className["baseVal"] = oldClassName.slice(0, -8);
+        htmlblock.innerHTML = htmlblock.innerHTML.replace(oldClassName, oldClassName.slice(0, -8));
     }
     static xboxSVG(boundCoord, Boxes) {
         let top = `<svg width="${boundCoord.width}" height="${boundCoord.height}">`;
@@ -387,27 +415,36 @@ class Builder extends Base {
         Properties.processNode(node);
     }
     static onHoverTree(mouseEvent, el) {
-        console.log(el.innerText);
-        // let node = <node_>node_.byLabel(el.id.slice(0, -5));
-        // let coord = node.Arguments[ node.Arguments.length-1 ].coord;
-        // let type = BaseF.typeof(node.Arguments[1]);
-        // // console.log(type)
-        // if (coord == undefined) {
-        //     let [width, height] = pf.viewport();
-        //     coord = new Coord(0, 0, width, height)
-        // }
-        // Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
-        // let coordArray:Coord[] = [];
-        // if (type != "DisplayGroup") coordArray.push(coord);
-        // else {
-        //     let displaygroup = (<DisplayGroup>node.Arguments[1]);
-        //     for (let index = 0; index < displaygroup.cellArray.length; index++) {
-        //         const displaycell = displaygroup.cellArray[index];
-        //         coordArray.push(displaycell.coord);
-        //     }
-        // }
-        // Builder.hoverModal.rootDisplayCell.htmlBlock.innerHTML = Builder.xboxSVG(coord, coordArray)
-        // Builder.hoverModal.show();
+        if (Builder.TOOLBAR_currentButtonName == "match") {
+            let node = node_.byLabel(el.innerText);
+            // console.log(node)
+            let object_ = node.Arguments[node.Arguments.length - 1];
+            let coord = object_.coord;
+            if (!coord) {
+                let possibleDisplayCell = DisplayCell.byLabel(object_.label);
+                if (possibleDisplayCell)
+                    coord = possibleDisplayCell.coord;
+            }
+            let type = BaseF.typeof(node.Arguments[1]);
+            console.log(coord, node.Arguments);
+            if (coord == undefined) {
+                let [width, height] = pf.viewport();
+                coord = new Coord(0, 0, width, height);
+            }
+            Builder.hoverModal.setSize(coord.x, coord.y, coord.width, coord.height);
+            let coordArray = [];
+            if (type != "DisplayGroup")
+                coordArray.push(coord);
+            else {
+                let displaygroup = node.Arguments[1];
+                for (let index = 0; index < displaygroup.cellArray.length; index++) {
+                    const displaycell = displaygroup.cellArray[index];
+                    coordArray.push(displaycell.coord);
+                }
+            }
+            Builder.hoverModal.rootDisplayCell.htmlBlock.innerHTML = Builder.xboxSVG(coord, coordArray);
+            Builder.hoverModal.show();
+        }
     }
     static onLeaveHoverTree(mouseEvent, el) {
         Builder.hoverModal.hide();
@@ -421,7 +458,12 @@ Builder.argMap = {
     string: ["label"],
 };
 Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgwhite*/));
-Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, I("toolbarCursor", bCss.cursorSVG("buttonIcons"), Builder.TOOLBAR_events("pointer")), I("toolbarMatch", bCss.matchSVG("buttonIcons"), Builder.TOOLBAR_events("match")), I("toolbarb1", `<button style="width:100%; height:100%">1</button>`), I("toolbarb2", `<button style="width:100%; height:100%">2</button>`), I("toolbarb3", `<button style="width:100%; height:100%">3</button>`));
+Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }));
+Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"));
+Builder.TOOLBAR_B3 = I("toolbarb1", `<button style="width:100%; height:100%">1</button>`);
+Builder.TOOLBAR_B4 = I("toolbarb2", `<button style="width:100%; height:100%">2</button>`);
+Builder.TOOLBAR_B5 = I("toolbarb3", `<button style="width:100%; height:100%">3</button>`);
+Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2, Builder.TOOLBAR_B3, Builder.TOOLBAR_B4, Builder.TOOLBAR_B5);
 // function nodeCopy(node:node_, postFix = "_copy") {
 //     let newNode = new node_(node.label + postFix);
 //     newNode["Arguments"] = [];

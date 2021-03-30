@@ -183,7 +183,8 @@ class ToolBar extends Base {
     static defaults = { state:TBState.modalWasDockedInVer, checkerSize:8, type:"default" }
     static argMap = {
         string : ["label", "type"],
-        number : ["width", "height"] 
+        number : ["width", "height"],
+        function : ["onSelect", "onUnselect"],
     }
     retArgs:ArgsObj;   // <- this will appear
 
@@ -197,12 +198,21 @@ class ToolBar extends Base {
     modal: Modal;
     checkerSize:number;
     type:string;
+    selected:Selected;
+    onSelect:(displaycell:DisplayCell)=>void; // required to customize toolbar Select
+    onUnselect:(displaycell:DisplayCell)=>void; // required to customize toolbar Select
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
 
         ToolBar.makeLabel(this);
-        if ("DisplayCell" in this.retArgs) this.displayCells = this.retArgs["DisplayCell"];
+        if ("DisplayCell" in this.retArgs) {
+            this.displayCells = this.retArgs["DisplayCell"];
+        }
+        if (this.displayCells) {
+            this.selected = new Selected(this.onSelect, this.onUnselect, ...this.displayCells)
+        }
         this.buildModal();
+        
     }
     buildModal(){
         let THIS = this;

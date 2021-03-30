@@ -366,6 +366,31 @@ declare class Handler extends Base {
     static Render(handlerInstance: Handler, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function H(...Arguments: any): Handler;
+declare class Selected extends Base {
+    static labelNo: number;
+    static instances: Selected[];
+    static activeInstances: Selected[];
+    static defaults: {
+        indexer: any[];
+        onSelect: typeof Selected.onSelect;
+        onUnselect: typeof Selected.onUnselect;
+    };
+    static argMap: {
+        string: string[];
+        function: string[];
+    };
+    retArgs: ArgsObj;
+    label: string;
+    indexer: DisplayCell[];
+    onSelect: (displaycell: DisplayCell) => void;
+    onUnselect: (displaycell: DisplayCell) => void;
+    currentButtonIndex: number;
+    constructor(...Arguments: any);
+    build(): void;
+    select(event: PointerEvent, displaycell: DisplayCell): void;
+    static onSelect(displaycell: DisplayCell): void;
+    static onUnselect(displaycell: DisplayCell): void;
+}
 declare class Css extends Base {
     static theme: any;
     static elementId: string;
@@ -896,6 +921,7 @@ declare class ToolBar extends Base {
     static argMap: {
         string: string[];
         number: string[];
+        function: string[];
     };
     retArgs: ArgsObj;
     label: string;
@@ -908,6 +934,9 @@ declare class ToolBar extends Base {
     modal: Modal;
     checkerSize: number;
     type: string;
+    selected: Selected;
+    onSelect: (displaycell: DisplayCell) => void;
+    onUnselect: (displaycell: DisplayCell) => void;
     constructor(...Arguments: any);
     buildModal(): void;
     size(): number[];
