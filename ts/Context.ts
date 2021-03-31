@@ -12,9 +12,6 @@ class Context extends Base {
     static instances:Context[] = [];
     static activeInstances:Context[] = [];
 
-    // static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
-    // static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
-    // static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");
     static defaultObj = {one:function(){console.log("one")},
                          two:function(){console.log("two")},
                          three:function(){console.log("three")},
@@ -121,6 +118,7 @@ class Context extends Base {
         }
     }
     render(mouseEvent:MouseEvent, x:number=0, y:number=0) {
+        mouseEvent.preventDefault();
         if (mouseEvent){
             x=mouseEvent.clientX - Context.subOverlapPx;
             y=mouseEvent.clientY - Context.subOverlapPx;
@@ -159,6 +157,9 @@ let hMenuBar = function(...Arguments:any){ // requires launchcell
 }
 let vMenuBar = function(...Arguments:any){ // requires launchcell
     let newcontext=new Context(...Arguments);
-    return function(mouseEvent:MouseEvent){newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary());return false;}
+    return function(mouseEvent:MouseEvent){
+        newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary());
+        return false;
+    }
 }
 // export {vMenuBar, hMenuBar, context, Context}

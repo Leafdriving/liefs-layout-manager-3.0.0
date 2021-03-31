@@ -30,6 +30,8 @@ declare class Properties extends Base {
     static Coord(className: string, keyCells: object): DisplayCell;
     static HtmlBlock(currentObject: object): void;
     static HtmlBlockChange(variable: string, value: string): void;
+    static editHtmlwinModal: winModal;
+    static initEditHtml(): void;
 }
 declare class bCss {
     static editable: Css;
@@ -62,6 +64,9 @@ declare class bCss {
     static matchSVG(classname: string): string;
     static cursorSVG(classname: string): string;
 }
+declare class Quill {
+    constructor(...Arguments: any);
+}
 declare class Builder extends Base {
     static labelNo: number;
     static instances: Builder[];
@@ -72,10 +77,16 @@ declare class Builder extends Base {
     };
     constructor(...Arguments: any);
     static clientHandler: Handler;
+    static context: Context;
     static buildClientHandler(): void;
     static propertiesModal: winModal;
     static hoverModal: Modal;
+    static editHtmlwinModal: winModal;
+    static editHtmlwinModalBody: DisplayCell;
+    static makeEditHtmlwinModal(objectwithProperties: HtmlBlock): void;
+    static editHtml(event: PointerEvent, objectwithProperties: HtmlBlock): void;
     static mainHandler: Handler;
+    static oncontextmenu(event: PointerEvent, el: HTMLElement): void;
     static buildMainHandler(): void;
     static builderTreeRootNode: node_;
     static updateTree(): void;
@@ -95,5 +106,61 @@ declare class Builder extends Base {
     static onHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
     static onLeaveHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
     static horDivide(mouseEvent: MouseEvent): void;
+    static toolbarOptions: (string[] | {
+        header: (number | boolean)[];
+    }[] | {
+        list: string;
+    }[] | {
+        script: string;
+    }[] | {
+        indent: string;
+    }[] | {
+        direction: string;
+    }[] | {
+        size: (string | boolean)[];
+    }[] | ({
+        color: any[];
+        background?: undefined;
+    } | {
+        background: any[];
+        color?: undefined;
+    })[] | {
+        font: any[];
+    }[] | {
+        align: any[];
+    }[])[];
+    static options: {
+        debug: string;
+        modules: {
+            toolbar: (string[] | {
+                header: (number | boolean)[];
+            }[] | {
+                list: string;
+            }[] | {
+                script: string;
+            }[] | {
+                indent: string;
+            }[] | {
+                direction: string;
+            }[] | {
+                size: (string | boolean)[];
+            }[] | ({
+                color: any[];
+                background?: undefined;
+            } | {
+                background: any[];
+                color?: undefined;
+            })[] | {
+                font: any[];
+            }[] | {
+                align: any[];
+            }[])[];
+        };
+        placeholder: string;
+        readOnly: boolean;
+        theme: string;
+    };
+    static quill: Quill;
+    static makeQuill(text: string): void;
 }
 declare let horVerModal: Modal;

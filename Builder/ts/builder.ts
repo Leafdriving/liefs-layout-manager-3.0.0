@@ -1,3 +1,4 @@
+declare class Quill{constructor(...Arguments:any)}
 class Builder extends Base {
     static labelNo = 0;
     static instances:Builder[] = [];
@@ -14,6 +15,7 @@ class Builder extends Base {
         Builder.makeLabel(this);
     }
     static clientHandler: Handler;
+    static context:Context = new Context("nodeTreeContext");
     static buildClientHandler() {
         Builder.clientHandler =
             H("Client Window",
@@ -33,10 +35,65 @@ class Builder extends Base {
     }
     static propertiesModal: winModal;
     static hoverModal=new Modal("BuilderHover",I("BuilderHoverDummy" /*,bCss.bgwhite*/ ));
- 
+    static editHtmlwinModal: winModal;
+    static editHtmlwinModalBody: DisplayCell = I("editHtmlwinModalBody", `<div id="editor"></div>`, bCss.bgwhite);
+    static makeEditHtmlwinModal(objectwithProperties:HtmlBlock){
+        if (!Builder.editHtmlwinModal){
+            Builder.editHtmlwinModal = new winModal('EditHtmlwinModal',
+                                                    `Edit HtmlBlock - ${objectwithProperties["label"]}`,
+                                                    Builder.editHtmlwinModalBody,
+                                                    function(THIS:any){
+                                                        console.log("closeCallback");
+                                                        (<HtmlBlock>(<Properties>Properties.byLabel("HtmlBlock")).currentObject).innerHTML = Builder.quill["root"].innerHTML;
+                                                        Render.update();
+                                                    }
+                                                    );
+            Builder.makeQuill((<HtmlBlock>objectwithProperties).innerHTML);
+        } else {
+            Builder.editHtmlwinModalBody.htmlBlock.innerHTML = `<div id="editor"></div>`
+            Builder.editHtmlwinModal.body = Builder.editHtmlwinModalBody;
+            Builder.editHtmlwinModal.modal.show();
+            Builder.makeQuill((<HtmlBlock>objectwithProperties).innerHTML);
+            Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
+        }
+    }
 
-
+    static editHtml(event:PointerEvent, objectwithProperties:HtmlBlock){
+        Builder.makeEditHtmlwinModal(objectwithProperties);
+    }
     static mainHandler: Handler;
+    static oncontextmenu(event:PointerEvent, el:HTMLElement){
+        let node = <node_>node_.byLabel(el.id.slice(0, -5));
+        let objectwithProperties = node.Arguments[1];
+        let objectType = BaseF.typeof(objectwithProperties);
+        let propInstance = <Properties>Properties.byLabel(objectType);
+        if (!propInstance) {
+            Builder.onClickTree(event, el);
+            propInstance = <Properties>Properties.byLabel(objectType);
+        }
+    
+        propInstance.currentObject = objectwithProperties;
+
+        let treeDisplaycell = <DisplayCell>DisplayCell.byLabel(el.id);
+        let coord = treeDisplaycell.coord
+        let x = coord.x + coord.width;
+        let y = coord.y;
+        let object_:object = {
+            hello:function(){console.log("one")},
+            two:function(){console.log("two")},
+            three:function(){console.log("three")},
+        }
+        switch (objectType) {
+            case "HtmlBlock":
+                    object_ = {"Edit": function(mouseEvent:MouseEvent){ Builder.editHtml(event, objectwithProperties); }}
+                break;
+        
+            default:
+                break;
+        }
+        Builder.context.changeMenuObject(object_)
+        Builder.context.render(event, x, y)
+    }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename",
                                         tree("HandlerTree", 
@@ -45,6 +102,7 @@ class Builder extends Base {
                                             events({onmouseover: function(e:MouseEvent){Builder.onHoverTree(e, this)},
                                                     onmouseleave: function(e:MouseEvent){Builder.onLeaveHoverTree(e,this)},
                                                     onclick: function(e:MouseEvent){ Builder.onClickTree(e, this) },
+                                                    oncontextmenu : function(e:PointerEvent) { Builder.oncontextmenu(e, this) },
                                             }),
 
 function onNodeCreation(node:node_){
@@ -243,6 +301,35 @@ function onNodeCreation(node:node_){
             }
         })
         if (!show && horVerModal.isShown) horVerModal.hide();
+    }
+    static toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        [{'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{'list': 'ordered'}, {'list': 'bullet'}],
+        [{'script': 'sub'}, {'script': 'super'}],
+        [{'indent': '-1'}, {'indent': '+1'}],
+        [{'direction': 'rtl'}],
+        [{'size': ['small', false, 'large', 'huge']}],
+        ['link', 'image', 'video', 'formula'],
+        [{'color': []}, {'background': []}],
+        [{'font': []}],
+        [{'align': []}]
+    ];
+    static options = {
+        debug: 'warn',
+        modules: {
+          toolbar: Builder.toolbarOptions
+        },
+        placeholder: 'Start typing Here...',
+        readOnly: false,
+        theme: 'snow'
+      };
+    static quill:Quill;
+    static makeQuill(text:string){
+      Builder.quill = new Quill('#editor', Builder.options);
+      Builder.quill["clipboard"].dangerouslyPasteHTML(text);
+      Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
     }
 }
 

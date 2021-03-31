@@ -992,6 +992,7 @@ declare class winModal extends Base {
     static argMap: {
         string: string[];
         DisplayCell: string[];
+        function: string[];
     };
     retArgs: ArgsObj;
     label: string;
@@ -1006,6 +1007,7 @@ declare class winModal extends Base {
     footerHeight: number;
     footerText: string;
     hiddenCells: DisplayCell[];
+    closeCallback: Function;
     modal: Modal;
     previousModalHeight: number;
     highlightHeaderState1: boolean;

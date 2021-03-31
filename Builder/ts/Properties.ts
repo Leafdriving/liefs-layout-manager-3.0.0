@@ -53,6 +53,7 @@ class Properties extends Base {
             propInstance.currentObject = objectWithProperties;      // pass the objectwithProperties to propInstance
             propInstance.currentObjectParentDisplayCell = parentDisplayCell;
             // propInstance.process();                                 // start processing it!
+            if (!propInstance.winModal.modal.isShown()) propInstance.winModal.modal.show();
         }
         Render.update();
     }
@@ -147,5 +148,12 @@ class Properties extends Base {
                 break;
         }
     }
+    static editHtmlwinModal: winModal;
+    static initEditHtml(){
+        Properties.editHtmlwinModal = new winModal("initEditHtml", "Div-Editor",
+            I("initEditHtml","something"),
+        )
+    }
+
 }
 

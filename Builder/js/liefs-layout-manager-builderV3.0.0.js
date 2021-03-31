@@ -32,6 +32,8 @@ class Properties extends Base {
             propInstance.currentObject = objectWithProperties; // pass the objectwithProperties to propInstance
             propInstance.currentObjectParentDisplayCell = parentDisplayCell;
             // propInstance.process();                                 // start processing it!
+            if (!propInstance.winModal.modal.isShown())
+                propInstance.winModal.modal.show();
         }
         Render.update();
     }
@@ -108,6 +110,9 @@ class Properties extends Base {
                 console.log(`No way to handle ${variable} value ${value}`);
                 break;
         }
+    }
+    static initEditHtml() {
+        Properties.editHtmlwinModal = new winModal("initEditHtml", "Div-Editor", I("initEditHtml", "something"));
     }
 }
 Properties.labelNo = 0;
@@ -309,10 +314,60 @@ class Builder extends Base {
         Builder.clientHandler =
             H("Client Window", h("Client_h", 5, I("Client_M1", "left", bCss.bgLight), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
     }
+    static makeEditHtmlwinModal(objectwithProperties) {
+        if (!Builder.editHtmlwinModal) {
+            Builder.editHtmlwinModal = new winModal('EditHtmlwinModal', `Edit HtmlBlock - ${objectwithProperties["label"]}`, Builder.editHtmlwinModalBody, function (THIS) {
+                console.log("closeCallback");
+                Properties.byLabel("HtmlBlock").currentObject.innerHTML = Builder.quill["root"].innerHTML;
+                Render.update();
+            });
+            Builder.makeQuill(objectwithProperties.innerHTML);
+        }
+        else {
+            Builder.editHtmlwinModalBody.htmlBlock.innerHTML = `<div id="editor"></div>`;
+            Builder.editHtmlwinModal.body = Builder.editHtmlwinModalBody;
+            Builder.editHtmlwinModal.modal.show();
+            Builder.makeQuill(objectwithProperties.innerHTML);
+            Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
+        }
+    }
+    static editHtml(event, objectwithProperties) {
+        Builder.makeEditHtmlwinModal(objectwithProperties);
+    }
+    static oncontextmenu(event, el) {
+        let node = node_.byLabel(el.id.slice(0, -5));
+        let objectwithProperties = node.Arguments[1];
+        let objectType = BaseF.typeof(objectwithProperties);
+        let propInstance = Properties.byLabel(objectType);
+        if (!propInstance) {
+            Builder.onClickTree(event, el);
+            propInstance = Properties.byLabel(objectType);
+        }
+        propInstance.currentObject = objectwithProperties;
+        let treeDisplaycell = DisplayCell.byLabel(el.id);
+        let coord = treeDisplaycell.coord;
+        let x = coord.x + coord.width;
+        let y = coord.y;
+        let object_ = {
+            hello: function () { console.log("one"); },
+            two: function () { console.log("two"); },
+            three: function () { console.log("three"); },
+        };
+        switch (objectType) {
+            case "HtmlBlock":
+                object_ = { "Edit": function (mouseEvent) { Builder.editHtml(event, objectwithProperties); } };
+                break;
+            default:
+                break;
+        }
+        Builder.context.changeMenuObject(object_);
+        Builder.context.render(event, x, y);
+    }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
             onmouseleave: function (e) { Builder.onLeaveHoverTree(e, this); },
             onclick: function (e) { Builder.onClickTree(e, this); },
+            oncontextmenu: function (e) { Builder.oncontextmenu(e, this); },
         }), function onNodeCreation(node) {
             let nodeLabel = I(`${node.label}_node`, `${node.Arguments[0]}`, node.ParentNodeTree.css, node.ParentNodeTree.events);
             nodeLabel.coord.hideWidth = true;
@@ -462,6 +517,11 @@ class Builder extends Base {
         if (!show && horVerModal.isShown)
             horVerModal.hide();
     }
+    static makeQuill(text) {
+        Builder.quill = new Quill('#editor', Builder.options);
+        Builder.quill["clipboard"].dangerouslyPasteHTML(text);
+        Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
+    }
 }
 Builder.labelNo = 0;
 Builder.instances = [];
@@ -470,13 +530,38 @@ Builder.defaults = {};
 Builder.argMap = {
     string: ["label"],
 };
+Builder.context = new Context("nodeTreeContext");
 Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgwhite*/));
+Builder.editHtmlwinModalBody = I("editHtmlwinModalBody", `<div id="editor"></div>`, bCss.bgwhite);
 //static TOOLBAR_currentButtonName:string;
 Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }));
 Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"));
 Builder.TOOLBAR_B3 = I("toolbarHor", bCss.horSVG("buttonIcons"));
 Builder.TOOLBAR_B4 = I("toolbarVer", bCss.verSVG("buttonIcons"));
 Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2, Builder.TOOLBAR_B3, Builder.TOOLBAR_B4);
+Builder.toolbarOptions = [
+    ['bold', 'italic', 'underline', 'strike'],
+    ['blockquote', 'code-block'],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    [{ 'script': 'sub' }, { 'script': 'super' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
+    [{ 'direction': 'rtl' }],
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    ['link', 'image', 'video', 'formula'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'font': [] }],
+    [{ 'align': [] }]
+];
+Builder.options = {
+    debug: 'warn',
+    modules: {
+        toolbar: Builder.toolbarOptions
+    },
+    placeholder: 'Start typing Here...',
+    readOnly: false,
+    theme: 'snow'
+};
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);

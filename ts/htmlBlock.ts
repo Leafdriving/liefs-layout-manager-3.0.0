@@ -75,19 +75,23 @@ class HtmlBlock extends Base {
 
         derender = displaycell.coord.derender( derender );
 
+        let isUndefined = (htmlBlock.innerHTML == undefined);
+
         let isNulDiv = (htmlBlock.css.trim() == "" &&
-                        htmlBlock.innerHTML.trim() == "" &&
+                        htmlBlock.innerHTML == "" &&
                         Object.keys( htmlBlock.attributes ).length == 0 &&
                         !Handler.renderNullObjects)
 
-        if (derender || isNulDiv) {
+        if (derender || (isNulDiv && !isUndefined)) {
             if (alreadyexists) el.remove();
         } else {
             if (!alreadyexists) el = document.createElement(htmlBlock.tag);
             pf.setAttrib(el, "id", displaycell.label);
             if (htmlBlock.css.trim()) pf.setAttrib(el, "class", htmlBlock.css);
             HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
-            if (el.innerHTML != htmlBlock.innerHTML) el.innerHTML = htmlBlock.innerHTML;
+            if (el.innerHTML != htmlBlock.innerHTML) {
+                if (!isUndefined) el.innerHTML = htmlBlock.innerHTML;
+            }
             if (!alreadyexists) {
                 document.body.appendChild(el);
                 htmlBlock.el = el;

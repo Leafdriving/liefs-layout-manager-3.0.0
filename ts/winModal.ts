@@ -80,7 +80,8 @@ class winModal extends Base {
                         headerText:"Window", bodyText:"Body", highlightHeaderState1:false, highlightHeaderState2:false}
     static argMap = {
         string : ["label", "headerText"],
-        DisplayCell : ["body"]
+        DisplayCell : ["body"],
+        function: ["closeCallback"],
     }
     retArgs:ArgsObj;   // <- this will appear
     label:string;
@@ -100,6 +101,7 @@ class winModal extends Base {
     footerHeight:number;
     footerText:string;
     hiddenCells:DisplayCell[];
+    closeCallback:Function;
 
     modal: Modal;
     previousModalHeight:number;
@@ -191,7 +193,7 @@ class winModal extends Base {
         if (!numbers) numbers = [];
         this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, {type: HandlerType.winModal});
         this.modal.dragWith(`${this.label}_title`);
-        this.modal.closeWith(`${this.label}_close`);
+        this.modal.closeWith(`${this.label}_close`, this.closeCallback);
         this.modal.show();
     }
     render(displaycell:DisplayCell, displayGroup: DisplayGroup, index:number, derender:boolean) {

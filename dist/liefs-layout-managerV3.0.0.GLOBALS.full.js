@@ -724,11 +724,12 @@ class HtmlBlock extends Base {
         let el = pf.elExists(displaycell.label);
         let alreadyexists = (el) ? true : false;
         derender = displaycell.coord.derender(derender);
+        let isUndefined = (htmlBlock.innerHTML == undefined);
         let isNulDiv = (htmlBlock.css.trim() == "" &&
-            htmlBlock.innerHTML.trim() == "" &&
+            htmlBlock.innerHTML == "" &&
             Object.keys(htmlBlock.attributes).length == 0 &&
             !Handler.renderNullObjects);
-        if (derender || isNulDiv) {
+        if (derender || (isNulDiv && !isUndefined)) {
             if (alreadyexists)
                 el.remove();
         }
@@ -739,8 +740,10 @@ class HtmlBlock extends Base {
             if (htmlBlock.css.trim())
                 pf.setAttrib(el, "class", htmlBlock.css);
             HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
-            if (el.innerHTML != htmlBlock.innerHTML)
-                el.innerHTML = htmlBlock.innerHTML;
+            if (el.innerHTML != htmlBlock.innerHTML) {
+                if (!isUndefined)
+                    el.innerHTML = htmlBlock.innerHTML;
+            }
             if (!alreadyexists) {
                 document.body.appendChild(el);
                 htmlBlock.el = el;
@@ -1243,10 +1246,10 @@ class Handler extends Base {
         // console.log("toTop Called");
         let index = Handler.activeInstances.indexOf(this);
         if (index > -1 && index != Handler.activeInstances.length - 1) {
-            console.log("Before to Top", Handler.activeInstances);
+            // console.log("Before to Top", Handler.activeInstances)
             Handler.activeInstances.splice(index, 1);
             Handler.activeInstances.push(this);
-            console.log("after To Top", Handler.activeInstances);
+            // console.log("after To Top", Handler.activeInstances)
             Render.update();
         }
     }
@@ -2533,6 +2536,7 @@ class Context extends Base {
         }
     }
     render(mouseEvent, x = 0, y = 0) {
+        mouseEvent.preventDefault();
         if (mouseEvent) {
             x = mouseEvent.clientX - Context.subOverlapPx;
             y = mouseEvent.clientY - Context.subOverlapPx;
@@ -2554,9 +2558,6 @@ class Context extends Base {
 Context.subOverlapPx = 4;
 Context.instances = [];
 Context.activeInstances = [];
-// static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
-// static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
-// static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");
 Context.defaultObj = { one: function () { console.log("one"); },
     two: function () { console.log("two"); },
     three: function () { console.log("three"); },
@@ -2587,7 +2588,10 @@ let hMenuBar = function (...Arguments) {
 };
 let vMenuBar = function (...Arguments) {
     let newcontext = new Context(...Arguments);
-    return function (mouseEvent) { newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary()); return false; };
+    return function (mouseEvent) {
+        newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary());
+        return false;
+    };
 };
 // export {vMenuBar, hMenuBar, context, Context}
 // import {Base} from './Base';
@@ -2719,7 +2723,11 @@ class Modal extends Base {
         else if ("DisplayCell" in retArgs)
             htmlblock = retArgs["DisplayCell"][0].htmlBlock;
         if (htmlblock) {
-            htmlblock.events = events({ onclick: function () { THIS.hide(); } });
+            htmlblock.events = events({ onclick: function () {
+                    if ("function" in retArgs)
+                        retArgs["function"][0](THIS); // Close Callback executed here!
+                    THIS.hide();
+                } });
             if (this.isShown()) {
                 this.hide();
                 this.show();
@@ -3618,7 +3626,7 @@ class winModal extends Base {
             numbers = [];
         this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, { type: HandlerType.winModal });
         this.modal.dragWith(`${this.label}_title`);
-        this.modal.closeWith(`${this.label}_close`);
+        this.modal.closeWith(`${this.label}_close`, this.closeCallback);
         this.modal.show();
     }
     render(displaycell, displayGroup, index, derender) {
@@ -3736,7 +3744,8 @@ winModal.defaults = { headerHeight: 15, buttonsHeight: 50, footerHeight: 20,
     headerText: "Window", bodyText: "Body", highlightHeaderState1: false, highlightHeaderState2: false };
 winModal.argMap = {
     string: ["label", "headerText"],
-    DisplayCell: ["body"]
+    DisplayCell: ["body"],
+    function: ["closeCallback"],
 };
 Render.register("winModal", winModal);
 function winmodal(...Arguments) {

@@ -144,7 +144,10 @@ class Modal extends Base {
         else if ("DisplayCell" in retArgs) htmlblock = retArgs["DisplayCell"][0].htmlBlock;
         
         if (htmlblock){
-            htmlblock.events = events({onclick:function(){THIS.hide()}});
+            htmlblock.events = events({onclick:function(){
+                if ("function" in retArgs) retArgs["function"][0](THIS);  // Close Callback executed here!
+                THIS.hide();
+            }});
             if (this.isShown()){this.hide();this.show()}
         }
     }

@@ -101,10 +101,10 @@ class Handler extends Base {
     // console.log("toTop Called");
         let index = Handler.activeInstances.indexOf(this);
         if (index > -1 && index != Handler.activeInstances.length-1){
-            console.log("Before to Top", Handler.activeInstances)
+            // console.log("Before to Top", Handler.activeInstances)
             Handler.activeInstances.splice(index, 1);
             Handler.activeInstances.push(this);
-            console.log("after To Top", Handler.activeInstances)
+            // console.log("after To Top", Handler.activeInstances)
             Render.update();
         }
     }
