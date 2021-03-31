@@ -159,12 +159,12 @@ class Base /* extends Function */ {
             instance["label"] = `${CLASS["name"]}_${CLASS["labelNo"]}`
         }
     }
-    static recycle(label:string, ArgsObj:object = {}){
-        let CLASS = this, newObject:object = CLASS.byLabel(label);
-        if (!newObject) newObject = new CLASS(label, ArgsObj);
-        else for (const key in ArgsObj) newObject[key] = ArgsObj[key];
-        return newObject;
-    }
+    // static recycle(label:string, ArgsObj:object = {}){
+    //     let CLASS = this, newObject:object = CLASS.byLabel(label);
+    //     if (!newObject) newObject = new CLASS(label, ArgsObj);
+    //     else for (const key in ArgsObj) newObject[key] = ArgsObj[key];
+    //     return newObject;
+    // }
 }
 // export {BaseF, Base};
 

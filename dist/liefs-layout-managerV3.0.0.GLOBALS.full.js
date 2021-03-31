@@ -169,15 +169,6 @@ class Base /* extends Function */ {
             instance["label"] = `${CLASS["name"]}_${CLASS["labelNo"]}`;
         }
     }
-    static recycle(label, ArgsObj = {}) {
-        let CLASS = this, newObject = CLASS.byLabel(label);
-        if (!newObject)
-            newObject = new CLASS(label, ArgsObj);
-        else
-            for (const key in ArgsObj)
-                newObject[key] = ArgsObj[key];
-        return newObject;
-    }
 }
 // export {BaseF, Base};
 // class Test extends Base {
@@ -415,18 +406,15 @@ class Render {
             let object_ = renderChildren[index].child;
             let derender = renderChildren[index].derender; /////////////////////////////////// HERE!!!!!!!!!!!!!!!!!!!!
             let objectType = BaseF.typeof(object_);
-            // if (objectType == "Handler" && (<Handler>object_).type !='other') console.log((<Handler>object_).type)
             let CLASS = Render.classes[objectType];
             if (CLASS) {
                 if (isSibling && index != 0)
                     node = node.newSibling(`${object_["label"]}${(objectType == "DisplayCell") ? "_" : ""}`, object_);
                 else
                     node = node.newChild(`${object_["label"]}${(objectType == "DisplayCell") ? "_" : ""}`, object_);
-                // console.log(`Rendering ${objectType}_${object_["label"]}`)
                 object_["renderNode"] = node;
                 let returnObj = CLASS.Render(object_, zindex, derender, node); // this is render call
                 zindex = returnObj.zindex;
-                //console.log("zindex", zindex)
                 let children = returnObj.children;
                 let siblings = returnObj.siblings;
                 if (children && children.length)
@@ -437,9 +425,7 @@ class Render {
             else
                 console.log(`Class:${objectType} not regestered`);
             if (objectType == "Handler") {
-                //console.log("zindex Was", zindex);
                 zindex = Math.trunc(zindex / Render.zHandlerIncrement) * Render.zHandlerIncrement + Render.zHandlerIncrement;
-                //console.log("zindex Now", zindex);
             }
         }
     }
@@ -452,7 +438,7 @@ class Render {
     static register(label, object_) {
         Render.classes[label] = object_;
     }
-    static log() { Render.node.log(); }
+    static log(show = false) { Render.node.log(show); }
 }
 Render.zIncrement = 5;
 Render.zHandlerIncrement = 100;
@@ -717,19 +703,8 @@ class HtmlBlock extends Base {
                 this.css = (this.css + " " + css.classname).trim();
         if ("string" in this.retArgs && this.retArgs.string.length > 3)
             this.css += " " + this.retArgs.string.splice(3).join(' ');
-        // if ("number" in this.retArgs) {
-        //     let length = this.retArgs["number"].length;
-        //     if (length == 1) {
-        //         this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
-        //     } else if (length == 2) {
-        //         this.marginRight = this.marginLeft;
-        //         this.marginBottom = this.marginTop;
-        //     }
-        // }
         HtmlBlock.makeLabel(this);
     }
-    // static renderHtmlBlock(displaycell:DisplayCell, derender=false, parentDisplaygroup:DisplayGroup){
-    // }
     static renderHtmlAttributes(el, htmlblock, id) {
         for (let key in htmlblock.attributes) {
             let value = htmlblock.attributes[key];
@@ -743,6 +718,8 @@ class HtmlBlock extends Base {
     }
     static Render(htmlBlock, zindex, derender = false, node) {
         let displaycell = (node.parent().Arguments[1]);
+        if (htmlBlock.evalInnerHtml)
+            htmlBlock.evalInnerHtml(htmlBlock, zindex, derender, node, displaycell);
         // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
         let el = pf.elExists(displaycell.label);
         let alreadyexists = (el) ? true : false;
@@ -751,12 +728,9 @@ class HtmlBlock extends Base {
             htmlBlock.innerHTML.trim() == "" &&
             Object.keys(htmlBlock.attributes).length == 0 &&
             !Handler.renderNullObjects);
-        // if (displaycell.label == "Client_h_DisplayCell_Unknown_backArrow") console.log("********", derender)
         if (derender || isNulDiv) {
-            // console.log(el)
             if (alreadyexists)
                 el.remove();
-            // console.log("HTMLBLOCK Derender: CONFIRMED!", displaycell.label, pf.elExists(displaycell.label))
         }
         else {
             if (!alreadyexists)
@@ -786,13 +760,14 @@ HtmlBlock.defaults = {
     innerHTML: " ",
     tag: "DIV",
     css: "",
-    dim: ""
+    dim: "",
 };
 HtmlBlock.argMap = {
     string: ["label", "innerHTML", "css"],
     dim: ["dim"],
     Events: ["events"],
     boolean: ["hideWidth"],
+    function: ["evalInnerHtml"]
 };
 Render.register("HtmlBlock", HtmlBlock);
 function html(...Arguments) {
@@ -2780,6 +2755,7 @@ class node_ extends Base {
     }
     static newNode(THIS, ...Arguments) {
         let newnode = new node_(...Arguments);
+        // console.log(`Createed Node ${newnode.label}`);
         newnode.ParentNodeTree = THIS.ParentNodeTree;
         if (THIS.ParentNodeTree)
             THIS.ParentNodeTree.onNodeCreation(newnode);
@@ -2845,15 +2821,30 @@ class node_ extends Base {
         return node;
     }
     parent() { return this.ParentNode; }
-    log() {
+    log(showNode = false) {
         if (this.children.length) {
             console.groupCollapsed(this.label);
+            if (showNode) {
+                //console.groupCollapsed("node");
+                console.log(this);
+                //console.groupEnd();
+            }
             for (let index = 0; index < this.children.length; index++)
-                this.children[index].log();
+                this.children[index].log(showNode);
             console.groupEnd();
         }
-        else
-            console.log(this.label);
+        else {
+            if (showNode) {
+                console.groupCollapsed(this.label);
+                //console.groupCollapsed("node");
+                console.log(this);
+                //console.groupEnd();
+                console.groupEnd();
+            }
+            else {
+                console.log(this.label);
+            }
+        }
     }
     byLabel(label) { return node_.byLabel(label); }
     static copy(node, suffix = "_copy", onNodeCreation = function (node, newNode) { }) {

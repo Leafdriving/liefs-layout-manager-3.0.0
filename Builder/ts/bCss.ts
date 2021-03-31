@@ -9,7 +9,7 @@ class bCss{
                                     font: -webkit-small-control;`)
     static disabled = css("disabled",`-moz-appearance: textfield;
                                     -webkit-appearance: textfield;
-                                    background-color: Azure;
+                                    background-color: #E8E8E8;
                                     box-sizing: border-box;
                                     border: 1px solid darkgray;
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
@@ -17,6 +17,7 @@ class bCss{
                                     font: -webkit-small-control;`)                                    
     static bgwhite = css("bgwhite", `background: white`);
     static bgLight = css("bgLight", `background: #dcedf0`);
+    static bgLightBorder = css("bgLight", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`);
     static bgLightCenter = css("bgLightCenter",
                                     `background: #dcedf0;
                                     text-align:center;box-sizing: border-box;

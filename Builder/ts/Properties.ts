@@ -52,19 +52,22 @@ class Properties extends Base {
         else {
             propInstance.currentObject = objectWithProperties;      // pass the objectwithProperties to propInstance
             propInstance.currentObjectParentDisplayCell = parentDisplayCell;
-            propInstance.process();                                 // start processing it!
+            // propInstance.process();                                 // start processing it!
         }
+        Render.update();
     }
     static setHeaderText(propertiesInstance:Properties, text:string){
         let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
         headerDisplay.htmlBlock.innerHTML = text;
     }
     static displayLabel(className:string, label:string, dim = "50px"){
-        return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLight);
+        return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLightBorder);
     }
-    static displayValue(className:string, label:string, disabled = false, dim=undefined){
+    static displayValue(className:string, label:string, disabled = false, dim=undefined,
+            evalFunction:(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell)=>void = undefined){
+
         let Change = <Function>Properties[`${className}Change`];
-        return I(`${className}_${label}_value`, dim,
+        return I(`${className}_${label}_value`, dim, evalFunction,
                 "<UNDEFINED>", (!disabled)? bCss.editable: bCss.disabled, (!disabled)?{attributes: {contenteditable:"true"}}:undefined,
                 events({onblur:function(e:FocusEvent){Change(label,e.target["innerHTML"])},
                         onkeydown:function(e:KeyboardEvent){if (e.code == 'Enter') {e.preventDefault();e.target["blur"]();}}
@@ -77,11 +80,19 @@ class Properties extends Base {
             keyCells[label]                            // value
         )
     }
+    static coordValue(key:string){
+        return function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+            let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
+            let objectNode = <node_>propertiesInstance.currentObject["renderNode"];
+            let objectDisplayCell = objectNode.ParentNode.retArgs.DisplayCell[0];
+            htmlBlock.innerHTML = objectDisplayCell.coord[key].toString();
+        };
+    }
     static Coord(className:string, keyCells:object){
-        keyCells["x"] = Properties.displayValue("HtmlBlock", "x", true, "12.5%");
-        keyCells["y"] = Properties.displayValue("HtmlBlock", "y", true, "12.5%");
-        keyCells["width"] = Properties.displayValue("HtmlBlock", "width", true, "12.5%");
-        keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%");
+        keyCells["x"] = Properties.displayValue("HtmlBlock", "x", true, "12.5%", Properties.coordValue("x"));
+        keyCells["y"] = Properties.displayValue("HtmlBlock", "y", true, "12.5%", Properties.coordValue("y"));
+        keyCells["width"] = Properties.displayValue("HtmlBlock", "width", true, "12.5%", Properties.coordValue("width"));
+        keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%", Properties.coordValue("height"));
         return h(`${className}_Coord_h`, "20px",
                     Properties.displayLabel("HtmlBlock", "x", "8.0%"),
                     keyCells["x"],
@@ -93,10 +104,18 @@ class Properties extends Base {
                     keyCells["height"],                                                            
         )
     }
-    static HtmlBlock(){ // This creates the first and only Properties instance for Htmlblock
+    static HtmlBlock(currentObject:object){ // This creates the first and only Properties instance for Htmlblock
         let keyCells = {
-            label:Properties.displayValue("HtmlBlock", "label", /* true */ ), // true if disabled
-            minDisplayGroupSize:Properties.displayValue("HtmlBlock", "minDisplayGroupSize", /* true */ ), // true if disabled
+            label:Properties.displayValue("HtmlBlock", "label",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
+                htmlBlock.innerHTML = (<HtmlBlock>propertiesInstance.currentObject).label;
+            }),
+            minDisplayGroupSize:Properties.displayValue("HtmlBlock", "minDisplayGroupSize", false, function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
+                let minSize = (<HtmlBlock>propertiesInstance.currentObject).minDisplayGroupSize;
+                if (minSize) htmlBlock.innerHTML = minSize.toString();
+                else htmlBlock.innerHTML = "undefined";
+            } ), 
         }
         let rootcell = v(`HtmlBlock_prop_v`,
             Properties.labelAndValue("HtmlBlock", "label", keyCells), // true if disabled
@@ -105,31 +124,21 @@ class Properties extends Base {
             
             Properties.Coord("HtmlBlock", keyCells),
         )
-        new Properties("HtmlBlock", rootcell, Properties.HtmlBlockProcess, {keyCells});
-    }
-    static HtmlBlockProcess() { // update values ??? 
-        let propertiesInstance:Properties = this as unknown as Properties;
-        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
-        console.log(objectWithProperties)
-        // let coord = propertiesInstance.currentObjectParentDisplayCell.coord;
-        // let keyCells = propertiesInstance.keyCells;
-        // Properties.setHeaderText(propertiesInstance, `HtmlBlock - ${objectWithProperties.label}`)
-        // keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
-        // keyCells.minDisplayGroupSize.htmlBlock.innerHTML = (objectWithProperties.minDisplayGroupSize) ? objectWithProperties.minDisplayGroupSize.toString() : "undefined"
-        // keyCells.x.htmlBlock.innerHTML = coord.x.toString();
-        // keyCells.y.htmlBlock.innerHTML = coord.y.toString();
-        // keyCells.width.htmlBlock.innerHTML = coord.width.toString();
-        // keyCells.height.htmlBlock.innerHTML = coord.height.toString();
-
-        //Render.update();
+        new Properties("HtmlBlock", rootcell,  {keyCells, currentObject});
     }
     static HtmlBlockChange(variable:string, value:string){ // called when an input on Properties is changed
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
         let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+        let parentNode = objectWithProperties.renderNode.ParentNode;
+        let parentDisplayCell = parentNode.Arguments[1]
+
+
         console.log(`Change Htmlblock-${objectWithProperties.label} variable "${variable}" to "${value}"`)
         switch (variable) {
             case "label":
                 objectWithProperties.label = value;
+                parentDisplayCell.label = value;
+
                 Builder.updateTree();                
                 Properties.processNode(objectWithProperties);
                 break;

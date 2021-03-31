@@ -18,8 +18,8 @@ class Builder extends Base {
         Builder.clientHandler =
             H("Client Window",
                 h("Client_h", 5,
-                    I("Client_Main1","left", /*bCss.bgCyan,*/ "500px"),
-                    I("Client_Main2","right", bCss.bgCyan, "500px"),
+                    I("Client_M1","left", bCss.bgLight),
+                    I("Client_Main2","right", bCss.bgCyan, "200px"),
                     // v("Client_v", 5,
                     //     I("Client_Top","top", bCss.bgGreen),
                     //     P("MainPages", "500px",
@@ -107,6 +107,7 @@ function onNodeCreation(node:node_){
     static updateTree(){
         Render.update();
         const node = node_.byLabel("Client Window");
+        // console.log(node);
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
                 newNode["Arguments"] = node.Arguments;
@@ -114,6 +115,7 @@ function onNodeCreation(node:node_){
             })
             Builder.noDisplayCellnode = Builder.noDisplayCells();
             Tree_.byLabel("HandlerTree").newRoot( Builder.noDisplayCellnode );
+            // Builder.noDisplayCellnode.log(true)
         }
         Render.update();
     }
@@ -153,9 +155,13 @@ function onNodeCreation(node:node_){
     //static TOOLBAR_currentButtonName:string;
     static TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({onclick:function(e){console.log("hello")}}));
     static TOOLBAR_B2 = I("toolbarMatch",bCss.matchSVG("buttonIcons"));
+    static TOOLBAR_B3 = I("toolbarHor",bCss.horSVG("buttonIcons"));
+    static TOOLBAR_B4 = I("toolbarVer",bCss.verSVG("buttonIcons"));
     static TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect,
         Builder.TOOLBAR_B1,
         Builder.TOOLBAR_B2,
+        Builder.TOOLBAR_B3,
+        Builder.TOOLBAR_B4,
     );
    static xboxSVG(boundCoord:Coord, Boxes:Coord[]){
         let top:string = `<svg width="${boundCoord.width}" height="${boundCoord.height}">`;
@@ -213,6 +219,31 @@ function onNodeCreation(node:node_){
     static onLeaveHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
         Builder.hoverModal.hide();
     }
+    static horDivide(mouseEvent:MouseEvent){
+        let show = false;
+        let clientWindowNode = <node_>node_.byLabel("Client Window")
+        console.log(clientWindowNode != undefined)
+        node_.traverse(clientWindowNode, function(node){
+            if (BaseF.typeof(node.Arguments[1]) == "DisplayCell") {
+                let displaycell = <DisplayCell>node.Arguments[1];
+                let coord = displaycell.coord;
+                if (coord.isPointIn(mouseEvent.clientX, mouseEvent.clientY)) {
+                    if (displaycell.htmlBlock) {
+                        // console.log(displaycell.label);
+                        let coord = displaycell.coord
+                        horVerModal.setSize(mouseEvent.clientX-2, coord.y, 4, coord.height)
+                        console.log(horVerModal.isShown())
+                        if (!horVerModal.isShown()) horVerModal.show()
+                        show = true;
+                        Render.update();
+                    }
+
+                }
+                
+            }
+        })
+        if (!show && horVerModal.isShown) horVerModal.hide();
+    }
 }
 
 Builder.buildClientHandler();
@@ -221,20 +252,26 @@ Handler.activate(Builder.clientHandler);
 setTimeout(() => {
     Builder.updateTree();
 }, 0);
-
-
-let outside = new Modal("outside",I("outside_", css("outside","background:red;opacity:0.25")));
-let inside = new Modal("inside", I("inside_", css("inside","background:green;opacity:0.25")));
-let show = function(coord:Coord) {
-    outside.setSize(coord.x, coord.y, coord.width, coord.height);
-    inside.setSize(coord.within.x, coord.within.y, coord.within.width, coord.within.height);
-    outside.show()
-    inside.show()
+window.onmousemove = function(mouseEvent:MouseEvent) {
+    let buttonIndex = Builder.buttonIndex;
+    if (buttonIndex == 2) Builder.horDivide(mouseEvent);
+    if (buttonIndex == 3) console.log(mouseEvent);
 }
-let hide = function(){
-    outside.hide();
-    inside.hide();
-}
+let horVerModal = new Modal("horVerModal",I("horVerModal", css("horVerModal","background:red;opacity:0.25"),
+                                            events({onclick:function(){console.log("clicked")}}))); 
+
+// let outside = new Modal("outside",I("outside_", css("outside","background:red;opacity:0.25")));
+// let inside = new Modal("inside", I("inside_", css("inside","background:green;opacity:0.25")));
+// let show = function(coord:Coord) {
+//     outside.setSize(coord.x, coord.y, coord.width, coord.height);
+//     inside.setSize(coord.within.x, coord.within.y, coord.within.width, coord.within.height);
+//     outside.show()
+//     inside.show()
+// }
+// let hide = function(){
+//     outside.hide();
+//     inside.hide();
+// }
 
 
 

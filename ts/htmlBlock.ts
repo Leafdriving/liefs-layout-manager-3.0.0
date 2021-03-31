@@ -14,13 +14,14 @@ class HtmlBlock extends Base {
         innerHTML : " ",
         tag: "DIV",
         css: "",
-        dim: ""
+        dim: "",
     }
     static argMap = {
         string : ["label", "innerHTML", "css"],
         dim : ["dim"],
         Events : ["events"],
         boolean: ["hideWidth"],
+        function: ["evalInnerHtml"]
     }
 
     renderNode:node_; // render node
@@ -35,6 +36,7 @@ class HtmlBlock extends Base {
     attributes:object = {};
     hideWidth: boolean;
     minDisplayGroupSize: number;
+    evalInnerHtml:(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell)=>void;
 
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
@@ -52,20 +54,8 @@ class HtmlBlock extends Base {
         if ("string" in this.retArgs && this.retArgs.string.length > 3) 
             this.css += " " + this.retArgs.string.splice(3).join(' ');
 
-        // if ("number" in this.retArgs) {
-        //     let length = this.retArgs["number"].length;
-        //     if (length == 1) {
-        //         this.marginRight = this.marginTop = this.marginBottom = this.marginLeft;
-        //     } else if (length == 2) {
-        //         this.marginRight = this.marginLeft;
-        //         this.marginBottom = this.marginTop;
-        //     }
-        // }
         HtmlBlock.makeLabel(this);
     }
-    // static renderHtmlBlock(displaycell:DisplayCell, derender=false, parentDisplaygroup:DisplayGroup){
-      
-    // }
     static renderHtmlAttributes(el:HTMLElement, htmlblock: HtmlBlock, id:string){
         for (let key in htmlblock.attributes) {
             let value = htmlblock.attributes[key];
@@ -77,6 +67,7 @@ class HtmlBlock extends Base {
     }
     static Render(htmlBlock:HtmlBlock, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let displaycell = <DisplayCell>(node.parent().Arguments[1])
+        if (htmlBlock.evalInnerHtml) htmlBlock.evalInnerHtml(htmlBlock, zindex, derender, node, displaycell);
         // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
 
         let el:HTMLElement = pf.elExists(displaycell.label);
@@ -89,13 +80,8 @@ class HtmlBlock extends Base {
                         Object.keys( htmlBlock.attributes ).length == 0 &&
                         !Handler.renderNullObjects)
 
-        // if (displaycell.label == "Client_h_DisplayCell_Unknown_backArrow") console.log("********", derender)
-
         if (derender || isNulDiv) {
-            
-            // console.log(el)
             if (alreadyexists) el.remove();
-            // console.log("HTMLBLOCK Derender: CONFIRMED!", displaycell.label, pf.elExists(displaycell.label))
         } else {
             if (!alreadyexists) el = document.createElement(htmlBlock.tag);
             pf.setAttrib(el, "id", displaycell.label);

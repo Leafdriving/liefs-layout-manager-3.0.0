@@ -23,6 +23,7 @@ class node_ extends Base {
     }
     static newNode(THIS:node_, ...Arguments:any){
         let newnode = new node_(...Arguments);
+        // console.log(`Createed Node ${newnode.label}`);
         newnode.ParentNodeTree = THIS.ParentNodeTree;
         if (THIS.ParentNodeTree) THIS.ParentNodeTree.onNodeCreation(newnode);
         return newnode;
@@ -107,13 +108,29 @@ class node_ extends Base {
         return node
     }
     parent(){return this.ParentNode}
-    log(){
+    log(showNode:boolean = false){
         if (this.children.length) {
             console.groupCollapsed(this.label);
+            if (showNode) {
+                //console.groupCollapsed("node");
+                console.log(this)
+                //console.groupEnd();
+            }
             for (let index = 0; index < this.children.length; index++) 
-                this.children[index].log();
+                this.children[index].log(showNode);
             console.groupEnd();
-        } else console.log(this.label);
+        } else {
+            if (showNode) {
+                console.groupCollapsed(this.label);
+                //console.groupCollapsed("node");
+                console.log(this)
+                //console.groupEnd();
+                console.groupEnd();
+            } else {
+                console.log(this.label)
+            }
+            
+        }
     }
     byLabel(label:string){return node_.byLabel(label);}
 

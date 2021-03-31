@@ -31,19 +31,20 @@ class Properties extends Base {
         else {
             propInstance.currentObject = objectWithProperties; // pass the objectwithProperties to propInstance
             propInstance.currentObjectParentDisplayCell = parentDisplayCell;
-            propInstance.process(); // start processing it!
+            // propInstance.process();                                 // start processing it!
         }
+        Render.update();
     }
     static setHeaderText(propertiesInstance, text) {
         let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
         headerDisplay.htmlBlock.innerHTML = text;
     }
     static displayLabel(className, label, dim = "50px") {
-        return I(`${className}_${label}_label`, `${label}:`, dim, bCss.bgLight);
+        return I(`${className}_${label}_label`, `${label}:`, dim, bCss.bgLightBorder);
     }
-    static displayValue(className, label, disabled = false, dim = undefined) {
+    static displayValue(className, label, disabled = false, dim = undefined, evalFunction = undefined) {
         let Change = Properties[`${className}Change`];
-        return I(`${className}_${label}_value`, dim, "<UNDEFINED>", (!disabled) ? bCss.editable : bCss.disabled, (!disabled) ? { attributes: { contenteditable: "true" } } : undefined, events({ onblur: function (e) { Change(label, e.target["innerHTML"]); },
+        return I(`${className}_${label}_value`, dim, evalFunction, "<UNDEFINED>", (!disabled) ? bCss.editable : bCss.disabled, (!disabled) ? { attributes: { contenteditable: "true" } } : undefined, events({ onblur: function (e) { Change(label, e.target["innerHTML"]); },
             onkeydown: function (e) { if (e.code == 'Enter') {
                 e.preventDefault();
                 e.target["blur"]();
@@ -55,45 +56,51 @@ class Properties extends Base {
         keyCells[label] // value
         );
     }
+    static coordValue(key) {
+        return function (htmlBlock, zindex, derender, node, displaycell) {
+            let propertiesInstance = Properties.byLabel("HtmlBlock");
+            let objectNode = propertiesInstance.currentObject["renderNode"];
+            let objectDisplayCell = objectNode.ParentNode.retArgs.DisplayCell[0];
+            htmlBlock.innerHTML = objectDisplayCell.coord[key].toString();
+        };
+    }
     static Coord(className, keyCells) {
-        keyCells["x"] = Properties.displayValue("HtmlBlock", "x", true, "12.5%");
-        keyCells["y"] = Properties.displayValue("HtmlBlock", "y", true, "12.5%");
-        keyCells["width"] = Properties.displayValue("HtmlBlock", "width", true, "12.5%");
-        keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%");
+        keyCells["x"] = Properties.displayValue("HtmlBlock", "x", true, "12.5%", Properties.coordValue("x"));
+        keyCells["y"] = Properties.displayValue("HtmlBlock", "y", true, "12.5%", Properties.coordValue("y"));
+        keyCells["width"] = Properties.displayValue("HtmlBlock", "width", true, "12.5%", Properties.coordValue("width"));
+        keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%", Properties.coordValue("height"));
         return h(`${className}_Coord_h`, "20px", Properties.displayLabel("HtmlBlock", "x", "8.0%"), keyCells["x"], Properties.displayLabel("HtmlBlock", "y", "8.0%"), keyCells["y"], Properties.displayLabel("HtmlBlock", "width", "17.0%"), keyCells["width"], Properties.displayLabel("HtmlBlock", "height", "17.0%"), keyCells["height"]);
     }
-    static HtmlBlock() {
+    static HtmlBlock(currentObject) {
         let keyCells = {
-            label: Properties.displayValue("HtmlBlock", "label"),
-            minDisplayGroupSize: Properties.displayValue("HtmlBlock", "minDisplayGroupSize"), // true if disabled
+            label: Properties.displayValue("HtmlBlock", "label", true, function (htmlBlock, zindex, derender, node, displaycell) {
+                let propertiesInstance = Properties.byLabel("HtmlBlock");
+                htmlBlock.innerHTML = propertiesInstance.currentObject.label;
+            }),
+            minDisplayGroupSize: Properties.displayValue("HtmlBlock", "minDisplayGroupSize", false, function (htmlBlock, zindex, derender, node, displaycell) {
+                let propertiesInstance = Properties.byLabel("HtmlBlock");
+                let minSize = propertiesInstance.currentObject.minDisplayGroupSize;
+                if (minSize)
+                    htmlBlock.innerHTML = minSize.toString();
+                else
+                    htmlBlock.innerHTML = "undefined";
+            }),
         };
         let rootcell = v(`HtmlBlock_prop_v`, Properties.labelAndValue("HtmlBlock", "label", keyCells), // true if disabled
         Properties.labelAndValue("HtmlBlock", "minDisplayGroupSize", keyCells, "150px"), // true if disabled
         I(`HtmlBlock_DisplayCell`, `Parent DisplayCell`, bCss.bgLightCenter, "20px"), Properties.Coord("HtmlBlock", keyCells));
-        new Properties("HtmlBlock", rootcell, Properties.HtmlBlockProcess, { keyCells });
-    }
-    static HtmlBlockProcess() {
-        let propertiesInstance = this;
-        let objectWithProperties = propertiesInstance.currentObject;
-        console.log(objectWithProperties);
-        // let coord = propertiesInstance.currentObjectParentDisplayCell.coord;
-        // let keyCells = propertiesInstance.keyCells;
-        // Properties.setHeaderText(propertiesInstance, `HtmlBlock - ${objectWithProperties.label}`)
-        // keyCells.label.htmlBlock.innerHTML = objectWithProperties.label;
-        // keyCells.minDisplayGroupSize.htmlBlock.innerHTML = (objectWithProperties.minDisplayGroupSize) ? objectWithProperties.minDisplayGroupSize.toString() : "undefined"
-        // keyCells.x.htmlBlock.innerHTML = coord.x.toString();
-        // keyCells.y.htmlBlock.innerHTML = coord.y.toString();
-        // keyCells.width.htmlBlock.innerHTML = coord.width.toString();
-        // keyCells.height.htmlBlock.innerHTML = coord.height.toString();
-        //Render.update();
+        new Properties("HtmlBlock", rootcell, { keyCells, currentObject });
     }
     static HtmlBlockChange(variable, value) {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
         let objectWithProperties = propertiesInstance.currentObject;
+        let parentNode = objectWithProperties.renderNode.ParentNode;
+        let parentDisplayCell = parentNode.Arguments[1];
         console.log(`Change Htmlblock-${objectWithProperties.label} variable "${variable}" to "${value}"`);
         switch (variable) {
             case "label":
                 objectWithProperties.label = value;
+                parentDisplayCell.label = value;
                 Builder.updateTree();
                 Properties.processNode(objectWithProperties);
                 break;
@@ -240,7 +247,7 @@ bCss.editable = css("editable", `-moz-appearance: textfield;
                                     font: -webkit-small-control;`);
 bCss.disabled = css("disabled", `-moz-appearance: textfield;
                                     -webkit-appearance: textfield;
-                                    background-color: Azure;
+                                    background-color: #E8E8E8;
                                     box-sizing: border-box;
                                     border: 1px solid darkgray;
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
@@ -248,6 +255,7 @@ bCss.disabled = css("disabled", `-moz-appearance: textfield;
                                     font: -webkit-small-control;`);
 bCss.bgwhite = css("bgwhite", `background: white`);
 bCss.bgLight = css("bgLight", `background: #dcedf0`);
+bCss.bgLightBorder = css("bgLight", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`);
 bCss.bgLightCenter = css("bgLightCenter", `background: #dcedf0;
                                     text-align:center;box-sizing: border-box;
                                     border: 1px solid darkgray;
@@ -299,7 +307,7 @@ class Builder extends Base {
     }
     static buildClientHandler() {
         Builder.clientHandler =
-            H("Client Window", h("Client_h", 5, I("Client_Main1", "left", /*bCss.bgCyan,*/ "500px"), I("Client_Main2", "right", bCss.bgCyan, "500px")), false);
+            H("Client Window", h("Client_h", 5, I("Client_M1", "left", bCss.bgLight), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
     }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
@@ -329,6 +337,7 @@ class Builder extends Base {
     static updateTree() {
         Render.update();
         const node = node_.byLabel("Client Window");
+        // console.log(node);
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function (node, newNode) {
                 newNode["Arguments"] = node.Arguments;
@@ -336,6 +345,7 @@ class Builder extends Base {
             });
             Builder.noDisplayCellnode = Builder.noDisplayCells();
             Tree_.byLabel("HandlerTree").newRoot(Builder.noDisplayCellnode);
+            // Builder.noDisplayCellnode.log(true)
         }
         Render.update();
     }
@@ -427,6 +437,31 @@ class Builder extends Base {
     static onLeaveHoverTree(mouseEvent, el) {
         Builder.hoverModal.hide();
     }
+    static horDivide(mouseEvent) {
+        let show = false;
+        let clientWindowNode = node_.byLabel("Client Window");
+        console.log(clientWindowNode != undefined);
+        node_.traverse(clientWindowNode, function (node) {
+            if (BaseF.typeof(node.Arguments[1]) == "DisplayCell") {
+                let displaycell = node.Arguments[1];
+                let coord = displaycell.coord;
+                if (coord.isPointIn(mouseEvent.clientX, mouseEvent.clientY)) {
+                    if (displaycell.htmlBlock) {
+                        // console.log(displaycell.label);
+                        let coord = displaycell.coord;
+                        horVerModal.setSize(mouseEvent.clientX - 2, coord.y, 4, coord.height);
+                        console.log(horVerModal.isShown());
+                        if (!horVerModal.isShown())
+                            horVerModal.show();
+                        show = true;
+                        Render.update();
+                    }
+                }
+            }
+        });
+        if (!show && horVerModal.isShown)
+            horVerModal.hide();
+    }
 }
 Builder.labelNo = 0;
 Builder.instances = [];
@@ -439,22 +474,32 @@ Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgw
 //static TOOLBAR_currentButtonName:string;
 Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }));
 Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"));
-Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2);
+Builder.TOOLBAR_B3 = I("toolbarHor", bCss.horSVG("buttonIcons"));
+Builder.TOOLBAR_B4 = I("toolbarVer", bCss.verSVG("buttonIcons"));
+Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2, Builder.TOOLBAR_B3, Builder.TOOLBAR_B4);
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
 setTimeout(() => {
     Builder.updateTree();
 }, 0);
-let outside = new Modal("outside", I("outside_", css("outside", "background:red;opacity:0.25")));
-let inside = new Modal("inside", I("inside_", css("inside", "background:green;opacity:0.25")));
-let show = function (coord) {
-    outside.setSize(coord.x, coord.y, coord.width, coord.height);
-    inside.setSize(coord.within.x, coord.within.y, coord.within.width, coord.within.height);
-    outside.show();
-    inside.show();
+window.onmousemove = function (mouseEvent) {
+    let buttonIndex = Builder.buttonIndex;
+    if (buttonIndex == 2)
+        Builder.horDivide(mouseEvent);
+    if (buttonIndex == 3)
+        console.log(mouseEvent);
 };
-let hide = function () {
-    outside.hide();
-    inside.hide();
-};
+let horVerModal = new Modal("horVerModal", I("horVerModal", css("horVerModal", "background:red;opacity:0.25"), events({ onclick: function () { console.log("clicked"); } })));
+// let outside = new Modal("outside",I("outside_", css("outside","background:red;opacity:0.25")));
+// let inside = new Modal("inside", I("inside_", css("inside","background:green;opacity:0.25")));
+// let show = function(coord:Coord) {
+//     outside.setSize(coord.x, coord.y, coord.width, coord.height);
+//     inside.setSize(coord.within.x, coord.within.y, coord.within.width, coord.within.height);
+//     outside.show()
+//     inside.show()
+// }
+// let hide = function(){
+//     outside.hide();
+//     inside.hide();
+// }

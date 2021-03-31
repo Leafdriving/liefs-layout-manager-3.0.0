@@ -24,26 +24,21 @@ class Render {
             let object_ = renderChildren[index].child;
             let derender = renderChildren[index].derender;/////////////////////////////////// HERE!!!!!!!!!!!!!!!!!!!!
             let objectType = BaseF.typeof(object_);
-            // if (objectType == "Handler" && (<Handler>object_).type !='other') console.log((<Handler>object_).type)
+            
             let CLASS = Render.classes[objectType];
             if (CLASS){
                 if (isSibling && index != 0) node = node.newSibling(`${object_["label"]}${(objectType == "DisplayCell")?"_":""}`, object_);
                 else node = node.newChild(`${object_["label"]}${(objectType == "DisplayCell")?"_":""}`, object_);
-                // console.log(`Rendering ${objectType}_${object_["label"]}`)
                 object_["renderNode"] = node;
                 let returnObj:zindexAndRenderChildren = CLASS.Render(object_, zindex, derender, node); // this is render call
                 zindex = returnObj.zindex;
-                //console.log("zindex", zindex)
                 let children:RenderChild[] = returnObj.children;
                 let siblings:RenderChild[] = returnObj.siblings;
-
                 if (children && children.length) Render.RenderObjectList(children, node, zindex);
                 if (siblings && siblings.length) Render.RenderObjectList(siblings, node, zindex, true);
             } else console.log(`Class:${objectType} not regestered`);
             if (objectType == "Handler") {
-                //console.log("zindex Was", zindex);
                 zindex = Math.trunc(zindex/Render.zHandlerIncrement)*Render.zHandlerIncrement + Render.zHandlerIncrement;
-                //console.log("zindex Now", zindex);
             }
         }
     }
@@ -56,7 +51,7 @@ class Render {
     static register(label:string, object_:object){
         Render.classes[label] = object_;
     }
-    static log(){Render.node.log();}
+    static log(show=false){Render.node.log(show);}
 }
 
 class RenderChildren {

@@ -24,11 +24,11 @@ declare class Properties extends Base {
     static processNode(node: node_ | object, parentDisplayCell?: DisplayCell): void;
     static setHeaderText(propertiesInstance: Properties, text: string): void;
     static displayLabel(className: string, label: string, dim?: string): DisplayCell;
-    static displayValue(className: string, label: string, disabled?: boolean, dim?: any): DisplayCell;
+    static displayValue(className: string, label: string, disabled?: boolean, dim?: any, evalFunction?: (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void): DisplayCell;
     static labelAndValue(className: string, label: string, keyCells: object, dim?: string): DisplayCell;
+    static coordValue(key: string): (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void;
     static Coord(className: string, keyCells: object): DisplayCell;
-    static HtmlBlock(): void;
-    static HtmlBlockProcess(): void;
+    static HtmlBlock(currentObject: object): void;
     static HtmlBlockChange(variable: string, value: string): void;
 }
 declare class bCss {
@@ -36,6 +36,7 @@ declare class bCss {
     static disabled: Css;
     static bgwhite: Css;
     static bgLight: Css;
+    static bgLightBorder: Css;
     static bgLightCenter: Css;
     static bgGreen: Css;
     static bgBlue: Css;
@@ -85,14 +86,14 @@ declare class Builder extends Base {
     static TOOLBAR_currentButton_el: Element;
     static TOOLBAR_B1: DisplayCell;
     static TOOLBAR_B2: DisplayCell;
+    static TOOLBAR_B3: DisplayCell;
+    static TOOLBAR_B4: DisplayCell;
     static TOOLBAR: DisplayCell;
     static xboxSVG(boundCoord: Coord, Boxes: Coord[]): string;
     static onClickTree(mouseEvent: MouseEvent, el: HTMLElement): void;
     static get buttonIndex(): number;
     static onHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
     static onLeaveHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;
+    static horDivide(mouseEvent: MouseEvent): void;
 }
-declare let outside: Modal;
-declare let inside: Modal;
-declare let show: (coord: Coord) => void;
-declare let hide: () => void;
+declare let horVerModal: Modal;

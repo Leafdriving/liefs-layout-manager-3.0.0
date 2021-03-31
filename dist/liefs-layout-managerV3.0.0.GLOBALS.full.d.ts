@@ -51,7 +51,6 @@ declare class Base {
     buildBase(...Arguments: any): void;
     static buildBase(THIS: any, ...Arguments: any): void;
     static makeLabel(instance: any): void;
-    static recycle(label: string, ArgsObj?: object): object;
 }
 interface FStack {
     [key: string]: [Function, string][];
@@ -112,7 +111,7 @@ declare class Render {
     static classes: {};
     static className(object_: object): string;
     static register(label: string, object_: object): void;
-    static log(): void;
+    static log(show?: boolean): void;
 }
 declare class RenderChildren {
     children: RenderChild[];
@@ -202,6 +201,7 @@ declare class HtmlBlock extends Base {
         dim: string[];
         Events: string[];
         boolean: string[];
+        function: string[];
     };
     renderNode: node_;
     label: string;
@@ -214,6 +214,7 @@ declare class HtmlBlock extends Base {
     attributes: object;
     hideWidth: boolean;
     minDisplayGroupSize: number;
+    evalInnerHtml: (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void;
     constructor(...Arguments: any);
     static renderHtmlAttributes(el: HTMLElement, htmlblock: HtmlBlock, id: string): void;
     static Render(htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
@@ -796,7 +797,7 @@ declare class node_ extends Base {
     done(): Tree_;
     root(): node_;
     parent(): node_;
-    log(): void;
+    log(showNode?: boolean): void;
     byLabel(label: string): any;
     static copy(node: node_ | Tree_, suffix?: string, onNodeCreation?: (node: node_, newNode: node_) => void): node_;
 }
