@@ -118,8 +118,8 @@ class Context extends Base {
         }
     }
     render(mouseEvent:MouseEvent, x:number=0, y:number=0) {
-        mouseEvent.preventDefault();
         if (mouseEvent){
+            mouseEvent.preventDefault();
             x=mouseEvent.clientX - Context.subOverlapPx;
             y=mouseEvent.clientY - Context.subOverlapPx;
         }

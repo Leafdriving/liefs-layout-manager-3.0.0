@@ -9,7 +9,7 @@ class Properties extends Base {
         winModal : ["winModal"],
         function : ["process"],
     }
-    static defaultsize = [300,600];
+    static defaultsize = [800,800];
     // retArgs:ArgsObj;   // <- this will appear
     label:string;
     rootDisplayCell :DisplayCell;
@@ -61,9 +61,9 @@ class Properties extends Base {
         let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
         headerDisplay.htmlBlock.innerHTML = text;
     }
-    static displayLabel(className:string, label:string, dim = "50px"){
-        return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLightBorder);
-    }
+    // static displayLabel(className:string, label:string, dim = "50px"){
+    //     return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLightBorder);
+    // }
     static displayValue(className:string, label:string, disabled = false, dim=undefined,
             evalFunction:(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell)=>void = undefined){
 
@@ -75,12 +75,12 @@ class Properties extends Base {
                     })
                 );
     }
-    static labelAndValue(className:string, label:string, keyCells:object, dim = "50px"){
-        return h(`${className}_${label}_h`, "20px",
-            Properties.displayLabel(className, label, dim), // label
-            keyCells[label]                            // value
-        )
-    }
+    // static labelAndValue(className:string, label:string, keyCells:object, dim = "50px"){
+    //     return h(`${className}_${label}_h`, "20px",
+    //         Properties.displayLabel(className, label, dim), // label
+    //         keyCells[label]                            // value
+    //     )
+    // }
     static coordValue(key:string){
         return function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
             let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
@@ -95,13 +95,14 @@ class Properties extends Base {
         keyCells["width"] = Properties.displayValue("HtmlBlock", "width", true, "12.5%", Properties.coordValue("width"));
         keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%", Properties.coordValue("height"));
         return h(`${className}_Coord_h`, "20px",
-                    Properties.displayLabel("HtmlBlock", "x", "8.0%"),
+                    I(`HtmlBlock_DisplayCell`,`Parent DisplayCell:`, bCss.bgLightCenter, "150px"),
+                    I(`HtmlBlock_x_label`,`x:`, "8.0%", bCss.bgLightBorder),
                     keyCells["x"],
-                    Properties.displayLabel("HtmlBlock", "y", "8.0%"),
+                    I(`HtmlBlock_y_label`,`y:`, "8.0%", bCss.bgLightBorder),
                     keyCells["y"],
-                    Properties.displayLabel("HtmlBlock", "width", "17.0%"),
+                    I(`HtmlBlock_width_label`,`width:`, "17.0%", bCss.bgLightBorder),
                     keyCells["width"],
-                    Properties.displayLabel("HtmlBlock", "height", "17.0%"),
+                    I(`HtmlBlock_height_label`,`height:`, "17.0%", bCss.bgLightBorder),
                     keyCells["height"],                                                            
         )
     }
@@ -118,14 +119,31 @@ class Properties extends Base {
                 else htmlBlock.innerHTML = "undefined";
             } ), 
         }
+        let quillDisplayCell = I('htmlQuill',`<div id="editor"></div>`, bCss.bgwhite)
+        let htmlblock = quillDisplayCell.htmlBlock
+        htmlblock.evalInnerHtml = function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+            if (!pf.elExists(htmlblock.label)) {
+                setTimeout(() => {
+                    console.log("now - evalInnerHtml");
+                    let propInstance = <Properties>Properties.byLabel("HtmlBlock");
+                    Properties.makeQuill((<HtmlBlock>propInstance.currentObject).innerHTML);
+                    //(<HtmlBlock>propInstance.currentObject).innerHTML = undefined;
+                    htmlBlock.innerHTML = undefined;
+                }, 0);
+            }
+        }
+
+
         let rootcell = v(`HtmlBlock_prop_v`,
-            Properties.labelAndValue("HtmlBlock", "label", keyCells), // true if disabled
-            Properties.labelAndValue("HtmlBlock", "minDisplayGroupSize", keyCells, "150px"), // true if disabled
-            I(`HtmlBlock_DisplayCell`,`Parent DisplayCell`, bCss.bgLightCenter, "20px"),
-            
+            h("topPropHtmlBlockBar", "20px",
+                I("tplabellabel","label", bCss.bgLightBorder, "100px"),
+                keyCells.label,
+            ),
             Properties.Coord("HtmlBlock", keyCells),
+            quillDisplayCell,
         )
         new Properties("HtmlBlock", rootcell,  {keyCells, currentObject});
+        
     }
     static HtmlBlockChange(variable:string, value:string){ // called when an input on Properties is changed
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
@@ -152,8 +170,41 @@ class Properties extends Base {
     static initEditHtml(){
         Properties.editHtmlwinModal = new winModal("initEditHtml", "Div-Editor",
             I("initEditHtml","something"),
+            function(THIS:any){
+                console.log("closeCallback");
+                (<HtmlBlock>(<Properties>Properties.byLabel("HtmlBlock")).currentObject).innerHTML = Properties.quill["root"].innerHTML;
+                Render.update();
+            }
         )
     }
-
+    static toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        [{'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{'list': 'ordered'}, {'list': 'bullet'}],
+        [{'script': 'sub'}, {'script': 'super'}],
+        [{'indent': '-1'}, {'indent': '+1'}],
+        [{'direction': 'rtl'}],
+        [{'size': ['small', false, 'large', 'huge']}],
+        ['link', 'image', 'video', 'formula'],
+        [{'color': []}, {'background': []}],
+        [{'font': []}],
+        [{'align': []}]
+    ];
+    static options = {
+        debug: 'warn',
+        modules: {
+          toolbar: Properties.toolbarOptions
+        },
+        placeholder: 'Start typing Here...',
+        readOnly: false,
+        theme: 'snow'
+      };
+    static quill:Quill;
+    static makeQuill(text:string){
+      Properties.quill = new Quill('#editor', Properties.options);
+      Properties.quill["clipboard"].dangerouslyPasteHTML(text);
+      // Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
+    }
 }
 

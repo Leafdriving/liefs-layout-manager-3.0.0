@@ -41,9 +41,9 @@ class Properties extends Base {
         let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
         headerDisplay.htmlBlock.innerHTML = text;
     }
-    static displayLabel(className, label, dim = "50px") {
-        return I(`${className}_${label}_label`, `${label}:`, dim, bCss.bgLightBorder);
-    }
+    // static displayLabel(className:string, label:string, dim = "50px"){
+    //     return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLightBorder);
+    // }
     static displayValue(className, label, disabled = false, dim = undefined, evalFunction = undefined) {
         let Change = Properties[`${className}Change`];
         return I(`${className}_${label}_value`, dim, evalFunction, "<UNDEFINED>", (!disabled) ? bCss.editable : bCss.disabled, (!disabled) ? { attributes: { contenteditable: "true" } } : undefined, events({ onblur: function (e) { Change(label, e.target["innerHTML"]); },
@@ -53,11 +53,12 @@ class Properties extends Base {
             } }
         }));
     }
-    static labelAndValue(className, label, keyCells, dim = "50px") {
-        return h(`${className}_${label}_h`, "20px", Properties.displayLabel(className, label, dim), // label
-        keyCells[label] // value
-        );
-    }
+    // static labelAndValue(className:string, label:string, keyCells:object, dim = "50px"){
+    //     return h(`${className}_${label}_h`, "20px",
+    //         Properties.displayLabel(className, label, dim), // label
+    //         keyCells[label]                            // value
+    //     )
+    // }
     static coordValue(key) {
         return function (htmlBlock, zindex, derender, node, displaycell) {
             let propertiesInstance = Properties.byLabel("HtmlBlock");
@@ -71,7 +72,7 @@ class Properties extends Base {
         keyCells["y"] = Properties.displayValue("HtmlBlock", "y", true, "12.5%", Properties.coordValue("y"));
         keyCells["width"] = Properties.displayValue("HtmlBlock", "width", true, "12.5%", Properties.coordValue("width"));
         keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%", Properties.coordValue("height"));
-        return h(`${className}_Coord_h`, "20px", Properties.displayLabel("HtmlBlock", "x", "8.0%"), keyCells["x"], Properties.displayLabel("HtmlBlock", "y", "8.0%"), keyCells["y"], Properties.displayLabel("HtmlBlock", "width", "17.0%"), keyCells["width"], Properties.displayLabel("HtmlBlock", "height", "17.0%"), keyCells["height"]);
+        return h(`${className}_Coord_h`, "20px", I(`HtmlBlock_DisplayCell`, `Parent DisplayCell:`, bCss.bgLightCenter, "150px"), I(`HtmlBlock_x_label`, `x:`, "8.0%", bCss.bgLightBorder), keyCells["x"], I(`HtmlBlock_y_label`, `y:`, "8.0%", bCss.bgLightBorder), keyCells["y"], I(`HtmlBlock_width_label`, `width:`, "17.0%", bCss.bgLightBorder), keyCells["width"], I(`HtmlBlock_height_label`, `height:`, "17.0%", bCss.bgLightBorder), keyCells["height"]);
     }
     static HtmlBlock(currentObject) {
         let keyCells = {
@@ -88,9 +89,20 @@ class Properties extends Base {
                     htmlBlock.innerHTML = "undefined";
             }),
         };
-        let rootcell = v(`HtmlBlock_prop_v`, Properties.labelAndValue("HtmlBlock", "label", keyCells), // true if disabled
-        Properties.labelAndValue("HtmlBlock", "minDisplayGroupSize", keyCells, "150px"), // true if disabled
-        I(`HtmlBlock_DisplayCell`, `Parent DisplayCell`, bCss.bgLightCenter, "20px"), Properties.Coord("HtmlBlock", keyCells));
+        let quillDisplayCell = I('htmlQuill', `<div id="editor"></div>`, bCss.bgwhite);
+        let htmlblock = quillDisplayCell.htmlBlock;
+        htmlblock.evalInnerHtml = function (htmlBlock, zindex, derender, node, displaycell) {
+            if (!pf.elExists(htmlblock.label)) {
+                setTimeout(() => {
+                    console.log("now - evalInnerHtml");
+                    let propInstance = Properties.byLabel("HtmlBlock");
+                    Properties.makeQuill(propInstance.currentObject.innerHTML);
+                    //(<HtmlBlock>propInstance.currentObject).innerHTML = undefined;
+                    htmlBlock.innerHTML = undefined;
+                }, 0);
+            }
+        };
+        let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillDisplayCell);
         new Properties("HtmlBlock", rootcell, { keyCells, currentObject });
     }
     static HtmlBlockChange(variable, value) {
@@ -112,7 +124,16 @@ class Properties extends Base {
         }
     }
     static initEditHtml() {
-        Properties.editHtmlwinModal = new winModal("initEditHtml", "Div-Editor", I("initEditHtml", "something"));
+        Properties.editHtmlwinModal = new winModal("initEditHtml", "Div-Editor", I("initEditHtml", "something"), function (THIS) {
+            console.log("closeCallback");
+            Properties.byLabel("HtmlBlock").currentObject.innerHTML = Properties.quill["root"].innerHTML;
+            Render.update();
+        });
+    }
+    static makeQuill(text) {
+        Properties.quill = new Quill('#editor', Properties.options);
+        Properties.quill["clipboard"].dangerouslyPasteHTML(text);
+        // Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
     }
 }
 Properties.labelNo = 0;
@@ -125,7 +146,30 @@ Properties.argMap = {
     winModal: ["winModal"],
     function: ["process"],
 };
-Properties.defaultsize = [300, 600];
+Properties.defaultsize = [800, 800];
+Properties.toolbarOptions = [
+    ['bold', 'italic', 'underline', 'strike'],
+    ['blockquote', 'code-block'],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    [{ 'script': 'sub' }, { 'script': 'super' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
+    [{ 'direction': 'rtl' }],
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    ['link', 'image', 'video', 'formula'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'font': [] }],
+    [{ 'align': [] }]
+];
+Properties.options = {
+    debug: 'warn',
+    modules: {
+        toolbar: Properties.toolbarOptions
+    },
+    placeholder: 'Start typing Here...',
+    readOnly: false,
+    theme: 'snow'
+};
 class bCss {
     static bookSVG(classname) {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
@@ -314,55 +358,6 @@ class Builder extends Base {
         Builder.clientHandler =
             H("Client Window", h("Client_h", 5, I("Client_M1", "left", bCss.bgLight), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
     }
-    static makeEditHtmlwinModal(objectwithProperties) {
-        if (!Builder.editHtmlwinModal) {
-            Builder.editHtmlwinModal = new winModal('EditHtmlwinModal', `Edit HtmlBlock - ${objectwithProperties["label"]}`, Builder.editHtmlwinModalBody, function (THIS) {
-                console.log("closeCallback");
-                Properties.byLabel("HtmlBlock").currentObject.innerHTML = Builder.quill["root"].innerHTML;
-                Render.update();
-            });
-            Builder.makeQuill(objectwithProperties.innerHTML);
-        }
-        else {
-            Builder.editHtmlwinModalBody.htmlBlock.innerHTML = `<div id="editor"></div>`;
-            Builder.editHtmlwinModal.body = Builder.editHtmlwinModalBody;
-            Builder.editHtmlwinModal.modal.show();
-            Builder.makeQuill(objectwithProperties.innerHTML);
-            Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
-        }
-    }
-    static editHtml(event, objectwithProperties) {
-        Builder.makeEditHtmlwinModal(objectwithProperties);
-    }
-    static oncontextmenu(event, el) {
-        let node = node_.byLabel(el.id.slice(0, -5));
-        let objectwithProperties = node.Arguments[1];
-        let objectType = BaseF.typeof(objectwithProperties);
-        let propInstance = Properties.byLabel(objectType);
-        if (!propInstance) {
-            Builder.onClickTree(event, el);
-            propInstance = Properties.byLabel(objectType);
-        }
-        propInstance.currentObject = objectwithProperties;
-        let treeDisplaycell = DisplayCell.byLabel(el.id);
-        let coord = treeDisplaycell.coord;
-        let x = coord.x + coord.width;
-        let y = coord.y;
-        let object_ = {
-            hello: function () { console.log("one"); },
-            two: function () { console.log("two"); },
-            three: function () { console.log("three"); },
-        };
-        switch (objectType) {
-            case "HtmlBlock":
-                object_ = { "Edit": function (mouseEvent) { Builder.editHtml(event, objectwithProperties); } };
-                break;
-            default:
-                break;
-        }
-        Builder.context.changeMenuObject(object_);
-        Builder.context.render(event, x, y);
-    }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
             onmouseleave: function (e) { Builder.onLeaveHoverTree(e, this); },
@@ -456,6 +451,35 @@ class Builder extends Base {
         let node = node_.byLabel(el.id.slice(0, -5));
         Properties.processNode(node);
     }
+    static oncontextmenu(event, el) {
+        let node = node_.byLabel(el.id.slice(0, -5));
+        let objectwithProperties = node.Arguments[1];
+        let objectType = BaseF.typeof(objectwithProperties);
+        let propInstance = Properties.byLabel(objectType);
+        if (!propInstance) {
+            Builder.onClickTree(event, el);
+            propInstance = Properties.byLabel(objectType);
+        }
+        propInstance.currentObject = objectwithProperties;
+        let treeDisplaycell = DisplayCell.byLabel(el.id);
+        let coord = treeDisplaycell.coord;
+        let x = coord.x + coord.width;
+        let y = coord.y;
+        let object_ = {
+            hello: function () { console.log("one"); },
+            two: function () { console.log("two"); },
+            three: function () { console.log("three"); },
+        };
+        switch (objectType) {
+            case "HtmlBlock":
+                object_ = { "Edit": function (mouseEvent) { console.log("Edit Clicked"); } };
+                break;
+            default:
+                break;
+        }
+        Builder.context.changeMenuObject(object_);
+        Builder.context.render(event, x, y);
+    }
     static get buttonIndex() { return ToolBar.byLabel("Main_toolbar").selected.currentButtonIndex; }
     static onHoverTree(mouseEvent, el) {
         if (Builder.buttonIndex == 1) {
@@ -517,11 +541,6 @@ class Builder extends Base {
         if (!show && horVerModal.isShown)
             horVerModal.hide();
     }
-    static makeQuill(text) {
-        Builder.quill = new Quill('#editor', Builder.options);
-        Builder.quill["clipboard"].dangerouslyPasteHTML(text);
-        Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
-    }
 }
 Builder.labelNo = 0;
 Builder.instances = [];
@@ -531,37 +550,16 @@ Builder.argMap = {
     string: ["label"],
 };
 Builder.context = new Context("nodeTreeContext");
-Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgwhite*/));
-Builder.editHtmlwinModalBody = I("editHtmlwinModalBody", `<div id="editor"></div>`, bCss.bgwhite);
 //static TOOLBAR_currentButtonName:string;
 Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }));
 Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"));
 Builder.TOOLBAR_B3 = I("toolbarHor", bCss.horSVG("buttonIcons"));
 Builder.TOOLBAR_B4 = I("toolbarVer", bCss.verSVG("buttonIcons"));
 Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2, Builder.TOOLBAR_B3, Builder.TOOLBAR_B4);
-Builder.toolbarOptions = [
-    ['bold', 'italic', 'underline', 'strike'],
-    ['blockquote', 'code-block'],
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],
-    [{ 'indent': '-1' }, { 'indent': '+1' }],
-    [{ 'direction': 'rtl' }],
-    [{ 'size': ['small', false, 'large', 'huge'] }],
-    ['link', 'image', 'video', 'formula'],
-    [{ 'color': [] }, { 'background': [] }],
-    [{ 'font': [] }],
-    [{ 'align': [] }]
-];
-Builder.options = {
-    debug: 'warn',
-    modules: {
-        toolbar: Builder.toolbarOptions
-    },
-    placeholder: 'Start typing Here...',
-    readOnly: false,
-    theme: 'snow'
-};
+Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgwhite*/));
+///////////////////////////////////////////////////////////
+//////////  Main Run Executiuon ///////////////////////////
+///////////////////////////////////////////////////////////
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
