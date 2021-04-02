@@ -23,6 +23,7 @@ enum HandlerType {
     modal = "modal",
     toolbar = "toolbar",
     other = "other",
+    context = "context",
 }
 
 class Handler extends Base {
@@ -134,12 +135,12 @@ class Handler extends Base {
         Handler.updateScreenSize();
         let handlers:Handler[] = [];
         // console.clear();
-        let types = ["other", "toolbar", "modal", "winModal"]
+        let types = ["other", "toolbar", "modal", "winModal", "context"]
         for (let index = 0; index < types.length; index++) {
             let type = types[index];
             for (let index = 0; index < Handler.activeInstances.length; index++) 
                 if (Handler.activeInstances[index].type == HandlerType[type]){
-                    // console.log(`index ${handlers.length} : ${Handler.activeInstances[index].label}`);
+                    // if (type=="context") console.log(Handler.activeInstances[index].label)
                     handlers.push(Handler.activeInstances[index])
                 }
         }

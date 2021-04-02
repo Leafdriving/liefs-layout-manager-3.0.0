@@ -73,6 +73,7 @@ class bCss{
     static treenodeCss = css(`treenode`,`background:#dcedf0; cursor:pointer;`,
                                         `background:white`)
     static buttons = css('buttons',`display:inline-block;
+                                    box-sizing: border-box;
                                     color:#444;
                                     border:1px solid #CCC;
                                     background:#DDD;
@@ -82,7 +83,7 @@ class bCss{
                                     text-align: center;`,`
                                     color:red;
                                     box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`,
-                                    `display:inline-block;
+                                    `display:inline-block;box-sizing: border-box;
                                     color:#444;
                                     border:1px solid #CCC;
                                     box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);

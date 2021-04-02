@@ -6,6 +6,7 @@ class htmlBlockProps {
     static editHtmlwinModal: winModal;
     static quill:Quill;
     static quillPages:Pages;
+    static eventsDisplayCell:DisplayCell;
 
 
     static toolbarOptions = [
@@ -31,12 +32,6 @@ class htmlBlockProps {
         readOnly: false,
         theme: 'snow'
       };
-    // static makeQuill(text:string){
-    //     console.log("MakeQuill Called");
-    //     htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
-    //     htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
-    //     htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(text);
-    // }
     static getState():number{
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock")
         if (propertiesInstance.winModal.modal.isShown())
@@ -59,12 +54,10 @@ class htmlBlockProps {
         if (getState != undefined) {
             htmlBlockProps.saveState(getState);
         }
-        if (propertiesInstance.currentObject != objectWithProperties) {
             propertiesInstance.currentObject = objectWithProperties;
 
             if (getState == undefined) propertiesInstance.winModal.modal.show();
             htmlBlockProps.launchState();
-        }
     }
     static launchState(getState:number = htmlBlockProps.getState()){
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
@@ -88,8 +81,21 @@ class htmlBlockProps {
                 htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
             }, 0)
         }
+        if (getState == 2){
+            htmlBlockProps.manageEvents();
+            //console.log(objectWithProperties.events.actions["onclick"].toString())
+        }
     }
+    static manageEvents(){
+        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
+        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+        let eventDisplayItem = <DisplayCell>DisplayCell.byLabel("eventDisplayItem");
+        //console.log(eventDisplayItem)
+        // if (!objectWithProperties.events) {
+        //     eventDisplayItem.htmlBlock.innerHTML = "No Events Registered"
+        // }
 
+    }
 }
 
 class Properties extends Base {
@@ -123,11 +129,11 @@ class Properties extends Base {
             let [width, height] = Properties.defaultsize;
             this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false,
             // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
-                // function(THIS:any){
-                //     console.log("closeCallback");
-                //     htmlBlockProps.save();
-                //     Render.update();
-                // },
+                function(THIS:any){
+                    console.log("closeCallback");
+                    htmlBlockProps.saveState();
+                    Render.update();
+                },
                                         {body: this.rootDisplayCell,
                                          headerText:`${this.label}-`,
                                         });
@@ -153,16 +159,6 @@ class Properties extends Base {
         else {
             Properties[objectType+"TreeClicked"](objectWithProperties)
         }
-        // else {
-        //     if (htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML != `<div id="editor"></div>`) {
-        //         htmlBlockProps.save();
-        //          propInstance.winModal.modal.hide();
-        //     }
-        //     propInstance.currentObject = objectWithProperties;      // pass the objectwithProperties to propInstance
-        //     propInstance.currentObjectParentDisplayCell = parentDisplayCell;
-        //     //                                // start processing it!
-        //     if (!propInstance.winModal.modal.isShown()) propInstance.winModal.modal.show();
-        // }
         Render.update();
     }
     static setHeaderText(propertiesInstance:Properties, text:string){
@@ -223,9 +219,38 @@ class Properties extends Base {
         }
         htmlBlockProps.quillDisplayCell = I('htmlQuill',`<div id="editor"></div>`, bCss.bgwhite);
         htmlBlockProps.MonicoContainerDisplayCell = I("Monicocontainer",`<div id="container" style="width:100%;height:100%"></div>`);
+        htmlBlockProps.eventsDisplayCell = v(`eventDisplayV`,
+            P("pagesIsEvents",
+                I("eventDisplayItemNone","No Events Registered", bCss.bgLightBorder, "20px"),
+                h("eventDisplayItemSome", "20px",
+                    I(`htmlblock_eventlabel`,"Events:", bCss.bgLight, "100px"),
+                    
+                ),
+                function(thisPages:Pages):number {
+                    let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
+                    if (propertiesInstance){
+                        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+                        if (objectWithProperties && objectWithProperties.events) {
+                            let dg = <DisplayGroup>DisplayGroup.byLabel("eventDisplayItemSome");
+                            dg.cellArray = [ dg.cellArray[0] ];
+                            for (let key in objectWithProperties.events.actions) {
+                                //let value = objectWithProperties.events[key];
+                                dg.cellArray.push(   I(`${objectWithProperties.label}_${key}`, key, bCss.buttons, "100%")   )
+                            }
+                            return 1;
+                        }
+                    }
+                    return 0;
+                }
+            ),
+            select(["Add an Event"], "20px"),
+            I("filler","  ", bCss.bgwhite ),
+        );
+
         let quillPagesDisplayCell = P("quillPages",
             htmlBlockProps.quillDisplayCell,
             htmlBlockProps.MonicoContainerDisplayCell,
+            htmlBlockProps.eventsDisplayCell
         )
         htmlBlockProps.quillPages = quillPagesDisplayCell.pages;
 
@@ -248,13 +273,26 @@ class Properties extends Base {
                 Render.update();
             }
         }}));
-        let selecteds = new Selected("wysiwyg", wysiwyg,htmlButton);
+
+        let blockEvents = I("htmlEvents",`Events`, "80px", bCss.buttons, events({onclick: function(event:MouseEvent){
+            let pages = htmlBlockProps.quillPages;
+            if (pages.currentPage !=2) {
+                htmlBlockProps.saveState();
+                pages.currentPage = 2;
+                htmlBlockProps.launchState();
+                Render.update();
+            }
+        }}));
+        
+        
+        let selecteds = new Selected("wysiwyg", wysiwyg, htmlButton, blockEvents );
         selecteds.select(undefined, wysiwyg);
 
         let rootcell = v(`HtmlBlock_prop_v`,
             h("topPropHtmlBlockBar", "20px",
                 wysiwyg,
                 htmlButton,
+                blockEvents,
                 I("tplabellabel","label", bCss.bgLightBorder, "100px"),
                 keyCells.label,
             ),

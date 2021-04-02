@@ -26,7 +26,7 @@ class Builder extends Base {
         Builder.clientHandler =
             H("Client Window",
                 h("Client_h", 5,
-                    I("Client_M1","left", bCss.bgLight),
+                    I("Client_M1","left", bCss.bgLight, events({onclick:function(){console.log("Client_M1 clicked")}})),
                     I("Client_Main2","right", bCss.bgCyan, "200px"),
                     // v("Client_v", 5,
                     //     I("Client_Top","top", bCss.bgGreen),

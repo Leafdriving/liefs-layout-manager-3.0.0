@@ -6,6 +6,7 @@ declare class htmlBlockProps {
     static editHtmlwinModal: winModal;
     static quill: Quill;
     static quillPages: Pages;
+    static eventsDisplayCell: DisplayCell;
     static toolbarOptions: (string[] | {
         header: (number | boolean)[];
     }[] | {
@@ -64,6 +65,7 @@ declare class htmlBlockProps {
     static saveState(getState?: number): void;
     static treeClicked(objectWithProperties: object): void;
     static launchState(getState?: number): void;
+    static manageEvents(): void;
 }
 declare class Properties extends Base {
     static labelNo: number;

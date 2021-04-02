@@ -1210,6 +1210,7 @@ var HandlerType;
     HandlerType["modal"] = "modal";
     HandlerType["toolbar"] = "toolbar";
     HandlerType["other"] = "other";
+    HandlerType["context"] = "context";
 })(HandlerType || (HandlerType = {}));
 class Handler extends Base {
     constructor(...Arguments) {
@@ -1279,12 +1280,12 @@ class Handler extends Base {
         Handler.updateScreenSize();
         let handlers = [];
         // console.clear();
-        let types = ["other", "toolbar", "modal", "winModal"];
+        let types = ["other", "toolbar", "modal", "winModal", "context"];
         for (let index = 0; index < types.length; index++) {
             let type = types[index];
             for (let index = 0; index < Handler.activeInstances.length; index++)
                 if (Handler.activeInstances[index].type == HandlerType[type]) {
-                    // console.log(`index ${handlers.length} : ${Handler.activeInstances[index].label}`);
+                    // if (type=="context") console.log(Handler.activeInstances[index].label)
                     handlers.push(Handler.activeInstances[index]);
                 }
         }
@@ -1724,6 +1725,54 @@ function P(...Arguments) {
 // interface menuObject {
 //     [key: string]: ()=>void | menuObject
 // }
+class Select extends Base {
+    constructor(...Arguments) {
+        super();
+        this.buildBase(...Arguments);
+        Select.makeLabel(this);
+        this.build();
+    }
+    resort(index) {
+        if (index > 0) {
+            this.clickableName.htmlBlock.innerHTML = this.choices[index];
+            Render.update();
+        }
+    }
+    build() {
+        let THIS = this;
+        // this.pages.evalFunction
+        if (!this.menuObj)
+            this.buildMenuObj();
+        this.clickableName = I(`${this.label}_0`, this.choices[0], DefaultTheme.context /*,events({onclick:contextObjFunction})*/);
+        let downArrow = I(`${this.label}_arrow`, "20px", DefaultTheme.downArrowSVG("scrollArrows"), DefaultTheme.arrowSVGCss);
+        this.rootDisplayCell = h(`${this.label}_Select`, this.dim, this.clickableName, downArrow);
+        let contextObjFunction = hMenuBar(`${this.label}_context`, { menuObj: this.menuObj, launchcell: this.rootDisplayCell, css: DefaultTheme.context });
+        let fullEvents = events({ onclick: contextObjFunction });
+        this.clickableName.htmlBlock.events = fullEvents;
+        downArrow.htmlBlock.events = events({ onclick: contextObjFunction });
+    }
+    buildMenuObj() {
+        this.menuObj = {};
+        let THIS = this;
+        for (let index = 0; index < this.choices.length; index++) {
+            this.menuObj[this.choices[index]] = function (mouseEvent) { THIS.resort(index); THIS.onSelect(mouseEvent, THIS.choices[index]); };
+        }
+        let context = (Context.byLabel(`${this.label}_context`));
+        if (context)
+            context.changeMenuObject(this.menuObj);
+    }
+}
+Select.labelNo = 0;
+Select.instances = [];
+Select.activeInstances = [];
+Select.defaults = { choices: [], onSelect: function (mouseEvent, el) { console.log(mouseEvent, el); } };
+Select.argMap = {
+    string: ["label"],
+    Array: ["choices"],
+    function: ["onSelect"],
+    dim: ["dim"],
+};
+function select(...Arguments) { return new Select(...Arguments).rootDisplayCell; }
 class PageSelect extends Base {
     constructor(...Arguments) {
         super();
@@ -1754,7 +1803,7 @@ class PageSelect extends Base {
     }
     build() {
         let THIS = this;
-        this.pages.evalFunction;
+        // this.pages.evalFunction
         if (!this.menuObj)
             this.buildMenuObj();
         let label = this.pages.displaycells[0].label;
@@ -2544,7 +2593,7 @@ class Context extends Base {
             y = mouseEvent.clientY - Context.subOverlapPx;
         }
         this.coord.assign(x, y, (this.launchcell) ? this.launchcell.coord.width : this.width, this.height);
-        this.handler = H(this.displaycell, this.coord);
+        this.handler = H(this.displaycell, this.coord, { type: "context" });
         let THIS = this;
         window.onmousemove = function (mouseEvent) { THIS.managePop(mouseEvent); };
         Context.lastRendered = this;

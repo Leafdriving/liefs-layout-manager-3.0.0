@@ -123,10 +123,8 @@ class Context extends Base {
             x=mouseEvent.clientX - Context.subOverlapPx;
             y=mouseEvent.clientY - Context.subOverlapPx;
         }
-        this.coord.assign(x, y,
-             (this.launchcell) ? this.launchcell.coord.width :this.width , 
-             this.height);
-        this.handler = H(this.displaycell, this.coord);
+        this.coord.assign(x, y, (this.launchcell) ? this.launchcell.coord.width :this.width , this.height);
+        this.handler = H(this.displaycell, this.coord, {type:"context"});
         let THIS = this;
         window.onmousemove = function(mouseEvent:MouseEvent){THIS.managePop(mouseEvent);}
         Context.lastRendered = this;

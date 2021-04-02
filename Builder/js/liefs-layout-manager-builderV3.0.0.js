@@ -1,11 +1,5 @@
 class htmlBlockProps {
     constructor() { }
-    // static makeQuill(text:string){
-    //     console.log("MakeQuill Called");
-    //     htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
-    //     htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
-    //     htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(text);
-    // }
     static getState() {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
         if (propertiesInstance.winModal.modal.isShown())
@@ -28,12 +22,10 @@ class htmlBlockProps {
         if (getState != undefined) {
             htmlBlockProps.saveState(getState);
         }
-        if (propertiesInstance.currentObject != objectWithProperties) {
-            propertiesInstance.currentObject = objectWithProperties;
-            if (getState == undefined)
-                propertiesInstance.winModal.modal.show();
-            htmlBlockProps.launchState();
-        }
+        propertiesInstance.currentObject = objectWithProperties;
+        if (getState == undefined)
+            propertiesInstance.winModal.modal.show();
+        htmlBlockProps.launchState();
     }
     static launchState(getState = htmlBlockProps.getState()) {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
@@ -62,6 +54,19 @@ class htmlBlockProps {
                 htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
             }, 0);
         }
+        if (getState == 2) {
+            htmlBlockProps.manageEvents();
+            //console.log(objectWithProperties.events.actions["onclick"].toString())
+        }
+    }
+    static manageEvents() {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let objectWithProperties = propertiesInstance.currentObject;
+        let eventDisplayItem = DisplayCell.byLabel("eventDisplayItem");
+        //console.log(eventDisplayItem)
+        // if (!objectWithProperties.events) {
+        //     eventDisplayItem.htmlBlock.innerHTML = "No Events Registered"
+        // }
     }
 }
 htmlBlockProps.toolbarOptions = [
@@ -96,12 +101,11 @@ class Properties extends Base {
             let [width, height] = Properties.defaultsize;
             this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false, 
             // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
-            // function(THIS:any){
-            //     console.log("closeCallback");
-            //     htmlBlockProps.save();
-            //     Render.update();
-            // },
-            { body: this.rootDisplayCell,
+            function (THIS) {
+                console.log("closeCallback");
+                htmlBlockProps.saveState();
+                Render.update();
+            }, { body: this.rootDisplayCell,
                 headerText: `${this.label}-`,
             });
         }
@@ -127,16 +131,6 @@ class Properties extends Base {
         else {
             Properties[objectType + "TreeClicked"](objectWithProperties);
         }
-        // else {
-        //     if (htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML != `<div id="editor"></div>`) {
-        //         htmlBlockProps.save();
-        //          propInstance.winModal.modal.hide();
-        //     }
-        //     propInstance.currentObject = objectWithProperties;      // pass the objectwithProperties to propInstance
-        //     propInstance.currentObjectParentDisplayCell = parentDisplayCell;
-        //     //                                // start processing it!
-        //     if (!propInstance.winModal.modal.isShown()) propInstance.winModal.modal.show();
-        // }
         Render.update();
     }
     static setHeaderText(propertiesInstance, text) {
@@ -185,7 +179,23 @@ class Properties extends Base {
         };
         htmlBlockProps.quillDisplayCell = I('htmlQuill', `<div id="editor"></div>`, bCss.bgwhite);
         htmlBlockProps.MonicoContainerDisplayCell = I("Monicocontainer", `<div id="container" style="width:100%;height:100%"></div>`);
-        let quillPagesDisplayCell = P("quillPages", htmlBlockProps.quillDisplayCell, htmlBlockProps.MonicoContainerDisplayCell);
+        htmlBlockProps.eventsDisplayCell = v(`eventDisplayV`, P("pagesIsEvents", I("eventDisplayItemNone", "No Events Registered", bCss.bgLightBorder, "20px"), h("eventDisplayItemSome", "20px", I(`htmlblock_eventlabel`, "Events:", bCss.bgLight, "100px")), function (thisPages) {
+            let propertiesInstance = Properties.byLabel("HtmlBlock");
+            if (propertiesInstance) {
+                let objectWithProperties = propertiesInstance.currentObject;
+                if (objectWithProperties && objectWithProperties.events) {
+                    let dg = DisplayGroup.byLabel("eventDisplayItemSome");
+                    dg.cellArray = [dg.cellArray[0]];
+                    for (let key in objectWithProperties.events.actions) {
+                        //let value = objectWithProperties.events[key];
+                        dg.cellArray.push(I(`${objectWithProperties.label}_${key}`, key, bCss.buttons, "100%"));
+                    }
+                    return 1;
+                }
+            }
+            return 0;
+        }), select(["Add an Event"], "20px"), I("filler", "  ", bCss.bgwhite));
+        let quillPagesDisplayCell = P("quillPages", htmlBlockProps.quillDisplayCell, htmlBlockProps.MonicoContainerDisplayCell, htmlBlockProps.eventsDisplayCell);
         htmlBlockProps.quillPages = quillPagesDisplayCell.pages;
         let wysiwyg = I("wysiwygButton", `wysiwyg`, "80px", bCss.buttons, events({ onclick: function (event) {
                 let pages = htmlBlockProps.quillPages;
@@ -205,9 +215,18 @@ class Properties extends Base {
                     Render.update();
                 }
             } }));
-        let selecteds = new Selected("wysiwyg", wysiwyg, htmlButton);
+        let blockEvents = I("htmlEvents", `Events`, "80px", bCss.buttons, events({ onclick: function (event) {
+                let pages = htmlBlockProps.quillPages;
+                if (pages.currentPage != 2) {
+                    htmlBlockProps.saveState();
+                    pages.currentPage = 2;
+                    htmlBlockProps.launchState();
+                    Render.update();
+                }
+            } }));
+        let selecteds = new Selected("wysiwyg", wysiwyg, htmlButton, blockEvents);
         selecteds.select(undefined, wysiwyg);
-        let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", wysiwyg, htmlButton, I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillPagesDisplayCell);
+        let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", wysiwyg, htmlButton, blockEvents, I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillPagesDisplayCell);
         new Properties("HtmlBlock", rootcell, { keyCells });
     }
     static HtmlBlockChange(variable, value) {
@@ -418,6 +437,7 @@ bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;background:whit
 bCss.buttonsSVGCss = css(`buttonIcons`, `fill: white;stroke:black; background-color:white`, `fill: black;stroke:white; background-color:black`, `fill: white;stroke:black; background-color:gray`);
 bCss.treenodeCss = css(`treenode`, `background:#dcedf0; cursor:pointer;`, `background:white`);
 bCss.buttons = css('buttons', `display:inline-block;
+                                    box-sizing: border-box;
                                     color:#444;
                                     border:1px solid #CCC;
                                     background:#DDD;
@@ -426,7 +446,7 @@ bCss.buttons = css('buttons', `display:inline-block;
                                     vertical-align:middle;
                                     text-align: center;`, `
                                     color:red;
-                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`, `display:inline-block;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`, `display:inline-block;box-sizing: border-box;
                                     color:#444;
                                     border:1px solid #CCC;
                                     box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
@@ -458,7 +478,7 @@ class Builder extends Base {
     }
     static buildClientHandler() {
         Builder.clientHandler =
-            H("Client Window", h("Client_h", 5, I("Client_M1", "left", bCss.bgLight), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
+            H("Client Window", h("Client_h", 5, I("Client_M1", "left", bCss.bgLight, events({ onclick: function () { console.log("Client_M1 clicked"); } })), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
     }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },

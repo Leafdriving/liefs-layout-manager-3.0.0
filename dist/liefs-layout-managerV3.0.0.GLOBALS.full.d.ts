@@ -318,7 +318,8 @@ declare enum HandlerType {
     winModal = "winModal",
     modal = "modal",
     toolbar = "toolbar",
-    other = "other"
+    other = "other",
+    context = "context"
 }
 declare class Handler extends Base {
     static handlerMarginDefault: number;
@@ -487,6 +488,35 @@ declare class Pages extends Base {
     static popstate(event: PopStateEvent): void;
 }
 declare function P(...Arguments: any): DisplayCell;
+declare class Select extends Base {
+    static labelNo: number;
+    static instances: Select[];
+    static activeInstances: Select[];
+    static defaults: {
+        choices: any[];
+        onSelect: (mouseEvent: PointerEvent, el: any) => void;
+    };
+    static argMap: {
+        string: string[];
+        Array: string[];
+        function: string[];
+        dim: string[];
+    };
+    label: string;
+    selectDisplayCell: DisplayCell;
+    arrowDisplayCell: DisplayCell;
+    rootDisplayCell: DisplayCell;
+    choices: string[];
+    menuObj: object;
+    dim: string;
+    clickableName: DisplayCell;
+    onSelect: (mouseEvent: PointerEvent, el: any) => void;
+    constructor(...Arguments: any);
+    resort(index: number): void;
+    build(): void;
+    buildMenuObj(): void;
+}
+declare function select(...Arguments: any): DisplayCell;
 declare class PageSelect extends Base {
     static labelNo: number;
     static instances: PageSelect[];
