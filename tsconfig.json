@@ -19,6 +19,7 @@
         "ts/DisplayCell.ts",
         "ts/DisplayGroup.ts",
         "ts/Handler.ts",
+        "ts/Selected.ts",
         "ts/Css.ts",
         "ts/DefaultTheme.ts",
         "ts/Pages.ts",

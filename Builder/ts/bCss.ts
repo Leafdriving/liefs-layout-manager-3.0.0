@@ -72,6 +72,40 @@ class bCss{
                                              `fill: white;stroke:black; background-color:gray`,);
     static treenodeCss = css(`treenode`,`background:#dcedf0; cursor:pointer;`,
                                         `background:white`)
+    static buttons = css('buttons',`display:inline-block;
+                                    color:#444;
+                                    border:1px solid #CCC;
+                                    background:#DDD;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+                                    cursor:pointer;
+                                    vertical-align:middle;
+                                    text-align: center;`,`
+                                    color:red;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`,
+                                    `display:inline-block;
+                                    color:#444;
+                                    border:1px solid #CCC;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+                                    cursor:pointer;
+                                    vertical-align:middle;
+                                    text-align: center; 
+                                    box-shadow: inset 1px 2px 5px #777;
+                                    transform: translateY(1px);
+                                    background: #e5e5e5;`);
+
+    static buttonsPressed = css('buttonsPressed',`display:inline-block;
+                                    color:#444;
+                                    border:1px solid #CCC;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+                                    cursor:pointer;
+                                    vertical-align:middle;
+                                    text-align: center; 
+                                    box-shadow: inset 1px 2px 5px #777;
+                                    transform: translateY(1px);
+                                    background: #e5e5e5;`,`
+                                    color:red;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`);
+
     static bookSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
         <g transform="matrix(.069039 0 0 .048212 -4.1849 .6616)">
         <path d="m131.75 409.1c-28.8 0-52.1 18.3-52.1 40.4 0 22.6 23.3 40.4 52.1 40.4h278.4c-22.6-24.1-22.6-56.8 0-80.9h-278.4z"/>

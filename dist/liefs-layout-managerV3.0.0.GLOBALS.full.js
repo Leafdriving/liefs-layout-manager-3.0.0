@@ -1344,8 +1344,6 @@ function H(...Arguments) {
     return new Handler(...Arguments);
 }
 // export {H, Handler}
-// import {BaseF, Base} from './Base';
-// import {mf, pf} from './PureFunctions';
 class Selected extends Base {
     constructor(...Arguments) {
         super();
@@ -1381,9 +1379,11 @@ class Selected extends Base {
     static onSelect(displaycell) {
         let htmlblock = displaycell.htmlBlock;
         let el = htmlblock.el;
-        let oldClassName = el.className;
-        if (!oldClassName.endsWith("Selected"))
-            el.className = oldClassName + "Selected";
+        if (el) {
+            let oldClassName = el.className;
+            if (!oldClassName.endsWith("Selected"))
+                el.className = oldClassName + "Selected";
+        }
         htmlblock.css += "Selected";
     }
     static onUnselect(displaycell) {
@@ -1403,6 +1403,8 @@ Selected.argMap = {
     string: ["label"],
     function: ["onSelect", "onUnselect"],
 };
+// import {BaseF, Base} from './Base';
+// import {mf, pf} from './PureFunctions';
 class Css extends Base {
     constructor(...Arguments) {
         super();
@@ -3627,7 +3629,8 @@ class winModal extends Base {
         this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, { type: HandlerType.winModal });
         this.modal.dragWith(`${this.label}_title`);
         this.modal.closeWith(`${this.label}_close`, this.closeCallback);
-        this.modal.show();
+        if (this.showOnStart)
+            this.modal.show();
     }
     render(displaycell, displayGroup, index, derender) {
         //console.log(this.label)
@@ -3740,12 +3743,13 @@ class winModal extends Base {
 winModal.labelNo = 0;
 winModal.instances = [];
 winModal.activeInstances = [];
-winModal.defaults = { headerHeight: 15, buttonsHeight: 50, footerHeight: 20,
+winModal.defaults = { headerHeight: 15, buttonsHeight: 50, footerHeight: 20, showOnStart: true,
     headerText: "Window", bodyText: "Body", highlightHeaderState1: false, highlightHeaderState2: false };
 winModal.argMap = {
     string: ["label", "headerText"],
     DisplayCell: ["body"],
     function: ["closeCallback"],
+    boolean: ["showOnStart"]
 };
 Render.register("winModal", winModal);
 function winmodal(...Arguments) {

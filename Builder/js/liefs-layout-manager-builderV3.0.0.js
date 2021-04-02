@@ -1,3 +1,92 @@
+class htmlBlockProps {
+    constructor() { }
+    // static makeQuill(text:string){
+    //     console.log("MakeQuill Called");
+    //     htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
+    //     htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
+    //     htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(text);
+    // }
+    static getState() {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        if (propertiesInstance.winModal.modal.isShown())
+            if (htmlBlockProps.quillPages)
+                return htmlBlockProps.quillPages.currentPage;
+        return undefined;
+    }
+    static saveState(getState = htmlBlockProps.getState()) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let htmlblock = propertiesInstance.currentObject;
+        if (getState == 0 && htmlBlockProps.quill)
+            htmlblock.innerHTML = htmlBlockProps.quill["root"].innerHTML;
+        if (getState == 1 && htmlBlockProps.monacoContainer)
+            htmlblock.innerHTML = htmlBlockProps.monacoContainer.getValue();
+    }
+    static treeClicked(objectWithProperties) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let getState = htmlBlockProps.getState();
+        console.log("state", getState);
+        if (getState != undefined) {
+            htmlBlockProps.saveState(getState);
+        }
+        if (propertiesInstance.currentObject != objectWithProperties) {
+            propertiesInstance.currentObject = objectWithProperties;
+            if (getState == undefined)
+                propertiesInstance.winModal.modal.show();
+            htmlBlockProps.launchState();
+        }
+    }
+    static launchState(getState = htmlBlockProps.getState()) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let objectWithProperties = propertiesInstance.currentObject;
+        if (getState == 0) {
+            htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
+            if (!propertiesInstance.winModal.modal.isShown())
+                propertiesInstance.winModal.modal.show();
+            else {
+                Render.update();
+            }
+            setTimeout(() => {
+                htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
+                htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(objectWithProperties.innerHTML);
+                htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0);
+        }
+        if (getState == 1) {
+            htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
+            if (!propertiesInstance.winModal.modal.isShown())
+                propertiesInstance.winModal.modal.show();
+            else
+                Render.update();
+            setTimeout(() => {
+                htmlBlockProps.monacoContainer = monacoContainer(objectWithProperties.innerHTML);
+                htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0);
+        }
+    }
+}
+htmlBlockProps.toolbarOptions = [
+    ['bold', 'italic', 'underline', 'strike'],
+    ['blockquote', 'code-block'],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    [{ 'script': 'sub' }, { 'script': 'super' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
+    [{ 'direction': 'rtl' }],
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    ['link', 'image', 'video', 'formula'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'font': [] }],
+    [{ 'align': [] }]
+];
+htmlBlockProps.options = {
+    debug: 'warn',
+    modules: {
+        toolbar: htmlBlockProps.toolbarOptions
+    },
+    placeholder: 'Start typing Here...',
+    readOnly: false,
+    theme: 'snow'
+};
 class Properties extends Base {
     constructor(...Arguments) {
         super();
@@ -5,7 +94,14 @@ class Properties extends Base {
         Properties.makeLabel(this);
         if (this.rootDisplayCell) {
             let [width, height] = Properties.defaultsize;
-            this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, { body: this.rootDisplayCell,
+            this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false, 
+            // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
+            // function(THIS:any){
+            //     console.log("closeCallback");
+            //     htmlBlockProps.save();
+            //     Render.update();
+            // },
+            { body: this.rootDisplayCell,
                 headerText: `${this.label}-`,
             });
         }
@@ -21,7 +117,7 @@ class Properties extends Base {
         let objectType = BaseF.typeof(objectWithProperties);
         if (!Properties.byLabel(objectType)) { // if instance doesn't exist...
             if (Properties[objectType])
-                Properties[objectType](objectWithProperties); // then make it (Once only)
+                Properties[objectType](); // then make it (Once only)
             else
                 console.log(`Please create Properties.${objectType} [static] to handle ${objectWithProperties["label"]} type ${objectType}`);
         }
@@ -29,21 +125,24 @@ class Properties extends Base {
         if (!propInstance)
             console.log("No Definion in Properties for type " + objectType);
         else {
-            propInstance.currentObject = objectWithProperties; // pass the objectwithProperties to propInstance
-            propInstance.currentObjectParentDisplayCell = parentDisplayCell;
-            // propInstance.process();                                 // start processing it!
-            if (!propInstance.winModal.modal.isShown())
-                propInstance.winModal.modal.show();
+            Properties[objectType + "TreeClicked"](objectWithProperties);
         }
+        // else {
+        //     if (htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML != `<div id="editor"></div>`) {
+        //         htmlBlockProps.save();
+        //          propInstance.winModal.modal.hide();
+        //     }
+        //     propInstance.currentObject = objectWithProperties;      // pass the objectwithProperties to propInstance
+        //     propInstance.currentObjectParentDisplayCell = parentDisplayCell;
+        //     //                                // start processing it!
+        //     if (!propInstance.winModal.modal.isShown()) propInstance.winModal.modal.show();
+        // }
         Render.update();
     }
     static setHeaderText(propertiesInstance, text) {
         let headerDisplay = propertiesInstance.winModal.header.displaygroup.cellArray[0];
         headerDisplay.htmlBlock.innerHTML = text;
     }
-    // static displayLabel(className:string, label:string, dim = "50px"){
-    //     return I(`${className}_${label}_label`,`${label}:`, dim, bCss.bgLightBorder);
-    // }
     static displayValue(className, label, disabled = false, dim = undefined, evalFunction = undefined) {
         let Change = Properties[`${className}Change`];
         return I(`${className}_${label}_value`, dim, evalFunction, "<UNDEFINED>", (!disabled) ? bCss.editable : bCss.disabled, (!disabled) ? { attributes: { contenteditable: "true" } } : undefined, events({ onblur: function (e) { Change(label, e.target["innerHTML"]); },
@@ -53,12 +152,6 @@ class Properties extends Base {
             } }
         }));
     }
-    // static labelAndValue(className:string, label:string, keyCells:object, dim = "50px"){
-    //     return h(`${className}_${label}_h`, "20px",
-    //         Properties.displayLabel(className, label, dim), // label
-    //         keyCells[label]                            // value
-    //     )
-    // }
     static coordValue(key) {
         return function (htmlBlock, zindex, derender, node, displaycell) {
             let propertiesInstance = Properties.byLabel("HtmlBlock");
@@ -74,7 +167,8 @@ class Properties extends Base {
         keyCells["height"] = Properties.displayValue("HtmlBlock", "height", true, "12.5%", Properties.coordValue("height"));
         return h(`${className}_Coord_h`, "20px", I(`HtmlBlock_DisplayCell`, `Parent DisplayCell:`, bCss.bgLightCenter, "150px"), I(`HtmlBlock_x_label`, `x:`, "8.0%", bCss.bgLightBorder), keyCells["x"], I(`HtmlBlock_y_label`, `y:`, "8.0%", bCss.bgLightBorder), keyCells["y"], I(`HtmlBlock_width_label`, `width:`, "17.0%", bCss.bgLightBorder), keyCells["width"], I(`HtmlBlock_height_label`, `height:`, "17.0%", bCss.bgLightBorder), keyCells["height"]);
     }
-    static HtmlBlock(currentObject) {
+    static HtmlBlockTreeClicked(objectWithProperties) { htmlBlockProps.treeClicked(objectWithProperties); }
+    static HtmlBlock() {
         let keyCells = {
             label: Properties.displayValue("HtmlBlock", "label", true, function (htmlBlock, zindex, derender, node, displaycell) {
                 let propertiesInstance = Properties.byLabel("HtmlBlock");
@@ -89,21 +183,32 @@ class Properties extends Base {
                     htmlBlock.innerHTML = "undefined";
             }),
         };
-        let quillDisplayCell = I('htmlQuill', `<div id="editor"></div>`, bCss.bgwhite);
-        let htmlblock = quillDisplayCell.htmlBlock;
-        htmlblock.evalInnerHtml = function (htmlBlock, zindex, derender, node, displaycell) {
-            if (!pf.elExists(htmlblock.label)) {
-                setTimeout(() => {
-                    console.log("now - evalInnerHtml");
-                    let propInstance = Properties.byLabel("HtmlBlock");
-                    Properties.makeQuill(propInstance.currentObject.innerHTML);
-                    //(<HtmlBlock>propInstance.currentObject).innerHTML = undefined;
-                    htmlBlock.innerHTML = undefined;
-                }, 0);
-            }
-        };
-        let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillDisplayCell);
-        new Properties("HtmlBlock", rootcell, { keyCells, currentObject });
+        htmlBlockProps.quillDisplayCell = I('htmlQuill', `<div id="editor"></div>`, bCss.bgwhite);
+        htmlBlockProps.MonicoContainerDisplayCell = I("Monicocontainer", `<div id="container" style="width:100%;height:100%"></div>`);
+        let quillPagesDisplayCell = P("quillPages", htmlBlockProps.quillDisplayCell, htmlBlockProps.MonicoContainerDisplayCell);
+        htmlBlockProps.quillPages = quillPagesDisplayCell.pages;
+        let wysiwyg = I("wysiwygButton", `wysiwyg`, "80px", bCss.buttons, events({ onclick: function (event) {
+                let pages = htmlBlockProps.quillPages;
+                if (pages.currentPage != 0) {
+                    htmlBlockProps.saveState();
+                    pages.currentPage = 0;
+                    htmlBlockProps.launchState();
+                    // Render.update();
+                }
+            } }));
+        let htmlButton = I("htmlButton", `HTML`, "80px", bCss.buttons, events({ onclick: function (event) {
+                let pages = htmlBlockProps.quillPages;
+                if (pages.currentPage != 1) {
+                    htmlBlockProps.saveState();
+                    pages.currentPage = 1;
+                    htmlBlockProps.launchState();
+                    Render.update();
+                }
+            } }));
+        let selecteds = new Selected("wysiwyg", wysiwyg, htmlButton);
+        selecteds.select(undefined, wysiwyg);
+        let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", wysiwyg, htmlButton, I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillPagesDisplayCell);
+        new Properties("HtmlBlock", rootcell, { keyCells });
     }
     static HtmlBlockChange(variable, value) {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
@@ -123,18 +228,6 @@ class Properties extends Base {
                 break;
         }
     }
-    static initEditHtml() {
-        Properties.editHtmlwinModal = new winModal("initEditHtml", "Div-Editor", I("initEditHtml", "something"), function (THIS) {
-            console.log("closeCallback");
-            Properties.byLabel("HtmlBlock").currentObject.innerHTML = Properties.quill["root"].innerHTML;
-            Render.update();
-        });
-    }
-    static makeQuill(text) {
-        Properties.quill = new Quill('#editor', Properties.options);
-        Properties.quill["clipboard"].dangerouslyPasteHTML(text);
-        // Builder.editHtmlwinModalBody.htmlBlock.innerHTML = undefined;
-    }
 }
 Properties.labelNo = 0;
 Properties.instances = [];
@@ -147,29 +240,6 @@ Properties.argMap = {
     function: ["process"],
 };
 Properties.defaultsize = [800, 800];
-Properties.toolbarOptions = [
-    ['bold', 'italic', 'underline', 'strike'],
-    ['blockquote', 'code-block'],
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],
-    [{ 'indent': '-1' }, { 'indent': '+1' }],
-    [{ 'direction': 'rtl' }],
-    [{ 'size': ['small', false, 'large', 'huge'] }],
-    ['link', 'image', 'video', 'formula'],
-    [{ 'color': [] }, { 'background': [] }],
-    [{ 'font': [] }],
-    [{ 'align': [] }]
-];
-Properties.options = {
-    debug: 'warn',
-    modules: {
-        toolbar: Properties.toolbarOptions
-    },
-    placeholder: 'Start typing Here...',
-    readOnly: false,
-    theme: 'snow'
-};
 class bCss {
     static bookSVG(classname) {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
@@ -347,6 +417,38 @@ bCss.treeItem = css("treeItem", `background: transparent; color:black; cursor:po
 bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;background:white`);
 bCss.buttonsSVGCss = css(`buttonIcons`, `fill: white;stroke:black; background-color:white`, `fill: black;stroke:white; background-color:black`, `fill: white;stroke:black; background-color:gray`);
 bCss.treenodeCss = css(`treenode`, `background:#dcedf0; cursor:pointer;`, `background:white`);
+bCss.buttons = css('buttons', `display:inline-block;
+                                    color:#444;
+                                    border:1px solid #CCC;
+                                    background:#DDD;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+                                    cursor:pointer;
+                                    vertical-align:middle;
+                                    text-align: center;`, `
+                                    color:red;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`, `display:inline-block;
+                                    color:#444;
+                                    border:1px solid #CCC;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+                                    cursor:pointer;
+                                    vertical-align:middle;
+                                    text-align: center; 
+                                    box-shadow: inset 1px 2px 5px #777;
+                                    transform: translateY(1px);
+                                    background: #e5e5e5;`);
+bCss.buttonsPressed = css('buttonsPressed', `display:inline-block;
+                                    color:#444;
+                                    border:1px solid #CCC;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.2);
+                                    cursor:pointer;
+                                    vertical-align:middle;
+                                    text-align: center; 
+                                    box-shadow: inset 1px 2px 5px #777;
+                                    transform: translateY(1px);
+                                    background: #e5e5e5;`, `
+                                    color:red;
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`);
+;
 class Builder extends Base {
     // retArgs:ArgsObj;   // <- this will appear
     constructor(...Arguments) {

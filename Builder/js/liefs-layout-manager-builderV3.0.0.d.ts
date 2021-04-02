@@ -1,35 +1,11 @@
-declare class Properties extends Base {
-    static labelNo: number;
-    static instances: Properties[];
-    static activeInstances: Properties[];
-    static defaults: {};
-    static argMap: {
-        string: string[];
-        DisplayCell: string[];
-        winModal: string[];
-        function: string[];
-    };
-    static defaultsize: number[];
-    label: string;
-    rootDisplayCell: DisplayCell;
-    winModal: winModal;
-    modal: Modal;
-    process: () => void;
-    keyCells: {
-        [key: string]: DisplayCell;
-    };
-    currentObject: object;
-    currentObjectParentDisplayCell: DisplayCell;
-    constructor(...Arguments: any);
-    static processNode(node: node_ | object, parentDisplayCell?: DisplayCell): void;
-    static setHeaderText(propertiesInstance: Properties, text: string): void;
-    static displayValue(className: string, label: string, disabled?: boolean, dim?: any, evalFunction?: (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void): DisplayCell;
-    static coordValue(key: string): (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void;
-    static Coord(className: string, keyCells: object): DisplayCell;
-    static HtmlBlock(currentObject: object): void;
-    static HtmlBlockChange(variable: string, value: string): void;
+declare class htmlBlockProps {
+    constructor();
+    static quillDisplayCell: DisplayCell;
+    static monacoContainer: any;
+    static MonicoContainerDisplayCell: DisplayCell;
     static editHtmlwinModal: winModal;
-    static initEditHtml(): void;
+    static quill: Quill;
+    static quillPages: Pages;
     static toolbarOptions: (string[] | {
         header: (number | boolean)[];
     }[] | {
@@ -84,8 +60,42 @@ declare class Properties extends Base {
         readOnly: boolean;
         theme: string;
     };
-    static quill: Quill;
-    static makeQuill(text: string): void;
+    static getState(): number;
+    static saveState(getState?: number): void;
+    static treeClicked(objectWithProperties: object): void;
+    static launchState(getState?: number): void;
+}
+declare class Properties extends Base {
+    static labelNo: number;
+    static instances: Properties[];
+    static activeInstances: Properties[];
+    static defaults: {};
+    static argMap: {
+        string: string[];
+        DisplayCell: string[];
+        winModal: string[];
+        function: string[];
+    };
+    static defaultsize: number[];
+    label: string;
+    rootDisplayCell: DisplayCell;
+    winModal: winModal;
+    modal: Modal;
+    process: () => void;
+    keyCells: {
+        [key: string]: DisplayCell;
+    };
+    currentObject: object;
+    currentObjectParentDisplayCell: DisplayCell;
+    constructor(...Arguments: any);
+    static processNode(node: node_ | object, parentDisplayCell?: DisplayCell): void;
+    static setHeaderText(propertiesInstance: Properties, text: string): void;
+    static displayValue(className: string, label: string, disabled?: boolean, dim?: any, evalFunction?: (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void): DisplayCell;
+    static coordValue(key: string): (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void;
+    static Coord(className: string, keyCells: object): DisplayCell;
+    static HtmlBlockTreeClicked(objectWithProperties: object): void;
+    static HtmlBlock(): void;
+    static HtmlBlockChange(variable: string, value: string): void;
 }
 declare class bCss {
     static editable: Css;
@@ -109,6 +119,8 @@ declare class bCss {
     static bookSVGCss: Css;
     static buttonsSVGCss: Css;
     static treenodeCss: Css;
+    static buttons: Css;
+    static buttonsPressed: Css;
     static bookSVG(classname: string): string;
     static htmlSVG(classname: string): string;
     static horSVG(classname: string): string;
@@ -121,6 +133,7 @@ declare class bCss {
 declare class Quill {
     constructor(...Arguments: any);
 }
+declare function monacoContainer(code: string): void;
 declare class Builder extends Base {
     static labelNo: number;
     static instances: Builder[];

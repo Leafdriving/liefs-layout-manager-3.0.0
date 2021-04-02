@@ -984,6 +984,7 @@ declare class winModal extends Base {
         headerHeight: number;
         buttonsHeight: number;
         footerHeight: number;
+        showOnStart: boolean;
         headerText: string;
         bodyText: string;
         highlightHeaderState1: boolean;
@@ -993,6 +994,7 @@ declare class winModal extends Base {
         string: string[];
         DisplayCell: string[];
         function: string[];
+        boolean: string[];
     };
     retArgs: ArgsObj;
     label: string;
@@ -1003,6 +1005,7 @@ declare class winModal extends Base {
     headerText: string;
     body: DisplayCell;
     bodyText: string;
+    showOnStart: boolean;
     footer: DisplayCell;
     footerHeight: number;
     footerText: string;

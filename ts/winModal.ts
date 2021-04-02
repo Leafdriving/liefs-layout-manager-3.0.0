@@ -76,12 +76,13 @@ class winModal extends Base {
     static labelNo = 0;
     static instances:winModal[] = [];
     static activeInstances:winModal[] = [];
-    static defaults = {headerHeight: 15, buttonsHeight: 50, footerHeight:20,
+    static defaults = {headerHeight: 15, buttonsHeight: 50, footerHeight:20, showOnStart:true,
                         headerText:"Window", bodyText:"Body", highlightHeaderState1:false, highlightHeaderState2:false}
     static argMap = {
         string : ["label", "headerText"],
         DisplayCell : ["body"],
         function: ["closeCallback"],
+        boolean: ["showOnStart"]
     }
     retArgs:ArgsObj;   // <- this will appear
     label:string;
@@ -96,6 +97,7 @@ class winModal extends Base {
 
     body: DisplayCell;
     bodyText: string;
+    showOnStart:boolean;
 
     footer: DisplayCell;
     footerHeight:number;
@@ -194,7 +196,7 @@ class winModal extends Base {
         this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, {type: HandlerType.winModal});
         this.modal.dragWith(`${this.label}_title`);
         this.modal.closeWith(`${this.label}_close`, this.closeCallback);
-        this.modal.show();
+        if (this.showOnStart) this.modal.show();
     }
     render(displaycell:DisplayCell, displayGroup: DisplayGroup, index:number, derender:boolean) {
         //console.log(this.label)
