@@ -98,6 +98,7 @@ declare class pf {
     static elExists(id_label: string): HTMLElement;
     static viewport(): number[];
     static errorReporting(errString: string): void;
+    static insideOfFunctionString(functionString: string): string;
     static uis0(num: number): number;
     static parseURLParams(url?: string): {};
 }
@@ -494,6 +495,8 @@ declare class Select extends Base {
     static activeInstances: Select[];
     static defaults: {
         choices: any[];
+        currentSelected: number;
+        lastSelected: number;
         onSelect: (mouseEvent: PointerEvent, el: any) => void;
     };
     static argMap: {
@@ -511,9 +514,12 @@ declare class Select extends Base {
     dim: string;
     clickableName: DisplayCell;
     onSelect: (mouseEvent: PointerEvent, el: any) => void;
+    lastSelected: number;
+    currentSelected: number;
     constructor(...Arguments: any);
     resort(index: number): void;
     build(): void;
+    onclick(mouseEvent: PointerEvent, index: number, THIS: Select): void;
     buildMenuObj(): void;
 }
 declare function select(...Arguments: any): DisplayCell;

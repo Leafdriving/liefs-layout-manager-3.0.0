@@ -7,6 +7,10 @@ declare class htmlBlockProps {
     static quill: Quill;
     static quillPages: Pages;
     static eventsDisplayCell: DisplayCell;
+    static displayEventFunction: DisplayCell;
+    static selectInstance: Select;
+    static currentDisplayFunction: string;
+    static winModalConfirmInstance: winModal;
     static toolbarOptions: (string[] | {
         header: (number | boolean)[];
     }[] | {
@@ -63,9 +67,11 @@ declare class htmlBlockProps {
     };
     static getState(): number;
     static saveState(getState?: number): void;
+    static postConfirm(answer: string): void;
     static treeClicked(objectWithProperties: object): void;
     static launchState(getState?: number): void;
-    static manageEvents(): void;
+    static selectSelected(pointerEvent: PointerEvent, eventName: string): void;
+    static confirmwinModal(confirmText: string, execute: string, dontExecute: string): void;
 }
 declare class Properties extends Base {
     static labelNo: number;
@@ -135,7 +141,7 @@ declare class bCss {
 declare class Quill {
     constructor(...Arguments: any);
 }
-declare function monacoContainer(code: string): void;
+declare function monacoContainer(code: string, language?: string): void;
 declare class Builder extends Base {
     static labelNo: number;
     static instances: Builder[];

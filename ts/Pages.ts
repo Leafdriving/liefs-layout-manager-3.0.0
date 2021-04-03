@@ -131,25 +131,25 @@ class Pages extends Base {
             }
     }
     static pushHistory(){
-        let newUrl = window.location.href.split("?")[0];
-        let prefix = "?";
-        for (const page of Pages.activePages) {
-            if (page.currentPage){
-                newUrl +=`${prefix}${page.label}=${page.currentPage}`;
-                prefix = "&";
-            }
-        }
-        history.pushState(null, null, newUrl)
-        //console.log(newUrl);
+        // let newUrl = window.location.href.split("?")[0];
+        // let prefix = "?";
+        // for (const page of Pages.activePages) {
+        //     if (page.currentPage){
+        //         newUrl +=`${prefix}${page.label}=${page.currentPage}`;
+        //         prefix = "&";
+        //     }
+        // }
+        // history.pushState(null, null, newUrl)
+        // //console.log(newUrl);
     }
     static popstate(event:PopStateEvent){
-        // history.back();
-        for (let index = 0; index < Pages.activePages.length; index++) {
-            const page = Pages.activePages[index];
-            page.currentPage = 0;
-        }
-        Pages.parseURL();
-        Render.update();
+        // // history.back();
+        // for (let index = 0; index < Pages.activePages.length; index++) {
+        //     const page = Pages.activePages[index];
+        //     page.currentPage = 0;
+        // }
+        // Pages.parseURL();
+        // Render.update();
     }
 }
 function P(...Arguments:any){

@@ -142,6 +142,9 @@ class pf {
         console.log("Error Reporting");
         console.log(errString);
     }
+    static insideOfFunctionString(functionString:string) {
+        return functionString.substring(functionString.indexOf("{")+1, functionString.lastIndexOf("}"))
+    }
     static uis0(num:number){return (num == undefined) ? 0 : num}
     // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static parseURLParams(url = window.location.href) {

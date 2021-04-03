@@ -14,6 +14,36 @@ class htmlBlockProps {
             htmlblock.innerHTML = htmlBlockProps.quill["root"].innerHTML;
         if (getState == 1 && htmlBlockProps.monacoContainer)
             htmlblock.innerHTML = htmlBlockProps.monacoContainer.getValue();
+        if (getState == 2) {
+            console.log("here1", htmlBlockProps.selectInstance.lastSelected);
+            if (htmlBlockProps.selectInstance.lastSelected != 0) {
+                console.log("here2");
+                htmlBlockProps.confirmwinModal(`Confirm save HtmlBlock ${htmlblock.label}`
+                    + ` with event ${htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected]}`, `htmlBlockProps.postConfirm("confirmed")`, `htmlBlockProps.postConfirm("canceled")`);
+            }
+        }
+    }
+    static postConfirm(answer) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let htmlblock = propertiesInstance.currentObject;
+        // console.log(answer);
+        if (answer == "confirmed") {
+            let event = htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected];
+            console.log(event, htmlBlockProps.monacoContainer.getValue());
+            console.log(htmlblock);
+            if (!htmlblock.events) {
+                let obj = {};
+                obj[event] = htmlBlockProps.monacoContainer.getValue();
+                htmlblock.events = events(obj);
+            }
+            else
+                htmlblock.events.actions[event] = new Function(pf.insideOfFunctionString(htmlBlockProps.monacoContainer.getValue()));
+            let el = pf.elExists(htmlblock.label);
+            if (el) {
+                el.remove();
+                Render.update();
+            }
+        }
     }
     static treeClicked(objectWithProperties) {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
@@ -55,18 +85,40 @@ class htmlBlockProps {
             }, 0);
         }
         if (getState == 2) {
-            htmlBlockProps.manageEvents();
-            //console.log(objectWithProperties.events.actions["onclick"].toString())
+            htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
+            if (!propertiesInstance.winModal.modal.isShown())
+                propertiesInstance.winModal.modal.show();
+            else
+                Render.update();
         }
     }
-    static manageEvents() {
+    static selectSelected(pointerEvent, eventName) {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
         let objectWithProperties = propertiesInstance.currentObject;
-        let eventDisplayItem = DisplayCell.byLabel("eventDisplayItem");
-        //console.log(eventDisplayItem)
-        // if (!objectWithProperties.events) {
-        //     eventDisplayItem.htmlBlock.innerHTML = "No Events Registered"
-        // }
+        htmlBlockProps.currentDisplayFunction = `function(event){console.log("Event: ${eventName} fired on ${objectWithProperties.label}")}`;
+        htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
+        htmlBlockProps.saveState();
+        let actions = objectWithProperties.events.actions;
+        if (eventName in actions) {
+            htmlBlockProps.currentDisplayFunction = actions[eventName].toString();
+        }
+        Render.update();
+        if (eventName != "Add an Event")
+            setTimeout(() => {
+                htmlBlockProps.monacoContainer = monacoContainer(htmlBlockProps.currentDisplayFunction, "javascript");
+                htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = undefined;
+            }, 0);
+    }
+    static confirmwinModal(confirmText, execute, dontExecute) {
+        htmlBlockProps.winModalConfirmInstance = winModal.byLabel("Confirm");
+        let buttons = `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${execute}'>Ok</button>`
+            + `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${dontExecute}'>Cancel</button>`;
+        if (!htmlBlockProps.winModalConfirmInstance)
+            htmlBlockProps.winModalConfirmInstance = new winModal("Confirm", "Confirm", 200, 100, function () { eval(dontExecute); }, I("confirm", `${confirmText}</br>${buttons}`, bCss.bgwhite));
+        else {
+            htmlBlockProps.winModalConfirmInstance.body.htmlBlock.innerHTML = `${confirmText}</br>${buttons}`;
+            htmlBlockProps.winModalConfirmInstance.modal.show();
+        }
     }
 }
 htmlBlockProps.toolbarOptions = [
@@ -179,6 +231,15 @@ class Properties extends Base {
         };
         htmlBlockProps.quillDisplayCell = I('htmlQuill', `<div id="editor"></div>`, bCss.bgwhite);
         htmlBlockProps.MonicoContainerDisplayCell = I("Monicocontainer", `<div id="container" style="width:100%;height:100%"></div>`);
+        htmlBlockProps.displayEventFunction = I("EventsFunction", "  ", bCss.bgwhite);
+        htmlBlockProps.selectInstance = new Select(["Add an Event", "onclick", "ondblclick", "onmousedown", "onmousemove", "onmouseout", "onmouseover",
+            "onmouseup", "onwheel", "onblur", "onchange", "oncontextmenu", "onfocus", "oninput", "onselect"], "20px", function (pointerEvent, key) {
+            console.log("SEelct Function");
+            htmlBlockProps.selectSelected(pointerEvent, key);
+            htmlBlockProps.selectInstance.lastSelected = htmlBlockProps.selectInstance.currentSelected;
+            htmlBlockProps.selectInstance.currentSelected = htmlBlockProps.selectInstance.choices.indexOf(key);
+            htmlBlockProps.selectInstance.resort(htmlBlockProps.selectInstance.choices.indexOf(key));
+        });
         htmlBlockProps.eventsDisplayCell = v(`eventDisplayV`, P("pagesIsEvents", I("eventDisplayItemNone", "No Events Registered", bCss.bgLightBorder, "20px"), h("eventDisplayItemSome", "20px", I(`htmlblock_eventlabel`, "Events:", bCss.bgLight, "100px")), function (thisPages) {
             let propertiesInstance = Properties.byLabel("HtmlBlock");
             if (propertiesInstance) {
@@ -186,15 +247,18 @@ class Properties extends Base {
                 if (objectWithProperties && objectWithProperties.events) {
                     let dg = DisplayGroup.byLabel("eventDisplayItemSome");
                     dg.cellArray = [dg.cellArray[0]];
-                    for (let key in objectWithProperties.events.actions) {
-                        //let value = objectWithProperties.events[key];
-                        dg.cellArray.push(I(`${objectWithProperties.label}_${key}`, key, bCss.buttons, "100%"));
-                    }
+                    for (let key in objectWithProperties.events.actions)
+                        dg.cellArray.push(I(`${objectWithProperties.label}_${key}`, key, bCss.buttons, "100%", events({ onclick: function () {
+                                htmlBlockProps.selectSelected(undefined, key);
+                                htmlBlockProps.selectInstance.lastSelected = htmlBlockProps.selectInstance.currentSelected;
+                                htmlBlockProps.selectInstance.currentSelected = htmlBlockProps.selectInstance.choices.indexOf(key);
+                                htmlBlockProps.selectInstance.resort(htmlBlockProps.selectInstance.choices.indexOf(key)); /// what if not picked???? FIX!
+                            } })));
                     return 1;
                 }
             }
             return 0;
-        }), select(["Add an Event"], "20px"), I("filler", "  ", bCss.bgwhite));
+        }), htmlBlockProps.selectInstance.rootDisplayCell, htmlBlockProps.displayEventFunction);
         let quillPagesDisplayCell = P("quillPages", htmlBlockProps.quillDisplayCell, htmlBlockProps.MonicoContainerDisplayCell, htmlBlockProps.eventsDisplayCell);
         htmlBlockProps.quillPages = quillPagesDisplayCell.pages;
         let wysiwyg = I("wysiwygButton", `wysiwyg`, "80px", bCss.buttons, events({ onclick: function (event) {

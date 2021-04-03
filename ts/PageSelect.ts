@@ -2,7 +2,7 @@ class Select extends Base {
     static labelNo = 0;
     static instances:Select[] = [];
     static activeInstances:Select[] = [];
-    static defaults = {choices:[], onSelect:function(mouseEvent:PointerEvent, el:any){console.log(mouseEvent, el)}}
+    static defaults = {choices:[], currentSelected:0,lastSelected:0,onSelect:function(mouseEvent:PointerEvent, el:any){console.log(mouseEvent, el)}}
     static argMap = {
         string : ["label"],
         Array: ["choices"],
@@ -20,6 +20,8 @@ class Select extends Base {
     dim:string;
     clickableName:DisplayCell;
     onSelect:(mouseEvent:PointerEvent, el:any)=>void;
+    lastSelected:number;
+    currentSelected:number;
 
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
@@ -28,10 +30,8 @@ class Select extends Base {
         this.build();
     }
     resort(index:number){
-        if (index > 0) {
-            this.clickableName.htmlBlock.innerHTML = this.choices[index];
-            Render.update();
-        }
+        this.clickableName.htmlBlock.innerHTML = this.choices[index];
+        Render.update();
     }
     build(){
         let THIS = this;
@@ -50,11 +50,17 @@ class Select extends Base {
         this.clickableName.htmlBlock.events = fullEvents;
         downArrow.htmlBlock.events = events({onclick:contextObjFunction});
     }
+    onclick(mouseEvent:PointerEvent, index:number, THIS:Select){
+        THIS.lastSelected = THIS.currentSelected;
+        THIS.currentSelected = index;
+        THIS.resort(index);
+        THIS.onSelect(mouseEvent, THIS.choices[index]);
+    }
     buildMenuObj(){
         this.menuObj = {};
         let THIS = this;
         for (let index = 0; index < this.choices.length; index++) {
-            this.menuObj[ this.choices[index] ] = function(mouseEvent:PointerEvent){THIS.resort(index);THIS.onSelect(mouseEvent, THIS.choices[index]);}
+            this.menuObj[ this.choices[index] ] = function(mouseEvent:PointerEvent){THIS.onclick(mouseEvent, index, THIS)}
         }
         let context = <Context>(Context.byLabel(`${this.label}_context`));
         if (context) context.changeMenuObject(this.menuObj);

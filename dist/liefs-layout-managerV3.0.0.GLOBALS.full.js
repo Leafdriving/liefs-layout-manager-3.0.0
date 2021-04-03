@@ -336,6 +336,9 @@ class pf {
         console.log("Error Reporting");
         console.log(errString);
     }
+    static insideOfFunctionString(functionString) {
+        return functionString.substring(functionString.indexOf("{") + 1, functionString.lastIndexOf("}"));
+    }
     static uis0(num) { return (num == undefined) ? 0 : num; }
     // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static parseURLParams(url = window.location.href) {
@@ -1680,25 +1683,25 @@ class Pages extends Base {
             }
     }
     static pushHistory() {
-        let newUrl = window.location.href.split("?")[0];
-        let prefix = "?";
-        for (const page of Pages.activePages) {
-            if (page.currentPage) {
-                newUrl += `${prefix}${page.label}=${page.currentPage}`;
-                prefix = "&";
-            }
-        }
-        history.pushState(null, null, newUrl);
-        //console.log(newUrl);
+        // let newUrl = window.location.href.split("?")[0];
+        // let prefix = "?";
+        // for (const page of Pages.activePages) {
+        //     if (page.currentPage){
+        //         newUrl +=`${prefix}${page.label}=${page.currentPage}`;
+        //         prefix = "&";
+        //     }
+        // }
+        // history.pushState(null, null, newUrl)
+        // //console.log(newUrl);
     }
     static popstate(event) {
-        // history.back();
-        for (let index = 0; index < Pages.activePages.length; index++) {
-            const page = Pages.activePages[index];
-            page.currentPage = 0;
-        }
-        Pages.parseURL();
-        Render.update();
+        // // history.back();
+        // for (let index = 0; index < Pages.activePages.length; index++) {
+        //     const page = Pages.activePages[index];
+        //     page.currentPage = 0;
+        // }
+        // Pages.parseURL();
+        // Render.update();
     }
 }
 Pages.activePages = [];
@@ -1733,10 +1736,8 @@ class Select extends Base {
         this.build();
     }
     resort(index) {
-        if (index > 0) {
-            this.clickableName.htmlBlock.innerHTML = this.choices[index];
-            Render.update();
-        }
+        this.clickableName.htmlBlock.innerHTML = this.choices[index];
+        Render.update();
     }
     build() {
         let THIS = this;
@@ -1751,11 +1752,17 @@ class Select extends Base {
         this.clickableName.htmlBlock.events = fullEvents;
         downArrow.htmlBlock.events = events({ onclick: contextObjFunction });
     }
+    onclick(mouseEvent, index, THIS) {
+        THIS.lastSelected = THIS.currentSelected;
+        THIS.currentSelected = index;
+        THIS.resort(index);
+        THIS.onSelect(mouseEvent, THIS.choices[index]);
+    }
     buildMenuObj() {
         this.menuObj = {};
         let THIS = this;
         for (let index = 0; index < this.choices.length; index++) {
-            this.menuObj[this.choices[index]] = function (mouseEvent) { THIS.resort(index); THIS.onSelect(mouseEvent, THIS.choices[index]); };
+            this.menuObj[this.choices[index]] = function (mouseEvent) { THIS.onclick(mouseEvent, index, THIS); };
         }
         let context = (Context.byLabel(`${this.label}_context`));
         if (context)
@@ -1765,7 +1772,7 @@ class Select extends Base {
 Select.labelNo = 0;
 Select.instances = [];
 Select.activeInstances = [];
-Select.defaults = { choices: [], onSelect: function (mouseEvent, el) { console.log(mouseEvent, el); } };
+Select.defaults = { choices: [], currentSelected: 0, lastSelected: 0, onSelect: function (mouseEvent, el) { console.log(mouseEvent, el); } };
 Select.argMap = {
     string: ["label"],
     Array: ["choices"],
@@ -3531,71 +3538,6 @@ function bindHandler(...Arguments) {
     return parentDisplaycell;
 }
 Overlay.classes["BindHandler"] = BindHandler;
-// class winHolder extends Base {
-//     static labelNo = 0;
-//     static instances:winHolder[] = [];
-//     static activeInstances:winHolder[] = [];
-//     static defaults = {winModals:[]}
-//     static argMap = {
-//         string : ["label"],
-//     }
-//     label:string;
-//     retArgs:ArgsObj;   // <- this will appear
-//     rootDisplayCell: DisplayCell;
-//     WinModal:winModal;  // root
-//     winModals:winModal[]; // children
-//     constructor(...Arguments:any){
-//         super();this.buildBase(...Arguments);        
-//         winHolder.makeLabel(this);
-//         if ("winModal" in this.retArgs) this.winModals = this.retArgs["winModal"];
-//         for (let index = 0; index < this.winModals.length; index++)
-//             this.disableWinModal(this.winModals[index]);
-//         console.log("before Build");
-//         this.build();
-//         console.log("after Build");
-//     }
-//     build(){
-//         let maxWidth = 0;
-//         let height = 0;
-//         let cellArray:DisplayCell[] = [];
-//         console.log("Before for")
-//         for (let index = 0; index < this.winModals.length; index++) {
-//             let wmodal = this.winModals[index];
-//             wmodal.parentHolder = this;
-//             let modal = wmodal.modal
-//             let displaycell = modal.rootDisplayCell;
-//             if (modal.coord.x > maxWidth) maxWidth = modal.coord.x;
-//             displaycell.dim = `${modal.coord.y}px`;
-//             cellArray.push( displaycell );
-//             height += pf.pxAsNumber(displaycell.dim);
-//         }
-//         console.log("After For")
-//         this.rootDisplayCell = v(`${this.label}_winHolder`,{cellArray})
-//         // this.WinModal = new winModal(`${this.label}_winHolder_parent`,
-//         //                                 {body:this.rootDisplayCell,
-//         //                                 headerText:"MyGroup"},
-//         //                                 this.winModals[0].modal.coord.x, this.winModals[0].modal.coord.y,
-//         //                                 maxWidth, height);
-//         console.log("Build Over")
-//     }
-//     add(winmodal:winModal, index:number = undefined) {
-//         this.disableWinModal(winmodal);
-//         if (index != undefined) this.winModals.splice(index, 0, winmodal);
-//         else this.winModals.push(winmodal);
-//     }
-//     pop(winmodal:winModal) {
-//         this.enableWinModal(winmodal);
-//         let index = this.winModals.indexOf(winmodal);
-//         if (index > -1) this.winModals.splice(index, 1);
-//     }
-//     disableWinModal(winmodal:winModal){
-//         console.log("Disabling ", winmodal.label)
-//             winmodal.modal.hide();
-//             winmodal.modal.rootDisplayCell.popOverlay("winModal");
-//     }
-//     enableWinModal(winmodal:winModal){
-//     }
-// }
 class winModal extends Base {
     constructor(...Arguments) {
         super();
@@ -3787,8 +3729,6 @@ class winModal extends Base {
             thisheader.htmlBlock.css = thisheader.htmlBlock.css.slice(0, -8);
     }
 }
-// static titleCss = css("modalTitle",`-moz-box-sizing: border-box;-webkit-box-sizing: border-box;
-// border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;cursor:pointer`)
 winModal.labelNo = 0;
 winModal.instances = [];
 winModal.activeInstances = [];

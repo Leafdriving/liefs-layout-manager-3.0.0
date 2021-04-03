@@ -18,14 +18,14 @@
 </html>
 <script>
   require.config({paths: {'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/'}})
-let monacoContainer = function(code){
+let monacoContainer = function(code, language="html"){
     var editor;
     //let codeArray = code.split(`\n`);
     require(['vs/editor/editor.main'], function () {
         editor = monaco.editor.create(document.getElementById('container'), {
             // value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
             value: code,
-            language: 'html'
+            language: language,
         });
     });
     return editor;
