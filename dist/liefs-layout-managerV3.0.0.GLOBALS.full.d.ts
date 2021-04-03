@@ -414,6 +414,7 @@ declare class Css extends Base {
     };
     static deleteOnFirstRunClassname: string;
     classname: string;
+    type: string;
     css: string;
     cssObj: object;
     cssHover: string;

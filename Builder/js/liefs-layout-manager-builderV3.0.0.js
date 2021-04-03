@@ -1,149 +1,3 @@
-class htmlBlockProps {
-    constructor() { }
-    static getState() {
-        let propertiesInstance = Properties.byLabel("HtmlBlock");
-        if (propertiesInstance.winModal.modal.isShown())
-            if (htmlBlockProps.quillPages)
-                return htmlBlockProps.quillPages.currentPage;
-        return undefined;
-    }
-    static saveState(getState = htmlBlockProps.getState()) {
-        let propertiesInstance = Properties.byLabel("HtmlBlock");
-        let htmlblock = propertiesInstance.currentObject;
-        if (getState == 0 && htmlBlockProps.quill)
-            htmlblock.innerHTML = htmlBlockProps.quill["root"].innerHTML;
-        if (getState == 1 && htmlBlockProps.monacoContainer)
-            htmlblock.innerHTML = htmlBlockProps.monacoContainer.getValue();
-        if (getState == 2) {
-            console.log("here1", htmlBlockProps.selectInstance.lastSelected);
-            if (htmlBlockProps.selectInstance.lastSelected != 0) {
-                console.log("here2");
-                htmlBlockProps.confirmwinModal(`Confirm save HtmlBlock ${htmlblock.label}`
-                    + ` with event ${htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected]}`, `htmlBlockProps.postConfirm("confirmed")`, `htmlBlockProps.postConfirm("canceled")`);
-            }
-        }
-    }
-    static postConfirm(answer) {
-        let propertiesInstance = Properties.byLabel("HtmlBlock");
-        let htmlblock = propertiesInstance.currentObject;
-        // console.log(answer);
-        if (answer == "confirmed") {
-            let event = htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected];
-            console.log(event, htmlBlockProps.monacoContainer.getValue());
-            console.log(htmlblock);
-            if (!htmlblock.events) {
-                let obj = {};
-                obj[event] = htmlBlockProps.monacoContainer.getValue();
-                htmlblock.events = events(obj);
-            }
-            else
-                htmlblock.events.actions[event] = new Function(pf.insideOfFunctionString(htmlBlockProps.monacoContainer.getValue()));
-            let el = pf.elExists(htmlblock.label);
-            if (el) {
-                el.remove();
-                Render.update();
-            }
-        }
-    }
-    static treeClicked(objectWithProperties) {
-        let propertiesInstance = Properties.byLabel("HtmlBlock");
-        let getState = htmlBlockProps.getState();
-        console.log("state", getState);
-        if (getState != undefined) {
-            htmlBlockProps.saveState(getState);
-        }
-        propertiesInstance.currentObject = objectWithProperties;
-        if (getState == undefined)
-            propertiesInstance.winModal.modal.show();
-        htmlBlockProps.launchState();
-    }
-    static launchState(getState = htmlBlockProps.getState()) {
-        let propertiesInstance = Properties.byLabel("HtmlBlock");
-        let objectWithProperties = propertiesInstance.currentObject;
-        if (getState == 0) {
-            htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
-            if (!propertiesInstance.winModal.modal.isShown())
-                propertiesInstance.winModal.modal.show();
-            else {
-                Render.update();
-            }
-            setTimeout(() => {
-                htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
-                htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(objectWithProperties.innerHTML);
-                htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = undefined;
-            }, 0);
-        }
-        if (getState == 1) {
-            htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
-            if (!propertiesInstance.winModal.modal.isShown())
-                propertiesInstance.winModal.modal.show();
-            else
-                Render.update();
-            setTimeout(() => {
-                htmlBlockProps.monacoContainer = monacoContainer(objectWithProperties.innerHTML);
-                htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
-            }, 0);
-        }
-        if (getState == 2) {
-            htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
-            if (!propertiesInstance.winModal.modal.isShown())
-                propertiesInstance.winModal.modal.show();
-            else
-                Render.update();
-        }
-    }
-    static selectSelected(pointerEvent, eventName) {
-        let propertiesInstance = Properties.byLabel("HtmlBlock");
-        let objectWithProperties = propertiesInstance.currentObject;
-        htmlBlockProps.currentDisplayFunction = `function(event){console.log("Event: ${eventName} fired on ${objectWithProperties.label}")}`;
-        htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
-        htmlBlockProps.saveState();
-        let actions = objectWithProperties.events.actions;
-        if (eventName in actions) {
-            htmlBlockProps.currentDisplayFunction = actions[eventName].toString();
-        }
-        Render.update();
-        if (eventName != "Add an Event")
-            setTimeout(() => {
-                htmlBlockProps.monacoContainer = monacoContainer(htmlBlockProps.currentDisplayFunction, "javascript");
-                htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = undefined;
-            }, 0);
-    }
-    static confirmwinModal(confirmText, execute, dontExecute) {
-        htmlBlockProps.winModalConfirmInstance = winModal.byLabel("Confirm");
-        let buttons = `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${execute}'>Ok</button>`
-            + `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${dontExecute}'>Cancel</button>`;
-        if (!htmlBlockProps.winModalConfirmInstance)
-            htmlBlockProps.winModalConfirmInstance = new winModal("Confirm", "Confirm", 200, 100, function () { eval(dontExecute); }, I("confirm", `${confirmText}</br>${buttons}`, bCss.bgwhite));
-        else {
-            htmlBlockProps.winModalConfirmInstance.body.htmlBlock.innerHTML = `${confirmText}</br>${buttons}`;
-            htmlBlockProps.winModalConfirmInstance.modal.show();
-        }
-    }
-}
-htmlBlockProps.toolbarOptions = [
-    ['bold', 'italic', 'underline', 'strike'],
-    ['blockquote', 'code-block'],
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],
-    [{ 'indent': '-1' }, { 'indent': '+1' }],
-    [{ 'direction': 'rtl' }],
-    [{ 'size': ['small', false, 'large', 'huge'] }],
-    ['link', 'image', 'video', 'formula'],
-    [{ 'color': [] }, { 'background': [] }],
-    [{ 'font': [] }],
-    [{ 'align': [] }]
-];
-htmlBlockProps.options = {
-    debug: 'warn',
-    modules: {
-        toolbar: htmlBlockProps.toolbarOptions
-    },
-    placeholder: 'Start typing Here...',
-    readOnly: false,
-    theme: 'snow'
-};
 class Properties extends Base {
     constructor(...Arguments) {
         super();
@@ -259,7 +113,13 @@ class Properties extends Base {
             }
             return 0;
         }), htmlBlockProps.selectInstance.rootDisplayCell, htmlBlockProps.displayEventFunction);
-        let quillPagesDisplayCell = P("quillPages", htmlBlockProps.quillDisplayCell, htmlBlockProps.MonicoContainerDisplayCell, htmlBlockProps.eventsDisplayCell);
+        htmlBlockProps.cssSelect = new Select(["CssSelct", "Option2"], "200px");
+        htmlBlockProps.cssCurrentValueDisplayCell = I("cssValue", "Value", bCss.bgLightBorder);
+        htmlBlockProps.cssBodyDisplayCell = I("CssBody", "Body", bCss.bgwhite);
+        let textColor = I("cssTextColor", "Text Color", bCss.bgLightBorder, events({ onclick: function () { htmlBlockProps.colorPick("text"); } }));
+        htmlBlockProps.cssDisplayCell =
+            v("cssstuff", h("currentCss", "25px", I("cssstuff", "Current:", bCss.bgLightBorder, "80px"), htmlBlockProps.cssCurrentValueDisplayCell, htmlBlockProps.cssSelect.rootDisplayCell), h("cssbuttons", "25px", textColor, I("cssBackgroundColor", "Background Color", bCss.bgLightBorder)), htmlBlockProps.cssBodyDisplayCell);
+        let quillPagesDisplayCell = P("quillPages", htmlBlockProps.quillDisplayCell, htmlBlockProps.MonicoContainerDisplayCell, htmlBlockProps.eventsDisplayCell, htmlBlockProps.cssDisplayCell);
         htmlBlockProps.quillPages = quillPagesDisplayCell.pages;
         let wysiwyg = I("wysiwygButton", `wysiwyg`, "80px", bCss.buttons, events({ onclick: function (event) {
                 let pages = htmlBlockProps.quillPages;
@@ -288,9 +148,18 @@ class Properties extends Base {
                     Render.update();
                 }
             } }));
-        let selecteds = new Selected("wysiwyg", wysiwyg, htmlButton, blockEvents);
+        let pickCSS = I("pickCss", `Css Class`, "80px", bCss.buttons, events({ onclick: function (event) {
+                let pages = htmlBlockProps.quillPages;
+                if (pages.currentPage != 3) {
+                    htmlBlockProps.saveState();
+                    pages.currentPage = 3;
+                    htmlBlockProps.launchState();
+                    Render.update();
+                }
+            } }));
+        let selecteds = new Selected("wysiwyg", wysiwyg, htmlButton, blockEvents, pickCSS);
         selecteds.select(undefined, wysiwyg);
-        let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", wysiwyg, htmlButton, blockEvents, I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillPagesDisplayCell);
+        let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", wysiwyg, htmlButton, blockEvents, pickCSS, I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillPagesDisplayCell);
         new Properties("HtmlBlock", rootcell, { keyCells });
     }
     static HtmlBlockChange(variable, value) {
@@ -323,6 +192,192 @@ Properties.argMap = {
     function: ["process"],
 };
 Properties.defaultsize = [800, 800];
+class htmlBlockProps {
+    constructor() { }
+    static getState() {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        if (propertiesInstance.winModal.modal.isShown())
+            if (htmlBlockProps.quillPages)
+                return htmlBlockProps.quillPages.currentPage;
+        return undefined;
+    }
+    static saveState(getState = htmlBlockProps.getState()) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let htmlblock = propertiesInstance.currentObject;
+        if (getState == 0 && htmlBlockProps.quill)
+            htmlblock.innerHTML = htmlBlockProps.quill["root"].innerHTML;
+        if (getState == 1 && htmlBlockProps.monacoContainer)
+            htmlblock.innerHTML = htmlBlockProps.monacoContainer.getValue();
+        if (getState == 2) {
+            console.log("here1", htmlBlockProps.selectInstance.lastSelected);
+            if (htmlBlockProps.selectInstance.lastSelected != 0) {
+                console.log("here2");
+                htmlBlockProps.confirmwinModal(`Confirm save HtmlBlock ${htmlblock.label}`
+                    + ` with event ${htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected]}`, `htmlBlockProps.postConfirm("confirmed")`, `htmlBlockProps.postConfirm("canceled")`);
+            }
+        }
+        if (getState == 3) {
+            let currentCss = Css.byLabel(htmlblock.css);
+            currentCss.css = pf.insideOfFunctionString(htmlBlockProps.monacoContainer.getValue());
+            currentCss.cssObj = currentCss.makeObj();
+            currentCss.css = currentCss.makeString();
+            Css.update();
+        }
+    }
+    static postConfirm(answer) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let htmlblock = propertiesInstance.currentObject;
+        // console.log(answer);
+        if (answer == "confirmed") {
+            let event = htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected];
+            // console.log(event, htmlBlockProps.monacoContainer.getValue());
+            // console.log(htmlblock);
+            if (!htmlblock.events) {
+                let obj = {};
+                obj[event] = htmlBlockProps.monacoContainer.getValue();
+                htmlblock.events = events(obj);
+            }
+            else
+                htmlblock.events.actions[event] = new Function(pf.insideOfFunctionString(htmlBlockProps.monacoContainer.getValue()));
+            let el = pf.elExists(htmlblock.label);
+            if (el) {
+                el.remove();
+                Render.update();
+            }
+        }
+    }
+    static treeClicked(objectWithProperties) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let getState = htmlBlockProps.getState();
+        console.log("state", getState);
+        if (getState != undefined) {
+            htmlBlockProps.saveState(getState);
+        }
+        propertiesInstance.currentObject = objectWithProperties;
+        if (getState == undefined)
+            propertiesInstance.winModal.modal.show();
+        htmlBlockProps.launchState();
+    }
+    static launchState(getState = htmlBlockProps.getState()) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let objectWithProperties = propertiesInstance.currentObject;
+        if (getState == 0) {
+            htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
+            if (!propertiesInstance.winModal.modal.isShown())
+                propertiesInstance.winModal.modal.show();
+            else {
+                Render.update();
+            }
+            setTimeout(() => {
+                htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
+                htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(objectWithProperties.innerHTML);
+                htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0);
+        }
+        if (getState == 1) {
+            htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            if (!propertiesInstance.winModal.modal.isShown())
+                propertiesInstance.winModal.modal.show();
+            else
+                Render.update();
+            setTimeout(() => {
+                htmlBlockProps.monacoContainer = monacoContainer(objectWithProperties.innerHTML);
+                htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0);
+        }
+        if (getState == 2) {
+            htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            if (!propertiesInstance.winModal.modal.isShown())
+                propertiesInstance.winModal.modal.show();
+            else
+                Render.update();
+        }
+        if (getState == 3) {
+            console.log("Css Launched");
+            htmlBlockProps.cssCurrentValueDisplayCell.htmlBlock.innerHTML = objectWithProperties.css;
+            htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            Render.update();
+            setTimeout(() => {
+                console.log(objectWithProperties);
+                htmlBlockProps.monacoContainer = monacoContainer(Css.byLabel(objectWithProperties.css).css, "css");
+                htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0);
+        }
+    }
+    static selectSelected(pointerEvent, eventName) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let objectWithProperties = propertiesInstance.currentObject;
+        htmlBlockProps.currentDisplayFunction = `function(event){console.log("Event: ${eventName} fired on ${objectWithProperties.label}")}`;
+        htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
+        htmlBlockProps.saveState();
+        let actions = objectWithProperties.events.actions;
+        if (eventName in actions) {
+            htmlBlockProps.currentDisplayFunction = actions[eventName].toString();
+        }
+        Render.update();
+        if (eventName != "Add an Event")
+            setTimeout(() => {
+                htmlBlockProps.monacoContainer = monacoContainer(htmlBlockProps.currentDisplayFunction, "javascript");
+                htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = undefined;
+            }, 0);
+    }
+    static confirmwinModal(confirmText, execute, dontExecute) {
+        htmlBlockProps.winModalConfirmInstance = winModal.byLabel("Confirm");
+        let buttons = `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${execute}'>Ok</button>`
+            + `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${dontExecute}'>Cancel</button>`;
+        if (!htmlBlockProps.winModalConfirmInstance)
+            htmlBlockProps.winModalConfirmInstance = new winModal("Confirm", "Confirm", 200, 100, function () { eval(dontExecute); }, I("confirm", `${confirmText}</br>${buttons}`, bCss.bgwhite));
+        else {
+            htmlBlockProps.winModalConfirmInstance.body.htmlBlock.innerHTML = `${confirmText}</br>${buttons}`;
+            htmlBlockProps.winModalConfirmInstance.modal.show();
+        }
+    }
+    static colorPick(type) {
+        let newModal = new winModal("textcolor", type + " color", 251, 307, I("colorPicker", `<div id="color_picker"></div>`, bCss.bgBlue));
+        let el = document.getElementById("color_picker");
+        var picker = new Picker({ parent: el, popup: false });
+        newModal.body.htmlBlock.innerHTML = undefined;
+        picker["onDone"] = function (color) {
+            newModal.modal.hide();
+            htmlBlockProps.colorSet(type, color["hex"]);
+        };
+    }
+    static colorSet(type, colorHex) {
+        //console.log(`Set ${type} to ${colorHex}`);
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let htmlblock = propertiesInstance.currentObject;
+        let currentCss = Css.byLabel(htmlblock.css);
+        htmlBlockProps.saveState();
+        currentCss.cssObj[((type == "text") ? "color" : "background")] = colorHex;
+        currentCss.css = currentCss.makeString();
+        htmlBlockProps.monacoContainer.getModel().setValue(currentCss.css);
+        Css.update();
+    }
+}
+htmlBlockProps.monacoStartString = `<div id="container" style="width:100%;height:100%"></div>`;
+htmlBlockProps.toolbarOptions = [
+    ['bold', 'italic', 'underline', 'strike'],
+    ['blockquote', 'code-block'],
+    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    [{ 'script': 'sub' }, { 'script': 'super' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
+    [{ 'direction': 'rtl' }],
+    [{ 'size': ['small', false, 'large', 'huge'] }],
+    ['link', 'image', 'video', 'formula'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'font': [] }],
+    [{ 'align': [] }]
+];
+htmlBlockProps.options = {
+    debug: 'warn',
+    modules: {
+        toolbar: htmlBlockProps.toolbarOptions
+    },
+    placeholder: 'Start typing Here...',
+    readOnly: false,
+    theme: 'snow'
+};
 class bCss {
     static bookSVG(classname) {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
@@ -446,7 +501,7 @@ bCss.editable = css("editable", `-moz-appearance: textfield;
                                     border: 1px solid darkgray;
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
                                     font: -moz-field;
-                                    font: -webkit-small-control;`);
+                                    font: -webkit-small-control;`, { type: "builder" });
 bCss.disabled = css("disabled", `-moz-appearance: textfield;
                                     -webkit-appearance: textfield;
                                     background-color: #E8E8E8;
@@ -454,52 +509,52 @@ bCss.disabled = css("disabled", `-moz-appearance: textfield;
                                     border: 1px solid darkgray;
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
                                     font: -moz-field;
-                                    font: -webkit-small-control;`);
-bCss.bgwhite = css("bgwhite", `background: white`);
-bCss.bgLight = css("bgLight", `background: #dcedf0`);
-bCss.bgLightBorder = css("bgLight", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`);
+                                    font: -webkit-small-control;`, { type: "builder" });
+bCss.bgwhite = css("bgwhite", `background: white`, { type: "builder" });
+bCss.bgLight = css("bgLight", `background: #dcedf0`, { type: "builder" });
+bCss.bgLightBorder = css("bgLight", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`, { type: "builder" });
 bCss.bgLightCenter = css("bgLightCenter", `background: #dcedf0;
                                     text-align:center;box-sizing: border-box;
                                     border: 1px solid darkgray;
                                     -moz-box-sizing: border-box;
-                                    -webkit-box-sizing: border-box;`);
-bCss.bgGreen = css("bgGreen", `background: green;`);
-bCss.bgBlue = css("bgBlue", `background: blue;`);
-bCss.bgCyan = css("bgCyan", `background: cyan;`);
+                                    -webkit-box-sizing: border-box;`, { type: "builder" });
+bCss.bgGreen = css("bgGreen", `background: green;`, { type: "builder" });
+bCss.bgBlue = css("bgBlue", `background: blue;`, { type: "builder" });
+bCss.bgCyan = css("bgCyan", `background: cyan;`, { type: "builder" });
 bCss.bgBlack = css("bgBlack", `background: black;
                                     opacity:0.5;
                                     box-sizing: border-box;
-                                    border: 10px solid red;`);
+                                    border: 10px solid red;`, { type: "builder" });
 bCss.menuItem = css("menuItem", `background: white;
                                        color: black;
                                        cursor: default;
                                        outline: 1px solid black;
                                        outline-offset: -1px;`, `background: black;
-                                       color: white;`);
+                                       color: white;`, { type: "builder" });
 bCss.menuSpace = css("menuspace", `background: white;
                                         color: black;
                                         cursor: default;
                                         outline: 1px solid black;
-                                        outline-offset: -1px;`);
+                                        outline-offset: -1px;`, { type: "builder" });
 bCss.handlerSVG = css("handlerSVG", `background-image: url("svg/user-homeOPT.svg");
                                         background-repeat: no-repeat;
-                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`, { type: "builder" });
 bCss.hSVG = css("hSVG", `background-image: url("svg/Horizontal.svg");
                                         background-repeat: no-repeat;
-                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`, { type: "builder" });
 bCss.vSVG = css("vSVG", `background-image: url("svg/Vertical.svg");
                                         background-repeat: no-repeat;
-                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`, { type: "builder" });
 bCss.ISVG = css("ISVG", `background-image: url("svg/icon-htmlOPT.svg");
                                         background-repeat: no-repeat;
-                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`, { type: "builder" });
 bCss.pagesSVG = css("pagesSVG", `background-image: url("svg/bookOPT.svg");
                                         background-repeat: no-repeat;
-                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`);
-bCss.treeItem = css("treeItem", `background: transparent; color:black; cursor:pointer`, `background:DeepSkyBlue;`);
-bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;background:white`);
-bCss.buttonsSVGCss = css(`buttonIcons`, `fill: white;stroke:black; background-color:white`, `fill: black;stroke:white; background-color:black`, `fill: white;stroke:black; background-color:gray`);
-bCss.treenodeCss = css(`treenode`, `background:#dcedf0; cursor:pointer;`, `background:white`);
+                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`, { type: "builder" });
+bCss.treeItem = css("treeItem", `background: transparent; color:black; cursor:pointer`, `background:DeepSkyBlue;`, { type: "builder" });
+bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;background:white`, { type: "builder" });
+bCss.buttonsSVGCss = css(`buttonIcons`, `fill: white;stroke:black; background-color:white`, `fill: black;stroke:white; background-color:black`, `fill: white;stroke:black; background-color:gray`, { type: "builder" });
+bCss.treenodeCss = css(`treenode`, `background:#dcedf0; cursor:pointer;`, `background:white`, { type: "builder" });
 bCss.buttons = css('buttons', `display:inline-block;
                                     box-sizing: border-box;
                                     color:#444;
@@ -519,7 +574,7 @@ bCss.buttons = css('buttons', `display:inline-block;
                                     text-align: center; 
                                     box-shadow: inset 1px 2px 5px #777;
                                     transform: translateY(1px);
-                                    background: #e5e5e5;`);
+                                    background: #e5e5e5;`, { type: "builder" });
 bCss.buttonsPressed = css('buttonsPressed', `display:inline-block;
                                     color:#444;
                                     border:1px solid #CCC;
@@ -531,7 +586,7 @@ bCss.buttonsPressed = css('buttonsPressed', `display:inline-block;
                                     transform: translateY(1px);
                                     background: #e5e5e5;`, `
                                     color:red;
-                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`);
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`, { type: "builder" });
 ;
 class Builder extends Base {
     // retArgs:ArgsObj;   // <- this will appear

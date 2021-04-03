@@ -1526,32 +1526,32 @@ class DefaultTheme {
     </svg>`;
     }
 }
-DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false);
-DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false);
-DefaultTheme.bgLight = css("bgLight", `background: #dcedf0`);
+DefaultTheme.advisedDiv = new Css("div[llm]", "position:absolute;", false, { type: "llm" });
+DefaultTheme.advisedBody = new Css("body", "overflow: hidden;", false, { type: "llm" });
+DefaultTheme.bgLight = css("bgLight", `background: #dcedf0`, { type: "llm" });
 // WinModal
 DefaultTheme.titleCss = css("modalTitle", `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
       border: 1px solid black;background:LightSkyBlue;color:black;text-align: center;`, `cursor:pointer`, `-moz-box-sizing: border-box;-webkit-box-sizing: border-box;font-size: 12px;
-      border: 1px solid black;background:yellow;color:black;text-align: center;`);
+      border: 1px solid black;background:yellow;color:black;text-align: center;`, { type: "llm" });
 // ScrollBar
-DefaultTheme.ScrollBar_whiteBG = css("whiteBG", "background-color:white;outline: 1px solid black;outline-offset: -1px;");
-DefaultTheme.ScrollBar_blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
+DefaultTheme.ScrollBar_whiteBG = css("whiteBG", "background-color:white;outline: 1px solid black;outline-offset: -1px;", { type: "llm" });
+DefaultTheme.ScrollBar_blackBG = css("blackBG", "background-color:black;color:white;cursor: -webkit-grab; cursor: grab;", { type: "llm" });
 // arrows  //scrollArrows
-DefaultTheme.scrollArrowsSVGCss = css(`scrollArrows`, `stroke: black;`, `fill: white;`);
-DefaultTheme.arrowSVGCss = css(`arrowIcon`, `stroke: black;cursor:pointer;`, `fill: white;`);
+DefaultTheme.scrollArrowsSVGCss = css(`scrollArrows`, `stroke: black;`, `fill: white;`, { type: "llm" });
+DefaultTheme.arrowSVGCss = css(`arrowIcon`, `stroke: black;cursor:pointer;`, `fill: white;`, { type: "llm" });
 // Modal
 DefaultTheme.closeCss = css("closeCss", `-moz-box-sizing: border-box;
       -webkit-box-sizing: border-box;
-      border: 1px solid black;background:white;`);
-DefaultTheme.closeSVGCss = css(`closeIcon`, `stroke: black;background:white`, `stroke: white;background:red`);
+      border: 1px solid black;background:white;`, { type: "llm" });
+DefaultTheme.closeSVGCss = css(`closeIcon`, `stroke: black;background:white`, `stroke: white;background:red`, { type: "llm" });
 DefaultTheme.closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
       <g stroke-linecap="round" stroke-width="3.2"><path d="m2.5 2.5 20 20"/><path d="m22.5 2.5-20 20"/></g>
       </svg>`;
 // Dragbar
-DefaultTheme.horCss = css("db_hor", "background-color:black;cursor: ew-resize;");
-DefaultTheme.verCss = css("db_ver", "background-color:black;cursor: ns-resize;");
+DefaultTheme.horCss = css("db_hor", "background-color:black;cursor: ew-resize;", { type: "llm" });
+DefaultTheme.verCss = css("db_ver", "background-color:black;cursor: ns-resize;", { type: "llm" });
 // context
-DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "background-color:black;color: white;outline-style: solid;outline-width: 1px;");
+DefaultTheme.context = css("contxt", "background-color:white;color: black;outline-style: solid;outline-width: 1px;", "background-color:black;color: white;outline-style: solid;outline-width: 1px;", { type: "llm" });
 // static defaultMenuBarCss = css("menuBar","background-color:white;color: black;");
 // static defaultMenuBarHover = css("menuBar:hover","background-color:black;color: white;");
 // static defaultMenuBarNoHoverCss = css("menuBarNoHover","background-color:white;color: black;");                         
@@ -1573,7 +1573,7 @@ DefaultTheme.llm_checker = css("llm_checker", `cursor:pointer;
       0px var(--checkerSize);
     /* for fun */
     transition-property: background-position, background-size;
-    transition-duration: 2s;`);
+    transition-duration: 2s;`, { type: "llm" });
 Css.theme = DefaultTheme;
 // export {DefaultTheme}
 // import {Base} from './Base';

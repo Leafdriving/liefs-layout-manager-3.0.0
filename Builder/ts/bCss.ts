@@ -6,7 +6,7 @@ class bCss{
                                     border: 1px solid darkgray;
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
                                     font: -moz-field;
-                                    font: -webkit-small-control;`)
+                                    font: -webkit-small-control;`, {type:"builder"})
     static disabled = css("disabled",`-moz-appearance: textfield;
                                     -webkit-appearance: textfield;
                                     background-color: #E8E8E8;
@@ -14,64 +14,64 @@ class bCss{
                                     border: 1px solid darkgray;
                                     box-shadow: 1px 1px 1px 0 lightgray inset;  
                                     font: -moz-field;
-                                    font: -webkit-small-control;`)                                    
-    static bgwhite = css("bgwhite", `background: white`);
-    static bgLight = css("bgLight", `background: #dcedf0`);
-    static bgLightBorder = css("bgLight", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`);
+                                    font: -webkit-small-control;`, {type:"builder"})                                    
+    static bgwhite = css("bgwhite", `background: white`, {type:"builder"});
+    static bgLight = css("bgLight", `background: #dcedf0`, {type:"builder"});
+    static bgLightBorder = css("bgLight", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`, {type:"builder"});
     static bgLightCenter = css("bgLightCenter",
                                     `background: #dcedf0;
                                     text-align:center;box-sizing: border-box;
                                     border: 1px solid darkgray;
                                     -moz-box-sizing: border-box;
-                                    -webkit-box-sizing: border-box;`);
-    static bgGreen = css("bgGreen",`background: green;`);
-    static bgBlue = css("bgBlue",`background: blue;`);
-    static bgCyan = css("bgCyan",`background: cyan;`);
+                                    -webkit-box-sizing: border-box;`, {type:"builder"});
+    static bgGreen = css("bgGreen",`background: green;`, {type:"builder"});
+    static bgBlue = css("bgBlue",`background: blue;`, {type:"builder"});
+    static bgCyan = css("bgCyan",`background: cyan;`, {type:"builder"});
     static bgBlack = css("bgBlack",`background: black;
                                     opacity:0.5;
                                     box-sizing: border-box;
-                                    border: 10px solid red;`);
+                                    border: 10px solid red;`, {type:"builder"});
     static menuItem = css("menuItem", `background: white;
                                        color: black;
                                        cursor: default;
                                        outline: 1px solid black;
                                        outline-offset: -1px;`,
                                        `background: black;
-                                       color: white;`)
+                                       color: white;`, {type:"builder"})
     static menuSpace = css("menuspace", `background: white;
                                         color: black;
                                         cursor: default;
                                         outline: 1px solid black;
-                                        outline-offset: -1px;`);
+                                        outline-offset: -1px;`, {type:"builder"});
     static handlerSVG = css("handlerSVG",`background-image: url("svg/user-homeOPT.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`,
-                                        `cursor: pointer;background-color:white;`);
+                                        `cursor: pointer;background-color:white;`, {type:"builder"});
     static hSVG = css("hSVG",`background-image: url("svg/Horizontal.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`,
-                                        `cursor: pointer;background-color:white;`);
+                                        `cursor: pointer;background-color:white;`, {type:"builder"});
     static vSVG = css("vSVG",`background-image: url("svg/Vertical.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`,
-                                        `cursor: pointer;background-color:white;`);
+                                        `cursor: pointer;background-color:white;`, {type:"builder"});
     static ISVG = css("ISVG",`background-image: url("svg/icon-htmlOPT.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`,
-                                        `cursor: pointer;background-color:white;`);
+                                        `cursor: pointer;background-color:white;`, {type:"builder"});
     static pagesSVG = css("pagesSVG",`background-image: url("svg/bookOPT.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`,
-                                        `cursor: pointer;background-color:white;`);
+                                        `cursor: pointer;background-color:white;`, {type:"builder"});
     static treeItem = css("treeItem",`background: transparent; color:black; cursor:pointer`,
-                                     `background:DeepSkyBlue;`)
+                                     `background:DeepSkyBlue;`, {type:"builder"})
 
-    static bookSVGCss = css(`bookIcon`,`stroke: black;`,`fill: white;background:white`);
+    static bookSVGCss = css(`bookIcon`,`stroke: black;`,`fill: white;background:white`, {type:"builder"});
     static buttonsSVGCss = css(`buttonIcons`,`fill: white;stroke:black; background-color:white`,
                                              `fill: black;stroke:white; background-color:black`,
-                                             `fill: white;stroke:black; background-color:gray`,);
+                                             `fill: white;stroke:black; background-color:gray`, {type:"builder"});
     static treenodeCss = css(`treenode`,`background:#dcedf0; cursor:pointer;`,
-                                        `background:white`)
+                                        `background:white`, {type:"builder"})
     static buttons = css('buttons',`display:inline-block;
                                     box-sizing: border-box;
                                     color:#444;
@@ -92,7 +92,7 @@ class bCss{
                                     text-align: center; 
                                     box-shadow: inset 1px 2px 5px #777;
                                     transform: translateY(1px);
-                                    background: #e5e5e5;`);
+                                    background: #e5e5e5;`, {type:"builder"});
 
     static buttonsPressed = css('buttonsPressed',`display:inline-block;
                                     color:#444;
@@ -105,7 +105,7 @@ class bCss{
                                     transform: translateY(1px);
                                     background: #e5e5e5;`,`
                                     color:red;
-                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`);
+                                    box-shadow: 0 0 5px -1px rgba(0,0,0,0.6);`, {type:"builder"});
 
     static bookSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
         <g transform="matrix(.069039 0 0 .048212 -4.1849 .6616)">

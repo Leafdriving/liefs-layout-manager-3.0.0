@@ -38,6 +38,7 @@
         // "../ts/Observe.ts",
         // "../ts/ToolBar.ts",
         "ts/Properties.ts",
+        "ts/htmlBlockProps.ts",
         "ts/bCss.ts",
         "ts/builder.ts",
         

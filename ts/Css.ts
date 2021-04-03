@@ -24,6 +24,7 @@ class Css extends Base {
     }
     static deleteOnFirstRunClassname=".remove";
     classname:string;
+    type:string;
 
     css:string;
     cssObj:object;

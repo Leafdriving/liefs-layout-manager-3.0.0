@@ -1,5 +1,6 @@
 declare class Quill{constructor(...Arguments:any)};
 declare function monacoContainer(code:string, language?:string):void;
+declare class Picker{constructor(...Arguments:any)}
 class Builder extends Base {
     static labelNo = 0;
     static instances:Builder[] = [];
