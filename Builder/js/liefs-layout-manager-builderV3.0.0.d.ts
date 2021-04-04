@@ -155,6 +155,7 @@ declare function monacoContainer(code: string, language?: string): void;
 declare class Picker {
     constructor(...Arguments: any);
 }
+declare function saveAs(...Arguments: any): void;
 declare class Builder extends Base {
     static labelNo: number;
     static instances: Builder[];
@@ -190,5 +191,7 @@ declare class Builder extends Base {
     static horDivide(mouseEvent: MouseEvent): void;
     static propertiesModal: winModal;
     static hoverModal: Modal;
+    static fileSave(content: string, filename: string, type?: string): void;
+    static boilerPlate(javascript: string, title?: string): string;
 }
 declare let horVerModal: Modal;

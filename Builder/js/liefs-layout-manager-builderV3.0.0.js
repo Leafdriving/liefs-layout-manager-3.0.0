@@ -633,7 +633,7 @@ class Builder extends Base {
     }
     static buildClientHandler() {
         Builder.clientHandler =
-            H("Client Window", h("Client_h", 5, I("Client_M1", "left", bCss.bgLight, events({ onclick: function () { console.log("Client_M1 clicked"); } })), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
+            H("Client Window", h("Client_h", 5, dragbar("SomeDragbarName", 300, 1000, I("Client_M1", "left", bCss.bgLight, events({ onclick: function () { console.log("Client_M1 clicked"); } }))), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
     }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
@@ -659,12 +659,31 @@ class Builder extends Base {
                 I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`, (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon, node.ParentNodeTree.iconClass, events({ onclick: function (mouseEvent) { Tree_.toggleCollapse(this, node, mouseEvent); } }))
                 : I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`), I(`${node.label}_typeIcon`, `${node.ParentNodeTree.height}px`, typeIcon), nodeLabel);
         }), I("TWO", "TWO", bCss.bgCyan));
-        Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", I("MenuBar_File", "File", "35px", bCss.menuItem), I("MenuBar_Edit", "Edit", "35px", bCss.menuItem), I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", Builder.TOOLBAR, dockable(h("Tree_Body", 5, dragbar(v("TreeTops", "300px", 5, pageselect("name", "20px", treePagesDisplayCell), treePagesDisplayCell), 200, 1000), bindHandler(I("Main_body"), Builder.clientHandler)))))));
+        let menubarFile = I("MenuBar_File", "File", "35px", bCss.menuItem);
+        menubarFile.hMenuBar({ menuObj: {
+                "Load (not working)": function () { console.log("one"); },
+                "SaveAs": { "just Javascript": function () {
+                        Builder.fileSave(Handler.byLabel("Client Window").toCode(), "myJavascript.js");
+                    },
+                    "One Page Website.html": function () {
+                        Builder.fileSave(Builder.boilerPlate(Handler.byLabel("Client Window").toCode()), "myWebSite.html");
+                    }, "Project Zipped": function () { console.log("c"); }, },
+            } }, 150);
+        let menubarEdit = I("MenuBar_Edit", "Edit", "35px", bCss.menuItem);
+        menubarEdit.hMenuBar({ menuObj: {
+                one: function () { console.log("one"); },
+                two: function () { console.log("two"); },
+                three: { a: function () { console.log("a"); },
+                    b: function () { console.log("b"); },
+                    c: function () { console.log("c"); },
+                },
+                four: function () { console.log("four"); },
+            } });
+        Builder.mainHandler = H("Main Window", 4, v("Main_v", h("MenuBar", "20px", menubarFile, menubarEdit, I("MenuBar_Spacer", "", bCss.menuSpace)), dockable(v("Main_Dockable", Builder.TOOLBAR, dockable(h("Tree_Body", 5, dragbar(v("TreeTops", "300px", 5, pageselect("name", "20px", treePagesDisplayCell), treePagesDisplayCell), 200, 1000), bindHandler(I("Main_body"), Builder.clientHandler)))))));
     }
     static updateTree() {
         Render.update();
         const node = node_.byLabel("Client Window");
-        // console.log(node);
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function (node, newNode) {
                 newNode["Arguments"] = node.Arguments;
@@ -672,7 +691,6 @@ class Builder extends Base {
             });
             Builder.noDisplayCellnode = Builder.noDisplayCells();
             Tree_.byLabel("HandlerTree").newRoot(Builder.noDisplayCellnode);
-            // Builder.noDisplayCellnode.log(true)
         }
         Render.update();
     }
@@ -803,7 +821,6 @@ class Builder extends Base {
                 let coord = displaycell.coord;
                 if (coord.isPointIn(mouseEvent.clientX, mouseEvent.clientY)) {
                     if (displaycell.htmlBlock) {
-                        // console.log(displaycell.label);
                         let coord = displaycell.coord;
                         horVerModal.setSize(mouseEvent.clientX - 2, coord.y, 4, coord.height);
                         console.log(horVerModal.isShown());
@@ -817,6 +834,25 @@ class Builder extends Base {
         });
         if (!show && horVerModal.isShown)
             horVerModal.hide();
+    }
+    static fileSave(content, filename, type = "data:application/octet-stream" /*  "text/plain;charset=utf-8" */) {
+        saveAs(new File([content], filename, { type }));
+    }
+    static boilerPlate(javascript, title = "Page Title") {
+        return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>${title}</title>
+    <script src='https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js'></script>
+</head>
+<body>
+</body>
+</html>
+<script>
+${javascript}
+</script>`;
     }
 }
 Builder.labelNo = 0;

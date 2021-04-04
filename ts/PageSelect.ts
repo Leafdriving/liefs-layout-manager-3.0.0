@@ -159,7 +159,7 @@ class PageSelect extends Base {
 
         let overlay=new Overlay("winModal", {body: displaycell, headerText: displaycell.label}, x,y,width,height);
         let newWinModal = <winModal>overlay.returnObj;
-        newWinModal.rootDisplayCell.addOverlay(overlay);
+        newWinModal.parentDisplayCell.addOverlay(overlay);
         this.updateContextLabel();
         this.buildMenuObj();
         Render.update();

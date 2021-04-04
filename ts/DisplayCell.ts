@@ -90,9 +90,9 @@ class DisplayCell extends Base {
             if (this.overlays[index].sourceClassName == label)
                 this.overlays.splice(index, 1)
     }
-    hMenuBar(menuObj:object){
+    hMenuBar(menuObj:object, ...Arguments:any){
         menuObj["launchcell"] = this;
-        this.htmlBlock.events = events({onmouseover:hMenuBar(menuObj)})            //////////////// COME BACK HERE!!!!
+        this.htmlBlock.events = events({onmouseover:hMenuBar(menuObj, ...Arguments)})            //////////////// COME BACK HERE!!!!
     }
     vMenuBar(menuObj:object){
         menuObj["launchcell"] = this;

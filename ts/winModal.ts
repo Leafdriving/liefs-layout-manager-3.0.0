@@ -15,7 +15,7 @@ class winModal extends Base {
 
     renderNode:node_; // render node
 
-    rootDisplayCell: DisplayCell;
+    parentDisplayCell: DisplayCell;
 
     header: DisplayCell;
     headerHeight: number;
@@ -83,27 +83,27 @@ class winModal extends Base {
     }
     toggleCollapse(mouseEvent:MouseEvent){
         // console.log("ArrayLength", this.rootDisplayCell.displaygroup.cellArray.length);
-        if (this.rootDisplayCell.displaygroup.cellArray.length > 1)
+        if (this.parentDisplayCell.displaygroup.cellArray.length > 1)
             this.toggleClose();
         else
             this.toggleOpen();
     }
     toggleClose(){
-        for (let index = 1; index < this.rootDisplayCell.displaygroup.cellArray.length; index++)
-            Render.update(this.rootDisplayCell.displaygroup.cellArray[index], true);
+        for (let index = 1; index < this.parentDisplayCell.displaygroup.cellArray.length; index++)
+            Render.update(this.parentDisplayCell.displaygroup.cellArray[index], true);
             //Handler.renderDisplayCell(this.rootDisplayCell.displaygroup.cellArray[index], undefined, undefined, true);
-        this.hiddenCells = this.rootDisplayCell.displaygroup.cellArray
-        this.rootDisplayCell.displaygroup.cellArray = [this.rootDisplayCell.displaygroup.cellArray[0]];
+        this.hiddenCells = this.parentDisplayCell.displaygroup.cellArray
+        this.parentDisplayCell.displaygroup.cellArray = [this.parentDisplayCell.displaygroup.cellArray[0]];
         let coord = this.modal.coord;
         this.previousModalHeight = coord.height;
         this.modal.setSize(coord.x, coord.y, coord.width, this.headerHeight);
-        this.rootDisplayCell.dim = `${this.headerHeight}px`;
+        this.parentDisplayCell.dim = `${this.headerHeight}px`;
         Render.update();
     }
     toggleOpen(){
-        this.rootDisplayCell.displaygroup.cellArray = this.hiddenCells;
+        this.parentDisplayCell.displaygroup.cellArray = this.hiddenCells;
         let coord = this.modal.coord;
-        this.rootDisplayCell.dim = `${this.previousModalHeight}px`;
+        this.parentDisplayCell.dim = `${this.previousModalHeight}px`;
         this.modal.setSize(coord.x, coord.y, coord.width, this.previousModalHeight);
         Render.update();
     }
@@ -115,11 +115,11 @@ class winModal extends Base {
         let cells:DisplayCell[] = [this.header, this.body];
         if (this.footer) cells.push(this.footer);
         
-        this.rootDisplayCell = v(`${this.label}_V`, ...cells);
+        this.parentDisplayCell = v(`${this.label}_V`, ...cells);
         let numbers = this.retArgs["number"];
         
         if (!numbers) numbers = [];
-        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, {type: HandlerType.winModal});
+        this.modal = new Modal(`${this.label}_modal`, this.parentDisplayCell, ...numbers, {type: HandlerType.winModal});
         this.modal.dragWith(`${this.label}_title`);
         this.modal.closeWith(`${this.label}_close`, this.closeCallback);
         if (this.showOnStart) this.modal.show();
@@ -231,12 +231,13 @@ class winModal extends Base {
     
 }
 Render.register("winModal", winModal);
-function winmodal(...Arguments:any):winModal {
-    let overlay=new Overlay("winModal", ...Arguments);
-    let newWinModal = <winModal>overlay.returnObj;
-    let parentDisplaycell = newWinModal.rootDisplayCell;
-    // parentDisplaycell.overlay = overlay; // remove this line soon
-    parentDisplaycell.addOverlay(overlay);
-    return newWinModal;
-}
+// function winmodal(...Arguments:any):winModal {
+//     let overlay=new Overlay("winModal", ...Arguments);
+//     let newWinModal = <winModal>overlay.returnObj;
+//     let parentDisplaycell = newWinModal.rootDisplayCell;
+//     // parentDisplaycell.overlay = overlay; // remove this line soon
+//     parentDisplaycell.addOverlay(overlay);
+//     return newWinModal;
+// }
+function winmodal(...Arguments:any): DisplayCell {return Overlay.new("winModal", ...Arguments)};
 Overlay.classes["winModal"] = winModal;

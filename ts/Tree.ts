@@ -164,7 +164,7 @@ class Tree_ extends Base {
             if (!thisTree.scrollbarh) {
                 let overlay=new Overlay("ScrollBar", thisTree.parentDisplayCell, true);
                 thisTree.scrollbarh = <ScrollBar>overlay.returnObj;
-                let parentDisplaycell = thisTree.scrollbarh.parentDisplaycell;
+                let parentDisplaycell = thisTree.scrollbarh.parentDisplayCell;
                 parentDisplaycell.addOverlay(overlay);
             }
             thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
@@ -199,11 +199,12 @@ class Tree_ extends Base {
     }
 }
 Render.register("Tree_", Tree_);
-function tree(...Arguments:any) {
-    let overlay=new Overlay("Tree_", ...Arguments);
-    let newTree_ = <Tree_>overlay.returnObj;
-    let parentDisplaycell = newTree_.parentDisplayCell;
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function tree(...Arguments:any) {
+//     let overlay=new Overlay("Tree_", ...Arguments);
+//     let newTree_ = <Tree_>overlay.returnObj;
+//     let parentDisplaycell = newTree_.parentDisplayCell;
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function tree(...Arguments:any): DisplayCell {return Overlay.new("Tree_", ...Arguments)};
 Overlay.classes["Tree_"] = Tree_;

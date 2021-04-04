@@ -14,7 +14,7 @@ class ScrollBar extends Base {
     static defaults = {barSize:15, offset:0, type:"Unknown"}
     static argMap = {
         string : ["label"],
-        DisplayCell : ["parentDisplaycell"],
+        DisplayCell : ["parentDisplayCell"],
         number: ["barSize"],
         boolean: ["ishor"],
         // Coord: ["coord"]
@@ -35,7 +35,7 @@ class ScrollBar extends Base {
     ishor:boolean;
     coord:Coord;
 
-    parentDisplaycell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     scrollbarDisplayCell : DisplayCell;
 
     preBar:DisplayCell;
@@ -45,12 +45,12 @@ class ScrollBar extends Base {
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         // console.log("scrollbar Created");
-        this.label = `${this.parentDisplaycell.label}_${this.type}`;
+        this.label = `${this.parentDisplayCell.label}_${this.type}`;
         this.build()
-        if (!this.coord) this.coord = this.parentDisplaycell.coord;
+        if (!this.coord) this.coord = this.parentDisplayCell.coord;
         
-        if (!this.parentDisplaycell.preRenderCallback) {
-            this.parentDisplaycell.preRenderCallback = FunctionStack.function(this.label);
+        if (!this.parentDisplayCell.preRenderCallback) {
+            this.parentDisplayCell.preRenderCallback = FunctionStack.function(this.label);
         }
         let THIS = this;
         
@@ -121,7 +121,7 @@ class ScrollBar extends Base {
         // this.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
 
         this.displaySize = displaySize;
-        this.viewPortSize = (ishor) ? this.parentDisplaycell.coord.width : this.parentDisplaycell.coord.height;
+        this.viewPortSize = (ishor) ? this.parentDisplayCell.coord.width : this.parentDisplayCell.coord.height;
         let scrollBarSize = this.viewPortSize - this.barSize*2;
         this.scaleFactor = scrollBarSize/this.displaySize;
 
@@ -163,14 +163,14 @@ class ScrollBar extends Base {
             if (instance.scrollbarDisplayCell.coord.isPointIn(event.clientX, event.clientY))
                 scrollbar = instance;
             else 
-                if (instance.parentDisplaycell.coord.isPointIn(event.clientX, event.clientY))
+                if (instance.parentDisplayCell.coord.isPointIn(event.clientX, event.clientY))
                     scrollbar = instance;
         }
         if (scrollbar) scrollbar.onWheel(event)
     }
     static distOfMouseFromWheel(THIS:ScrollBar, event:WheelEvent) {
         let ishor = THIS.ishor;
-        let displaycell = THIS.parentDisplaycell;
+        let displaycell = THIS.parentDisplayCell;
         let coord = displaycell.coord;
         let x = event.clientX;
         let y = event.clientY;
@@ -187,14 +187,15 @@ class ScrollBar extends Base {
     }
 }
 Render.register("ScrollBar", ScrollBar);
-function scrollbar(...Arguments:any) {
-    let overlay=new Overlay("ScrollBar", ...Arguments);
-    let newScrollBar = <ScrollBar>overlay.returnObj;
-    let parentDisplaycell = newScrollBar.parentDisplaycell;
-    // parentDisplaycell.overlay = overlay; // remove this line soon
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function scrollbar(...Arguments:any) {
+//     let overlay=new Overlay("ScrollBar", ...Arguments);
+//     let newScrollBar = <scrollbar>overlay.returnObj;
+//     let parentDisplaycell = newScrollBar.parentDisplaycell;
+//     // parentDisplaycell.overlay = overlay; // remove this line soon
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function scrollbar(...Arguments:any): DisplayCell {return Overlay.new("scrollbar", ...Arguments);}
 Overlay.classes["ScrollBar"] = ScrollBar;
 
 

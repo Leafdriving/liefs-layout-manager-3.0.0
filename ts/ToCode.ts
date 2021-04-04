@@ -1,11 +1,16 @@
 interface objectValueClassFunction {[key: string]: (value: any, CLASS: string) => string}
 interface objectKeyValueClassFunction {[key: string]: (key:string, value: any, CLASS: string) => string}
 class ToCode{
+    static overlayPostString="";
     static definitions: {CLASS:string, NAME:string, VALUE:string}[];
     static define(obj:{CLASS:string, NAME:string, VALUE:string}){
         for (let index = 0; index < ToCode.definitions.length; index++) {
             let {CLASS, NAME, VALUE} = ToCode.definitions[index];
             if (CLASS == obj.CLASS && NAME == obj.NAME) return
+        }
+        if (obj.CLASS == "DisplayCell"){
+            obj.VALUE += ToCode.overlayPostString;
+            ToCode.overlayPostString = "";
         }
         ToCode.definitions.push(obj);
     }
@@ -13,11 +18,14 @@ class ToCode{
         let returnString = "";
         for (let index = 0; index < ToCode.definitions.length; index++) {
             let {CLASS, NAME, VALUE} = ToCode.definitions[index];
-            returnString += `let ${CLASS}_${NAME} = ${VALUE}\n`;
+            if (NAME == undefined){
+                returnString += `${VALUE}\n`;    
+            } else returnString += `let ${CLASS}_${NAME} = ${VALUE}\n`;
         }
         return (asArray) ? ToCode.definitions:returnString;
     }
     static exemptions = ["tag", "retArgs", "toCode", "node_", "renderNode", "toString", "el", "dimArrayTotal"]; // do not read these....
+    static exemptionsByClass = {DragBar:["displaycell", "parentDisplayCell", "parentDisplaygroup", "overlays"]}
     static addKey:ArgMap = { // for each, you must read these extra variables
         DisplayCell:["htmlBlock", "displaygroup"],
         Coord:["x", "y", "width", "height"],
@@ -44,6 +52,26 @@ class ToCode{
                 arrayString += ((index == 0) ? "" : ", " ) + `DisplayCell_${cellArray[index].label}`;
             }
             return `  cellArray: [${arrayString}],\n`;
+        },
+        overlays:function(overlays:Overlay[], CLASS) {
+            // console.log("Overlays", overlays, CLASS)
+            for (let index = 0; index < overlays.length; index++) {
+                var overlay = overlays[index];
+                // console.log(overlay.returnObj, overlay.sourceClassName);
+                switch (overlay.sourceClassName) {
+                    case "DragBar":
+                        let dragbar = <DragBar>overlay.returnObj;
+                        ToCode.overlayPostString += `dragbar(DisplayCell_${dragbar.parentDisplayCell.label},`
+                                                            +` ${dragbar.min}, ${dragbar.max});\n`;
+                        break;
+                    case "ScrollBar":
+                        // do nothing - it appears automatically!
+                    default:
+                        ToCode.overlayPostString += `// no overlay handler created for type ${overlay.sourceClassName}\n`;
+                        break;
+                }
+            }
+            return "";
         }
     }
     static callGeneric = function(key:string, value:HtmlBlock, CLASS=undefined){
@@ -82,7 +110,7 @@ class ToCode{
 
         for (let key in classInstance) {                     // get all variable from Class
             if (exemptions.indexOf(key) == -1) {
-                // console.log(`pushed key "${key}"`,)
+                if (!(ToCode.exemptionsByClass[CLASS] && ToCode.exemptionsByClass[CLASS].indexOf(key) != -1))
                 forconsolelog += `"${key}", `;
                 keyValue.push([key, BaseF.typeof(classInstance[key])]);
             }

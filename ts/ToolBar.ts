@@ -22,14 +22,14 @@ class Dockable extends Base {
     static defaults = {acceptsTypes: ["ALL"]}
     static argMap = {
         string : ["label"],
-        DisplayCell : ["displaycell"],
+        DisplayCell : ["parentDisplayCell"],
     }
     retArgs:ArgsObj;   // <- this will appear
 
     renderNode:node_; // render node
 
     label:string;
-    displaycell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     displaygroup: DisplayGroup;
     acceptsTypes:string[];
     dropZones: Coord[];
@@ -43,7 +43,7 @@ class Dockable extends Base {
         if ("string" in this.retArgs && this.retArgs["string"].length > 1) {
             this.acceptsTypes = this.retArgs["string"].shift();
         }
-        if (this.displaycell) this.displaygroup = this.displaycell.displaygroup;
+        if (this.parentDisplayCell) this.displaygroup = this.parentDisplayCell.displaygroup;
         this.dummy = I(`${this.label}_DockableDummy`);
 
         window.addEventListener('ModalDropped', function (e:CustomEvent) {THIS.dropped(e)}, false);
@@ -54,11 +54,11 @@ class Dockable extends Base {
         let toolbar = <ToolBar>ToolBar.byLabel( modal.label.slice(0, -6) );
         let ishor = this.displaygroup.ishor;
         if (toolbar) {
-            let index = this.displaygroup.cellArray.indexOf(toolbar.rootDisplayCell);
+            let index = this.displaygroup.cellArray.indexOf(toolbar.parentDisplayCell);
             if (index > -1) {        // is in this cellArray
                 // console.log("Undock")
-                modal.coord.x = toolbar.rootDisplayCell.coord.x;
-                modal.coord.y = toolbar.rootDisplayCell.coord.y;
+                modal.coord.x = toolbar.parentDisplayCell.coord.x;
+                modal.coord.y = toolbar.parentDisplayCell.coord.y;
                 toolbar.state = (ishor) ? TBState.modalWasDockedInHor : TBState.modalWasDockedInVer;
                 this.displaygroup.cellArray.splice(index, 1);
                 toolbar.resizeForModal();
@@ -76,7 +76,7 @@ class Dockable extends Base {
                 let ishor = this.displaygroup.ishor;
                 toolbar.state = (ishor) ? TBState.dockedInHorizontal :TBState.dockedInVertical;
                 toolbar.resizeFordock();
-                this.displaygroup.cellArray[Dockable.activeDropZoneIndex] = toolbar.rootDisplayCell;
+                this.displaygroup.cellArray[Dockable.activeDropZoneIndex] = toolbar.parentDisplayCell;
                 Dockable.activeDropZoneIndex = undefined;
                 toolbar.parentDisplayGroup = this.displaygroup;
                 this.dropZones = undefined;
@@ -158,13 +158,14 @@ class Dockable extends Base {
 }
     
 Render.register("Dockable", Dockable);
-function dockable(...Arguments:any) {
-    let overlay=new Overlay("Dockable", ...Arguments);
-    let newDockable = <Dockable>overlay.returnObj;
-    let parentDisplaycell = newDockable.displaycell;
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function dockable(...Arguments:any) {
+//     let overlay=new Overlay("Dockable", ...Arguments);
+//     let newDockable = <Dockable>overlay.returnObj;
+//     let parentDisplaycell = newDockable.displaycell;
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function dockable(...Arguments:any): DisplayCell {return Overlay.new("Dockable", ...Arguments);}
 Overlay.classes["Dockable"] = Dockable;
 
 
@@ -195,7 +196,7 @@ class ToolBar extends Base {
     label:string;
     state: TBState;
     displayCells:DisplayCell[];
-    rootDisplayCell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     width:number;
     height:number;
     parentDisplayGroup: DisplayGroup;
@@ -220,14 +221,14 @@ class ToolBar extends Base {
     }
     buildModal(){
         let THIS = this;
-        this.rootDisplayCell =
+        this.parentDisplayCell =
             h(`${this.label}_h`, `${this.height}px`,
                 I(`${this.label}_handle`, DefaultTheme.llm_checker, `${this.checkerSize}px`,
                     events({ondblclick:function(e:MouseEvent){THIS.toggleDirection(e)}}),
                 ),
                 ...this.displayCells
             );
-        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...this.size(), {type: HandlerType.toolbar});
+        this.modal = new Modal(`${this.label}_modal`, this.parentDisplayCell, ...this.size(), {type: HandlerType.toolbar});
         this.modal.dragWith(`${this.label}_handle`);
     }
     size(){
@@ -245,10 +246,10 @@ class ToolBar extends Base {
     }
     resizeForModal() {
         let isHor = (this.state == TBState.modalWasDockedInVer)
-        this.rootDisplayCell.displaygroup.ishor = isHor;
-        this.rootDisplayCell.displaygroup.dim = `${(isHor) ? this.height : this.width}px`;
+        this.parentDisplayCell.displaygroup.ishor = isHor;
+        this.parentDisplayCell.displaygroup.dim = `${(isHor) ? this.height : this.width}px`;
 
-        let cellArray = this.rootDisplayCell.displaygroup.cellArray;
+        let cellArray = this.parentDisplayCell.displaygroup.cellArray;
         for (let index = 1; index < cellArray.length; index++) 
             cellArray[index].dim = `${(isHor) ? this.width : this.height}px`;
 
@@ -257,10 +258,10 @@ class ToolBar extends Base {
     }
     resizeFordock() {
         let isHor = (this.state == TBState.dockedInVertical);
-        this.rootDisplayCell.displaygroup.ishor = isHor;
-        this.rootDisplayCell.dim = `${(isHor) ? this.height : this.width}px`;
+        this.parentDisplayCell.displaygroup.ishor = isHor;
+        this.parentDisplayCell.dim = `${(isHor) ? this.height : this.width}px`;
 
-        let cellArray = this.rootDisplayCell.displaygroup.cellArray;
+        let cellArray = this.parentDisplayCell.displaygroup.cellArray;
         for (let index = 1; index < cellArray.length; index++) 
             cellArray[index].dim = `${(isHor) ? this.width : this.height}px`;
     }
@@ -300,11 +301,12 @@ class ToolBar extends Base {
     }
 }
 Render.register("ToolBar", ToolBar);
-function toolBar(...Arguments:any) {
-    let overlay=new Overlay("ToolBar", ...Arguments);
-    let newToolBar = <ToolBar>overlay.returnObj;
-    let parentDisplaycell = newToolBar.rootDisplayCell;
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function toolBar(...Arguments:any) {
+//     let overlay=new Overlay("ToolBar", ...Arguments);
+//     let newToolBar = <ToolBar>overlay.returnObj;
+//     let parentDisplaycell = newToolBar.rootDisplayCell;
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function toolBar(...Arguments:any): DisplayCell {return Overlay.new("ToolBar", ...Arguments);}
 Overlay.classes["ToolBar"] = ToolBar;

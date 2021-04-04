@@ -898,9 +898,9 @@ class DisplayCell extends Base {
             if (this.overlays[index].sourceClassName == label)
                 this.overlays.splice(index, 1);
     }
-    hMenuBar(menuObj) {
+    hMenuBar(menuObj, ...Arguments) {
         menuObj["launchcell"] = this;
-        this.htmlBlock.events = events({ onmouseover: hMenuBar(menuObj) }); //////////////// COME BACK HERE!!!!
+        this.htmlBlock.events = events({ onmouseover: hMenuBar(menuObj, ...Arguments) }); //////////////// COME BACK HERE!!!!
     }
     vMenuBar(menuObj) {
         menuObj["launchcell"] = this;
@@ -1845,7 +1845,7 @@ class PageSelect extends Base {
         let [sw, sh] = pf.viewport();
         let overlay = new Overlay("winModal", { body: displaycell, headerText: displaycell.label }, x, y, width, height);
         let newWinModal = overlay.returnObj;
-        newWinModal.rootDisplayCell.addOverlay(overlay);
+        newWinModal.parentDisplayCell.addOverlay(overlay);
         this.updateContextLabel();
         this.buildMenuObj();
         Render.update();
@@ -2023,6 +2023,8 @@ class Overlay {
         this.label = `Overlay_${pf.pad_with_zeroes(Overlay.instances.length)}`;
         this.sourceClassName = Arguments.shift();
         this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);
+        // console.log(this.returnObj);
+        this.returnObj["parentDisplayCell"].addOverlay(this);
     }
     static byLabel(label) {
         for (let key in Overlay.instances)
@@ -2033,6 +2035,12 @@ class Overlay {
     renderOverlay(displaycell, parentDisplaygroup, index, derender) {
         this.currentlyRendered = !derender;
         (this.returnObj["render"])(displaycell, parentDisplaygroup, index, derender);
+    }
+    static new(CLASS, ...Arguments) {
+        let newOverlay = new Overlay(CLASS, ...Arguments);
+        let newClass = newOverlay.returnObj;
+        let displaycell = newClass["parentDisplayCell"];
+        return displaycell;
     }
 }
 Overlay.instances = [];
@@ -2056,10 +2064,10 @@ class DragBar extends Base {
         let dragbar = this;
         DragBar.makeLabel(this);
         this.displaycell = I(`${this.label}_dragbar`, "", events({ ondrag: { onDown: function (xmouseDiff) {
-                    if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
-                        dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
+                    if (pf.isTypePercent(dragbar.parentDisplayCell.dim)) {
+                        dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplayCell);
                     }
-                    dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplaycell.dim);
+                    dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplayCell.dim);
                 },
                 onMove: function (xmouseDiff) {
                     let newdim = dragbar.startpos + ((dragbar.ishor) ? xmouseDiff["x"] : xmouseDiff["y"]) * ((dragbar.isLast) ? -1 : 1);
@@ -2067,7 +2075,7 @@ class DragBar extends Base {
                         newdim = dragbar.max;
                     if (newdim < dragbar.min)
                         newdim = dragbar.min;
-                    dragbar.parentDisplaycell.dim = `${newdim}px`;
+                    dragbar.parentDisplayCell.dim = `${newdim}px`;
                     Render.update();
                 },
                 // onUp: function(ouxmouseDifftput:object){}
@@ -2134,21 +2142,21 @@ DragBar.defaults = {
 };
 DragBar.argMap = {
     string: ["label"],
-    DisplayCell: ["parentDisplaycell"],
+    DisplayCell: ["parentDisplayCell"],
     number: ["min", "max", "pxsize"],
     Css: ["horcss", "vercss"]
 };
 Render.register("DragBar", DragBar);
-function dragbar(...Arguments) {
-    let overlay = new Overlay("DragBar", ...Arguments);
-    let newDragBar = overlay.returnObj;
-    let parentDisplaycell = newDragBar.parentDisplaycell;
-    // parentDisplaycell.overlay = overlay; // remove this line soon
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+function dragbar(...Arguments) { return Overlay.new("DragBar", ...Arguments); }
 Overlay.classes["DragBar"] = DragBar;
-// export {dragbar, DragBar}
+// function dragbar(...Arguments:any) {
+//     let overlay=new Overlay("DragBar", ...Arguments);
+//     let newDragBar = <DragBar>overlay.returnObj;
+//     let parentDisplaycell = newDragBar.parentDisplaycell;
+//     // parentDisplaycell.overlay = overlay; // remove this line soon
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
 // // import {Base} from './Base';
 // // import {Css, css} from './Css';
 // // import {DisplayCell, I} from './DisplayCell';
@@ -2162,12 +2170,12 @@ class ScrollBar extends Base {
         super();
         this.buildBase(...Arguments);
         // console.log("scrollbar Created");
-        this.label = `${this.parentDisplaycell.label}_${this.type}`;
+        this.label = `${this.parentDisplayCell.label}_${this.type}`;
         this.build();
         if (!this.coord)
-            this.coord = this.parentDisplaycell.coord;
-        if (!this.parentDisplaycell.preRenderCallback) {
-            this.parentDisplaycell.preRenderCallback = FunctionStack.function(this.label);
+            this.coord = this.parentDisplayCell.coord;
+        if (!this.parentDisplayCell.preRenderCallback) {
+            this.parentDisplayCell.preRenderCallback = FunctionStack.function(this.label);
         }
         let THIS = this;
         FunctionStack.push(this.label, function (displaycell, parentDisplaygroup /*= undefined*/, index /*= undefined*/, derender) {
@@ -2217,7 +2225,7 @@ class ScrollBar extends Base {
         this.scrollbarDisplayCell.coord.assign(sbx, sby, scw, sch, sbx, sby, scw, sch, this.coord.zindex);
         // this.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
         this.displaySize = displaySize;
-        this.viewPortSize = (ishor) ? this.parentDisplaycell.coord.width : this.parentDisplaycell.coord.height;
+        this.viewPortSize = (ishor) ? this.parentDisplayCell.coord.width : this.parentDisplayCell.coord.height;
         let scrollBarSize = this.viewPortSize - this.barSize * 2;
         this.scaleFactor = scrollBarSize / this.displaySize;
         this.preBar.dim = `${Math.round(this.offset * this.scaleFactor)}px`;
@@ -2258,7 +2266,7 @@ class ScrollBar extends Base {
         for (let instance of ScrollBar.activeInstances) {
             if (instance.scrollbarDisplayCell.coord.isPointIn(event.clientX, event.clientY))
                 scrollbar = instance;
-            else if (instance.parentDisplaycell.coord.isPointIn(event.clientX, event.clientY))
+            else if (instance.parentDisplayCell.coord.isPointIn(event.clientX, event.clientY))
                 scrollbar = instance;
         }
         if (scrollbar)
@@ -2266,7 +2274,7 @@ class ScrollBar extends Base {
     }
     static distOfMouseFromWheel(THIS, event) {
         let ishor = THIS.ishor;
-        let displaycell = THIS.parentDisplaycell;
+        let displaycell = THIS.parentDisplayCell;
         let coord = displaycell.coord;
         let x = event.clientX;
         let y = event.clientY;
@@ -2293,20 +2301,21 @@ ScrollBar.activeInstances = [];
 ScrollBar.defaults = { barSize: 15, offset: 0, type: "Unknown" };
 ScrollBar.argMap = {
     string: ["label"],
-    DisplayCell: ["parentDisplaycell"],
+    DisplayCell: ["parentDisplayCell"],
     number: ["barSize"],
     boolean: ["ishor"],
     // Coord: ["coord"]
 };
 Render.register("ScrollBar", ScrollBar);
-function scrollbar(...Arguments) {
-    let overlay = new Overlay("ScrollBar", ...Arguments);
-    let newScrollBar = overlay.returnObj;
-    let parentDisplaycell = newScrollBar.parentDisplaycell;
-    // parentDisplaycell.overlay = overlay; // remove this line soon
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function scrollbar(...Arguments:any) {
+//     let overlay=new Overlay("ScrollBar", ...Arguments);
+//     let newScrollBar = <scrollbar>overlay.returnObj;
+//     let parentDisplaycell = newScrollBar.parentDisplaycell;
+//     // parentDisplaycell.overlay = overlay; // remove this line soon
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function scrollbar(...Arguments) { return Overlay.new("scrollbar", ...Arguments); }
 Overlay.classes["ScrollBar"] = ScrollBar;
 // class ScrollBar extends Base {
 //     static instances:ScrollBar[] = [];
@@ -2600,7 +2609,7 @@ class Context extends Base {
             x = mouseEvent.clientX - Context.subOverlapPx;
             y = mouseEvent.clientY - Context.subOverlapPx;
         }
-        this.coord.assign(x, y, (this.launchcell) ? this.launchcell.coord.width : this.width, this.height);
+        this.coord.assign(x, y, (this.launchcell && (this.width == Context.defaults.width)) ? this.launchcell.coord.width : this.width, this.height);
         this.handler = H(this.displaycell, this.coord, { type: "context" });
         let THIS = this;
         window.onmousemove = function (mouseEvent) { THIS.managePop(mouseEvent); };
@@ -3081,7 +3090,7 @@ class Tree_ extends Base {
             if (!thisTree.scrollbarh) {
                 let overlay = new Overlay("ScrollBar", thisTree.parentDisplayCell, true);
                 thisTree.scrollbarh = overlay.returnObj;
-                let parentDisplaycell = thisTree.scrollbarh.parentDisplaycell;
+                let parentDisplaycell = thisTree.scrollbarh.parentDisplayCell;
                 parentDisplaycell.addOverlay(overlay);
             }
             thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
@@ -3133,13 +3142,15 @@ Tree_.argMap = {
     node_: ["rootNode"],
 };
 Render.register("Tree_", Tree_);
-function tree(...Arguments) {
-    let overlay = new Overlay("Tree_", ...Arguments);
-    let newTree_ = overlay.returnObj;
-    let parentDisplaycell = newTree_.parentDisplayCell;
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function tree(...Arguments:any) {
+//     let overlay=new Overlay("Tree_", ...Arguments);
+//     let newTree_ = <Tree_>overlay.returnObj;
+//     let parentDisplaycell = newTree_.parentDisplayCell;
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function tree(...Arguments) { return Overlay.new("Tree_", ...Arguments); }
+;
 Overlay.classes["Tree_"] = Tree_;
 // import {Base} from './Base';
 // import {DisplayCell} from './DisplayCell';
@@ -3269,8 +3280,8 @@ class Dockable extends Base {
         if ("string" in this.retArgs && this.retArgs["string"].length > 1) {
             this.acceptsTypes = this.retArgs["string"].shift();
         }
-        if (this.displaycell)
-            this.displaygroup = this.displaycell.displaygroup;
+        if (this.parentDisplayCell)
+            this.displaygroup = this.parentDisplayCell.displaygroup;
         this.dummy = I(`${this.label}_DockableDummy`);
         window.addEventListener('ModalDropped', function (e) { THIS.dropped(e); }, false);
         window.addEventListener('ModalStartDrag', function (e) { THIS.undock(e); }, false);
@@ -3280,11 +3291,11 @@ class Dockable extends Base {
         let toolbar = ToolBar.byLabel(modal.label.slice(0, -6));
         let ishor = this.displaygroup.ishor;
         if (toolbar) {
-            let index = this.displaygroup.cellArray.indexOf(toolbar.rootDisplayCell);
+            let index = this.displaygroup.cellArray.indexOf(toolbar.parentDisplayCell);
             if (index > -1) { // is in this cellArray
                 // console.log("Undock")
-                modal.coord.x = toolbar.rootDisplayCell.coord.x;
-                modal.coord.y = toolbar.rootDisplayCell.coord.y;
+                modal.coord.x = toolbar.parentDisplayCell.coord.x;
+                modal.coord.y = toolbar.parentDisplayCell.coord.y;
                 toolbar.state = (ishor) ? TBState.modalWasDockedInHor : TBState.modalWasDockedInVer;
                 this.displaygroup.cellArray.splice(index, 1);
                 toolbar.resizeForModal();
@@ -3302,7 +3313,7 @@ class Dockable extends Base {
                 let ishor = this.displaygroup.ishor;
                 toolbar.state = (ishor) ? TBState.dockedInHorizontal : TBState.dockedInVertical;
                 toolbar.resizeFordock();
-                this.displaygroup.cellArray[Dockable.activeDropZoneIndex] = toolbar.rootDisplayCell;
+                this.displaygroup.cellArray[Dockable.activeDropZoneIndex] = toolbar.parentDisplayCell;
                 Dockable.activeDropZoneIndex = undefined;
                 toolbar.parentDisplayGroup = this.displaygroup;
                 this.dropZones = undefined;
@@ -3383,16 +3394,17 @@ Dockable.activeInstances = [];
 Dockable.defaults = { acceptsTypes: ["ALL"] };
 Dockable.argMap = {
     string: ["label"],
-    DisplayCell: ["displaycell"],
+    DisplayCell: ["parentDisplayCell"],
 };
 Render.register("Dockable", Dockable);
-function dockable(...Arguments) {
-    let overlay = new Overlay("Dockable", ...Arguments);
-    let newDockable = overlay.returnObj;
-    let parentDisplaycell = newDockable.displaycell;
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function dockable(...Arguments:any) {
+//     let overlay=new Overlay("Dockable", ...Arguments);
+//     let newDockable = <Dockable>overlay.returnObj;
+//     let parentDisplaycell = newDockable.displaycell;
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function dockable(...Arguments) { return Overlay.new("Dockable", ...Arguments); }
 Overlay.classes["Dockable"] = Dockable;
 var TBState;
 (function (TBState) {
@@ -3416,9 +3428,9 @@ class ToolBar extends Base {
     }
     buildModal() {
         let THIS = this;
-        this.rootDisplayCell =
+        this.parentDisplayCell =
             h(`${this.label}_h`, `${this.height}px`, I(`${this.label}_handle`, DefaultTheme.llm_checker, `${this.checkerSize}px`, events({ ondblclick: function (e) { THIS.toggleDirection(e); } })), ...this.displayCells);
-        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...this.size(), { type: HandlerType.toolbar });
+        this.modal = new Modal(`${this.label}_modal`, this.parentDisplayCell, ...this.size(), { type: HandlerType.toolbar });
         this.modal.dragWith(`${this.label}_handle`);
     }
     size() {
@@ -3436,9 +3448,9 @@ class ToolBar extends Base {
     }
     resizeForModal() {
         let isHor = (this.state == TBState.modalWasDockedInVer);
-        this.rootDisplayCell.displaygroup.ishor = isHor;
-        this.rootDisplayCell.displaygroup.dim = `${(isHor) ? this.height : this.width}px`;
-        let cellArray = this.rootDisplayCell.displaygroup.cellArray;
+        this.parentDisplayCell.displaygroup.ishor = isHor;
+        this.parentDisplayCell.displaygroup.dim = `${(isHor) ? this.height : this.width}px`;
+        let cellArray = this.parentDisplayCell.displaygroup.cellArray;
         for (let index = 1; index < cellArray.length; index++)
             cellArray[index].dim = `${(isHor) ? this.width : this.height}px`;
         let [width, height] = this.size();
@@ -3446,9 +3458,9 @@ class ToolBar extends Base {
     }
     resizeFordock() {
         let isHor = (this.state == TBState.dockedInVertical);
-        this.rootDisplayCell.displaygroup.ishor = isHor;
-        this.rootDisplayCell.dim = `${(isHor) ? this.height : this.width}px`;
-        let cellArray = this.rootDisplayCell.displaygroup.cellArray;
+        this.parentDisplayCell.displaygroup.ishor = isHor;
+        this.parentDisplayCell.dim = `${(isHor) ? this.height : this.width}px`;
+        let cellArray = this.parentDisplayCell.displaygroup.cellArray;
         for (let index = 1; index < cellArray.length; index++)
             cellArray[index].dim = `${(isHor) ? this.width : this.height}px`;
     }
@@ -3494,13 +3506,14 @@ ToolBar.argMap = {
     function: ["onSelect", "onUnselect"],
 };
 Render.register("ToolBar", ToolBar);
-function toolBar(...Arguments) {
-    let overlay = new Overlay("ToolBar", ...Arguments);
-    let newToolBar = overlay.returnObj;
-    let parentDisplaycell = newToolBar.rootDisplayCell;
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function toolBar(...Arguments:any) {
+//     let overlay=new Overlay("ToolBar", ...Arguments);
+//     let newToolBar = <ToolBar>overlay.returnObj;
+//     let parentDisplaycell = newToolBar.rootDisplayCell;
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function toolBar(...Arguments) { return Overlay.new("ToolBar", ...Arguments); }
 Overlay.classes["ToolBar"] = ToolBar;
 class BindHandler extends Base {
     constructor(...Arguments) {
@@ -3511,12 +3524,12 @@ class BindHandler extends Base {
     render(displaycell, parentDisplaygroup, index, derender) {
         if (!this.handler.coord)
             this.handler.coord = new Coord();
-        this.handler.coord.copy(this.parentDisplaycell.coord);
+        this.handler.coord.copy(this.parentDisplayCell.coord);
     }
     static Render(bindHandler, zindex, derender = false, node) {
         if (!bindHandler.handler.coord)
             bindHandler.handler.coord = new Coord();
-        bindHandler.handler.coord.copy(bindHandler.parentDisplaycell.coord);
+        bindHandler.handler.coord.copy(bindHandler.parentDisplayCell.coord);
         return { zindex };
     }
 }
@@ -3526,18 +3539,19 @@ BindHandler.activeInstances = [];
 BindHandler.defaults = {};
 BindHandler.argMap = {
     string: ["label"],
-    DisplayCell: ["parentDisplaycell"],
+    DisplayCell: ["parentDisplayCell"],
     Handler: ["handler"]
 };
 Render.register("BindHandler", BindHandler);
-function bindHandler(...Arguments) {
-    let overlay = new Overlay("BindHandler", ...Arguments);
-    let newBindHandler = overlay.returnObj;
-    let parentDisplaycell = newBindHandler.parentDisplaycell;
-    // parentDisplaycell.overlay = overlay; // remove this line soon
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+// function bindHandler(...Arguments:any) {
+//     let overlay=new Overlay("BindHandler", ...Arguments);
+//     let newBindHandler = <BindHandler>overlay.returnObj;
+//     let parentDisplaycell = newBindHandler.parentDisplaycell;
+//     // parentDisplaycell.overlay = overlay; // remove this line soon
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }
+function bindHandler(...Arguments) { return Overlay.new("BindHandler", ...Arguments); }
 Overlay.classes["BindHandler"] = BindHandler;
 class winModal extends Base {
     constructor(...Arguments) {
@@ -3581,27 +3595,27 @@ class winModal extends Base {
     }
     toggleCollapse(mouseEvent) {
         // console.log("ArrayLength", this.rootDisplayCell.displaygroup.cellArray.length);
-        if (this.rootDisplayCell.displaygroup.cellArray.length > 1)
+        if (this.parentDisplayCell.displaygroup.cellArray.length > 1)
             this.toggleClose();
         else
             this.toggleOpen();
     }
     toggleClose() {
-        for (let index = 1; index < this.rootDisplayCell.displaygroup.cellArray.length; index++)
-            Render.update(this.rootDisplayCell.displaygroup.cellArray[index], true);
+        for (let index = 1; index < this.parentDisplayCell.displaygroup.cellArray.length; index++)
+            Render.update(this.parentDisplayCell.displaygroup.cellArray[index], true);
         //Handler.renderDisplayCell(this.rootDisplayCell.displaygroup.cellArray[index], undefined, undefined, true);
-        this.hiddenCells = this.rootDisplayCell.displaygroup.cellArray;
-        this.rootDisplayCell.displaygroup.cellArray = [this.rootDisplayCell.displaygroup.cellArray[0]];
+        this.hiddenCells = this.parentDisplayCell.displaygroup.cellArray;
+        this.parentDisplayCell.displaygroup.cellArray = [this.parentDisplayCell.displaygroup.cellArray[0]];
         let coord = this.modal.coord;
         this.previousModalHeight = coord.height;
         this.modal.setSize(coord.x, coord.y, coord.width, this.headerHeight);
-        this.rootDisplayCell.dim = `${this.headerHeight}px`;
+        this.parentDisplayCell.dim = `${this.headerHeight}px`;
         Render.update();
     }
     toggleOpen() {
-        this.rootDisplayCell.displaygroup.cellArray = this.hiddenCells;
+        this.parentDisplayCell.displaygroup.cellArray = this.hiddenCells;
         let coord = this.modal.coord;
-        this.rootDisplayCell.dim = `${this.previousModalHeight}px`;
+        this.parentDisplayCell.dim = `${this.previousModalHeight}px`;
         this.modal.setSize(coord.x, coord.y, coord.width, this.previousModalHeight);
         Render.update();
     }
@@ -3614,11 +3628,11 @@ class winModal extends Base {
         let cells = [this.header, this.body];
         if (this.footer)
             cells.push(this.footer);
-        this.rootDisplayCell = v(`${this.label}_V`, ...cells);
+        this.parentDisplayCell = v(`${this.label}_V`, ...cells);
         let numbers = this.retArgs["number"];
         if (!numbers)
             numbers = [];
-        this.modal = new Modal(`${this.label}_modal`, this.rootDisplayCell, ...numbers, { type: HandlerType.winModal });
+        this.modal = new Modal(`${this.label}_modal`, this.parentDisplayCell, ...numbers, { type: HandlerType.winModal });
         this.modal.dragWith(`${this.label}_title`);
         this.modal.closeWith(`${this.label}_close`, this.closeCallback);
         if (this.showOnStart)
@@ -3742,14 +3756,16 @@ winModal.argMap = {
     boolean: ["showOnStart"]
 };
 Render.register("winModal", winModal);
-function winmodal(...Arguments) {
-    let overlay = new Overlay("winModal", ...Arguments);
-    let newWinModal = overlay.returnObj;
-    let parentDisplaycell = newWinModal.rootDisplayCell;
-    // parentDisplaycell.overlay = overlay; // remove this line soon
-    parentDisplaycell.addOverlay(overlay);
-    return newWinModal;
-}
+// function winmodal(...Arguments:any):winModal {
+//     let overlay=new Overlay("winModal", ...Arguments);
+//     let newWinModal = <winModal>overlay.returnObj;
+//     let parentDisplaycell = newWinModal.rootDisplayCell;
+//     // parentDisplaycell.overlay = overlay; // remove this line soon
+//     parentDisplaycell.addOverlay(overlay);
+//     return newWinModal;
+// }
+function winmodal(...Arguments) { return Overlay.new("winModal", ...Arguments); }
+;
 Overlay.classes["winModal"] = winModal;
 class ToCode {
     static define(obj) {
@@ -3758,13 +3774,21 @@ class ToCode {
             if (CLASS == obj.CLASS && NAME == obj.NAME)
                 return;
         }
+        if (obj.CLASS == "DisplayCell") {
+            obj.VALUE += ToCode.overlayPostString;
+            ToCode.overlayPostString = "";
+        }
         ToCode.definitions.push(obj);
     }
     static toCode(asArray) {
         let returnString = "";
         for (let index = 0; index < ToCode.definitions.length; index++) {
             let { CLASS, NAME, VALUE } = ToCode.definitions[index];
-            returnString += `let ${CLASS}_${NAME} = ${VALUE}\n`;
+            if (NAME == undefined) {
+                returnString += `${VALUE}\n`;
+            }
+            else
+                returnString += `let ${CLASS}_${NAME} = ${VALUE}\n`;
         }
         return (asArray) ? ToCode.definitions : returnString;
     }
@@ -3784,8 +3808,8 @@ class ToCode {
         let forconsolelog = `[`;
         for (let key in classInstance) { // get all variable from Class
             if (exemptions.indexOf(key) == -1) {
-                // console.log(`pushed key "${key}"`,)
-                forconsolelog += `"${key}", `;
+                if (!(ToCode.exemptionsByClass[CLASS] && ToCode.exemptionsByClass[CLASS].indexOf(key) != -1))
+                    forconsolelog += `"${key}", `;
                 keyValue.push([key, BaseF.typeof(classInstance[key])]);
             }
         }
@@ -3814,7 +3838,9 @@ class ToCode {
         // console.log(forconsolelog+"]")
     }
 }
+ToCode.overlayPostString = "";
 ToCode.exemptions = ["tag", "retArgs", "toCode", "node_", "renderNode", "toString", "el", "dimArrayTotal"]; // do not read these....
+ToCode.exemptionsByClass = { DragBar: ["displaycell", "parentDisplayCell", "parentDisplaygroup", "overlays"] };
 ToCode.addKey = {
     DisplayCell: ["htmlBlock", "displaygroup"],
     Coord: ["x", "y", "width", "height"],
@@ -3841,6 +3867,26 @@ ToCode.customs = {
             arrayString += ((index == 0) ? "" : ", ") + `DisplayCell_${cellArray[index].label}`;
         }
         return `  cellArray: [${arrayString}],\n`;
+    },
+    overlays: function (overlays, CLASS) {
+        // console.log("Overlays", overlays, CLASS)
+        for (let index = 0; index < overlays.length; index++) {
+            var overlay = overlays[index];
+            // console.log(overlay.returnObj, overlay.sourceClassName);
+            switch (overlay.sourceClassName) {
+                case "DragBar":
+                    let dragbar = overlay.returnObj;
+                    ToCode.overlayPostString += `dragbar(DisplayCell_${dragbar.parentDisplayCell.label},`
+                        + ` ${dragbar.min}, ${dragbar.max});\n`;
+                    break;
+                case "ScrollBar":
+                // do nothing - it appears automatically!
+                default:
+                    ToCode.overlayPostString += `// no overlay handler created for type ${overlay.sourceClassName}\n`;
+                    break;
+            }
+        }
+        return "";
     }
 };
 ToCode.callGeneric = function (key, value, CLASS = undefined) {

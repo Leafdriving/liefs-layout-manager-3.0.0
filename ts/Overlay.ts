@@ -24,10 +24,18 @@ class Overlay {
         this.label= `Overlay_${pf.pad_with_zeroes(Overlay.instances.length)}`;
         this.sourceClassName = Arguments.shift();
         this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);
+        // console.log(this.returnObj);
+        (<DisplayCell>this.returnObj["parentDisplayCell"]).addOverlay(this)
     }
     renderOverlay(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
         this.currentlyRendered = !derender;
         (this.returnObj["render"])(displaycell, parentDisplaygroup, index, derender);
+    }
+    static new(CLASS:string, ...Arguments:any){
+        let newOverlay = new Overlay(CLASS, ...Arguments);
+        let newClass = newOverlay.returnObj;
+        let displaycell = <DisplayCell>newClass["parentDisplayCell"];
+        return displaycell;
     }
 }
 // export {Overlay}

@@ -19,7 +19,7 @@ class DragBar extends Base {
     }
     static argMap = {
         string : ["label"],
-        DisplayCell : ["parentDisplaycell"],
+        DisplayCell : ["parentDisplayCell"],
         number: ["min", "max", "pxsize"],
         Css: ["horcss", "vercss"]
     }
@@ -27,7 +27,7 @@ class DragBar extends Base {
     renderNode:node_; // render node
 
     label:string;
-    parentDisplaycell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     parentDisplaygroup: DisplayGroup;
     displaycell: DisplayCell;
     startpos:number;
@@ -45,16 +45,16 @@ class DragBar extends Base {
         DragBar.makeLabel(this);
         this.displaycell = I(`${this.label}_dragbar`,"",
             events({ondrag: {onDown :function(xmouseDiff:object){
-                                if (pf.isTypePercent(dragbar.parentDisplaycell.dim)) {
-                                    dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplaycell);
+                                if (pf.isTypePercent(dragbar.parentDisplayCell.dim)) {
+                                    dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplayCell);
                                 }
-                                dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplaycell.dim);
+                                dragbar.startpos = pf.pxAsNumber(dragbar.parentDisplayCell.dim);
                             },
                             onMove :function(xmouseDiff:object){
                                 let newdim = dragbar.startpos + ((dragbar.ishor) ? xmouseDiff["x"]: xmouseDiff["y"])*((dragbar.isLast) ? -1 :1);
                                 if (newdim > dragbar.max) newdim = dragbar.max;
                                 if (newdim < dragbar.min) newdim = dragbar.min;
-                                dragbar.parentDisplaycell.dim = `${newdim}px`;
+                                dragbar.parentDisplayCell.dim = `${newdim}px`;
                                 Render.update();
                             },
                             // onUp: function(ouxmouseDifftput:object){}
@@ -115,13 +115,13 @@ class DragBar extends Base {
     }
 }
 Render.register("DragBar", DragBar);
-function dragbar(...Arguments:any) {
-    let overlay=new Overlay("DragBar", ...Arguments);
-    let newDragBar = <DragBar>overlay.returnObj;
-    let parentDisplaycell = newDragBar.parentDisplaycell;
-    // parentDisplaycell.overlay = overlay; // remove this line soon
-    parentDisplaycell.addOverlay(overlay);
-    return parentDisplaycell;
-}
+function dragbar(...Arguments:any): DisplayCell {return Overlay.new("DragBar", ...Arguments);}
 Overlay.classes["DragBar"] = DragBar;
-// export {dragbar, DragBar}
+// function dragbar(...Arguments:any) {
+//     let overlay=new Overlay("DragBar", ...Arguments);
+//     let newDragBar = <DragBar>overlay.returnObj;
+//     let parentDisplaycell = newDragBar.parentDisplaycell;
+//     // parentDisplaycell.overlay = overlay; // remove this line soon
+//     parentDisplaycell.addOverlay(overlay);
+//     return parentDisplaycell;
+// }

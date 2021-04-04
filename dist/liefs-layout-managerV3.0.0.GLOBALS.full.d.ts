@@ -274,7 +274,7 @@ declare class DisplayCell extends Base {
     getOverlay(label: string): Overlay;
     getOverlays(label: string): Overlay[];
     popOverlay(label: string): void;
-    hMenuBar(menuObj: object): void;
+    hMenuBar(menuObj: object, ...Arguments: any): void;
     vMenuBar(menuObj: object): void;
     static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
     static Render(displaycell: DisplayCell, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
@@ -629,6 +629,7 @@ declare class Overlay {
     currentlyRendered: boolean;
     constructor(...Arguments: any);
     renderOverlay(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
+    static new(CLASS: string, ...Arguments: any): DisplayCell;
 }
 declare class DragBar extends Base {
     static instances: DragBar[];
@@ -645,7 +646,7 @@ declare class DragBar extends Base {
     };
     renderNode: node_;
     label: string;
-    parentDisplaycell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     parentDisplaygroup: DisplayGroup;
     displaycell: DisplayCell;
     startpos: number;
@@ -686,7 +687,7 @@ declare class ScrollBar extends Base {
     scaleFactor: number;
     ishor: boolean;
     coord: Coord;
-    parentDisplaycell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     scrollbarDisplayCell: DisplayCell;
     preBar: DisplayCell;
     Bar: DisplayCell;
@@ -938,7 +939,7 @@ declare class Dockable extends Base {
     retArgs: ArgsObj;
     renderNode: node_;
     label: string;
-    displaycell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     displaygroup: DisplayGroup;
     acceptsTypes: string[];
     dropZones: Coord[];
@@ -976,7 +977,7 @@ declare class ToolBar extends Base {
     label: string;
     state: TBState;
     displayCells: DisplayCell[];
-    rootDisplayCell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     width: number;
     height: number;
     parentDisplayGroup: DisplayGroup;
@@ -1005,7 +1006,7 @@ declare class BindHandler extends Base {
         DisplayCell: string[];
         Handler: string[];
     };
-    parentDisplaycell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     handler: Handler;
     constructor(...Arguments: any);
     render(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup, index: number, derender: boolean): void;
@@ -1035,7 +1036,7 @@ declare class winModal extends Base {
     retArgs: ArgsObj;
     label: string;
     renderNode: node_;
-    rootDisplayCell: DisplayCell;
+    parentDisplayCell: DisplayCell;
     header: DisplayCell;
     headerHeight: number;
     headerText: string;
@@ -1068,7 +1069,7 @@ declare class winModal extends Base {
     static Render(winmodal_: winModal, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     hightlightHeader(highlight?: boolean): void;
 }
-declare function winmodal(...Arguments: any): winModal;
+declare function winmodal(...Arguments: any): DisplayCell;
 interface objectValueClassFunction {
     [key: string]: (value: any, CLASS: string) => string;
 }
@@ -1076,6 +1077,7 @@ interface objectKeyValueClassFunction {
     [key: string]: (key: string, value: any, CLASS: string) => string;
 }
 declare class ToCode {
+    static overlayPostString: string;
     static definitions: {
         CLASS: string;
         NAME: string;
@@ -1092,6 +1094,9 @@ declare class ToCode {
         VALUE: string;
     }[];
     static exemptions: string[];
+    static exemptionsByClass: {
+        DragBar: string[];
+    };
     static addKey: ArgMap;
     static customs: objectValueClassFunction;
     static callGeneric: (key: string, value: HtmlBlock, CLASS?: any) => string;
