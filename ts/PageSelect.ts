@@ -29,7 +29,7 @@ class Select extends Base {
         Select.makeLabel(this);
         this.build();
     }
-    resort(index:number){
+    changeDisplayNameToIndex(index:number){
         this.clickableName.htmlBlock.innerHTML = this.choices[index];
         Render.update();
     }
@@ -53,7 +53,7 @@ class Select extends Base {
     onclick(mouseEvent:PointerEvent, index:number, THIS:Select){
         THIS.lastSelected = THIS.currentSelected;
         THIS.currentSelected = index;
-        THIS.resort(index);
+        THIS.changeDisplayNameToIndex(index);
         THIS.onSelect(mouseEvent, THIS.choices[index]);
     }
     buildMenuObj(){

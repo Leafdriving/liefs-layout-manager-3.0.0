@@ -130,7 +130,7 @@ class Base /* extends Function */ {
     static defaults: object;
     static argMap: object;
     retArgs:ArgsObj;
-    toString:Function;
+    toCode:Function;
     label:string;
     renderNode:node_;
 

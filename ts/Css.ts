@@ -56,6 +56,10 @@ class Css extends Base {
             this.cssSelect = this.makeString(this.cssSelectObj, "", "Selected");            
         }
     }
+    newString(data:string){
+        this.cssObj = this.makeObj(data);
+        this.css = this.makeString();
+    }
     makeString(obj:object = this.cssObj, postfix:string = "", addToClassName=""):string{
         let returnString:string  = `${(this.isClassname)?".":""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix:""} {\n`;
         for (let key in obj) 

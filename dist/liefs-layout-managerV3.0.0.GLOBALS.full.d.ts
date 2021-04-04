@@ -44,7 +44,7 @@ declare class Base {
     static defaults: object;
     static argMap: object;
     retArgs: ArgsObj;
-    toString: Function;
+    toCode: Function;
     label: string;
     renderNode: node_;
     constructor(...neverRead: any);
@@ -244,7 +244,6 @@ declare class DisplayCell extends Base {
     static minDisplayGroupSize: number;
     static defaults: {
         dim: string;
-        children: any[];
     };
     static argMap: {
         string: string[];
@@ -330,7 +329,6 @@ declare class Handler extends Base {
     static defaults: {
         cssString: string;
         addThisHandlerToStack: boolean;
-        controlledBySomething: boolean;
         activeOffset: boolean;
         type: HandlerType;
     };
@@ -425,6 +423,7 @@ declare class Css extends Base {
     cssSelectHoverObj: object;
     isClassname: boolean;
     constructor(...Arguments: any);
+    newString(data: string): void;
     makeString(obj?: object, postfix?: string, addToClassName?: string): string;
     makeObj(str?: string): object;
     static byname(css: string): Css;
@@ -518,7 +517,7 @@ declare class Select extends Base {
     lastSelected: number;
     currentSelected: number;
     constructor(...Arguments: any);
-    resort(index: number): void;
+    changeDisplayNameToIndex(index: number): void;
     build(): void;
     onclick(mouseEvent: PointerEvent, index: number, THIS: Select): void;
     buildMenuObj(): void;
@@ -1070,13 +1069,13 @@ declare class winModal extends Base {
     hightlightHeader(highlight?: boolean): void;
 }
 declare function winmodal(...Arguments: any): winModal;
-interface custom1 {
+interface objectValueClassFunction {
     [key: string]: (value: any, CLASS: string) => string;
 }
-interface custom2 {
+interface objectKeyValueClassFunction {
     [key: string]: (key: string, value: any, CLASS: string) => string;
 }
-declare class ToString {
+declare class ToCode {
     static definitions: {
         CLASS: string;
         NAME: string;
@@ -1087,13 +1086,22 @@ declare class ToString {
         NAME: string;
         VALUE: string;
     }): void;
-    static toCode(): string;
+    static toCode(asArray: boolean): string | {
+        CLASS: string;
+        NAME: string;
+        VALUE: string;
+    }[];
     static exemptions: string[];
     static addKey: ArgMap;
-    static customs: custom1;
+    static customs: objectValueClassFunction;
     static callGeneric: (key: string, value: HtmlBlock, CLASS?: any) => string;
-    static processType: custom2;
+    static processType: objectKeyValueClassFunction;
+    static handleArray(key: string, value: boolean, CLASS?: any): string;
     static generic(CLASS: string, classInstance: any): void;
     static labelNo: number;
 }
-declare let callFunction: () => string;
+declare let callFunction: (asArray?: boolean) => string | {
+    CLASS: string;
+    NAME: string;
+    VALUE: string;
+}[];

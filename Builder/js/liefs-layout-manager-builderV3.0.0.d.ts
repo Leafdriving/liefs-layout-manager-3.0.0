@@ -45,7 +45,7 @@ declare class htmlBlockProps {
     static cssCurrentValueDisplayCell: DisplayCell;
     static cssBodyDisplayCell: DisplayCell;
     static displayEventFunction: DisplayCell;
-    static selectInstance: Select;
+    static selectInstanceWhichOnEvent: Select;
     static currentDisplayFunction: string;
     static winModalConfirmInstance: winModal;
     static toolbarOptions: (string[] | {
@@ -103,11 +103,14 @@ declare class htmlBlockProps {
         theme: string;
     };
     static getState(): number;
-    static saveState(getState?: number): void;
-    static postConfirm(answer: string): void;
     static treeClicked(objectWithProperties: object): void;
+    static saveState(getState?: number): void;
     static launchState(getState?: number): void;
-    static selectSelected(pointerEvent: PointerEvent, eventName: string): void;
+    static onClickPreDefinedEvent(actionEventName: string): void;
+    static onCloseCallback(THIS: any): void;
+    static postConfirm(answer: string): void;
+    static onChooseSelectEvent(pointerEvent: PointerEvent, key: string): void;
+    static saveAndLoadEvent(pointerEvent: PointerEvent, eventName: string): void;
     static confirmwinModal(confirmText: string, execute: string, dontExecute: string): void;
     static colorPick(type: string): void;
     static colorSet(type: string, colorHex: string): void;

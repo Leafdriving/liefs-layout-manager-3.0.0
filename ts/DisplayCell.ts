@@ -12,7 +12,7 @@ class DisplayCell extends Base {
     static instances:DisplayCell[] = [];
     static activeInstances:DisplayCell[] = [];
     static minDisplayGroupSize = 1; // copied from htmlblock
-    static defaults = {dim : "", children:[]}
+    static defaults = {dim : ""}
     static argMap = {
         string : ["label"],
         HtmlBlock : ["htmlBlock"],

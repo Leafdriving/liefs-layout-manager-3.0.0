@@ -34,7 +34,6 @@ class Handler extends Base {
     static defaults = {
         cssString : " ",
         addThisHandlerToStack: true,
-        controlledBySomething: false,
         activeOffset: false,
         type:HandlerType.other,
     }

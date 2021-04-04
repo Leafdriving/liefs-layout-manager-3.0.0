@@ -13,7 +13,7 @@ class htmlBlockProps {
     static cssCurrentValueDisplayCell:DisplayCell;
     static cssBodyDisplayCell:DisplayCell;
     static displayEventFunction:DisplayCell;
-    static selectInstance:Select;
+    static selectInstanceWhichOnEvent:Select;
     static currentDisplayFunction:string;
     static winModalConfirmInstance:winModal;
 
@@ -48,38 +48,108 @@ class htmlBlockProps {
                 return htmlBlockProps.quillPages.currentPage;
         return undefined;
     }
+    static treeClicked(objectWithProperties:object){
+        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
+        let getState = htmlBlockProps.getState();
+        console.log(`Tree Clicked ${objectWithProperties["label"]} State:`, getState)
+        if (getState != undefined) {
+            htmlBlockProps.saveState(getState);
+        }
+        propertiesInstance.currentObject = objectWithProperties;
+
+        if (getState == undefined) {
+            console.log("Launching winModal");
+            propertiesInstance.winModal.modal.show();
+        }
+        htmlBlockProps.launchState();
+    }
     static saveState(getState:number = htmlBlockProps.getState()):void {
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
         let htmlblock = <HtmlBlock>propertiesInstance.currentObject;
-        if (getState == 0 && htmlBlockProps.quill)
-                htmlblock.innerHTML = htmlBlockProps.quill["root"].innerHTML;
-        if (getState == 1 && htmlBlockProps.monacoContainer)
-                htmlblock.innerHTML = htmlBlockProps.monacoContainer.getValue();
+        if (getState == 0 && htmlBlockProps.quill){
+            console.log("Saving wysiwyg editor");
+            htmlblock.innerHTML = htmlBlockProps.quill["root"].innerHTML;
+        }
+        if (getState == 1 && htmlBlockProps.monacoContainer) {
+            console.log("Saving monaco edit html");
+            htmlblock.innerHTML = htmlBlockProps.monacoContainer.getValue();
+        }
         if (getState == 2) {
-            console.log("here1", htmlBlockProps.selectInstance.lastSelected);
-            if (htmlBlockProps.selectInstance.lastSelected != 0){
-                console.log("here2")
+            console.log("Saving monaco edit Events");
+            if (htmlBlockProps.selectInstanceWhichOnEvent.lastSelected != 0){
                 htmlBlockProps.confirmwinModal(`Confirm save HtmlBlock ${htmlblock.label}`
-                    +` with event ${htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected]}`,
+                    +` with event ${htmlBlockProps.selectInstanceWhichOnEvent.choices[htmlBlockProps.selectInstanceWhichOnEvent.lastSelected]}`,
                     `htmlBlockProps.postConfirm("confirmed")`,`htmlBlockProps.postConfirm("canceled")`);
             }
         }
         if (getState == 3){
+            console.log("Saving monaco edit Css");
             let currentCss = <Css>Css.byLabel(htmlblock.css);
-            currentCss.css = pf.insideOfFunctionString( htmlBlockProps.monacoContainer.getValue() )
-            currentCss.cssObj = currentCss.makeObj();
-            currentCss.css = currentCss.makeString();
+            currentCss.newString( pf.insideOfFunctionString( htmlBlockProps.monacoContainer.getValue() ) );
             Css.update();
         }
+    }
+    
+    static launchState(getState:number = htmlBlockProps.getState()){
+        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
+        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+        if (getState == 0){
+            console.log("Launching wysiwyg mode");
+            htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
+            if (!propertiesInstance.winModal.modal.isShown()) propertiesInstance.winModal.modal.show();
+            else {Render.update();}
+            setTimeout(() => {
+                htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
+                htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(objectWithProperties.innerHTML);
+                htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0);
+        }
+        if (getState == 1){
+            console.log("Launching monaco edit html");
+            htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            if (!propertiesInstance.winModal.modal.isShown()) propertiesInstance.winModal.modal.show();
+            else Render.update();
+            setTimeout(() => {
+                htmlBlockProps.monacoContainer = monacoContainer(objectWithProperties.innerHTML);
+                htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0)
+        }
+        if (getState == 2){
+            console.log("Launching monaco events edit javascript");
+            htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            if (!propertiesInstance.winModal.modal.isShown()) propertiesInstance.winModal.modal.show();
+            else Render.update();
+        }
+        if (getState == 3) {
+            console.log("Launching monaco edit css");
+            htmlBlockProps.cssCurrentValueDisplayCell.htmlBlock.innerHTML = objectWithProperties.css;
+            htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            Render.update();
+            setTimeout(() => {
+                htmlBlockProps.monacoContainer = monacoContainer(Css.byLabel(objectWithProperties.css).css,"css");
+                htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = undefined;
+            }, 0)
+        }
+    }
+    static onClickPreDefinedEvent(actionEventName:string){
+        console.log("You clicked a pre-defined Event!", actionEventName)
+        htmlBlockProps.saveAndLoadEvent(undefined, actionEventName);
+        htmlBlockProps.selectInstanceWhichOnEvent.lastSelected = htmlBlockProps.selectInstanceWhichOnEvent.currentSelected;
+        htmlBlockProps.selectInstanceWhichOnEvent.currentSelected = htmlBlockProps.selectInstanceWhichOnEvent.choices.indexOf(actionEventName);
+        console.log(`currentSelected was ${htmlBlockProps.selectInstanceWhichOnEvent.lastSelected} now is ${htmlBlockProps.selectInstanceWhichOnEvent.currentSelected}`)
+        htmlBlockProps.selectInstanceWhichOnEvent.changeDisplayNameToIndex( htmlBlockProps.selectInstanceWhichOnEvent.choices.indexOf(actionEventName) );
+    /// what if not picked???? FIX!
+    }
+    static onCloseCallback(THIS:any){
+        console.log("closeCallback");
+        htmlBlockProps.saveState();
+        Render.update();
     }
     static postConfirm(answer:string){
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
         let htmlblock = <HtmlBlock>propertiesInstance.currentObject;
-        // console.log(answer);
         if (answer == "confirmed") {
-            let event = htmlBlockProps.selectInstance.choices[htmlBlockProps.selectInstance.lastSelected];
-            // console.log(event, htmlBlockProps.monacoContainer.getValue());
-            // console.log(htmlblock);
+            let event = htmlBlockProps.selectInstanceWhichOnEvent.choices[htmlBlockProps.selectInstanceWhichOnEvent.lastSelected];
             if (!htmlblock.events){
                 let obj = {};obj[event] = htmlBlockProps.monacoContainer.getValue();
                 htmlblock.events = events(obj)
@@ -91,65 +161,23 @@ class htmlBlockProps {
             }
         }
     }
-    static treeClicked(objectWithProperties:object){
-        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
-        let getState = htmlBlockProps.getState();
-        console.log("state", getState)
-        if (getState != undefined) {
-            htmlBlockProps.saveState(getState);
-        }
-            propertiesInstance.currentObject = objectWithProperties;
-
-            if (getState == undefined) propertiesInstance.winModal.modal.show();
-            htmlBlockProps.launchState();
-    }
-    static launchState(getState:number = htmlBlockProps.getState()){
-        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
-        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
-        if (getState == 0){
-            htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = `<div id="editor"></div>`;
-            if (!propertiesInstance.winModal.modal.isShown()) propertiesInstance.winModal.modal.show();
-            else {Render.update();}
-            setTimeout(() => {
-                htmlBlockProps.quill = new Quill('#editor', htmlBlockProps.options);
-                htmlBlockProps.quill["clipboard"].dangerouslyPasteHTML(objectWithProperties.innerHTML);
-                htmlBlockProps.quillDisplayCell.htmlBlock.innerHTML = undefined;
-            }, 0);
-        }
-        if (getState == 1){
-            htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
-            if (!propertiesInstance.winModal.modal.isShown()) propertiesInstance.winModal.modal.show();
-            else Render.update();
-            setTimeout(() => {
-                htmlBlockProps.monacoContainer = monacoContainer(objectWithProperties.innerHTML);
-                htmlBlockProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
-            }, 0)
-        }
-        if (getState == 2){
-            htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
-            if (!propertiesInstance.winModal.modal.isShown()) propertiesInstance.winModal.modal.show();
-            else Render.update();
-        }
-        if (getState == 3) {
-            console.log("Css Launched");
-            htmlBlockProps.cssCurrentValueDisplayCell.htmlBlock.innerHTML = objectWithProperties.css;
-            htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
-            Render.update();
-            setTimeout(() => {
-                console.log(objectWithProperties)
-                
-                htmlBlockProps.monacoContainer = monacoContainer(Css.byLabel(objectWithProperties.css).css,"css");
-                htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = undefined;
-            }, 0)
-        }
+    static onChooseSelectEvent(pointerEvent:PointerEvent, key:string){
+        console.log("onChooseSelectEvent")
+        htmlBlockProps.saveAndLoadEvent(pointerEvent, key);
+        htmlBlockProps.selectInstanceWhichOnEvent.lastSelected = htmlBlockProps.selectInstanceWhichOnEvent.currentSelected;
+        htmlBlockProps.selectInstanceWhichOnEvent.currentSelected = htmlBlockProps.selectInstanceWhichOnEvent.choices.indexOf(key);
+        console.log(`currentSelected was ${htmlBlockProps.selectInstanceWhichOnEvent.lastSelected} now is ${htmlBlockProps.selectInstanceWhichOnEvent.currentSelected}`)
+        htmlBlockProps.selectInstanceWhichOnEvent.changeDisplayNameToIndex(htmlBlockProps.selectInstanceWhichOnEvent.choices.indexOf(key));
     }
 
-    static selectSelected(pointerEvent:PointerEvent, eventName:string){
+
+    static saveAndLoadEvent(pointerEvent:PointerEvent, eventName:string){
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
         let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+        htmlBlockProps.saveState();
         htmlBlockProps.currentDisplayFunction = `function(event){console.log("Event: ${eventName} fired on ${objectWithProperties.label}")}`;
         htmlBlockProps.displayEventFunction.htmlBlock.innerHTML = `<div id="container" style="width:100%;height:100%"></div>`;
-        htmlBlockProps.saveState();
+        
         let actions = objectWithProperties.events.actions;
         if (eventName in actions) {
             htmlBlockProps.currentDisplayFunction = actions[eventName].toString();
@@ -175,7 +203,16 @@ class htmlBlockProps {
         }
     }
     static colorPick(type:string){
-        let newModal = new winModal("textcolor",type+" color",251,307, I("colorPicker", `<div id="color_picker"></div>`,bCss.bgBlue));
+        let newModal:winModal = <winModal>winModal.byLabel("COLORS");
+        console.log("newModal", newModal);
+        if (newModal){
+            console.log("found old");
+            newModal.body.htmlBlock.innerHTML = `<div id="color_picker"></div>`;
+            newModal.headerText = type+" color";
+            newModal.modal.show();
+        } else {
+            newModal = new winModal("COLORS",type+" color",251,307, I("colorPicker", `<div id="color_picker"></div>`,bCss.bgBlue));
+        }
         let el = document.getElementById("color_picker");
         var picker = new Picker({parent:el, popup:false});
         newModal.body.htmlBlock.innerHTML = undefined;
@@ -185,7 +222,6 @@ class htmlBlockProps {
         };
     }
     static colorSet(type:string, colorHex:string) {
-        //console.log(`Set ${type} to ${colorHex}`);
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
         let htmlblock = <HtmlBlock>propertiesInstance.currentObject;
         let currentCss = <Css>Css.byLabel(htmlblock.css);

@@ -971,7 +971,7 @@ _htmlBlock_ = new WeakMap(), _displaygroup_ = new WeakMap();
 DisplayCell.instances = [];
 DisplayCell.activeInstances = [];
 DisplayCell.minDisplayGroupSize = 1; // copied from htmlblock
-DisplayCell.defaults = { dim: "", children: [] };
+DisplayCell.defaults = { dim: "" };
 DisplayCell.argMap = {
     string: ["label"],
     HtmlBlock: ["htmlBlock"],
@@ -1326,7 +1326,6 @@ Handler.activeInstances = [];
 Handler.defaults = {
     cssString: " ",
     addThisHandlerToStack: true,
-    controlledBySomething: false,
     activeOffset: false,
     type: HandlerType.other,
 };
@@ -1431,6 +1430,10 @@ class Css extends Base {
             if (Css.instances[key].classname == classname)
                 return Css.instances[key];
         return undefined;
+    }
+    newString(data) {
+        this.cssObj = this.makeObj(data);
+        this.css = this.makeString();
     }
     makeString(obj = this.cssObj, postfix = "", addToClassName = "") {
         let returnString = `${(this.isClassname) ? "." : ""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix : ""} {\n`;
@@ -1735,7 +1738,7 @@ class Select extends Base {
         Select.makeLabel(this);
         this.build();
     }
-    resort(index) {
+    changeDisplayNameToIndex(index) {
         this.clickableName.htmlBlock.innerHTML = this.choices[index];
         Render.update();
     }
@@ -1755,7 +1758,7 @@ class Select extends Base {
     onclick(mouseEvent, index, THIS) {
         THIS.lastSelected = THIS.currentSelected;
         THIS.currentSelected = index;
-        THIS.resort(index);
+        THIS.changeDisplayNameToIndex(index);
         THIS.onSelect(mouseEvent, THIS.choices[index]);
     }
     buildMenuObj() {
@@ -2017,7 +2020,6 @@ Hold.argMap = {
 class Overlay {
     constructor(...Arguments) {
         Overlay.instances.push(this);
-        // console.log("New Overlay!");
         this.label = `Overlay_${pf.pad_with_zeroes(Overlay.instances.length)}`;
         this.sourceClassName = Arguments.shift();
         this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);
@@ -2030,7 +2032,6 @@ class Overlay {
     }
     renderOverlay(displaycell, parentDisplaygroup, index, derender) {
         this.currentlyRendered = !derender;
-        // console.log("render",this.returnObj["label"]);
         (this.returnObj["render"])(displaycell, parentDisplaygroup, index, derender);
     }
 }
@@ -3750,31 +3751,43 @@ function winmodal(...Arguments) {
     return newWinModal;
 }
 Overlay.classes["winModal"] = winModal;
-class ToString {
+class ToCode {
     static define(obj) {
-        for (let index = 0; index < ToString.definitions.length; index++) {
-            let { CLASS, NAME, VALUE } = ToString.definitions[index];
+        for (let index = 0; index < ToCode.definitions.length; index++) {
+            let { CLASS, NAME, VALUE } = ToCode.definitions[index];
             if (CLASS == obj.CLASS && NAME == obj.NAME)
                 return;
         }
-        ToString.definitions.push(obj);
+        ToCode.definitions.push(obj);
     }
-    static toCode() {
+    static toCode(asArray) {
         let returnString = "";
-        for (let index = 0; index < ToString.definitions.length; index++) {
-            let { CLASS, NAME, VALUE } = ToString.definitions[index];
+        for (let index = 0; index < ToCode.definitions.length; index++) {
+            let { CLASS, NAME, VALUE } = ToCode.definitions[index];
             returnString += `let ${CLASS}_${NAME} = ${VALUE}\n`;
         }
-        return returnString;
+        return (asArray) ? ToCode.definitions : returnString;
+    }
+    static handleArray(key, value, CLASS = undefined) {
+        console.log(key, value, CLASS);
+        if (key == "cellArray" && CLASS == "DisplayGroup")
+            console.log("DisplayGroup Found");
+        if (key == "overlays" && CLASS == "DisplayCell")
+            console.log("DisplayCell Overlyas Found");
+        return `  ${key}: [/* must fix! */],\n`;
     }
     static generic(CLASS, classInstance) {
-        let addKeys = (CLASS in ToString.addKey) ? ToString.addKey[CLASS] : [];
-        let exemptions = ToString.exemptions;
+        let addKeys = (CLASS in ToCode.addKey) ? ToCode.addKey[CLASS] : [];
+        let exemptions = ToCode.exemptions;
         let inner = "";
         let keyValue = []; // [key, type]
+        let forconsolelog = `[`;
         for (let key in classInstance) { // get all variable from Class
-            if (exemptions.indexOf(key) == -1)
+            if (exemptions.indexOf(key) == -1) {
+                // console.log(`pushed key "${key}"`,)
+                forconsolelog += `"${key}", `;
                 keyValue.push([key, BaseF.typeof(classInstance[key])]);
+            }
         }
         for (let index = 0; index < addKeys.length; index++) { // add keys from library by Class
             let key = addKeys[index];
@@ -3784,28 +3797,29 @@ class ToString {
         inner += "{\n";
         for (let index = 0; index < keyValue.length; index++) {
             let [key, type] = keyValue[index];
-            if (key in ToString.customs) {
-                inner += ToString.customs[key].bind(classInstance)(classInstance[key], CLASS);
+            if (key in ToCode.customs) {
+                inner += ToCode.customs[key].bind(classInstance)(classInstance[key], CLASS);
             }
             else {
-                if (type in ToString.processType) {
-                    inner += ToString.processType[type](key, classInstance[key], CLASS);
+                if (type in ToCode.processType) {
+                    inner += ToCode.processType[type](key, classInstance[key], CLASS);
                 }
                 else
                     inner += `// no manager for type "${type}" variable ${key}\n`;
             }
         }
         inner += "});\n";
-        let label = (classInstance.label) ? classInstance.label : `label${++ToString.labelNo}`;
-        ToString.define({ CLASS, NAME: `${label}`, VALUE: `new ${CLASS}(${inner}` });
+        let label = (classInstance.label) ? classInstance.label : `label${++ToCode.labelNo}`;
+        ToCode.define({ CLASS, NAME: `${label}`, VALUE: `new ${CLASS}(${inner}` });
+        // console.log(forconsolelog+"]")
     }
 }
-ToString.exemptions = ["tag", "retArgs", "toString"];
-ToString.addKey = {
+ToCode.exemptions = ["tag", "retArgs", "toCode", "node_", "renderNode", "toString", "el", "dimArrayTotal"]; // do not read these....
+ToCode.addKey = {
     DisplayCell: ["htmlBlock", "displaygroup"],
     Coord: ["x", "y", "width", "height"],
 };
-ToString.customs = {
+ToCode.customs = {
     isRendered: function (value, CLASS = "") { return ""; },
     attributes: function (value, CLASS = "") {
         return ((Object.keys(value).length == 0) ? "" : `attributes: ${JSON.stringify(value)},\n`);
@@ -3817,31 +3831,41 @@ ToString.customs = {
         return ((!value.length) ? "" : `  dim: "${value}",\n`);
     },
     innerHTML: function (value, CLASS = "") {
-        ToString.define({ CLASS: CLASS, NAME: `${this.label}_innerHTML`, VALUE: `"${value}";\n` });
+        ToCode.define({ CLASS: CLASS, NAME: `${this.label}_innerHTML`, VALUE: `"${value}";\n` });
         return `  innerHTML: ${CLASS}_${this.label}_innerHTML,\n`;
+    },
+    cellArray: function (cellArray, CLASS = "") {
+        let arrayString = "";
+        for (let index = 0; index < cellArray.length; index++) {
+            ToCode.generic("DisplayCell", cellArray[index]);
+            arrayString += ((index == 0) ? "" : ", ") + `DisplayCell_${cellArray[index].label}`;
+        }
+        return `  cellArray: [${arrayString}],\n`;
     }
 };
-ToString.callGeneric = function (key, value, CLASS = undefined) {
-    ToString.generic(value.constructor.name, value);
-    return `  ${key}: ${value.constructor.name}_` + ((value.label) ? value.label : `label${ToString.labelNo}`) + `,\n`;
+ToCode.callGeneric = function (key, value, CLASS = undefined) {
+    ToCode.generic(value.constructor.name, value);
+    return `  ${key}: ${value.constructor.name}_` + ((value.label) ? value.label : `label${ToCode.labelNo}`) + `,\n`;
 };
-ToString.processType = {
+ToCode.processType = {
     string: function (key, value, CLASS = undefined) { return `  ${key}: "${value}",\n`; },
     number: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
     object: function (key, value, CLASS = undefined) { return `  ${key}: ${JSON.stringify(value)},\n`; },
     boolean: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
-    Array: function (key, value, CLASS = undefined) { return `  ${key}: [/* must fix! */],\n`; },
+    Array: function (key, value, CLASS = undefined) { return ToCode.handleArray(key, value, CLASS); },
     undefined: function (key, value, CLASS = undefined) { return `// ${key}: undefined,\n`; },
-    HtmlBlock: ToString.callGeneric,
-    Within: ToString.callGeneric,
-    Coord: ToString.callGeneric,
-    DisplayGroup: ToString.callGeneric,
+    HtmlBlock: ToCode.callGeneric,
+    Within: function (key, value, CLASS = undefined) { return `  ${key}: new Within(),\n`; },
+    //Within:ToCode.callGeneric,
+    Coord: ToCode.callGeneric,
+    DisplayGroup: ToCode.callGeneric,
+    DisplayCell: ToCode.callGeneric,
 };
-ToString.labelNo = 0;
-let callFunction = function () {
+ToCode.labelNo = 0;
+let callFunction = function (asArray = false) {
     let CLASS = this.constructor.name;
-    ToString.definitions = [];
-    ToString.generic(CLASS, this);
-    return ToString.toCode();
+    ToCode.definitions = [];
+    ToCode.generic(CLASS, this);
+    return ToCode.toCode(asArray);
 };
-Base.prototype.toString = Within.prototype.toString = callFunction;
+Base.prototype.toCode = Within.prototype.toString = callFunction;

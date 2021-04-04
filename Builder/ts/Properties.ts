@@ -31,9 +31,7 @@ class Properties extends Base {
             this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false,
             // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
                 function(THIS:any){
-                    console.log("closeCallback");
-                    htmlBlockProps.saveState();
-                    Render.update();
+                    htmlBlockProps.onCloseCallback(THIS)
                 },
                                         {body: this.rootDisplayCell,
                                          headerText:`${this.label}-`,
@@ -121,17 +119,18 @@ class Properties extends Base {
         htmlBlockProps.quillDisplayCell = I('htmlQuill',`<div id="editor"></div>`, bCss.bgwhite);
         htmlBlockProps.MonicoContainerDisplayCell = I("Monicocontainer",`<div id="container" style="width:100%;height:100%"></div>`);
         htmlBlockProps.displayEventFunction = I("EventsFunction","  ", bCss.bgwhite )
-        htmlBlockProps.selectInstance = new Select(["Add an Event", "onclick", "ondblclick", "onmousedown", "onmousemove", "onmouseout", "onmouseover",
+        htmlBlockProps.selectInstanceWhichOnEvent = new Select(["Add an Event", "onclick", "ondblclick", "onmousedown", "onmousemove", "onmouseout", "onmouseover",
             "onmouseup", "onwheel", "onblur", "onchange", "oncontextmenu", "onfocus", "oninput", "onselect"], "20px",
             function(pointerEvent:PointerEvent, key:string){
-                console.log("SEelct Function")
-                htmlBlockProps.selectSelected(pointerEvent, key);
-                htmlBlockProps.selectInstance.lastSelected = htmlBlockProps.selectInstance.currentSelected;
-                htmlBlockProps.selectInstance.currentSelected = htmlBlockProps.selectInstance.choices.indexOf(key);
-                htmlBlockProps.selectInstance.resort(htmlBlockProps.selectInstance.choices.indexOf(key));
+                htmlBlockProps.onChooseSelectEvent(pointerEvent, key);
+                // console.log("SEelct Function")
+                // htmlBlockProps.selectSelected(pointerEvent, key);
+                // htmlBlockProps.selectInstance.lastSelected = htmlBlockProps.selectInstance.currentSelected;
+                // htmlBlockProps.selectInstance.currentSelected = htmlBlockProps.selectInstance.choices.indexOf(key);
+                // htmlBlockProps.selectInstance.resort(htmlBlockProps.selectInstance.choices.indexOf(key));
             }
         )
-        
+        // Events pages created here
         htmlBlockProps.eventsDisplayCell = v(`eventDisplayV`,
             P("pagesIsEvents",
                 I("eventDisplayItemNone","No Events Registered", bCss.bgLightBorder, "20px"),
@@ -148,10 +147,11 @@ class Properties extends Base {
                             for (let key in objectWithProperties.events.actions) 
                                 dg.cellArray.push( I(`${objectWithProperties.label}_${key}`, key, bCss.buttons, "100%",
                                 events({onclick:function(){
-                                     htmlBlockProps.selectSelected(undefined, key);
-                                     htmlBlockProps.selectInstance.lastSelected = htmlBlockProps.selectInstance.currentSelected;
-                                     htmlBlockProps.selectInstance.currentSelected = htmlBlockProps.selectInstance.choices.indexOf(key);
-                                     htmlBlockProps.selectInstance.resort( htmlBlockProps.selectInstance.choices.indexOf(key) ); /// what if not picked???? FIX!
+                                    htmlBlockProps.onClickPreDefinedEvent(key);
+                                    //  htmlBlockProps.selectSelected(undefined, key);
+                                    //  htmlBlockProps.selectInstance.lastSelected = htmlBlockProps.selectInstance.currentSelected;
+                                    //  htmlBlockProps.selectInstance.currentSelected = htmlBlockProps.selectInstance.choices.indexOf(key);
+                                    //  htmlBlockProps.selectInstance.changeDisplayNameToIndex( htmlBlockProps.selectInstance.choices.indexOf(key) ); /// what if not picked???? FIX!
                                     }})), )
                             return 1;
                         }
@@ -159,7 +159,7 @@ class Properties extends Base {
                     return 0;
                 }
             ),
-            htmlBlockProps.selectInstance.rootDisplayCell,
+            htmlBlockProps.selectInstanceWhichOnEvent.rootDisplayCell,
             htmlBlockProps.displayEventFunction,
         );
         htmlBlockProps.cssSelect= new Select(["CssSelct","Option2"], "200px");
@@ -167,6 +167,7 @@ class Properties extends Base {
         htmlBlockProps.cssBodyDisplayCell = I("CssBody","Body", bCss.bgwhite);
 
         let textColor = I("cssTextColor","Text Color",bCss.bgLightBorder, events({onclick:function(){htmlBlockProps.colorPick("text")}}))
+        let bgColor = I("cssBGColor","Background Color",bCss.bgLightBorder, events({onclick:function(){htmlBlockProps.colorPick("background")}}))
 
 
         htmlBlockProps.cssDisplayCell =
@@ -178,7 +179,7 @@ class Properties extends Base {
             ),
             h("cssbuttons", "25px",
                 textColor,
-                I("cssBackgroundColor","Background Color",bCss.bgLightBorder),
+                bgColor,
             ),
             htmlBlockProps.cssBodyDisplayCell
         )
