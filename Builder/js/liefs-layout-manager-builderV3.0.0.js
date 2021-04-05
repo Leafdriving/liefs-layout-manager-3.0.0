@@ -529,6 +529,28 @@ class bCss {
         <polygon points="82.489 0 82.258 471.74 187.63 370.92 249.52 512 346.08 469.64 284.19 328.56 429.74 319.31"/></g></svg>
         `;
     }
+    static dragbarSVG(classname) {
+        return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+    <path d="m0.99446 12.5 5.0055-9.2346v5.4724h13v-5.4724l4.9628 9.2346-4.9628 8.5508v-5.4724h-13v5.4724z" stroke="#000" stroke-width=".034058px"/>
+   </svg>`;
+    }
+    static pagesSVG(classname) {
+        return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+   <g transform="matrix(.069039 0 0 .048212 -4.1849 .6616)">
+    <path d="m131.75 409.1c-28.8 0-52.1 18.3-52.1 40.4 0 22.6 23.3 40.4 52.1 40.4h278.4c-22.6-24.1-22.6-56.8 0-80.9h-278.4z"/>
+    <path d="m120.15 1.9c-23.3 7-40.4 32.7-40.4 63.8v342.2c10.5-9.3 24.9-15.9 40.4-17.9z"/>
+    <polygon points="139.95 388.9 410.25 388.9 410.25 0 244.95 0 244.95 99.2 204.85 73.9 164.85 99.2 164.85 0 139.95 0"/>
+   </g>
+  </svg>`;
+    }
+    static dockableSVG(classname) {
+        return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+     <path d="m11.691 9.0101a2.9179 2.9179 0 0 0-2.9179 2.9179 2.9179 2.9179 0 0 0 2.9179 2.9179 2.9179 2.9179 0 0 0 2.7543-1.9548h9.7978v-2.1003h-9.865a2.9179 2.9179 0 0 0-2.6872-1.7808 2.9179 2.9179 0 0 1-5.9e-5 0z" fill="none" stroke-dasharray="1.4338, 1.4338" stroke-width=".35845"/>
+     <path d="m0.68064 2.4571v19.692h21.125v-8.4262h-5.1769a5.1367 5.1367 0 0 1-4.8488 3.4411 5.1367 5.1367 0 0 1-5.1367-5.1367 5.1367 5.1367 0 0 1 5.1367-5.1367 5.1367 5.1367 0 0 1 7.2e-5 0 5.1367 5.1367 0 0 1 4.7306 3.1349h5.2951v-7.5684z" stroke-width=".010524"/>
+    </g>
+   </svg>`;
+    }
 }
 bCss.editable = css("editable", `-moz-appearance: textfield;
                                     -webkit-appearance: textfield;
@@ -584,9 +606,10 @@ bCss.vSVG = css("vSVG", `background-image: url("svg/Vertical.svg");
 bCss.ISVG = css("ISVG", `background-image: url("svg/icon-htmlOPT.svg");
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`, { type: "builder" });
-bCss.pagesSVG = css("pagesSVG", `background-image: url("svg/bookOPT.svg");
-                                        background-repeat: no-repeat;
-                                        padding-top: 3px;padding-left: 25px;`, `cursor: pointer;background-color:white;`, { type: "builder" });
+// static pagesSVG = css("pagesSVG",`background-image: url("svg/bookOPT.svg");
+//                                     background-repeat: no-repeat;
+//                                     padding-top: 3px;padding-left: 25px;`,
+//                                     `cursor: pointer;background-color:white;`, {type:"builder"});
 bCss.treeItem = css("treeItem", `background: transparent; color:black; cursor:pointer`, `background:DeepSkyBlue;`, { type: "builder" });
 bCss.bookSVGCss = css(`bookIcon`, `stroke: black;`, `fill: white;background:white`, { type: "builder" });
 bCss.buttonsSVGCss = css(`buttonIcons`, `fill: white;stroke:black; background-color:white`, `fill: black;stroke:white; background-color:black`, `fill: white;stroke:black; background-color:gray`, { type: "builder" });
@@ -633,7 +656,11 @@ class Builder extends Base {
     }
     static buildClientHandler() {
         Builder.clientHandler =
-            H("Client Window", h("Client_h", 5, dragbar("SomeDragbarName", 300, 1000, I("Client_M1", "left", bCss.bgLight, events({ onclick: function () { console.log("Client_M1 clicked"); } }))), I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
+            H("Client_Window", h("Client_h", 5, 
+            //dockable(
+            dragbar("SomeDragbarName", 300, 1000, I("Client_M1", "left", bCss.bgLight, events({ onclick: function () { console.log("Client_M1 clicked"); } }))), 
+            //P("ClientPages",
+            I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
     }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
@@ -641,7 +668,7 @@ class Builder extends Base {
             onclick: function (e) { Builder.onClickTree(e, this); },
             oncontextmenu: function (e) { Builder.oncontextmenu(e, this); },
         }), function onNodeCreation(node) {
-            let nodeLabel = I(`${node.label}_node`, `${node.Arguments[0]}`, node.ParentNodeTree.css, node.ParentNodeTree.events);
+            let nodeLabel = I(`${node.label}_node`, `${node.Arguments[0]}`, node.ParentNodeTree.css, node.ParentNodeTree.events, { attributes: { title: `${BaseF.typeof(node.Arguments[1])}:"${node.Arguments[0]}"` } });
             nodeLabel.coord.hideWidth = true;
             let dataObj = node.Arguments[1];
             let dataObjType = BaseF.typeof(dataObj);
@@ -653,6 +680,9 @@ class Builder extends Base {
                     Handler: bCss.homeSVG("bookIcon"),
                     HtmlBlock: bCss.htmlSVG("bookIcon"),
                     DisplayCell: bCss.displaycellSVG("bookIcon"),
+                    DragBar: bCss.dragbarSVG("bookIcon"),
+                    Pages: bCss.pagesSVG("bookIcon"),
+                    Dockable: bCss.dockableSVG("bookIcon"),
                 }[dataObjType];
             node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
             (node.children.length) ?
@@ -663,10 +693,11 @@ class Builder extends Base {
         menubarFile.hMenuBar({ menuObj: {
                 "Load (not working)": function () { console.log("one"); },
                 "SaveAs": { "just Javascript": function () {
-                        Builder.fileSave(Handler.byLabel("Client Window").toCode(), "myJavascript.js");
+                        Builder.fileSave(Handler.byLabel("Client_Window").toCode(), "myJavascript.js");
                     },
                     "One Page Website.html": function () {
-                        Builder.fileSave(Builder.boilerPlate(Handler.byLabel("Client Window").toCode()), "myWebSite.html");
+                        Handler.byLabel("Client_Window").addThisHandlerToStack = true;
+                        Builder.fileSave(Builder.boilerPlate(Handler.byLabel("Client_Window").toCode()), "myWebSite.html");
                     }, "Project Zipped": function () { console.log("c"); }, },
             } }, 150);
         let menubarEdit = I("MenuBar_Edit", "Edit", "35px", bCss.menuItem);
@@ -683,7 +714,7 @@ class Builder extends Base {
     }
     static updateTree() {
         Render.update();
-        const node = node_.byLabel("Client Window");
+        const node = node_.byLabel("Client_Window");
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function (node, newNode) {
                 newNode["Arguments"] = node.Arguments;
@@ -701,10 +732,32 @@ class Builder extends Base {
             childNode.Arguments = node.Arguments;
             childNode["typeof"] = node["typeof"];
         }
+        else if (node.Arguments[1].pages) {
+            childNode = newNode.newChild("_" + node.Arguments[1].pages.label);
+            childNode.Arguments = node.Arguments;
+            childNode.Arguments[1] = node.Arguments[1].pages;
+            childNode["typeof"] = "Pages";
+        }
         else
             childNode = newNode;
-        for (let index = 0; index < node.children.length; index++)
-            Builder.noDisplayCells(node.children[index], childNode);
+        let temp = [];
+        for (let index = 0; index < node.children.length; index++) {
+            if (node.children[index]["typeof"] in Overlay.classes) {
+                console.log("Wowie", node.children[index]["typeof"]);
+                node.children[index]["typeof"] += "_";
+                temp.push(node.children[index]);
+            }
+            else {
+                if (node.children[index]["typeof"].endsWith("_"))
+                    node.children[index]["typeof"] = node.children[index]["typeof"].slice(0, -1);
+                if (temp.length) {
+                    console.log(`pushing child to`, node.children[index]);
+                    node.children[index].children = node.children[index].children.concat(temp);
+                    temp = [];
+                }
+                Builder.noDisplayCells(node.children[index], childNode);
+            }
+        }
         return childNode;
     }
     static onSelect(displaycell) {
@@ -813,7 +866,7 @@ class Builder extends Base {
     }
     static horDivide(mouseEvent) {
         let show = false;
-        let clientWindowNode = node_.byLabel("Client Window");
+        let clientWindowNode = node_.byLabel("Client_Window");
         console.log(clientWindowNode != undefined);
         node_.traverse(clientWindowNode, function (node) {
             if (BaseF.typeof(node.Arguments[1]) == "DisplayCell") {
@@ -845,7 +898,8 @@ class Builder extends Base {
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>${title}</title>
-    <script src='https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js'></script>
+    <!-- <script src='https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js'></script> -->
+    <script src='file:///V:/Programming/gitllm/layout-manager/V3.0.1/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js'></script>
 </head>
 <body>
 </body>
@@ -864,10 +918,10 @@ Builder.argMap = {
 };
 Builder.context = new Context("nodeTreeContext");
 //static TOOLBAR_currentButtonName:string;
-Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }));
-Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"));
-Builder.TOOLBAR_B3 = I("toolbarHor", bCss.horSVG("buttonIcons"));
-Builder.TOOLBAR_B4 = I("toolbarVer", bCss.verSVG("buttonIcons"));
+Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }), { attributes: { title: "Select Tool" } });
+Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"), { attributes: { title: "Match Tool" } });
+Builder.TOOLBAR_B3 = I("toolbarHor", bCss.horSVG("buttonIcons"), { attributes: { title: "Create Horizontal DisplayGroup Tool" } });
+Builder.TOOLBAR_B4 = I("toolbarVer", bCss.verSVG("buttonIcons"), { attributes: { title: "Create Vertical DiaplayGroup Tool" } });
 Builder.TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect, Builder.TOOLBAR_B1, Builder.TOOLBAR_B2, Builder.TOOLBAR_B3, Builder.TOOLBAR_B4);
 Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgwhite*/));
 ///////////////////////////////////////////////////////////

@@ -59,10 +59,10 @@ class bCss{
                                         background-repeat: no-repeat;
                                         padding-top: 3px;padding-left: 25px;`,
                                         `cursor: pointer;background-color:white;`, {type:"builder"});
-    static pagesSVG = css("pagesSVG",`background-image: url("svg/bookOPT.svg");
-                                        background-repeat: no-repeat;
-                                        padding-top: 3px;padding-left: 25px;`,
-                                        `cursor: pointer;background-color:white;`, {type:"builder"});
+    // static pagesSVG = css("pagesSVG",`background-image: url("svg/bookOPT.svg");
+    //                                     background-repeat: no-repeat;
+    //                                     padding-top: 3px;padding-left: 25px;`,
+    //                                     `cursor: pointer;background-color:white;`, {type:"builder"});
     static treeItem = css("treeItem",`background: transparent; color:black; cursor:pointer`,
                                      `background:DeepSkyBlue;`, {type:"builder"})
 
@@ -200,4 +200,20 @@ class bCss{
         <g transform="matrix(.019665 0 0 .019665 1.636 .85503)">
         <polygon points="82.489 0 82.258 471.74 187.63 370.92 249.52 512 346.08 469.64 284.19 328.56 429.74 319.31"/></g></svg>
         `}
+    static dragbarSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+    <path d="m0.99446 12.5 5.0055-9.2346v5.4724h13v-5.4724l4.9628 9.2346-4.9628 8.5508v-5.4724h-13v5.4724z" stroke="#000" stroke-width=".034058px"/>
+   </svg>`}
+   static pagesSVG(classname:string){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+   <g transform="matrix(.069039 0 0 .048212 -4.1849 .6616)">
+    <path d="m131.75 409.1c-28.8 0-52.1 18.3-52.1 40.4 0 22.6 23.3 40.4 52.1 40.4h278.4c-22.6-24.1-22.6-56.8 0-80.9h-278.4z"/>
+    <path d="m120.15 1.9c-23.3 7-40.4 32.7-40.4 63.8v342.2c10.5-9.3 24.9-15.9 40.4-17.9z"/>
+    <polygon points="139.95 388.9 410.25 388.9 410.25 0 244.95 0 244.95 99.2 204.85 73.9 164.85 99.2 164.85 0 139.95 0"/>
+   </g>
+  </svg>`}
+    static dockableSVG(classname:string) {return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+     <path d="m11.691 9.0101a2.9179 2.9179 0 0 0-2.9179 2.9179 2.9179 2.9179 0 0 0 2.9179 2.9179 2.9179 2.9179 0 0 0 2.7543-1.9548h9.7978v-2.1003h-9.865a2.9179 2.9179 0 0 0-2.6872-1.7808 2.9179 2.9179 0 0 1-5.9e-5 0z" fill="none" stroke-dasharray="1.4338, 1.4338" stroke-width=".35845"/>
+     <path d="m0.68064 2.4571v19.692h21.125v-8.4262h-5.1769a5.1367 5.1367 0 0 1-4.8488 3.4411 5.1367 5.1367 0 0 1-5.1367-5.1367 5.1367 5.1367 0 0 1 5.1367-5.1367 5.1367 5.1367 0 0 1 7.2e-5 0 5.1367 5.1367 0 0 1 4.7306 3.1349h5.2951v-7.5684z" stroke-width=".010524"/>
+    </g>
+   </svg>`}
 }

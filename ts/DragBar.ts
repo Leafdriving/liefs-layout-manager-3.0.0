@@ -42,7 +42,10 @@ class DragBar extends Base {
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
         let dragbar=this;
-        DragBar.makeLabel(this);
+        
+        if (!this.label && this.parentDisplayCell) this.label = this.parentDisplayCell.label + "_DragBar";
+        else DragBar.makeLabel(this);
+        
         this.displaycell = I(`${this.label}_dragbar`,"",
             events({ondrag: {onDown :function(xmouseDiff:object){
                                 if (pf.isTypePercent(dragbar.parentDisplayCell.dim)) {

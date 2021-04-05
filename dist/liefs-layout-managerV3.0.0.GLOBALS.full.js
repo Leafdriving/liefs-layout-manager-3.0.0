@@ -1223,7 +1223,7 @@ class Handler extends Base {
         Handler.updateScreenSize();
         if ("DisplayCell" in this.retArgs)
             this.rootCell = this.retArgs["DisplayCell"][0];
-        else
+        if (!this.rootCell)
             pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
         if (this.handlerMargin == undefined)
             this.handlerMargin = Handler.handlerMarginDefault;
@@ -2062,7 +2062,10 @@ class DragBar extends Base {
         super();
         this.buildBase(...Arguments);
         let dragbar = this;
-        DragBar.makeLabel(this);
+        if (!this.label && this.parentDisplayCell)
+            this.label = this.parentDisplayCell.label + "_DragBar";
+        else
+            DragBar.makeLabel(this);
         this.displaycell = I(`${this.label}_dragbar`, "", events({ ondrag: { onDown: function (xmouseDiff) {
                     if (pf.isTypePercent(dragbar.parentDisplayCell.dim)) {
                         dragbar.parentDisplaygroup.percentToPx(dragbar.parentDisplayCell);
@@ -3851,6 +3854,18 @@ ToCode.customs = {
         return ((Object.keys(value).length == 0) ? "" : `attributes: ${JSON.stringify(value)},\n`);
     },
     css: function (value, CLASS = "") {
+        let cssInstance = Css.byLabel(value);
+        if (cssInstance) {
+            let valueString = `new Css("${value}", \`${pf.insideOfFunctionString(cssInstance.css)}\``;
+            if (cssInstance.cssHover)
+                valueString += `, \`${pf.insideOfFunctionString(cssInstance.cssHover)}\``;
+            if (cssInstance.cssSelect)
+                valueString += `, \`${pf.insideOfFunctionString(cssInstance.cssSelect)}\``;
+            if (cssInstance.cssSelectHover)
+                valueString += `, \`${pf.insideOfFunctionString(cssInstance.cssSelectHover)}\``;
+            valueString += `);\n`;
+            ToCode.define({ CLASS: "Css", NAME: value, VALUE: valueString });
+        }
         return ((!value.length) ? "" : `  css: "${value}",\n`);
     },
     dim: function (value, CLASS = "") {
@@ -3868,6 +3883,9 @@ ToCode.customs = {
         }
         return `  cellArray: [${arrayString}],\n`;
     },
+    // Events:function(value:string, CLASS:string = "") {
+    //     return `  innerHTML: ${CLASS}_${this.label}_Events,\n`;
+    // },
     overlays: function (overlays, CLASS) {
         // console.log("Overlays", overlays, CLASS)
         for (let index = 0; index < overlays.length; index++) {
@@ -3887,6 +3905,15 @@ ToCode.customs = {
             }
         }
         return "";
+    },
+    actions: function (actionObject, CLASS) {
+        let returnString = "actions : {";
+        for (const key in actionObject) {
+            const element = actionObject[key];
+            returnString += `${key}: ${actionObject[key].toString()},`;
+        }
+        returnString += "\n           },\n";
+        return returnString;
     }
 };
 ToCode.callGeneric = function (key, value, CLASS = undefined) {
@@ -3896,16 +3923,43 @@ ToCode.callGeneric = function (key, value, CLASS = undefined) {
 ToCode.processType = {
     string: function (key, value, CLASS = undefined) { return `  ${key}: "${value}",\n`; },
     number: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
-    object: function (key, value, CLASS = undefined) { return `  ${key}: ${JSON.stringify(value)},\n`; },
+    object: function (key, value, CLASS = undefined) {
+        // let more="{";
+        // if (BaseF.typeof(value) == "object"){ 
+        //     for (const key in (<Object>value)) {
+        //         let value2 = (<Object>value)[key];
+        //         console.log("VVVValue", value2)
+        //         if (BaseF.typeof(value2) == "function") {
+        //             value2 = value2.toString();
+        //         }
+        //         console.log("VVVValue2", value2)
+        //         more += ToCode.processType.object(key, value2, "" )
+        //     }
+        //     more += "}";
+        // }
+        // return `  ${key}: ${ ((more != "{") ? more : JSON.stringify(value)) },\n`
+        // if (BaseF.typeof(value) == "object"){
+        //     value = pf.insideOfFunctionString(ToCode.generic("OBJECT", value));
+        // }
+        return `  ${key}: ${JSON.stringify(value)},\n`;
+    },
     boolean: function (key, value, CLASS = undefined) { return `  ${key}: ${value},\n`; },
     Array: function (key, value, CLASS = undefined) { return ToCode.handleArray(key, value, CLASS); },
     undefined: function (key, value, CLASS = undefined) { return `// ${key}: undefined,\n`; },
     HtmlBlock: ToCode.callGeneric,
     Within: function (key, value, CLASS = undefined) { return `  ${key}: new Within(),\n`; },
     //Within:ToCode.callGeneric,
-    Coord: ToCode.callGeneric,
+    Coord: function (key, value, CLASS = undefined) { return ``; },
+    //Coord:ToCode.callGeneric,
     DisplayGroup: ToCode.callGeneric,
     DisplayCell: ToCode.callGeneric,
+    Events: ToCode.callGeneric,
+    function: function (key, value, CLASS = undefined) {
+        return `${key}:${value.toString()},\n`;
+    }
+    // Events:function(key:string, value:boolean, CLASS=undefined){
+    //     return `  ${key}:${CLASS}:${value} SOMETHING`;
+    // },
 };
 ToCode.labelNo = 0;
 let callFunction = function (asArray = false) {

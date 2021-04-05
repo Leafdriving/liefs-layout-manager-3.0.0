@@ -26,12 +26,17 @@ class Builder extends Base {
     static context:Context = new Context("nodeTreeContext");
     static buildClientHandler() {
         Builder.clientHandler =
-            H("Client Window",
+            H("Client_Window",
                 h("Client_h", 5,
+                    //dockable(
                     dragbar("SomeDragbarName", 300, 1000,
                         I("Client_M1","left", bCss.bgLight, events({onclick:function(){console.log("Client_M1 clicked")}})),
-                    ),
-                    I("Client_Main2","right", bCss.bgCyan, "200px"),
+                    /*)*/),
+                    //P("ClientPages",
+                        I("Client_Main2","right", bCss.bgCyan, "200px"),
+                        //I("Client_mainp2","right_p2", bCss.bgCyan, "200px"),
+                    //)
+                    
                     // v("Client_v", 5,
                     //     I("Client_Top","top", bCss.bgGreen),
                     //     P("MainPages", "500px",
@@ -62,7 +67,7 @@ class Builder extends Base {
 function onNodeCreation(node:node_){
     let nodeLabel = I(`${node.label}_node`, `${node.Arguments[0]}`,
                         node.ParentNodeTree.css,
-                        node.ParentNodeTree.events);
+                        node.ParentNodeTree.events, {attributes:{title:`${BaseF.typeof(node.Arguments[1])}:"${node.Arguments[0]}"` }});
     nodeLabel.coord.hideWidth = true;
     let dataObj = node.Arguments[1];
     let dataObjType = BaseF.typeof(dataObj);
@@ -74,6 +79,9 @@ function onNodeCreation(node:node_){
                 Handler:bCss.homeSVG("bookIcon"),
                 HtmlBlock:bCss.htmlSVG("bookIcon"),
                 DisplayCell:bCss.displaycellSVG("bookIcon"),
+                DragBar:bCss.dragbarSVG("bookIcon"),
+                Pages:bCss.pagesSVG("bookIcon"),
+                Dockable:bCss.dockableSVG("bookIcon"),
             }[dataObjType];
     node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
                             (node.children.length) ?
@@ -96,10 +104,11 @@ function onNodeCreation(node:node_){
         menubarFile.hMenuBar({menuObj: {
             "Load (not working)":function(){console.log("one")},
             "SaveAs": { "just Javascript":function(){
-                                Builder.fileSave((<Handler>Handler.byLabel("Client Window")).toCode(), "myJavascript.js");
+                                Builder.fileSave((<Handler>Handler.byLabel("Client_Window")).toCode(), "myJavascript.js");
                             },
                         "One Page Website.html":function(){
-                            Builder.fileSave(  Builder.boilerPlate( (<Handler>Handler.byLabel("Client Window")).toCode() ),
+                            (<Handler>Handler.byLabel("Client_Window")).addThisHandlerToStack = true;
+                            Builder.fileSave(  Builder.boilerPlate( (<Handler>Handler.byLabel("Client_Window")).toCode() ),
                                                 "myWebSite.html");
                         },
                         "Project Zipped":function(){console.log("c")},
@@ -147,7 +156,7 @@ function onNodeCreation(node:node_){
     static builderTreeRootNode:node_
     static updateTree(){
         Render.update();
-        const node = node_.byLabel("Client Window");
+        const node = node_.byLabel("Client_Window");
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
                 newNode["Arguments"] = node.Arguments;
@@ -166,9 +175,30 @@ function onNodeCreation(node:node_){
             childNode.Arguments = node.Arguments;
             childNode["typeof"] = node["typeof"];
         }
+        else if ( (<DisplayCell>node.Arguments[1]).pages ) {
+            childNode = newNode.newChild("_"+(<DisplayCell>node.Arguments[1]).pages.label);
+            childNode.Arguments = node.Arguments;
+            childNode.Arguments[1] = (<DisplayCell>node.Arguments[1]).pages;
+            childNode["typeof"] = "Pages";
+        }
         else childNode = newNode;
-        for (let index = 0; index < node.children.length; index++) 
-            Builder.noDisplayCells(node.children[index], childNode)
+        let temp:node_[] = [];
+        for (let index = 0; index < node.children.length; index++) {
+            if (node.children[index]["typeof"] in Overlay.classes){
+                console.log("Wowie", node.children[index]["typeof"]);
+                node.children[index]["typeof"] += "_";
+                temp.push(node.children[index]);
+            } else {
+                if (node.children[index]["typeof"].endsWith("_")) 
+                    node.children[index]["typeof"] = node.children[index]["typeof"].slice(0, -1);
+                if (temp.length) {
+                    console.log(`pushing child to`,node.children[index])
+                    node.children[index].children = node.children[index].children.concat(temp);
+                    temp = [];
+                }
+                Builder.noDisplayCells(node.children[index], childNode)
+            }
+        }
         return childNode;
     }
 
@@ -192,10 +222,10 @@ function onNodeCreation(node:node_){
     }
     static TOOLBAR_currentButton_el:Element;
     //static TOOLBAR_currentButtonName:string;
-    static TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({onclick:function(e){console.log("hello")}}));
-    static TOOLBAR_B2 = I("toolbarMatch",bCss.matchSVG("buttonIcons"));
-    static TOOLBAR_B3 = I("toolbarHor",bCss.horSVG("buttonIcons"));
-    static TOOLBAR_B4 = I("toolbarVer",bCss.verSVG("buttonIcons"));
+    static TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({onclick:function(e){console.log("hello")}}), {attributes:{title:"Select Tool"}});
+    static TOOLBAR_B2 = I("toolbarMatch",bCss.matchSVG("buttonIcons"), {attributes:{title:"Match Tool"}});
+    static TOOLBAR_B3 = I("toolbarHor",bCss.horSVG("buttonIcons"), {attributes:{title:"Create Horizontal DisplayGroup Tool"}});
+    static TOOLBAR_B4 = I("toolbarVer",bCss.verSVG("buttonIcons"), {attributes:{title:"Create Vertical DiaplayGroup Tool"}});
     static TOOLBAR = toolBar("Main_toolbar", 25, 25, Builder.onSelect, Builder.onUnselect,
         Builder.TOOLBAR_B1,
         Builder.TOOLBAR_B2,
@@ -292,7 +322,7 @@ function onNodeCreation(node:node_){
     }
     static horDivide(mouseEvent:MouseEvent){
         let show = false;
-        let clientWindowNode = <node_>node_.byLabel("Client Window")
+        let clientWindowNode = <node_>node_.byLabel("Client_Window")
         console.log(clientWindowNode != undefined)
         node_.traverse(clientWindowNode, function(node){
             if (BaseF.typeof(node.Arguments[1]) == "DisplayCell") {
@@ -325,7 +355,8 @@ function onNodeCreation(node:node_){
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>${title}</title>
-    <script src='https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js'></script>
+    <!-- <script src='https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js'></script> -->
+    <script src='file:///V:/Programming/gitllm/layout-manager/V3.0.1/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js'></script>
 </head>
 <body>
 </body>

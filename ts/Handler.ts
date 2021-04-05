@@ -75,7 +75,7 @@ class Handler extends Base {
         Handler.updateScreenSize();
 
         if ("DisplayCell" in this.retArgs) this.rootCell = this.retArgs["DisplayCell"][0];
-        else pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
+        if (!this.rootCell) pf.errorHandling(`Handler "${this.label}" requires a DisplayCell`);
         if (this.handlerMargin == undefined) this.handlerMargin = Handler.handlerMarginDefault;
 
         if (Handler.firstRun) {

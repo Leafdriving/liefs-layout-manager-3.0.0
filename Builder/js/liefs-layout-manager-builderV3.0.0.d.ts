@@ -132,7 +132,6 @@ declare class bCss {
     static hSVG: Css;
     static vSVG: Css;
     static ISVG: Css;
-    static pagesSVG: Css;
     static treeItem: Css;
     static bookSVGCss: Css;
     static buttonsSVGCss: Css;
@@ -147,6 +146,9 @@ declare class bCss {
     static homeSVG(classname: string): string;
     static matchSVG(classname: string): string;
     static cursorSVG(classname: string): string;
+    static dragbarSVG(classname: string): string;
+    static pagesSVG(classname: string): string;
+    static dockableSVG(classname: string): string;
 }
 declare class Quill {
     constructor(...Arguments: any);

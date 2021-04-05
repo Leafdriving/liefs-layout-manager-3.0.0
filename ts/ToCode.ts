@@ -36,6 +36,15 @@ class ToCode{
             return ((Object.keys(value).length == 0) ? "" : `attributes: ${JSON.stringify(value)},\n`);
             },
         css:function(value:string, CLASS:string = ""){
+            let cssInstance = <Css>Css.byLabel(value)
+            if (cssInstance){
+                let valueString = `new Css("${value}", \`${pf.insideOfFunctionString(cssInstance.css)}\``;
+                if (cssInstance.cssHover) valueString += `, \`${pf.insideOfFunctionString(cssInstance.cssHover)}\``;
+                if (cssInstance.cssSelect) valueString += `, \`${pf.insideOfFunctionString(cssInstance.cssSelect)}\``;
+                if (cssInstance.cssSelectHover) valueString += `, \`${pf.insideOfFunctionString(cssInstance.cssSelectHover)}\``;
+                valueString += `);\n`;
+                ToCode.define({CLASS: "Css" , NAME:value, VALUE:valueString})
+            }
             return ((!value.length) ? "" : `  css: "${value}",\n`);
             },
         dim:function(value:string, CLASS:string = ""){
@@ -52,7 +61,10 @@ class ToCode{
                 arrayString += ((index == 0) ? "" : ", " ) + `DisplayCell_${cellArray[index].label}`;
             }
             return `  cellArray: [${arrayString}],\n`;
-        },
+            },
+        // Events:function(value:string, CLASS:string = "") {
+        //     return `  innerHTML: ${CLASS}_${this.label}_Events,\n`;
+        // },
         overlays:function(overlays:Overlay[], CLASS) {
             // console.log("Overlays", overlays, CLASS)
             for (let index = 0; index < overlays.length; index++) {
@@ -72,6 +84,15 @@ class ToCode{
                 }
             }
             return "";
+        },
+        actions:function(actionObject:object, CLASS){
+            let returnString = "actions : {";
+            for (const key in actionObject) {
+                const element = actionObject[key];
+                returnString += `${key}: ${actionObject[key].toString()},`
+            }
+            returnString += "\n           },\n";
+            return returnString
         }
     }
     static callGeneric = function(key:string, value:HtmlBlock, CLASS=undefined){
@@ -81,16 +102,43 @@ class ToCode{
     static processType:objectKeyValueClassFunction = {
         string:function(key:string, value:string, CLASS=undefined){return `  ${key}: "${value}",\n`},
         number:function(key:string, value:number, CLASS=undefined){return `  ${key}: ${value},\n`},
-        object:function(key:string, value:object, CLASS=undefined){return `  ${key}: ${ JSON.stringify(value) },\n`},
+        object:function(key:string, value:object, CLASS=undefined){
+            // let more="{";
+            // if (BaseF.typeof(value) == "object"){ 
+            //     for (const key in (<Object>value)) {
+            //         let value2 = (<Object>value)[key];
+            //         console.log("VVVValue", value2)
+            //         if (BaseF.typeof(value2) == "function") {
+            //             value2 = value2.toString();
+            //         }
+            //         console.log("VVVValue2", value2)
+            //         more += ToCode.processType.object(key, value2, "" )
+            //     }
+            //     more += "}";
+            // }
+            // return `  ${key}: ${ ((more != "{") ? more : JSON.stringify(value)) },\n`
+            // if (BaseF.typeof(value) == "object"){
+            //     value = pf.insideOfFunctionString(ToCode.generic("OBJECT", value));
+            // }
+            return `  ${key}: ${ JSON.stringify(value) },\n`
+        },
         boolean:function(key:string, value:boolean, CLASS=undefined){return `  ${key}: ${value},\n`},
         Array:function(key:string, value:boolean, CLASS=undefined){return ToCode.handleArray(key, value, CLASS)},
         undefined:function(key:string, value:boolean, CLASS=undefined){return `// ${key}: undefined,\n`},
         HtmlBlock:ToCode.callGeneric,
         Within:function(key:string, value:boolean, CLASS=undefined){return `  ${key}: new Within(),\n`},
         //Within:ToCode.callGeneric,
-        Coord:ToCode.callGeneric,
+        Coord:function(key:string, value:boolean, CLASS=undefined){return ``},
+        //Coord:ToCode.callGeneric,
         DisplayGroup:ToCode.callGeneric,
         DisplayCell:ToCode.callGeneric,
+        Events:ToCode.callGeneric,
+        function:function(key:string, value:boolean, CLASS=undefined) {
+            return `${key}:${value.toString()},\n`;
+        }
+        // Events:function(key:string, value:boolean, CLASS=undefined){
+        //     return `  ${key}:${CLASS}:${value} SOMETHING`;
+        // },
     }
     static handleArray(key:string, value:boolean, CLASS=undefined){
         console.log(key, value, CLASS);

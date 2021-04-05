@@ -168,10 +168,6 @@ Render.register("Dockable", Dockable);
 function dockable(...Arguments:any): DisplayCell {return Overlay.new("Dockable", ...Arguments);}
 Overlay.classes["Dockable"] = Dockable;
 
-
-
-
-
 enum TBState {
     dockedInVertical = "dockedInVertical",
     dockedInHorizontal = "dockedInHorizontal",
