@@ -8,7 +8,16 @@ class Properties extends Base {
             this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false, 
             // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
             function (THIS) {
-                htmlBlockProps.onCloseCallback(THIS);
+                console.log(pf.preUnderscore(THIS.label));
+                switch (pf.preUnderscore(THIS.label)) {
+                    case "HtmlBlock":
+                        htmlBlockProps.onCloseCallback(THIS);
+                        break;
+                    case "DisplayGroup":
+                        DisplayGroupProps.onCloseCallback(THIS);
+                    default:
+                        break;
+                }
             }, { body: this.rootDisplayCell,
                 headerText: `${this.label}-`,
             });
@@ -182,6 +191,43 @@ class Properties extends Base {
                 break;
         }
     }
+    static DisplayGroup() {
+        let keyCells = {
+            label: Properties.displayValue("DislayGroup", "label", true, function (htmlBlock, zindex, derender, node, displaycell) {
+                let propertiesInstance = Properties.byLabel("DisplayGroup");
+                htmlBlock.innerHTML = propertiesInstance.currentObject.label;
+            }),
+            ishor: Properties.displayValue("DislayGroup", "ishor", true, function (htmlBlock, zindex, derender, node, displaycell) {
+                let propertiesInstance = Properties.byLabel("DisplayGroup");
+                htmlBlock.innerHTML = propertiesInstance.currentObject.ishor.toString();
+            }),
+            margin: Properties.displayValue("DislayGroup", "margin", true, function (htmlBlock, zindex, derender, node, displaycell) {
+                let propertiesInstance = Properties.byLabel("DisplayGroup");
+                htmlBlock.innerHTML = propertiesInstance.currentObject.marginHor.toString();
+            }),
+        };
+        DisplayGroupProps.horizontalCellArray = I("blank_o", "", "20px", bCss.bgLightBorder);
+        DisplayGroupProps.rootcell = v(`DislayGroup_prop_v`, h("DisplayGroup_prop_hTop", "20px", I(`DisplayGroupLabel`, "Label:", bCss.bgLightBorder), keyCells.label, I(`DisplayGroupishor`, "IsHorizontal:", bCss.bgLightBorder), keyCells.ishor, I(`DisplayGroupMargin`, "Margin Between Cells:", "160px", bCss.bgLightBorder), keyCells.margin), I("DisplayGroupChildren", "DisplayGroup Children:", "20px", bCss.bgLightBorder), DisplayGroupProps.horizontalCellArray, I("Hello", "Hello", bCss.bgLightBorder));
+        new Properties("DisplayGroup", DisplayGroupProps.rootcell, { keyCells });
+    }
+    static DisplayGroupTreeClicked(objectWithProperties) { DisplayGroupProps.treeClicked(objectWithProperties); }
+    static Handler() {
+        let keyCells = {
+        // label:Properties.displayValue("HtmlBlock", "label",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+        //     let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
+        //     htmlBlock.innerHTML = (<HtmlBlock>propertiesInstance.currentObject).label;
+        // }),
+        // minDisplayGroupSize:Properties.displayValue("HtmlBlock", "minDisplayGroupSize", false, function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+        //     let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
+        //     let minSize = (<HtmlBlock>propertiesInstance.currentObject).minDisplayGroupSize;
+        //     if (minSize) htmlBlock.innerHTML = minSize.toString();
+        //     else htmlBlock.innerHTML = "undefined";
+        // } ), 
+        };
+        let rootcell = v(`DislayGroup_prop_v`, I("Hello", "Hello", bCss.bgLightBorder));
+        new Properties("Handler", rootcell, { keyCells });
+    }
+    static HandlerTreeClicked(objectWithProperties) { HandlerProps.treeClicked(objectWithProperties); }
 }
 Properties.labelNo = 0;
 Properties.instances = [];
@@ -205,6 +251,7 @@ class htmlBlockProps {
     }
     static treeClicked(objectWithProperties) {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
+        Properties.setHeaderText(propertiesInstance, "HtmlBlock - " + objectWithProperties["label"]);
         let getState = htmlBlockProps.getState();
         console.log(`Tree Clicked ${objectWithProperties["label"]} State:`, getState);
         if (getState != undefined) {
@@ -414,6 +461,60 @@ htmlBlockProps.options = {
     readOnly: false,
     theme: 'snow'
 };
+class DisplayGroupProps {
+    constructor() { }
+    static treeClicked(objectWithProperties) {
+        let propertiesInstance = Properties.byLabel("DisplayGroup");
+        propertiesInstance.currentObject = objectWithProperties;
+        Properties.setHeaderText(propertiesInstance, "DisplayGroup - " + objectWithProperties["label"]);
+        DisplayGroupProps.updateProperties(objectWithProperties);
+        propertiesInstance.winModal.modal.show();
+    }
+    static onCloseCallback(modal) {
+        //let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
+    }
+    static updateProperties(objectWithProperties) {
+        let propertiesInstance = Properties.byLabel("DisplayGroup");
+        let arrayOfCells = [];
+        for (let index = 0; index < objectWithProperties.cellArray.length; index++) {
+            const displaycell = objectWithProperties.cellArray[index];
+            //console.log("displaycell", displaycell)
+            arrayOfCells.push(h(`arrayOfCells${index}`, "20px", I(`cellarray${index}`, displaycell.label, bCss.bgLightBorder), I(`cellarray_${index}`, { innerHTML: displaycell.dim }, bCss.bgLightBorder), I(`deleteIndex${index}`, `<button onclick="DisplayGroupProps.deleteIndex(${index})">Delete</button>`, "50px"), I(`insertIndex${index}`, `<button>Insert</button>`, "50px", events({ onclick: context({ menuObj: { above: function () { DisplayGroupProps.insertIndex(index); },
+                        below: function () { DisplayGroupProps.insertIndex(index + 1); },
+                    }
+                }) }))));
+        }
+        DisplayGroupProps.rootcell.displaygroup.cellArray[2] = v("arrayOfCells", ...arrayOfCells, `${arrayOfCells.length * 20}px`);
+    }
+    static deleteIndex(index) {
+        let propertiesInstance = Properties.byLabel("DisplayGroup");
+        let objectWithProperties = propertiesInstance.currentObject;
+        console.log("Delete index ", index);
+        Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
+        objectWithProperties.cellArray.splice(index, 1);
+        propertiesInstance.winModal.modal.hide();
+        DisplayGroupProps.updateProperties(objectWithProperties);
+        propertiesInstance.winModal.modal.show();
+    }
+    static insertIndex(index) {
+        console.log("Insert index ", index);
+    }
+}
+class HandlerProps {
+    constructor() { }
+    static treeClicked(objectWithProperties) {
+        let propertiesInstance = Properties.byLabel("Handler");
+        propertiesInstance.currentObject = objectWithProperties;
+        Properties.setHeaderText(propertiesInstance, "Handler - " + objectWithProperties["label"]);
+        HandlerProps.updateProperties(objectWithProperties);
+        propertiesInstance.winModal.modal.show();
+    }
+    static onCloseCallback(modal) {
+        //let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
+    }
+    static updateProperties(objectWithProperties) {
+    }
+}
 class bCss {
     static bookSVG(classname) {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">

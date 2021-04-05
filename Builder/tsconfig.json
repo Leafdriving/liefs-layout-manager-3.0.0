@@ -39,6 +39,8 @@
         // "../ts/ToolBar.ts",
         "ts/Properties.ts",
         "ts/htmlBlockProps.ts",
+        "ts/DisplayGroupProps.ts",
+        "ts/HandlerProps.ts",
         "ts/bCss.ts",
         "ts/builder.ts",
         

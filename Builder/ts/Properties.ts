@@ -31,7 +31,16 @@ class Properties extends Base {
             this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false,
             // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
                 function(THIS:any){
-                    htmlBlockProps.onCloseCallback(THIS)
+                    console.log(pf.preUnderscore(THIS.label))
+                    switch (pf.preUnderscore(THIS.label)) {
+                        case "HtmlBlock":
+                            htmlBlockProps.onCloseCallback(THIS);
+                            break;
+                        case "DisplayGroup":
+                            DisplayGroupProps.onCloseCallback(THIS);
+                        default:
+                            break;
+                    }
                 },
                                         {body: this.rootDisplayCell,
                                          headerText:`${this.label}-`,
@@ -270,6 +279,60 @@ class Properties extends Base {
                 break;
         }
     }
+    static DisplayGroup(){ // This creates the first and only Properties instance for DisplayGroup
+        let keyCells = {
+            label:Properties.displayValue("DislayGroup", "label",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
+                htmlBlock.innerHTML = (<DisplayGroup>propertiesInstance.currentObject).label;
+            }),
+            ishor:Properties.displayValue("DislayGroup", "ishor",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
+                htmlBlock.innerHTML = (<DisplayGroup>propertiesInstance.currentObject).ishor.toString();
+            }),
+            margin:Properties.displayValue("DislayGroup", "margin",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
+                htmlBlock.innerHTML = (<DisplayGroup>propertiesInstance.currentObject).marginHor.toString();
+            }),
+
+        }
     
+    DisplayGroupProps.horizontalCellArray = I("blank_o","", "20px", bCss.bgLightBorder);
+    DisplayGroupProps.rootcell = v(`DislayGroup_prop_v`,
+        h("DisplayGroup_prop_hTop", "20px",
+            I(`DisplayGroupLabel`,"Label:", bCss.bgLightBorder),
+            keyCells.label,
+            I(`DisplayGroupishor`,"IsHorizontal:", bCss.bgLightBorder),
+            keyCells.ishor,
+            I(`DisplayGroupMargin`,"Margin Between Cells:", "160px",bCss.bgLightBorder),
+            keyCells.margin,
+        ),
+        I("DisplayGroupChildren", "DisplayGroup Children:", "20px", bCss.bgLightBorder),
+        DisplayGroupProps.horizontalCellArray,
+
+        I("Hello", "Hello", bCss.bgLightBorder)
+    );
+    new Properties("DisplayGroup", DisplayGroupProps.rootcell,  {keyCells});
+    }
+    static DisplayGroupTreeClicked(objectWithProperties:DisplayGroup) {DisplayGroupProps.treeClicked(objectWithProperties)}
+    static Handler(){ // This creates the first and only Properties instance for DisplayGroup
+        let keyCells = {
+            // label:Properties.displayValue("HtmlBlock", "label",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+            //     let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
+            //     htmlBlock.innerHTML = (<HtmlBlock>propertiesInstance.currentObject).label;
+            // }),
+            // minDisplayGroupSize:Properties.displayValue("HtmlBlock", "minDisplayGroupSize", false, function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+            //     let propertiesInstance:Properties = <Properties>Properties.byLabel("HtmlBlock");
+            //     let minSize = (<HtmlBlock>propertiesInstance.currentObject).minDisplayGroupSize;
+            //     if (minSize) htmlBlock.innerHTML = minSize.toString();
+            //     else htmlBlock.innerHTML = "undefined";
+            // } ), 
+        }
+    let rootcell = v(`DislayGroup_prop_v`,
+        
+        I("Hello", "Hello", bCss.bgLightBorder)
+    );
+    new Properties("Handler", rootcell,  {keyCells});
+    }
+    static HandlerTreeClicked(objectWithProperties:object) {HandlerProps.treeClicked(objectWithProperties)}
 }
 

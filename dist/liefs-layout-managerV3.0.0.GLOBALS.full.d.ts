@@ -99,6 +99,7 @@ declare class pf {
     static viewport(): number[];
     static errorReporting(errString: string): void;
     static insideOfFunctionString(functionString: string): string;
+    static preUnderscore(someString: string): string;
     static uis0(num: number): number;
     static parseURLParams(url?: string): {};
 }

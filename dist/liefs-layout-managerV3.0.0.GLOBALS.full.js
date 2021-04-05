@@ -339,6 +339,7 @@ class pf {
     static insideOfFunctionString(functionString) {
         return functionString.substring(functionString.indexOf("{") + 1, functionString.lastIndexOf("}"));
     }
+    static preUnderscore(someString) { return someString.substring(0, someString.indexOf("_")); }
     static uis0(num) { return (num == undefined) ? 0 : num; }
     // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static parseURLParams(url = window.location.href) {

@@ -50,6 +50,7 @@ class htmlBlockProps {
     }
     static treeClicked(objectWithProperties:object){
         let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
+        Properties.setHeaderText(propertiesInstance, "HtmlBlock - " + objectWithProperties["label"])
         let getState = htmlBlockProps.getState();
         console.log(`Tree Clicked ${objectWithProperties["label"]} State:`, getState)
         if (getState != undefined) {
