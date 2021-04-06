@@ -110,6 +110,8 @@ declare class htmlBlockProps {
     static treeClicked(objectWithProperties: object): void;
     static saveState(getState?: number): void;
     static launchState(getState?: number): void;
+    static cssChange(mouseEvent: PointerEvent, choice: string, select: Select): void;
+    static availableCss(objectWithProperties: HtmlBlock): string[];
     static onClickPreDefinedEvent(actionEventName: string): void;
     static onCloseCallback(THIS: any): void;
     static postConfirm(answer: string): void;
@@ -126,6 +128,7 @@ declare class DisplayGroupProps {
     static treeClicked(objectWithProperties: DisplayGroup): void;
     static onCloseCallback(modal: Modal): void;
     static updateProperties(objectWithProperties: DisplayGroup): void;
+    static upIndex(index: number): void;
     static deleteIndex(index: number): void;
     static insertIndex(index: number): void;
 }
@@ -141,6 +144,7 @@ declare class bCss {
     static bgwhite: Css;
     static bgLight: Css;
     static bgLightBorder: Css;
+    static bgWhiteBorder: Css;
     static bgLightCenter: Css;
     static bgGreen: Css;
     static bgBlue: Css;

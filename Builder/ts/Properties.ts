@@ -171,7 +171,7 @@ class Properties extends Base {
             htmlBlockProps.selectInstanceWhichOnEvent.rootDisplayCell,
             htmlBlockProps.displayEventFunction,
         );
-        htmlBlockProps.cssSelect= new Select(["CssSelct","Option2"], "200px");
+        htmlBlockProps.cssSelect= new Select(["CssSelct"], "200px", htmlBlockProps.cssChange);
         htmlBlockProps.cssCurrentValueDisplayCell = I("cssValue", "Value", bCss.bgLightBorder);
         htmlBlockProps.cssBodyDisplayCell = I("CssBody","Body", bCss.bgwhite);
 
@@ -280,20 +280,40 @@ class Properties extends Base {
         }
     }
     static DisplayGroup(){ // This creates the first and only Properties instance for DisplayGroup
+        let ishorSelect = select("SelectIshor", ["true", "false"],
+            function(pointerEvent:PointerEvent, key:string){
+                let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
+                let displaygroup = <DisplayGroup>propertiesInstance.currentObject;
+                if (key == "false" && displaygroup.ishor) {displaygroup.ishor = false;Builder.updateTree();Render.update()}
+                if (key == "true" && !displaygroup.ishor) {displaygroup.ishor = true;Builder.updateTree();Render.update()}
+            });
+        ishorSelect.preRenderCallback = function(displaycell:DisplayCell, derender:boolean){
+            let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
+            let displaygroup = <DisplayGroup>propertiesInstance.currentObject;
+            let select = <Select>Select.byLabel("SelectIshor");
+            select.clickableName.htmlBlock.innerHTML = select.choices[(displaygroup.ishor) ? 0 : 1];
+            // if (select.currentSelected == 0 && !displaygroup.ishor) select.changeDisplayNameToIndex(1);
+            // if (select.currentSelected == 1 && displaygroup.ishor) select.changeDisplayNameToIndex(0);
+        }
         let keyCells = {
             label:Properties.displayValue("DislayGroup", "label",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
                 let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
                 htmlBlock.innerHTML = (<DisplayGroup>propertiesInstance.currentObject).label;
             }),
-            ishor:Properties.displayValue("DislayGroup", "ishor",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
-                let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
-                htmlBlock.innerHTML = (<DisplayGroup>propertiesInstance.currentObject).ishor.toString();
-            }),
-            margin:Properties.displayValue("DislayGroup", "margin",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
-                let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
-                htmlBlock.innerHTML = (<DisplayGroup>propertiesInstance.currentObject).marginHor.toString();
-            }),
+            ishor:ishorSelect,
+            margin: DisplayCell.editable( I("DisplayGroupMargin_", bCss.bgWhiteBorder,
+                                            function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                                                let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
+                                                htmlBlock.innerHTML = (<DisplayGroup>propertiesInstance.currentObject).marginHor.toString();
+                                            }),
+                                function(e: FocusEvent, displaycell: DisplayCell, innerHTML: string){
 
+                                    let propertiesInstance:Properties = <Properties>Properties.byLabel("DisplayGroup");
+                                    let displaygroup = <DisplayGroup>propertiesInstance.currentObject;
+                                    displaygroup.marginHor = displaygroup.marginVer = parseInt(innerHTML);
+                                    Render.update();
+                                }
+            )
         }
     
     DisplayGroupProps.horizontalCellArray = I("blank_o","", "20px", bCss.bgLightBorder);

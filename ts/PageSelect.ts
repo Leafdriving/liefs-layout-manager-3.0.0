@@ -19,7 +19,7 @@ class Select extends Base {
     menuObj:object;
     dim:string;
     clickableName:DisplayCell;
-    onSelect:(mouseEvent:PointerEvent, el:any)=>void;
+    onSelect:(mouseEvent:PointerEvent, el:any, THIS:Select)=>void;
     lastSelected:number;
     currentSelected:number;
 
@@ -54,7 +54,7 @@ class Select extends Base {
         THIS.lastSelected = THIS.currentSelected;
         THIS.currentSelected = index;
         THIS.changeDisplayNameToIndex(index);
-        THIS.onSelect(mouseEvent, THIS.choices[index]);
+        THIS.onSelect(mouseEvent, THIS.choices[index], this);
     }
     buildMenuObj(){
         this.menuObj = {};

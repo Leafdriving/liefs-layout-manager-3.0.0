@@ -339,6 +339,17 @@ class pf {
     static insideOfFunctionString(functionString) {
         return functionString.substring(functionString.indexOf("{") + 1, functionString.lastIndexOf("}"));
     }
+    static array_move(arr, old_index, new_index) {
+        if (new_index >= arr.length) {
+            var k = new_index - arr.length + 1;
+            while (k--) {
+                arr.push(undefined);
+            }
+        }
+        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+        // return arr; // for testing
+    }
+    ;
     static preUnderscore(someString) { return someString.substring(0, someString.indexOf("_")); }
     static uis0(num) { return (num == undefined) ? 0 : num; }
     // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
@@ -906,6 +917,24 @@ class DisplayCell extends Base {
     vMenuBar(menuObj) {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) }); //////////////// COME BACK HERE!!!!
+    }
+    static editable(displaycell, onedit, validate = function () { return true; }) {
+        displaycell.htmlBlock.attributes["contenteditable"] = "true";
+        if (!displaycell.htmlBlock.events)
+            displaycell.htmlBlock.events = events({});
+        displaycell.htmlBlock.events.actions["onblur"] = function (e) { onedit(e, displaycell, e.target["innerHTML"]); };
+        displaycell.htmlBlock.events.actions["onkeydown"] = function (e) {
+            if (e.code == 'Enter' || e.code == "NumpadEnter") {
+                e.preventDefault();
+                e.target["blur"]();
+            }
+            else {
+                let valid = validate(e, displaycell, e.target["innerHTML"]);
+                let el = displaycell.htmlBlock.el;
+                ///// not finished /////
+            }
+        };
+        return displaycell;
     }
     static concatArray(main, added) { for (let displaycell of added)
         main.push(displaycell); }
@@ -1760,7 +1789,7 @@ class Select extends Base {
         THIS.lastSelected = THIS.currentSelected;
         THIS.currentSelected = index;
         THIS.changeDisplayNameToIndex(index);
-        THIS.onSelect(mouseEvent, THIS.choices[index]);
+        THIS.onSelect(mouseEvent, THIS.choices[index], this);
     }
     buildMenuObj() {
         this.menuObj = {};

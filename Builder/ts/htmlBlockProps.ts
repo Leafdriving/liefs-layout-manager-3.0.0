@@ -125,12 +125,41 @@ class htmlBlockProps {
             console.log("Launching monaco edit css");
             htmlBlockProps.cssCurrentValueDisplayCell.htmlBlock.innerHTML = objectWithProperties.css;
             htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            htmlBlockProps.cssSelect.choices = htmlBlockProps.availableCss(objectWithProperties);
+            htmlBlockProps.cssSelect.buildMenuObj();
+            htmlBlockProps.cssSelect.clickableName.htmlBlock.innerHTML = htmlBlockProps.cssSelect.choices[0];
             Render.update();
             setTimeout(() => {
                 htmlBlockProps.monacoContainer = monacoContainer(Css.byLabel(objectWithProperties.css).css,"css");
                 htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = undefined;
             }, 0)
         }
+    }
+    static cssChange(mouseEvent:PointerEvent, choice:string, select:Select){
+        let propertiesInstance = <Properties>Properties.byLabel("HtmlBlock");
+        let objectWithProperties = <HtmlBlock>propertiesInstance.currentObject;
+        if (choice == "Create New Class"){
+            let newClassName = prompt("Ennter new Css Label", "");
+            if (newClassName.trim() != "") {
+                css(newClassName,"");
+                objectWithProperties.css = newClassName;
+                htmlBlockProps.launchState();
+            }
+        } else if (choice != objectWithProperties.css) {
+            htmlBlockProps.saveState();
+            objectWithProperties.css = choice;
+            htmlBlockProps.launchState();
+        }
+
+        
+    }
+    static availableCss(objectWithProperties:HtmlBlock){
+        let returnArray:string[] = [objectWithProperties.css, "Create New Class"];
+        for (let index = 0; index < Css.instances.length; index++) {
+            const CssInstance = Css.instances[index];
+            if (!CssInstance.type && CssInstance.classname != objectWithProperties.css) returnArray.push(CssInstance.classname);
+        }
+        return returnArray;
     }
     static onClickPreDefinedEvent(actionEventName:string){
         console.log("You clicked a pre-defined Event!", actionEventName)
@@ -193,14 +222,23 @@ class htmlBlockProps {
     
     static confirmwinModal(confirmText:string, execute:string, dontExecute:string){
         htmlBlockProps.winModalConfirmInstance = <winModal>winModal.byLabel("Confirm");
-        let buttons =`<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${execute}'>Ok</button>`
-                    +`<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${dontExecute}'>Cancel</button>`;
+        let buttons =`<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();window.onmousemove=undefined;${execute}'>Ok</button>`
+                    +`<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();window.onmousemove=undefined;${dontExecute}'>Cancel</button>`;
         if (! htmlBlockProps.winModalConfirmInstance)
         htmlBlockProps.winModalConfirmInstance = new winModal("Confirm","Confirm", 200,100, function(){eval(dontExecute)},
                             I("confirm",`${confirmText}</br>${buttons}`, bCss.bgwhite));
         else {
             htmlBlockProps.winModalConfirmInstance.body.htmlBlock.innerHTML = `${confirmText}</br>${buttons}`;
             htmlBlockProps.winModalConfirmInstance.modal.show();
+        }
+        window.onmousemove = function(mouseEvent:MouseEvent){
+            let x = mouseEvent.clientX, y=mouseEvent.clientY;
+            let coord = htmlBlockProps.winModalConfirmInstance.modal.handler.coord;
+            if (x < coord.x) coord.x = x;
+            if (y < coord.y) coord.y = y;
+            if (x > coord.x + coord.width) coord.x = x - coord.width;
+            if (y > coord.y + coord.height) coord.y = y - coord.height;
+            Render.update(htmlBlockProps.winModalConfirmInstance.modal.handler,false, 1000);
         }
     }
     static colorPick(type:string){

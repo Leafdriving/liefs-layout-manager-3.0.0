@@ -145,6 +145,16 @@ class pf {
     static insideOfFunctionString(functionString:string) {
         return functionString.substring(functionString.indexOf("{")+1, functionString.lastIndexOf("}"))
     }
+    static array_move(arr:any[], old_index:number, new_index:number) {
+        if (new_index >= arr.length) {
+            var k = new_index - arr.length + 1;
+            while (k--) {
+                arr.push(undefined);
+            }
+        }
+        arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+        // return arr; // for testing
+    };
     static preUnderscore(someString:string) {return someString.substring(0, someString.indexOf("_"));}
     static uis0(num:number){return (num == undefined) ? 0 : num}
     // static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}

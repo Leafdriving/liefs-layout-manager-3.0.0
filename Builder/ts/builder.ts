@@ -29,11 +29,11 @@ class Builder extends Base {
             H("Client_Window",
                 h("Client_h", 5,
                     //dockable(
-                    dragbar("SomeDragbarName", 300, 1000,
-                        I("Client_M1","left", bCss.bgLight, events({onclick:function(){console.log("Client_M1 clicked")}})),
-                    /*)*/),
+                    //dragbar("SomeDragbarName", 300, 1000,
+                        I("Client_M1","left", "backgroundLight", events({onclick:function(){console.log("Client_M1 clicked")}})),
+                   // /*)*/),
                     //P("ClientPages",
-                        I("Client_Main2","right", bCss.bgCyan, "200px"),
+                        dragbar("clientMain2Dragbar", I("Client_Main2","right", "backgroundCyan", "200px"), 100, 500),
                         //I("Client_mainp2","right_p2", bCss.bgCyan, "200px"),
                     //)
                     
@@ -156,13 +156,18 @@ function onNodeCreation(node:node_){
     static builderTreeRootNode:node_
     static updateTree(){
         Render.update();
-        const node = node_.byLabel("Client_Window");
+        const node = Render.node.children[1]
+
+        //console.log("origional Node");
+        //node.log(true);
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
                 newNode["Arguments"] = node.Arguments;
                 newNode["typeof"] = BaseF.typeof(node.Arguments[1])
             })
             Builder.noDisplayCellnode = Builder.noDisplayCells();
+            //console.log("Copy");
+            //Builder.noDisplayCellnode.log(true);
             Tree_.byLabel("HandlerTree").newRoot( Builder.noDisplayCellnode );
         }
         Render.update();
@@ -372,6 +377,9 @@ ${javascript}
 //////////  Main Run Executiuon ///////////////////////////
 ///////////////////////////////////////////////////////////
 
+css(`backgroundWhite`,`background:white;color:black`);
+css(`backgroundLight`,`background: #dcedf0`);
+css (`backgroundCyan`,`background: cyan;`);
 
 Builder.buildClientHandler();
 Builder.buildMainHandler();
@@ -384,7 +392,7 @@ window.onmousemove = function(mouseEvent:MouseEvent) {
     if (buttonIndex == 2) Builder.horDivide(mouseEvent);
     if (buttonIndex == 3) console.log(mouseEvent);
 }
-let horVerModal = new Modal("horVerModal",I("horVerModal", css("horVerModal","background:red;opacity:0.25"),
+let horVerModal = new Modal("horVerModal",I("horVerModal", css("horVerModal","background:red;opacity:0.25", {type:"inline"}),
                                             events({onclick:function(){console.log("clicked")}}))); 
 
 // let outside = new Modal("outside",I("outside_", css("outside","background:red;opacity:0.25")));

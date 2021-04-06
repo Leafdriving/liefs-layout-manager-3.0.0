@@ -123,7 +123,7 @@ class Properties extends Base {
             }
             return 0;
         }), htmlBlockProps.selectInstanceWhichOnEvent.rootDisplayCell, htmlBlockProps.displayEventFunction);
-        htmlBlockProps.cssSelect = new Select(["CssSelct", "Option2"], "200px");
+        htmlBlockProps.cssSelect = new Select(["CssSelct"], "200px", htmlBlockProps.cssChange);
         htmlBlockProps.cssCurrentValueDisplayCell = I("cssValue", "Value", bCss.bgLightBorder);
         htmlBlockProps.cssBodyDisplayCell = I("CssBody", "Body", bCss.bgwhite);
         let textColor = I("cssTextColor", "Text Color", bCss.bgLightBorder, events({ onclick: function () { htmlBlockProps.colorPick("text"); } }));
@@ -192,19 +192,43 @@ class Properties extends Base {
         }
     }
     static DisplayGroup() {
+        let ishorSelect = select("SelectIshor", ["true", "false"], function (pointerEvent, key) {
+            let propertiesInstance = Properties.byLabel("DisplayGroup");
+            let displaygroup = propertiesInstance.currentObject;
+            if (key == "false" && displaygroup.ishor) {
+                displaygroup.ishor = false;
+                Builder.updateTree();
+                Render.update();
+            }
+            if (key == "true" && !displaygroup.ishor) {
+                displaygroup.ishor = true;
+                Builder.updateTree();
+                Render.update();
+            }
+        });
+        ishorSelect.preRenderCallback = function (displaycell, derender) {
+            let propertiesInstance = Properties.byLabel("DisplayGroup");
+            let displaygroup = propertiesInstance.currentObject;
+            let select = Select.byLabel("SelectIshor");
+            select.clickableName.htmlBlock.innerHTML = select.choices[(displaygroup.ishor) ? 0 : 1];
+            // if (select.currentSelected == 0 && !displaygroup.ishor) select.changeDisplayNameToIndex(1);
+            // if (select.currentSelected == 1 && displaygroup.ishor) select.changeDisplayNameToIndex(0);
+        };
         let keyCells = {
             label: Properties.displayValue("DislayGroup", "label", true, function (htmlBlock, zindex, derender, node, displaycell) {
                 let propertiesInstance = Properties.byLabel("DisplayGroup");
                 htmlBlock.innerHTML = propertiesInstance.currentObject.label;
             }),
-            ishor: Properties.displayValue("DislayGroup", "ishor", true, function (htmlBlock, zindex, derender, node, displaycell) {
-                let propertiesInstance = Properties.byLabel("DisplayGroup");
-                htmlBlock.innerHTML = propertiesInstance.currentObject.ishor.toString();
-            }),
-            margin: Properties.displayValue("DislayGroup", "margin", true, function (htmlBlock, zindex, derender, node, displaycell) {
+            ishor: ishorSelect,
+            margin: DisplayCell.editable(I("DisplayGroupMargin_", bCss.bgWhiteBorder, function (htmlBlock, zindex, derender, node, displaycell) {
                 let propertiesInstance = Properties.byLabel("DisplayGroup");
                 htmlBlock.innerHTML = propertiesInstance.currentObject.marginHor.toString();
-            }),
+            }), function (e, displaycell, innerHTML) {
+                let propertiesInstance = Properties.byLabel("DisplayGroup");
+                let displaygroup = propertiesInstance.currentObject;
+                displaygroup.marginHor = displaygroup.marginVer = parseInt(innerHTML);
+                Render.update();
+            })
         };
         DisplayGroupProps.horizontalCellArray = I("blank_o", "", "20px", bCss.bgLightBorder);
         DisplayGroupProps.rootcell = v(`DislayGroup_prop_v`, h("DisplayGroup_prop_hTop", "20px", I(`DisplayGroupLabel`, "Label:", bCss.bgLightBorder), keyCells.label, I(`DisplayGroupishor`, "IsHorizontal:", bCss.bgLightBorder), keyCells.ishor, I(`DisplayGroupMargin`, "Margin Between Cells:", "160px", bCss.bgLightBorder), keyCells.margin), I("DisplayGroupChildren", "DisplayGroup Children:", "20px", bCss.bgLightBorder), DisplayGroupProps.horizontalCellArray, I("Hello", "Hello", bCss.bgLightBorder));
@@ -330,12 +354,41 @@ class htmlBlockProps {
             console.log("Launching monaco edit css");
             htmlBlockProps.cssCurrentValueDisplayCell.htmlBlock.innerHTML = objectWithProperties.css;
             htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+            htmlBlockProps.cssSelect.choices = htmlBlockProps.availableCss(objectWithProperties);
+            htmlBlockProps.cssSelect.buildMenuObj();
+            htmlBlockProps.cssSelect.clickableName.htmlBlock.innerHTML = htmlBlockProps.cssSelect.choices[0];
             Render.update();
             setTimeout(() => {
                 htmlBlockProps.monacoContainer = monacoContainer(Css.byLabel(objectWithProperties.css).css, "css");
                 htmlBlockProps.cssBodyDisplayCell.htmlBlock.innerHTML = undefined;
             }, 0);
         }
+    }
+    static cssChange(mouseEvent, choice, select) {
+        let propertiesInstance = Properties.byLabel("HtmlBlock");
+        let objectWithProperties = propertiesInstance.currentObject;
+        if (choice == "Create New Class") {
+            let newClassName = prompt("Ennter new Css Label", "");
+            if (newClassName.trim() != "") {
+                css(newClassName, "");
+                objectWithProperties.css = newClassName;
+                htmlBlockProps.launchState();
+            }
+        }
+        else if (choice != objectWithProperties.css) {
+            htmlBlockProps.saveState();
+            objectWithProperties.css = choice;
+            htmlBlockProps.launchState();
+        }
+    }
+    static availableCss(objectWithProperties) {
+        let returnArray = [objectWithProperties.css, "Create New Class"];
+        for (let index = 0; index < Css.instances.length; index++) {
+            const CssInstance = Css.instances[index];
+            if (!CssInstance.type && CssInstance.classname != objectWithProperties.css)
+                returnArray.push(CssInstance.classname);
+        }
+        return returnArray;
     }
     static onClickPreDefinedEvent(actionEventName) {
         console.log("You clicked a pre-defined Event!", actionEventName);
@@ -397,14 +450,27 @@ class htmlBlockProps {
     }
     static confirmwinModal(confirmText, execute, dontExecute) {
         htmlBlockProps.winModalConfirmInstance = winModal.byLabel("Confirm");
-        let buttons = `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${execute}'>Ok</button>`
-            + `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();${dontExecute}'>Cancel</button>`;
+        let buttons = `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();window.onmousemove=undefined;${execute}'>Ok</button>`
+            + `<button onclick='htmlBlockProps.winModalConfirmInstance.modal.hide();window.onmousemove=undefined;${dontExecute}'>Cancel</button>`;
         if (!htmlBlockProps.winModalConfirmInstance)
             htmlBlockProps.winModalConfirmInstance = new winModal("Confirm", "Confirm", 200, 100, function () { eval(dontExecute); }, I("confirm", `${confirmText}</br>${buttons}`, bCss.bgwhite));
         else {
             htmlBlockProps.winModalConfirmInstance.body.htmlBlock.innerHTML = `${confirmText}</br>${buttons}`;
             htmlBlockProps.winModalConfirmInstance.modal.show();
         }
+        window.onmousemove = function (mouseEvent) {
+            let x = mouseEvent.clientX, y = mouseEvent.clientY;
+            let coord = htmlBlockProps.winModalConfirmInstance.modal.handler.coord;
+            if (x < coord.x)
+                coord.x = x;
+            if (y < coord.y)
+                coord.y = y;
+            if (x > coord.x + coord.width)
+                coord.x = x - coord.width;
+            if (y > coord.y + coord.height)
+                coord.y = y - coord.height;
+            Render.update(htmlBlockProps.winModalConfirmInstance.modal.handler, false, 1000);
+        };
     }
     static colorPick(type) {
         let newModal = winModal.byLabel("COLORS");
@@ -479,25 +545,47 @@ class DisplayGroupProps {
         for (let index = 0; index < objectWithProperties.cellArray.length; index++) {
             const displaycell = objectWithProperties.cellArray[index];
             //console.log("displaycell", displaycell)
-            arrayOfCells.push(h(`arrayOfCells${index}`, "20px", I(`cellarray${index}`, displaycell.label, bCss.bgLightBorder), I(`cellarray_${index}`, { innerHTML: displaycell.dim }, bCss.bgLightBorder), I(`deleteIndex${index}`, `<button onclick="DisplayGroupProps.deleteIndex(${index})">Delete</button>`, "50px"), I(`insertIndex${index}`, `<button>Insert</button>`, "50px", events({ onclick: context({ menuObj: { above: function () { DisplayGroupProps.insertIndex(index); },
+            arrayOfCells.push(h(`arrayOfCells${index}`, "20px", I(`cellarray${index}`, displaycell.label, bCss.bgLightBorder), DisplayCell.editable(I(`cellarray_${index}`, bCss.bgWhiteBorder, function (htmlBlock, zindex, derender, node, displaycell2) {
+                htmlBlock.innerHTML = displaycell.dim;
+            }), function (e, displaycell2, innerHTML) {
+                displaycell.dim = innerHTML;
+                Render.update();
+            }), (index > 0) ? I(`bubbleUp${index}`, `<button onclick="DisplayGroupProps.upIndex(${index})">Up</button>`, "30px") : undefined, I(`deleteIndex${index}`, `<button onclick="DisplayGroupProps.deleteIndex(${index})">Delete</button>`, "50px"), I(`insertIndex${index}`, `<button>Insert</button>`, "50px", events({ onclick: context({ menuObj: { above: function () { DisplayGroupProps.insertIndex(index); },
                         below: function () { DisplayGroupProps.insertIndex(index + 1); },
                     }
                 }) }))));
         }
         DisplayGroupProps.rootcell.displaygroup.cellArray[2] = v("arrayOfCells", ...arrayOfCells, `${arrayOfCells.length * 20}px`);
     }
+    static upIndex(index) {
+        let propertiesInstance = Properties.byLabel("DisplayGroup");
+        let objectWithProperties = propertiesInstance.currentObject;
+        Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
+        pf.array_move(objectWithProperties.cellArray, index, index - 1);
+        propertiesInstance.winModal.modal.hide();
+        DisplayGroupProps.updateProperties(objectWithProperties);
+        propertiesInstance.winModal.modal.show();
+        Builder.updateTree();
+    }
     static deleteIndex(index) {
         let propertiesInstance = Properties.byLabel("DisplayGroup");
         let objectWithProperties = propertiesInstance.currentObject;
-        console.log("Delete index ", index);
         Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
         objectWithProperties.cellArray.splice(index, 1);
         propertiesInstance.winModal.modal.hide();
         DisplayGroupProps.updateProperties(objectWithProperties);
         propertiesInstance.winModal.modal.show();
+        Builder.updateTree();
     }
     static insertIndex(index) {
-        console.log("Insert index ", index);
+        let propertiesInstance = Properties.byLabel("DisplayGroup");
+        let objectWithProperties = propertiesInstance.currentObject;
+        Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
+        objectWithProperties.cellArray.splice(index, 0, I({ innerHTML: "" }, bCss.bgwhite, "50px"));
+        propertiesInstance.winModal.modal.hide();
+        DisplayGroupProps.updateProperties(objectWithProperties);
+        propertiesInstance.winModal.modal.show();
+        Builder.updateTree();
     }
 }
 class HandlerProps {
@@ -672,6 +760,9 @@ bCss.disabled = css("disabled", `-moz-appearance: textfield;
 bCss.bgwhite = css("bgwhite", `background: white`, { type: "builder" });
 bCss.bgLight = css("bgLight2", `background: #dcedf0`, { type: "builder" });
 bCss.bgLightBorder = css("bgLight2border", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`, { type: "builder" });
+bCss.bgWhiteBorder = css("bgwhiteborder", `background: white;box-sizing: border-box;border: 1px solid darkgray;`
+    + `-moz-box-shadow: inset 0 0 2px #000000;-webkit-box-shadow: inset 0 0 2px #000000;`
+    + `box-shadow: inset 0 0 2px #000000;`, { type: "builder" });
 bCss.bgLightCenter = css("bgLightCenter", `background: #dcedf0;
                                     text-align:center;box-sizing: border-box;
                                     border: 1px solid darkgray;
@@ -759,9 +850,11 @@ class Builder extends Base {
         Builder.clientHandler =
             H("Client_Window", h("Client_h", 5, 
             //dockable(
-            dragbar("SomeDragbarName", 300, 1000, I("Client_M1", "left", bCss.bgLight, events({ onclick: function () { console.log("Client_M1 clicked"); } }))), 
+            //dragbar("SomeDragbarName", 300, 1000,
+            I("Client_M1", "left", "backgroundLight", events({ onclick: function () { console.log("Client_M1 clicked"); } })), 
+            // /*)*/),
             //P("ClientPages",
-            I("Client_Main2", "right", bCss.bgCyan, "200px")), false);
+            dragbar("clientMain2Dragbar", I("Client_Main2", "right", "backgroundCyan", "200px"), 100, 500)), false);
     }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
@@ -815,13 +908,17 @@ class Builder extends Base {
     }
     static updateTree() {
         Render.update();
-        const node = node_.byLabel("Client_Window");
+        const node = Render.node.children[1];
+        //console.log("origional Node");
+        //node.log(true);
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function (node, newNode) {
                 newNode["Arguments"] = node.Arguments;
                 newNode["typeof"] = BaseF.typeof(node.Arguments[1]);
             });
             Builder.noDisplayCellnode = Builder.noDisplayCells();
+            //console.log("Copy");
+            //Builder.noDisplayCellnode.log(true);
             Tree_.byLabel("HandlerTree").newRoot(Builder.noDisplayCellnode);
         }
         Render.update();
@@ -1028,6 +1125,9 @@ Builder.hoverModal = new Modal("BuilderHover", I("BuilderHoverDummy" /*,bCss.bgw
 ///////////////////////////////////////////////////////////
 //////////  Main Run Executiuon ///////////////////////////
 ///////////////////////////////////////////////////////////
+css(`backgroundWhite`, `background:white;color:black`);
+css(`backgroundLight`, `background: #dcedf0`);
+css(`backgroundCyan`, `background: cyan;`);
 Builder.buildClientHandler();
 Builder.buildMainHandler();
 Handler.activate(Builder.clientHandler);
@@ -1041,7 +1141,7 @@ window.onmousemove = function (mouseEvent) {
     if (buttonIndex == 3)
         console.log(mouseEvent);
 };
-let horVerModal = new Modal("horVerModal", I("horVerModal", css("horVerModal", "background:red;opacity:0.25"), events({ onclick: function () { console.log("clicked"); } })));
+let horVerModal = new Modal("horVerModal", I("horVerModal", css("horVerModal", "background:red;opacity:0.25", { type: "inline" }), events({ onclick: function () { console.log("clicked"); } })));
 // let outside = new Modal("outside",I("outside_", css("outside","background:red;opacity:0.25")));
 // let inside = new Modal("inside", I("inside_", css("inside","background:green;opacity:0.25")));
 // let show = function(coord:Coord) {

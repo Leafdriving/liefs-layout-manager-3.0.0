@@ -104,7 +104,8 @@ class Base /* extends Function */ {
         if (index != -1) CLASS["instances"].splice(index,1);            
     }
     static push(instance:any, toActive = false){
-        let CLASS = this;instance = CLASS.stringOrObject(instance);
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
         CLASS.pop(instance);          // if pushing same, remove previous
         CLASS["instances"].push(instance);
         if (toActive) CLASS.activate(instance);

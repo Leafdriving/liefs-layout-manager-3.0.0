@@ -18,6 +18,9 @@ class bCss{
     static bgwhite = css("bgwhite", `background: white`, {type:"builder"});
     static bgLight = css("bgLight2", `background: #dcedf0`, {type:"builder"});
     static bgLightBorder = css("bgLight2border", `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;`, {type:"builder"});
+    static bgWhiteBorder = css("bgwhiteborder", `background: white;box-sizing: border-box;border: 1px solid darkgray;`
+                                +`-moz-box-shadow: inset 0 0 2px #000000;-webkit-box-shadow: inset 0 0 2px #000000;`
+                                +`box-shadow: inset 0 0 2px #000000;`, {type:"builder"});
     static bgLightCenter = css("bgLightCenter",
                                     `background: #dcedf0;
                                     text-align:center;box-sizing: border-box;

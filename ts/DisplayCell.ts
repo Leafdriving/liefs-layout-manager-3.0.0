@@ -98,6 +98,25 @@ class DisplayCell extends Base {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({onmouseover:vMenuBar(menuObj)})            //////////////// COME BACK HERE!!!!
     }
+    static editable(displaycell:DisplayCell,
+                    onedit:(e:FocusEvent, displaycell:DisplayCell, innerHTML:string)=>void,
+                    validate:(e:KeyboardEvent, displaycell:DisplayCell, innerHTML:string)=>boolean = function(){return true}
+                    ) : DisplayCell {
+        displaycell.htmlBlock.attributes["contenteditable"] = "true";
+        if (!displaycell.htmlBlock.events) displaycell.htmlBlock.events = events({});
+        displaycell.htmlBlock.events.actions["onblur"] = function(e:FocusEvent){onedit(e, displaycell, e.target["innerHTML"])};
+        displaycell.htmlBlock.events.actions["onkeydown"] = function(e:KeyboardEvent){
+                                                                if (e.code == 'Enter'  || e.code == "NumpadEnter") {
+                                                                    e.preventDefault();
+                                                                    e.target["blur"]();
+                                                                } else {
+                                                                    let valid = validate(e, displaycell, e.target["innerHTML"]);
+                                                                    let el = displaycell.htmlBlock.el;
+                                                                    ///// not finished /////
+                                                                }
+                                                        }
+        return displaycell;
+    }
     static concatArray(main:DisplayCell[], added:DisplayCell[]){for (let displaycell of added) main.push(displaycell)}
     static Render(displaycell:DisplayCell, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let renderChildren = new RenderChildren;

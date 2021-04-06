@@ -99,6 +99,7 @@ declare class pf {
     static viewport(): number[];
     static errorReporting(errString: string): void;
     static insideOfFunctionString(functionString: string): string;
+    static array_move(arr: any[], old_index: number, new_index: number): void;
     static preUnderscore(someString: string): string;
     static uis0(num: number): number;
     static parseURLParams(url?: string): {};
@@ -277,6 +278,7 @@ declare class DisplayCell extends Base {
     popOverlay(label: string): void;
     hMenuBar(menuObj: object, ...Arguments: any): void;
     vMenuBar(menuObj: object): void;
+    static editable(displaycell: DisplayCell, onedit: (e: FocusEvent, displaycell: DisplayCell, innerHTML: string) => void, validate?: (e: KeyboardEvent, displaycell: DisplayCell, innerHTML: string) => boolean): DisplayCell;
     static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
     static Render(displaycell: DisplayCell, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
@@ -514,7 +516,7 @@ declare class Select extends Base {
     menuObj: object;
     dim: string;
     clickableName: DisplayCell;
-    onSelect: (mouseEvent: PointerEvent, el: any) => void;
+    onSelect: (mouseEvent: PointerEvent, el: any, THIS: Select) => void;
     lastSelected: number;
     currentSelected: number;
     constructor(...Arguments: any);
