@@ -20,6 +20,7 @@ class node_ extends Base {
     static defaults = {collapsed:false}
     static argMap:ArgMap = {
         string : ["label"],
+        DisplayCell: ["displaycell"],
     }
     static newNode(THIS:node_, ...Arguments:any){
         let newnode = new node_(...Arguments);

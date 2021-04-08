@@ -16,6 +16,8 @@ class Render {
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);
             Render.RenderObjectList( renderChildren.siblings, Render.node , zindex, true);
+            Pages.applyOnclick();
+            Observe.update();
             Handler.RenderEndingPoint();
         }
     }

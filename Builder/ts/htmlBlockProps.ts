@@ -250,6 +250,7 @@ class htmlBlockProps {
             newModal.headerText = type+" color";
             newModal.modal.show();
         } else {
+            console.log("Making Colors Modal");
             newModal = new winModal("COLORS",type+" color",251,307, I("colorPicker", `<div id="color_picker"></div>`,bCss.bgBlue));
         }
         let el = document.getElementById("color_picker");

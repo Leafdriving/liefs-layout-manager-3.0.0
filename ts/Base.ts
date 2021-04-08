@@ -96,7 +96,8 @@ class Base /* extends Function */ {
         return undefined;
     }
     static pop(instance:any = undefined){
-        let CLASS = this;instance = CLASS.stringOrObject(instance);
+        let CLASS = this;
+        instance = CLASS.stringOrObject(instance);
         if (instance == undefined)
             instance = CLASS["instances"][ CLASS["instances"].length-1 ]
         CLASS.deactivate(instance);

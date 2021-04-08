@@ -85,10 +85,14 @@ class DisplayCell extends Base {
                 returnList.push(this.overlays[index])
         return returnList;    
     }
-    popOverlay(label:string) {
+    popOverlay(label:string, validate:(overlay:Overlay)=>boolean = function(){return true}) {
         for (let index = 0; index < this.overlays.length; index++)
-            if (this.overlays[index].sourceClassName == label)
-                this.overlays.splice(index, 1)
+            if (this.overlays[index].sourceClassName == label){ 
+                if ( validate(this.overlays[index]) ) {
+                    console.log("overlay popped", label);
+                    this.overlays.splice(index, 1)
+                }
+            }
     }
     hMenuBar(menuObj:object, ...Arguments:any){
         menuObj["launchcell"] = this;
@@ -139,15 +143,12 @@ class DisplayCell extends Base {
                     pages.displaycells[pages.previousPage].coord.copy( displaycell.coord );
 
                     renderChildren.RenderSibling(pages.displaycells[pages.previousPage], true)
-                    //Handler.renderDisplayCell(pages.displaycells[pages.previousPage], parentDisplaygroup, index, true);
                 }
                 pages.currentPage = pages.previousPage = evalCurrentPage;
                 Pages.pushHistory();
             }
             pages.displaycells[evalCurrentPage].coord.copy( displaycell.coord );
-
             renderChildren.RenderSibling(pages.displaycells[evalCurrentPage], derender);
-            //Handler.renderDisplayCell(pages.displaycells[evalCurrentPage], parentDisplaygroup, index, derender);
 
             pages.currentPage = evalCurrentPage;
             pages.addSelected();

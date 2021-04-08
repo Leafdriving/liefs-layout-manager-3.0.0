@@ -31,6 +31,8 @@ declare class Properties extends Base {
     static HtmlBlockChange(variable: string, value: string): void;
     static DisplayGroup(): void;
     static DisplayGroupTreeClicked(objectWithProperties: DisplayGroup): void;
+    static DragBar(): void;
+    static DragBarTreeClicked(objectWithProperties: object): void;
     static Handler(): void;
     static HandlerTreeClicked(objectWithProperties: object): void;
 }
@@ -133,6 +135,12 @@ declare class DisplayGroupProps {
     static insertIndex(index: number): void;
 }
 declare class HandlerProps {
+    constructor();
+    static treeClicked(objectWithProperties: object): void;
+    static onCloseCallback(modal: Modal): void;
+    static updateProperties(objectWithProperties: object): void;
+}
+declare class DragBarProps {
     constructor();
     static treeClicked(objectWithProperties: object): void;
     static onCloseCallback(modal: Modal): void;

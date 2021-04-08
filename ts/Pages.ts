@@ -99,17 +99,26 @@ class Pages extends Base {
         }
         // console.log(el);
     }
-    static setPage(label:string, pageNumber:number|string) {Pages.byLabel(label).setPage(pageNumber)}
+    static setPage(label:string, pageReference:number|string) {(<Pages>Pages.byLabel(label)).setPage(pageReference)}
     static applyOnclick(){
         let querry = document.querySelectorAll(`[pagebutton]`);
         let el:HTMLElement;
+        let value:string;
+        let pagename:string;
+        let pageReference:string;
+        let onclick:string;
         for (let i = 0; i < querry.length; i++){
             el = <HTMLElement>(querry[i]);
-            // el.onclick = function(event) {Tree.onclick.bind(this)(event);}
-            ///////////////////////
-            ///////////////////////
-            //////////////////////
-            //////////////////////// re-link HERE!!!!
+            value = el.attributes["pagebutton"].value;
+            onclick = (el.attributes["onclick"]) ? el.attributes["onclick"].value : undefined; 
+            [pagename, pageReference] = value.split("|");
+            if (!onclick) {
+                el.onclick = function(mouseEvent:MouseEvent){ Pages.setPage(pagename, pageReference) }
+            } else {
+                el.onclick = function(mouseEvent:MouseEvent){ Pages.setPage(pagename, pageReference); eval(onclick) };
+                el.removeAttribute("onclick")
+            }
+            el.removeAttribute("pagebutton");
         }
     }
     static button(pagename:string, index:string|number, keepAsNumber = false): object {

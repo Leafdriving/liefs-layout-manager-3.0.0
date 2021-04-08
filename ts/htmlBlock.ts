@@ -31,7 +31,12 @@ class HtmlBlock extends Base {
     innerHTML:string;
     css:string;
     dim:string;
-    events: Events;
+    #events_: Events;
+    get events(){return this.#events_}
+    set events(events:Events){
+        if (!this.#events_) this.#events_ = events;
+        else Events.mergeEvents(this.label, this.#events_, events);
+    }
     el:HTMLElement;
     attributes:object = {};
     hideWidth: boolean;

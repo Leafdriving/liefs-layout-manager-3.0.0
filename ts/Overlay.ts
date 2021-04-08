@@ -23,7 +23,10 @@ class Overlay {
         Overlay.instances.push(this);
         this.label= `Overlay_${pf.pad_with_zeroes(Overlay.instances.length)}`;
         this.sourceClassName = Arguments.shift();
-        this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);
+        if (Overlay.classes[this.sourceClassName])
+            this.returnObj = new (Overlay.classes[this.sourceClassName])(...Arguments);
+        else
+            console.log(`Overlay did not have classes type "${this.sourceClassName}"`);
         // console.log(this.returnObj);
         (<DisplayCell>this.returnObj["parentDisplayCell"]).addOverlay(this)
     }

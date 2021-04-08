@@ -104,13 +104,22 @@ class Modal extends Base {
     get coord():Coord {return this.handler.coord}
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
-
         Modal.makeLabel(this);
-
         this.handler = new Handler(`${this.label}_handler`, false, this.rootDisplayCell, new Coord(),{type:this.type});
         if ("number" in this.retArgs){
             this.setSize(...this.retArgs["number"]);
         } else this.setSize();
+        if (this.rootDisplayCell.displaygroup && this.type == "winModal") {
+            let dg2 = this.rootDisplayCell.displaygroup.cellArray[1].displaygroup
+            
+            let totalPx = DisplayGroup.allPx(dg2);            
+            if (totalPx){
+                if (dg2.ishor)
+                    this.coord.width = totalPx + pf.pxAsNumber(this.rootDisplayCell.displaygroup.cellArray[0].dim);
+                else
+                    this.coord.height = totalPx + pf.pxAsNumber(this.rootDisplayCell.displaygroup.cellArray[0].dim);
+            }
+        }
     }
     setSize(...numbers:number[]){Modal.setSize(this, ...numbers)}
     show(){Handler.activate(this.handler);Render.update();}

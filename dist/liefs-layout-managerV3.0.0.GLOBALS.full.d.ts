@@ -60,6 +60,7 @@ declare class FunctionStack {
     static push(label: string, function_: Function, name?: any): void;
     static function(label: string): (...Arguments: any) => void;
     static pop(label: string, name?: any): void;
+    static exists(label: string, name: string): boolean;
 }
 declare class mf {
     /**
@@ -191,6 +192,7 @@ declare class Coord extends Base {
  * This Class Holds the HTMLElement
  */
 declare class HtmlBlock extends Base {
+    #private;
     static instances: HtmlBlock[];
     static activeInstances: HtmlBlock[];
     static defaults: {
@@ -212,7 +214,8 @@ declare class HtmlBlock extends Base {
     innerHTML: string;
     css: string;
     dim: string;
-    events: Events;
+    get events(): Events;
+    set events(events: Events);
     el: HTMLElement;
     attributes: object;
     hideWidth: boolean;
@@ -236,7 +239,7 @@ declare class Events extends Base {
     actions: object;
     constructor(...Arguments: any);
     applyToHtmlBlock(htmlblock: HtmlBlock): void;
-    static do(event: MouseEvent): void;
+    static mergeEvents(label: string, events1: Events, events2: Events, name?: any): any;
 }
 declare function events(...Arguments: any): Events;
 declare class DisplayCell extends Base {
@@ -275,7 +278,7 @@ declare class DisplayCell extends Base {
     addOverlay(overlay: Overlay): void;
     getOverlay(label: string): Overlay;
     getOverlays(label: string): Overlay[];
-    popOverlay(label: string): void;
+    popOverlay(label: string, validate?: (overlay: Overlay) => boolean): void;
     hMenuBar(menuObj: object, ...Arguments: any): void;
     vMenuBar(menuObj: object): void;
     static editable(displaycell: DisplayCell, onedit: (e: FocusEvent, displaycell: DisplayCell, innerHTML: string) => void, validate?: (e: KeyboardEvent, displaycell: DisplayCell, innerHTML: string) => boolean): DisplayCell;
@@ -313,6 +316,7 @@ declare class DisplayGroup extends Base {
     constructor(...Arguments: any);
     percentToPx(displaycell: DisplayCell): void;
     totalPx(addMin?: boolean): number;
+    static allPx(displaygroup: DisplayGroup): number;
     static Render(displaygroup: DisplayGroup, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function h(...Arguments: any): DisplayCell;
@@ -484,7 +488,7 @@ declare class Pages extends Base {
     byLabel(label: string): number;
     static byLabel(label: string): Pages;
     addSelected(pageNumber?: number): void;
-    static setPage(label: string, pageNumber: number | string): void;
+    static setPage(label: string, pageReference: number | string): void;
     static applyOnclick(): void;
     static button(pagename: string, index: string | number, keepAsNumber?: boolean): object;
     static parseURL(url?: string): void;
@@ -695,16 +699,18 @@ declare class ScrollBar extends Base {
     preBar: DisplayCell;
     Bar: DisplayCell;
     postBar: DisplayCell;
+    boundWidth: number;
+    boundHeight: number;
     constructor(...Arguments: any);
     build(): void;
     onBarDown(): void;
     onBarMove(xmouseDiff: object): void;
     onPreBar(mouseEvent?: MouseEvent): void;
     onPostBar(mouseEvent?: MouseEvent): void;
-    onBackArrow(mouseEvent?: MouseEvent): void;
-    onForwardArrow(mouseEvent?: MouseEvent): void;
+    onBackArrow(mouseEvent?: MouseEvent, unit?: number): void;
+    onForwardArrow(mouseEvent?: MouseEvent, unit?: number): void;
     validateOffsetAndRender(): void;
-    update(displaySize: number): number;
+    update(displaySize: number, boundWidth: number, boundHeight: number): number;
     static Render(scrollbar_: ScrollBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     delete(): void;
     onWheel(event: WheelEvent): void;
@@ -904,8 +910,7 @@ declare class Tree_ extends Base {
     derender(node: node_): void;
     derenderChildren(node: node_): void;
     static Render(thisTree: Tree_, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
-    popOverlay(ishor: boolean): void;
-    getScrollBarsFromOverlays(): ScrollBar[];
+    static getOverlays(thisTree: Tree_): ScrollBar[];
 }
 declare function tree(...Arguments: any): DisplayCell;
 declare class Observe extends Base {

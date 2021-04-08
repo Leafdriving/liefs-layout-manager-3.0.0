@@ -85,8 +85,7 @@ class DisplayGroup extends Base {
                 thisPercent += (thisPercent/percentLeft)*percentAsNumber;
                 cellOfArray.dim = `${thisPercent}%`;
             }
-        }
-        
+        }   
     }
     totalPx(addMin = false):number {
         let cellArray = this.cellArray;
@@ -101,6 +100,16 @@ class DisplayGroup extends Base {
                 totalFixedpx += displaycell.minDisplayGroupSize;
         }
         return totalFixedpx;
+    }
+    static allPx(displaygroup:DisplayGroup): number{
+        let returnValue = 0;
+        if (displaygroup && displaygroup.cellArray)
+            for (let index = 0; index < displaygroup.cellArray.length; index++) {
+                let displaycell = displaygroup.cellArray[index];
+                if (displaycell.dim && pf.isTypePx(displaycell.dim)) returnValue += pf.pxAsNumber(displaycell.dim);
+                else return undefined;
+            }
+        return returnValue
     }
     static Render(displaygroup:DisplayGroup, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let parentDisplaycell = <DisplayCell>node.ParentNode.Arguments[1];
@@ -177,22 +186,22 @@ class DisplayGroup extends Base {
         // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
 
 
-        let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
-        if (dimArrayTotal > maxpx + 2) { 
-            if (!scrollbarOverlay) {
-                scrollbar(parentDisplaycell, displaygroup.ishor);
-                scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
-            }
-            /* this.offset = */ 
-            displaygroup.offset = (<ScrollBar>(scrollbarOverlay.returnObj)).update(dimArrayTotal); ////
-            /* this.offset = */ 
-        } else {
-            if (scrollbarOverlay)
-                (<ScrollBar>(scrollbarOverlay.returnObj)).delete();
-                parentDisplaycell.popOverlay("ScrollBar");
-                displaygroup.offset = 0;
-        }
-
+        // let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+        // if (dimArrayTotal > maxpx + 2) { 
+        //     if (!scrollbarOverlay) {
+        //         scrollbar(parentDisplaycell, displaygroup.ishor);
+        //         scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+        //     }
+        //     /* this.offset = */ 
+        //     displaygroup.offset = (<ScrollBar>(scrollbarOverlay.returnObj)).update(dimArrayTotal); ////
+        //     /* this.offset = */ 
+        // } else {
+        //     if (scrollbarOverlay)
+        //         (<ScrollBar>(scrollbarOverlay.returnObj)).delete();
+        //         parentDisplaycell.popOverlay("ScrollBar");
+        //         displaygroup.offset = 0;
+        // }
+        displaygroup.offset = 0;
 
         let x:number = displaygroup.coord.x - ((ishor) ? displaygroup.offset : 0);
         let y:number = displaygroup.coord.y- ((ishor) ? 0 : displaygroup.offset);

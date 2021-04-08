@@ -15,7 +15,13 @@ class Tree_ extends Base {
         Render.update();
     }
     static onNodeCreation(node:node_){
-        let nodeLabel = I(`${node.label}_node`, `${node.label}`,
+        // console.log("node:", node.label, node.displaycell)
+        let nodeLabel:DisplayCell
+        if (node.displaycell) {
+            nodeLabel = node.displaycell;
+            if (nodeLabel.htmlBlock.css.trim() == "") nodeLabel.htmlBlock.css = node.ParentNodeTree.css;
+            nodeLabel.htmlBlock.events = node.ParentNodeTree.events;
+        } else nodeLabel = I(`${node.label}_node`, `${node.label}`,
                             node.ParentNodeTree.css,
                             node.ParentNodeTree.events);
         nodeLabel.coord.hideWidth = true;                            
@@ -118,16 +124,37 @@ class Tree_ extends Base {
     derenderChildren(node:node_){
         for (let index = 0; index < node.children.length; index++)
             this.derender(node.children[index]);
-    }
+    }    
+    // getScrollBarsFromOverlays(){
+    //     // console.log("getscrollbars");
+    //     let scrollbarh:ScrollBar, scrollbarv:ScrollBar;
+    //     let scrollbarOverlays:Overlay[] = this.parentDisplayCell.getOverlays("ScrollBar");
+    //     for (let index = 0; index < scrollbarOverlays.length; index++) {
+    //         let scrollbar_ = <ScrollBar>(scrollbarOverlays[index].returnObj);
+    //         if (scrollbar_.ishor) scrollbarh = scrollbar_;
+    //         else scrollbarv = scrollbar_;
+    //     }
+    //     return [scrollbarh, scrollbarv]
+    // }
     static Render(thisTree:Tree_, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
-        if (thisTree.preRenderCallback) thisTree.preRenderCallback();
+        if (thisTree.preRenderCallback) {
+            console.log("Tree Prerender Callback Called");
+            thisTree.preRenderCallback();
+        }
         // console.log("render Tree")
+
+        
+        let [scrollbarh, scrollbarv] = Tree_.getOverlays(thisTree);
+        // console.log([scrollbarh, scrollbarv])
+
         let THIS:Tree_ = thisTree;
         let PDScoord = THIS.parentDisplayCell.coord;
         let x_= PDScoord.x + THIS.sideMargin - thisTree.offsetx;
-        let y_= PDScoord.y + THIS.topMargin;
+        let y_= PDScoord.y + THIS.topMargin - thisTree.offsety;
         let max_x2:number = 0;
         let renderChildren = new RenderChildren;
+        let boundHeight = PDScoord.height - ((scrollbarh) ? scrollbarh.barSize:0);
+        let boundWidth = PDScoord.width - ((scrollbarv) ? scrollbarv.barSize:0);
         zindex += Render.zIncrement;
         //node.log();
 
@@ -138,8 +165,7 @@ class Tree_ extends Base {
                 let width = PDScoord.width// - x;
                 let height = THIS.height;
                 node.displaycell.coord.assign(x, y, width, height,
-                                            //undefined, undefined, undefined, undefined,
-                                            PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
+                                            PDScoord.x, PDScoord.y, boundWidth, boundHeight-2,
                                             Handler.currentZindex + Handler.zindexIncrement);
                 y_ += THIS.height;
 
@@ -158,45 +184,75 @@ class Tree_ extends Base {
                 return (!node.collapsed)
             },
         );
-        // let [scrollbarh,scrollbarv] = this.getScrollBarsFromOverlays()
+        //let scrollbarh = thisTree.parentDisplayCell.getOverlays("ScrollBar")
+        max_x2 += ((scrollbarv) ? scrollbarv.barSize:0)
         // check horizontal first
         if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
-            if (!thisTree.scrollbarh) {
-                let overlay=new Overlay("ScrollBar", thisTree.parentDisplayCell, true);
-                thisTree.scrollbarh = <ScrollBar>overlay.returnObj;
-                let parentDisplaycell = thisTree.scrollbarh.parentDisplayCell;
-                parentDisplaycell.addOverlay(overlay);
-            }
-            thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
+             if (!thisTree.scrollbarh) {
+                 //console.log("no way")
+                 let newOverlay = new Overlay("ScrollBar", "scrollbarh",thisTree.parentDisplayCell, true);
+                 thisTree.scrollbarh = <ScrollBar>newOverlay.returnObj;
+                 //console.log("herereere", thisTree.scrollbarh)
+             }
+            thisTree.offsetx = thisTree.scrollbarh.update(max_x2, boundWidth, boundHeight);
         } else {
             if (thisTree.scrollbarh) {
+                thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
+                    return (<ScrollBar>overlay.returnObj).ishor;
+                });
                 thisTree.scrollbarh.delete();
-                thisTree.popOverlay(true);
                 thisTree.offsetx = 0;
+                thisTree.scrollbarh = undefined;
+            }
+        }
+        // check vertical second
+        if (y_ + THIS.height > boundHeight){
+            if (!thisTree.scrollbarv) {
+                let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, false);
+                thisTree.scrollbarv = <ScrollBar>newOverlay.returnObj;
+                // console.log(thisTree.scrollbarv)
+            }
+            thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height, boundWidth, boundHeight);
+        } else {
+            if (thisTree.scrollbarv) {
+                thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
+                    return !((<ScrollBar>overlay.returnObj).ishor)
+                });
+                thisTree.scrollbarv.delete();
+                thisTree.offsety = 0;
+                thisTree.scrollbarv = undefined;
             }
         }
 
         return {zindex,
             siblings: renderChildren.siblings};
     }
-    popOverlay(ishor:boolean){
-        let overlays = this.parentDisplayCell.overlays;
-        for (let index = 0; index < overlays.length; index++)
-            if (overlays[index].sourceClassName == "ScrollBar")
-                if ( (<ScrollBar>overlays[index].returnObj).ishor == ishor)
-                    overlays.splice(index, 1)
-    }
-    getScrollBarsFromOverlays(){
-        // console.log("getscrollbars");
-        let scrollbarh:ScrollBar, scrollbarv:ScrollBar;
-        let scrollbarOverlays:Overlay[] = this.parentDisplayCell.getOverlays("ScrollBar");
-        for (let index = 0; index < scrollbarOverlays.length; index++) {
-            let scrollbar_ = <ScrollBar>(scrollbarOverlays[index].returnObj);
-            if (scrollbar_.ishor) scrollbarh = scrollbar_;
-            else scrollbarv = scrollbar_;
+    static getOverlays(thisTree:Tree_){
+        let overlayArray = thisTree.parentDisplayCell.getOverlays("ScrollBar");
+        let scrollbarh:ScrollBar
+        let scrollbarv:ScrollBar
+        for (let index = 0; index < overlayArray.length; index++) {
+            let overlay = <Overlay>overlayArray[index];
+            let scrollbar = <ScrollBar>overlay.returnObj
+            if (scrollbar.ishor) {
+                if (scrollbarh) console.log("Duplicate Horizontal Scrollbars Found!");
+                scrollbarh = scrollbar;
+            }
+            else {
+                if (scrollbarv) console.log("Duplicate Vertical Scrollbars Found!");
+                scrollbarv = scrollbar;
+            }
         }
-        return [scrollbarh, scrollbarv]
+        return [scrollbarh, scrollbarv];
     }
+    // popOverlay(ishor:boolean){
+    //     let overlays = this.parentDisplayCell.overlays;
+    //     for (let index = 0; index < overlays.length; index++)
+    //         if (overlays[index].sourceClassName == "ScrollBar")
+    //             if ( (<ScrollBar>overlays[index].returnObj).ishor == ishor)
+    //                 overlays.splice(index, 1)
+    // }
+
 }
 Render.register("Tree_", Tree_);
 // function tree(...Arguments:any) {

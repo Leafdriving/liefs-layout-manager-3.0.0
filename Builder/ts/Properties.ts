@@ -334,6 +334,55 @@ class Properties extends Base {
     new Properties("DisplayGroup", DisplayGroupProps.rootcell,  {keyCells});
     }
     static DisplayGroupTreeClicked(objectWithProperties:DisplayGroup) {DisplayGroupProps.treeClicked(objectWithProperties)}
+
+    static DragBar(){ // This creates the first and only Properties instance for DisplayGroup
+        let keyCells = {
+            label:Properties.displayValue("DragBarLabel", "label",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                let propertiesInstance:Properties = <Properties>Properties.byLabel("DragBar");
+                htmlBlock.innerHTML = (<DragBar>propertiesInstance.currentObject).label;
+            }),
+            min: DisplayCell.editable( I("DragBarMin_", bCss.bgWhiteBorder,
+                                            function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                                                let propertiesInstance:Properties = <Properties>Properties.byLabel("DragBar");
+                                                htmlBlock.innerHTML = (<DragBar>propertiesInstance.currentObject).min.toString();
+                                            }),
+                                function(e: FocusEvent, displaycell: DisplayCell, innerHTML: string){
+                                    let propertiesInstance:Properties = <Properties>Properties.byLabel("DragBar");
+                                    let dragbar = <DragBar>propertiesInstance.currentObject;
+                                    dragbar.min = parseInt(innerHTML);
+                                    Render.update();
+                                }
+            ),
+            max: DisplayCell.editable( I("DragBarMax_", bCss.bgWhiteBorder,
+                                            function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                                                let propertiesInstance:Properties = <Properties>Properties.byLabel("DragBar");
+                                                htmlBlock.innerHTML = (<DragBar>propertiesInstance.currentObject).max.toString();
+                                            }),
+                                function(e: FocusEvent, displaycell: DisplayCell, innerHTML: string){
+                                    let propertiesInstance:Properties = <Properties>Properties.byLabel("DragBar");
+                                    let dragbar = <DragBar>propertiesInstance.currentObject;
+                                    dragbar.max = parseInt(innerHTML);
+                                    Render.update();
+                                }
+),
+        }
+    let rootcell = v(`DragBar_prop_v`,
+        h(`dragbar_h_`, "20px",
+            I("DragBar_label", "Label:", bCss.bgLightBorder),
+            keyCells.label,
+        ),
+        h(`dragbar_h2_`, "20px",
+            I("DragBar_min", "Min:", bCss.bgLightBorder),
+            keyCells.min,
+            I("DragBar_max", "Max:", bCss.bgLightBorder),
+            keyCells.max,
+        ),
+    );
+    new Properties("DragBar", rootcell,  {keyCells});
+    }
+    static DragBarTreeClicked(objectWithProperties:object) {
+        DragBarProps.treeClicked(objectWithProperties);
+    }
     static Handler(){ // This creates the first and only Properties instance for DisplayGroup
         let keyCells = {
             // label:Properties.displayValue("HtmlBlock", "label",  true , function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
@@ -347,7 +396,7 @@ class Properties extends Base {
             //     else htmlBlock.innerHTML = "undefined";
             // } ), 
         }
-    let rootcell = v(`DislayGroup_prop_v`,
+    let rootcell = v(`Handler_prop_v`,
         
         I("Hello", "Hello", bCss.bgLightBorder)
     );

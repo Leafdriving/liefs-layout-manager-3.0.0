@@ -17,7 +17,6 @@ class ScrollBar extends Base {
         DisplayCell : ["parentDisplayCell"],
         number: ["barSize"],
         boolean: ["ishor"],
-        // Coord: ["coord"]
     }
     static startoffset:number; /// used during move bar
     // retArgs:ArgsObj;   // <- this will appear
@@ -42,45 +41,36 @@ class ScrollBar extends Base {
     Bar:DisplayCell;
     postBar:DisplayCell;
 
+    boundWidth:number;
+    boundHeight:number;
+
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
-        // console.log("scrollbar Created");
         this.label = `${this.parentDisplayCell.label}_${this.type}`;
-        this.build()
+        this.build();
         if (!this.coord) this.coord = this.parentDisplayCell.coord;
-        
-        if (!this.parentDisplayCell.preRenderCallback) {
-            this.parentDisplayCell.preRenderCallback = FunctionStack.function(this.label);
-        }
-        let THIS = this;
-        
-        FunctionStack.push(this.label,
-                    function(displaycell: DisplayCell, parentDisplaygroup: DisplayGroup /*= undefined*/, index:number /*= undefined*/, derender:boolean){
-                        let width = (THIS.ishor) ? THIS.coord.width : THIS.coord.width - THIS.barSize;
-                        let height = (THIS.ishor) ? THIS.coord.height - THIS.barSize : THIS.coord.height;
-                        THIS.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
-                    },
-              ((this.ishor) ? "ishorTrue" : "ishorFalse"));
-        // Handler.update();
+        // console.log("scrollbar Created", this.ishor, this.label);
     }
     build(){
-        let THIS:ScrollBar = this
-        //let ishor = this.displaygroup.ishor;
-
-        this.preBar = I(`${this.label}_preBar`, DefaultTheme.ScrollBar_whiteBG, events({onclick:THIS.onPreBar.bind(THIS)}));
-        this.Bar = I(`${this.label}_Bar`, DefaultTheme.ScrollBar_blackBG,
+        let THIS:ScrollBar = this;
+        // console.log("label", this.label)
+        let label = this.label + ((this.ishor) ? "_H" : "_V");
+        // console.log("label2", label)
+        
+        this.preBar = I(`${label}_preBar`, DefaultTheme.ScrollBar_whiteBG, events({onclick:THIS.onPreBar.bind(THIS)}));
+        this.Bar = I(`${label}_Bar`, DefaultTheme.ScrollBar_blackBG,
                         events({ondrag: {onDown :THIS.onBarDown.bind(THIS), onMove :THIS.onBarMove.bind(THIS)}}));
-        this.postBar = I(`${this.label}_postBar`, "100%",DefaultTheme.ScrollBar_whiteBG, events({onclick:THIS.onPostBar.bind(THIS)}));
+        this.postBar = I(`${label}_postBar`, "100%",DefaultTheme.ScrollBar_whiteBG, events({onclick:THIS.onPostBar.bind(THIS)}));
         this.scrollbarDisplayCell =
-        h(`${this.label}_h`, `${this.barSize}px`,
-            I(`${this.label}_backArrow`,`${this.barSize}px`, 
+        h(`${label}_h`, `${this.barSize}px`, ((this.ishor) ? undefined : false ),
+            I(`${label}_backArrow`,`${this.barSize}px`, 
                  (this.ishor) ? DefaultTheme.leftArrowSVG("scrollArrows") : DefaultTheme.upArrowSVG("scrollArrows"),
                  events({ onhold:{event:function(mouseEvent:MouseEvent){THIS.onBackArrow(mouseEvent)} }}),
             ),
             this.preBar,
             this.Bar,
             this.postBar,
-            I(`${this.label}_forwardArrow`,`${this.barSize}px`, 
+            I(`${label}_forwardArrow`,`${this.barSize}px`, 
                  (this.ishor) ? DefaultTheme.rightArrowSVG("scrollArrows") : DefaultTheme.downArrowSVG("scrollArrows"),
                  events({ onhold:{event:function(mouseEvent:MouseEvent){THIS.onForwardArrow(mouseEvent)} }}),
             ),
@@ -96,29 +86,33 @@ class ScrollBar extends Base {
      }
     onPreBar(mouseEvent:MouseEvent=undefined){ this.offset -= this.viewPortSize; this.validateOffsetAndRender(); }
     onPostBar(mouseEvent:MouseEvent=undefined){ this.offset += this.viewPortSize; this.validateOffsetAndRender(); }
-    onBackArrow(mouseEvent:MouseEvent=undefined){ this.offset -= 3/this.scaleFactor; this.validateOffsetAndRender();}
-    onForwardArrow(mouseEvent:MouseEvent=undefined){ this.offset += 3/this.scaleFactor; this.validateOffsetAndRender();}
+    onBackArrow(mouseEvent:MouseEvent=undefined, unit=3){ this.offset -= unit/this.scaleFactor; this.validateOffsetAndRender();}
+    onForwardArrow(mouseEvent:MouseEvent=undefined, unit=3){ this.offset += unit/this.scaleFactor; this.validateOffsetAndRender();}
 
     validateOffsetAndRender(){
         if (this.offset < 0) this.offset = 0;
-        let max = this.displaySize-this.viewPortSize;
+        let max = this.displaySize-((this.ishor) ? this.boundWidth : this.boundHeight);
         if (this.offset > max) this.offset = max;
         Render.update();
     }
 
-    update(displaySize:number){
-        //let coord = this.displaygroup.coord;
+    update(displaySize:number, boundWidth:number, boundHeight:number){
+        this.boundWidth = boundWidth;
+        this.boundHeight = boundHeight;
+        let coord = new Coord();
+        coord.copy(this.parentDisplayCell.coord);
+        coord.assign(undefined, undefined, boundWidth, boundHeight, undefined, undefined, boundWidth, boundHeight);
         let ishor = this.ishor;
-        let width = (ishor) ? this.coord.width : this.coord.width - this.barSize;
-        let height = (ishor) ? this.coord.height - this.barSize : this.coord.height;
+        let width = (ishor) ? coord.width : coord.width - this.barSize;
+        let height = (ishor) ? coord.height - this.barSize : coord.height;
 
-        let sbx = (ishor) ? this.coord.x : this.coord.x + this.coord.width;
-        let sby = (ishor) ? this.coord.y + this.coord.height : this.coord.y;
-        let scw = (ishor) ? this.coord.width : this.barSize;
-        let sch = (ishor) ? this.barSize : this.coord.height;
+        let sbx = (ishor) ? coord.x : coord.x + coord.width;
+        let sby = (ishor) ? coord.y + coord.height : coord.y;
+        let scw = (ishor) ? coord.width : this.barSize;
+        let sch = (ishor) ? this.barSize : coord.height;
 
-        this.scrollbarDisplayCell.coord.assign(sbx, sby, scw, sch, sbx, sby, scw, sch, this.coord.zindex);
-        // this.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
+        this.scrollbarDisplayCell.coord.assign(sbx, sby, scw, sch, sbx, sby, scw, sch, coord.zindex);
+        // this.scrollbarDisplayCell.coord.log()
 
         this.displaySize = displaySize;
         this.viewPortSize = (ishor) ? this.parentDisplayCell.coord.width : this.parentDisplayCell.coord.height;
@@ -129,29 +123,28 @@ class ScrollBar extends Base {
         this.Bar.dim = `${ Math.round(this.viewPortSize*this.scaleFactor) }px`;
         return this.offset;
     }
-    // render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-    //     // console.log("render In Scrollbar")
-    //     Render.update(this.scrollbarDisplayCell, derender);
-    //     //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, derender);
-    // }
 
     static Render(scrollbar_:ScrollBar, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
-        // Render.update(scrollbar_.scrollbarDisplayCell, derender);
+            // this changes PARENT side to be smaller!
+        let width = (scrollbar_.ishor) ? scrollbar_.coord.width : scrollbar_.coord.width - scrollbar_.barSize;
+        let height = (scrollbar_.ishor) ? scrollbar_.coord.height - scrollbar_.barSize : scrollbar_.coord.height;
+        scrollbar_.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
+
         let renderChildren = new RenderChildren;
         renderChildren.RenderSibling(scrollbar_.scrollbarDisplayCell, derender);
         return {zindex,
             siblings: renderChildren.siblings};
     }
     delete(){
-        // console.log(`ScrollBar :${this.label} destroyed`);
-        FunctionStack.pop(this.label, ((this.ishor) ? "ishorTrue" : "ishorFalse"))
-        Render.update(this.scrollbarDisplayCell, true);
-        //Handler.renderDisplayCell(this.scrollbarDisplayCell, undefined, undefined, true);
         ScrollBar.pop(this);
+        setTimeout(() => {
+            Render.update(this.scrollbarDisplayCell, true);    
+        }, 0);
+        
+        
     }
     onWheel(event:WheelEvent) {
-        //console.log("Wheel Event", event.deltaY);
-        if (event.deltaY > 0) this.onForwardArrow();
+        if (event.deltaY > 0) this.onForwardArrow(undefined, 6);
         else this.onBackArrow();
     }
     static onWheel(event:WheelEvent) {
@@ -187,249 +180,6 @@ class ScrollBar extends Base {
     }
 }
 Render.register("ScrollBar", ScrollBar);
-// function scrollbar(...Arguments:any) {
-//     let overlay=new Overlay("ScrollBar", ...Arguments);
-//     let newScrollBar = <scrollbar>overlay.returnObj;
-//     let parentDisplaycell = newScrollBar.parentDisplaycell;
-//     // parentDisplaycell.overlay = overlay; // remove this line soon
-//     parentDisplaycell.addOverlay(overlay);
-//     return parentDisplaycell;
-// }
-function scrollbar(...Arguments:any): DisplayCell {return Overlay.new("scrollbar", ...Arguments);}
+function scrollbar(...Arguments:any): DisplayCell {return Overlay.new("ScrollBar", ...Arguments);}
 Overlay.classes["ScrollBar"] = ScrollBar;
 
-
-
-
-
-// class ScrollBar extends Base {
-//     static instances:ScrollBar[] = [];
-//     static activeInstances:ScrollBar[] = [];
-    
-//     // static whiteBG = css("whiteBG","background-color:white;outline: 1px solid black;outline-offset: -1px;");
-//     // static blackBG = css("blackBG","background-color:black;color:white;cursor: -webkit-grab; cursor: grab;");
-//     static defaults = {
-//         offset : 0, displayAtEnd: true, scrollWidth : 15, currentlyRendered: true, arrowOffset: 2,
-//     }
-//     static argMap = {
-//         string : ["label"],
-//         DisplayGroup: ["displaygroup"],
-//         number: ["fixedPixels", "viewingPixels", "scroolWidth"],
-//         boolean: ["displayAtEnd"]
-//     }
-//     static scrollWheelMult = 4;
-//     static triggerDistance = 40;
-
-//     label:string;
-//     currentlyRendered: boolean;
-//     ishor: boolean;
-
-//     arrowOffset:number;
-//     scrollWidth: number;
-//     displayAtEnd:boolean;
-//     fixedPixels: number;
-//     viewingPixels: number;
-//     offset: number;
-//     maxOffset: number;
-//     offsetAtDrag: number;
-//     offsetPixelRatio: number;
-
-//     parentDisplaygroup: DisplayGroup;
-//     displaygroup: DisplayGroup;
-
-//     displaycell: DisplayCell;
-//     leftArrow: DisplayCell;
-//     upArrow: DisplayCell;
-//     prePaddle: DisplayCell;
-//     paddle: DisplayCell;
-//     postPaddle: DisplayCell;
-//     rightArrow: DisplayCell;
-//     downArrow: DisplayCell;
-//     paddleSizePx:number;
-//     clickPageSize: number;
-//     // displayedFixedPx: number;
-    
-
-//     constructor(...Arguments: any) {
-//         super();this.buildBase(...Arguments);
-        
-//         ScrollBar.makeLabel(this);
-//         this.build();
-//     }
-//     build(){
-//         let THIS = this;
-//         let off = this.arrowOffset;
-//         let ss = this.scrollWidth;
-//         let w = ss-off;
-//         let mid = ss/2;
-
-//         this.leftArrow = I(this.label+"_Left", `<svg height="${ss}" width="${ss}">
-//             <polygon points="${off},${mid} ${w},${off} ${w},${w} ${off},${mid}"
-//             style="fill:black;stroke:black;stroke-width:1" />
-//             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickLeftorUp(mouseEvent)} } 
-//                                                   })
-//             );
-
-
-//         this.upArrow = I(this.label+"_Up", `<svg height="${ss}" width="${ss}">
-//             <polygon points="${off},${w} ${mid},${off} ${w},${w} ${off},${w}"
-//             style="fill:black;stroke:black;stroke-width:1" />
-//             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickLeftorUp(mouseEvent)} } 
-//                                                   })
-//         );
-
-//         this.prePaddle = I(this.label+"_Pre", "","whiteBG", events({onclick:function(mouseEvent:MouseEvent){THIS.clickPageLeftorUp(mouseEvent)}}));
-//         this.paddle = I(this.label+"_Paddle", "","blackBG", events({ondrag: { onDown :function(){THIS.offsetAtDrag = THIS.offset},
-//                                                                               onMove :function(output:object){THIS.dragging(output)},
-//                                                            /* onUp: function(output:object){console.log("mouseup");console.log(output)}*/
-//                                                           }
-//                         }));
-//         this.postPaddle = I(this.label+"_Post", "","whiteBG", events({onclick:function(mouseEvent:MouseEvent){THIS.clickPageRightOrDown(mouseEvent)}}));
-            
-//         this.rightArrow = I(this.label+"_Right", `<svg height="${ss}" width="${ss}">
-//             <polygon points="${off},${off} ${w},${mid} ${off},${w} ${off},${off}"
-//             style="fill:black;stroke:black;stroke-width:1" />
-//             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickRightOrDown(mouseEvent)} } 
-//                                                   })
-//         );
-
-//         this.downArrow = I(this.label+"_down", `<svg height="${ss}" width="${ss}">
-//             <polygon points="${off},${off} ${w},${off} ${mid},${w} ${off},${off}"
-//             style="fill:black;stroke:black;stroke-width:1" />
-//             </svg>`, `${ss}px`, "whiteBG", events({onhold:{event:function(mouseEvent:MouseEvent){THIS.clickRightOrDown(mouseEvent)} } 
-//                                                   })
-//         );            
-
-//         this.ishor = this.displaygroup.ishor;
-//         this.displaycell = h(   this.ishor, // note even though I'm using H - id chooses here.
-//                                 (this.ishor) ? this.leftArrow : this.upArrow,
-//                                 this.prePaddle,
-//                                 this.paddle,
-//                                 this.postPaddle,
-//                                 (this.ishor) ? this.rightArrow : this.downArrow,
-//                                 this.label,
-//                             );
-//     }
-//     clickLeftorUp(mouseEvent:MouseEvent|WheelEvent, noTimes:number=1){
-//         this.offset -= (this.offsetPixelRatio*10)*noTimes;
-//         if (this.offset < 0) this.offset = 0;
-//         Handler.update();
-//     }
-//     clickRightOrDown(mouseEvent:MouseEvent|WheelEvent, noTimes:number=1){
-//         this.offset += (this.offsetPixelRatio*10)*noTimes;
-//         if (this.offset > this.maxOffset) this.offset = this.maxOffset;
-//         Handler.update();
-//     }
-//     clickPageLeftorUp(mouseEvent:MouseEvent|WheelEvent){
-//         this.offset -= this.clickPageSize;
-//         if (this.offset < 0) this.offset = 0;
-//         Handler.update();
-//     }
-//     clickPageRightOrDown(mouseEvent:MouseEvent|WheelEvent){
-//         this.offset += this.clickPageSize;
-//         if (this.offset > this.maxOffset) this.offset = this.maxOffset;
-//         Handler.update();
-//     }
-//     dragging(output:object){
-//         let diff = (this.ishor) ? output["x"]:output["y"];
-//         // console.log(diff, diff*this.offsetPixelRatio);
-//         let newoffset = this.offsetAtDrag + diff*this.offsetPixelRatio;
-//         if (newoffset < 0) newoffset = 0;
-//         if (newoffset > this.maxOffset) newoffset = this.maxOffset;
-//         this.offset = newoffset;
-//         Handler.update();
-//     }
-//     render(displaycell:DisplayCell, parentDisplaygroup: DisplayGroup, index:number, derender:boolean){
-//         if (!this.parentDisplaygroup) this.parentDisplaygroup = parentDisplaygroup;
-//         let dgCoord:Coord = this.displaygroup.coord;
-//         // calculate outer scrollbar dimensions
-
-//         // console.log( JSON.stringify(parentDisplaygroup.coord.within, null, 4) )
-
-//         let x = (this.ishor) ? dgCoord.within.x : dgCoord.within.x + dgCoord.within.width - this.scrollWidth;
-//         let width = (this.ishor) ? dgCoord.within.width : this.scrollWidth;
-//         let y = (this.ishor) ? dgCoord.within.y + dgCoord.within.height - this.scrollWidth : dgCoord.within.y;
-//         let height = (this.ishor) ? this.scrollWidth : dgCoord.within.height;
-
-//         // console.log( JSON.stringify({x,y,width,height}, null, 4) )
-
-//         this.displaycell.coord.assign(x, y, width, height);
-
-//         // calculate inner scrollbar dimensions
-//         let preDisplayCell = this.displaycell.displaygroup.cellArray[1];
-//         let paddleDisplayCell = this.displaycell.displaygroup.cellArray[2];
-//         let postDisplayCell = this.displaycell.displaygroup.cellArray[3];
-        
-//         // "fixedPixels", "viewingPixels"
-
-//         let overflow = this.fixedPixels - this.viewingPixels;
-//         if (this.offset > overflow) this.offset = overflow;
-//         let viewingPixels = (this.ishor) ? dgCoord.width : dgCoord.height;
-//         let fixedPixels = parentDisplaygroup.dimArrayTotal;
-
-//         let paddlePercent = Math.round(viewingPixels/fixedPixels*100);
-//         let percentAfterPaddle = Math.round(100 - (viewingPixels/fixedPixels*100));
-//         let prePercent = Math.round(percentAfterPaddle*(this.offset/overflow));
-//         let postPercent = 100 - paddlePercent - prePercent;
-
-//         preDisplayCell.dim = `${prePercent}%`;
-//         paddleDisplayCell.dim = `${paddlePercent}%`;
-//         postDisplayCell.dim = `${postPercent}%`;
-
-//         let screenPixelsNotShown = fixedPixels-viewingPixels;
-//         let scrollbarPixelsNotShown = viewingPixels-this.scrollWidth*2;
-//         this.offsetPixelRatio = screenPixelsNotShown/scrollbarPixelsNotShown; // so bigger than 1:
-//         this.clickPageSize = (paddlePercent/100)*fixedPixels
-
-//         // let pixelForStretch = fixedPixels*percentAfterPaddle/100
-//         //this.offsetPixelRatio = 
-//         //this.clickPageSize = 
-//         // console.log(this.clickPageSize)
-
-//         Handler.currentZindex += Handler.zindexIncrement*2;
-//         this.currentlyRendered = !derender;
-//         // console.log(this.displaycell, this.offset);
-//         Handler.renderDisplayCell(this.displaycell, undefined, undefined, derender);
-//         Handler.currentZindex -= Handler.zindexIncrement*2;
-//     }
-//     static distOfMouseFromWheel(THIS:ScrollBar, event:WheelEvent) {
-//         let ishor = THIS.displaygroup.ishor;
-//         let displaycell = THIS.displaycell;
-//         let coord = displaycell.coord;
-//         let x = event.clientX;
-//         let y = event.clientY;
-//         let dist:number = 0;
-//         // console.log(ishor, x, y, coord)
-//         if (!ishor) {
-//             if (x < coord.x) dist = coord.x -x;
-//             if (x > coord.x + coord.width) dist = x - (coord.x + coord.width)
-//         } else {
-//             if (y < coord.y) dist = coord.y -y;
-//             if (y > coord.y + coord.height) dist = y - (coord.y + coord.height)
-//         }
-//         return dist;
-//     }
-//     static onWheel(event:WheelEvent) {
-//         let selectedInstance:ScrollBar;
-//         let minDist:number = 100000;
-//         let dist:number;
-//         for (let instance of ScrollBar.instances) {
-//             if (instance.currentlyRendered) {
-//                 if (instance.parentDisplaygroup.coord.isPointIn(event.clientX, event.clientY)
-//                     ||instance.displaycell.coord.isPointIn(event.clientX, event.clientY)) {
-//                     dist = ScrollBar.distOfMouseFromWheel(instance, event);
-//                     if (!selectedInstance || dist < minDist) {
-//                         minDist = dist;
-//                         selectedInstance = instance;
-//                     }
-//                 }
-//             }
-//         }
-//         if (selectedInstance) {
-//             if (event.deltaY > 0) selectedInstance.clickRightOrDown(event, ScrollBar.scrollWheelMult*event.deltaY/100);
-//             if (event.deltaY < 0) selectedInstance.clickLeftorUp(event, -ScrollBar.scrollWheelMult*event.deltaY/100)
-//         }
-//     }
-// }
-// Overlay.classes["ScrollBar"] = ScrollBar;
-// // export {ScrollBar}
