@@ -74,25 +74,24 @@ class HtmlBlock extends Base {
         let displaycell = <DisplayCell>(node.parent().Arguments[1])
         if (htmlBlock.evalInnerHtml) htmlBlock.evalInnerHtml(htmlBlock, zindex, derender, node, displaycell);
         // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
-
         let el:HTMLElement = pf.elExists(displaycell.label);
         let alreadyexists:boolean = (el) ? true : false;
-
         derender = displaycell.coord.derender( derender );
-
         let isUndefined = (htmlBlock.innerHTML == undefined);
-
         let isNulDiv = (htmlBlock.css.trim() == "" &&
                         htmlBlock.innerHTML == "" &&
                         Object.keys( htmlBlock.attributes ).length == 0 &&
                         !Handler.renderNullObjects)
-
         if (derender || (isNulDiv && !isUndefined)) {
             if (alreadyexists) el.remove();
         } else {
-            if (!alreadyexists) el = document.createElement(htmlBlock.tag);
-            pf.setAttrib(el, "id", displaycell.label);
-            if (htmlBlock.css.trim()) pf.setAttrib(el, "class", htmlBlock.css);
+            if (!alreadyexists) {
+                el = document.createElement(htmlBlock.tag);
+                pf.setAttrib(el, "id", displaycell.label);
+            }
+            if (htmlBlock.css.trim()) {
+                pf.setAttrib(el, "class", htmlBlock.css);
+            }
             HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
             if (el.innerHTML != htmlBlock.innerHTML) {
                 if (!isUndefined) el.innerHTML = htmlBlock.innerHTML;
@@ -105,7 +104,6 @@ class HtmlBlock extends Base {
             let attrstring = displaycell.coord.newAsAttributeString(zindex) // + clipString;
             if (el.style.cssText != attrstring) el.style.cssText = attrstring;
         }
-
         return {zindex}
     }
 }

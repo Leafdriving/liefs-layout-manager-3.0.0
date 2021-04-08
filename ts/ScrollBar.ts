@@ -18,6 +18,7 @@ class ScrollBar extends Base {
         number: ["barSize"],
         boolean: ["ishor"],
     }
+    static debounce = 75; // 
     static startoffset:number; /// used during move bar
     // retArgs:ArgsObj;   // <- this will appear
 
@@ -40,9 +41,7 @@ class ScrollBar extends Base {
     preBar:DisplayCell;
     Bar:DisplayCell;
     postBar:DisplayCell;
-
-    boundWidth:number;
-    boundHeight:number;
+    lasttime:number;
 
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
@@ -90,24 +89,23 @@ class ScrollBar extends Base {
     onForwardArrow(mouseEvent:MouseEvent=undefined, unit=3){ this.offset += unit/this.scaleFactor; this.validateOffsetAndRender();}
 
     validateOffsetAndRender(){
-        if (this.offset < 0) this.offset = 0;
-        let max = this.displaySize-((this.ishor) ? this.boundWidth : this.boundHeight);
-        if (this.offset > max) this.offset = max;
-        Render.update();
+        if (this.offset <= 0) this.offset = 1;
+        let max = this.displaySize-this.viewPortSize-2;
+        if (this.offset >= max-10) this.offset = max-10;
+        let thisTime = new Date().getTime();
+        if (!(this.lasttime && (thisTime - this.lasttime < ScrollBar.debounce))) {
+            Render.update();
+            this.lasttime = thisTime;
+        }
     }
-
-    update(displaySize:number, boundWidth:number, boundHeight:number){
-        this.boundWidth = boundWidth;
-        this.boundHeight = boundHeight;
-        let coord = new Coord();
-        coord.copy(this.parentDisplayCell.coord);
-        coord.assign(undefined, undefined, boundWidth, boundHeight, undefined, undefined, boundWidth, boundHeight);
+    update(displaySize:number){
+        let coord = this.parentDisplayCell.coord;
         let ishor = this.ishor;
         let width = (ishor) ? coord.width : coord.width - this.barSize;
         let height = (ishor) ? coord.height - this.barSize : coord.height;
 
-        let sbx = (ishor) ? coord.x : coord.x + coord.width;
-        let sby = (ishor) ? coord.y + coord.height : coord.y;
+        let sbx = (ishor) ? coord.x : coord.x + coord.width - this.barSize;
+        let sby = (ishor) ? coord.y + coord.height -this.barSize : coord.y;
         let scw = (ishor) ? coord.width : this.barSize;
         let sch = (ishor) ? this.barSize : coord.height;
 
@@ -125,10 +123,10 @@ class ScrollBar extends Base {
     }
 
     static Render(scrollbar_:ScrollBar, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
-            // this changes PARENT side to be smaller!
-        let width = (scrollbar_.ishor) ? scrollbar_.coord.width : scrollbar_.coord.width - scrollbar_.barSize;
-        let height = (scrollbar_.ishor) ? scrollbar_.coord.height - scrollbar_.barSize : scrollbar_.coord.height;
-        scrollbar_.coord.assign( undefined, undefined, width, height, undefined, undefined, width, height);
+        let displaycell = scrollbar_.parentDisplayCell;
+        let width = displaycell.coord.width - ((scrollbar_.ishor) ? 0 : scrollbar_.barSize);
+        let height = displaycell.coord.height - ((scrollbar_.ishor) ? scrollbar_.barSize: 0);
+        displaycell.coord.assign(undefined, undefined, undefined, undefined, undefined, undefined, width, height)
 
         let renderChildren = new RenderChildren;
         renderChildren.RenderSibling(scrollbar_.scrollbarDisplayCell, derender);

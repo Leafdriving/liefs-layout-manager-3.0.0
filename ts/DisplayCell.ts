@@ -174,7 +174,9 @@ class DisplayCell extends Base {
         //         ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
         //     }
         // }
-
+        if (displaycell.overlays.length) 
+            for (let index = 0; index < displaycell.overlays.length; index++) 
+                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
 
         if (displaycell.postRenderCallback) displaycell.postRenderCallback(displaycell, derender);
         if (displaycell.coord.offset) Handler.activeOffset = false;

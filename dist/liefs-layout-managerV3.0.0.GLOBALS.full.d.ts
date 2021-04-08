@@ -313,6 +313,7 @@ declare class DisplayGroup extends Base {
     dim: string;
     offset: number;
     dimArrayTotal: number;
+    scrollbar_: ScrollBar;
     constructor(...Arguments: any);
     percentToPx(displaycell: DisplayCell): void;
     totalPx(addMin?: boolean): number;
@@ -651,6 +652,7 @@ declare class DragBar extends Base {
         number: string[];
         Css: string[];
     };
+    static debounce: number;
     renderNode: node_;
     label: string;
     parentDisplayCell: DisplayCell;
@@ -664,6 +666,7 @@ declare class DragBar extends Base {
     vercss: Css;
     ishor: boolean;
     isLast: boolean;
+    lasttime: number;
     constructor(...Arguments: any);
     static Render(dragbar_: DragBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
@@ -683,6 +686,7 @@ declare class ScrollBar extends Base {
         number: string[];
         boolean: string[];
     };
+    static debounce: number;
     static startoffset: number;
     renderNode: node_;
     label: string;
@@ -699,8 +703,7 @@ declare class ScrollBar extends Base {
     preBar: DisplayCell;
     Bar: DisplayCell;
     postBar: DisplayCell;
-    boundWidth: number;
-    boundHeight: number;
+    lasttime: number;
     constructor(...Arguments: any);
     build(): void;
     onBarDown(): void;
@@ -710,7 +713,7 @@ declare class ScrollBar extends Base {
     onBackArrow(mouseEvent?: MouseEvent, unit?: number): void;
     onForwardArrow(mouseEvent?: MouseEvent, unit?: number): void;
     validateOffsetAndRender(): void;
-    update(displaySize: number, boundWidth: number, boundHeight: number): number;
+    update(displaySize: number): number;
     static Render(scrollbar_: ScrollBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
     delete(): void;
     onWheel(event: WheelEvent): void;
@@ -928,7 +931,6 @@ declare class Observe extends Base {
     parentDisplayCell: DisplayCell;
     constructor(...Arguments: any);
     static derender(displaycell: DisplayCell): void;
-    static onScroll(event: WheelEvent): void;
     static update(): void;
 }
 declare class Dockable extends Base {

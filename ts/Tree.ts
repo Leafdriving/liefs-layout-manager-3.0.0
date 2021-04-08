@@ -194,7 +194,7 @@ class Tree_ extends Base {
                  thisTree.scrollbarh = <ScrollBar>newOverlay.returnObj;
                  //console.log("herereere", thisTree.scrollbarh)
              }
-            thisTree.offsetx = thisTree.scrollbarh.update(max_x2, boundWidth, boundHeight);
+            thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
         } else {
             if (thisTree.scrollbarh) {
                 thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
@@ -206,13 +206,13 @@ class Tree_ extends Base {
             }
         }
         // check vertical second
-        if (y_ + THIS.height > boundHeight){
+        if (y_ + THIS.height + 100 > boundHeight){
             if (!thisTree.scrollbarv) {
                 let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, false);
                 thisTree.scrollbarv = <ScrollBar>newOverlay.returnObj;
                 // console.log(thisTree.scrollbarv)
             }
-            thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height, boundWidth, boundHeight);
+            thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height + 100);
         } else {
             if (thisTree.scrollbarv) {
                 thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){

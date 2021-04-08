@@ -28,37 +28,6 @@ declare class CSS {
     static centerButton: Css;
     static menu_SVG(size?: number, color?: string): string;
 }
-declare class CodeBlock {
-    static fileNameAndPath: string;
-    static byLabel(label: string): CodeBlock;
-    static download(filename: string, text: string): void;
-    static downloadfile(el: Element): void;
-    static instances: CodeBlock[];
-    static defaults: {
-        label: () => string;
-        height: number;
-        raw: boolean;
-    };
-    static argMap: {
-        string: string[];
-        number: string[];
-    };
-    label: string;
-    html: string;
-    javascript: string;
-    javascriptForEval: string;
-    preCode: string;
-    css: string;
-    htmlDisplayCell: DisplayCell;
-    javascriptDisplayCell: DisplayCell;
-    evalDisplayCell: DisplayCell;
-    height: number;
-    displaycell: DisplayCell;
-    constructor(...Arguments: any);
-    build(): void;
-    static makeExamples(): void;
-}
-declare function codeblock(...Arguments: any): DisplayCell;
 declare var Prism: any;
 declare let clickTreeItemEvent: Events;
 declare function header(label: string, index: number, size?: number): DisplayCell;

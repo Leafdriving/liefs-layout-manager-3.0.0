@@ -176,4 +176,4 @@ H("MainHandler", 4,
   {postRenderCallback:function(handlerInstance:Handler){Prism.highlightAll();}},
   //false,
 );
-CodeBlock.makeExamples();
+// CodeBlock.makeExamples();
