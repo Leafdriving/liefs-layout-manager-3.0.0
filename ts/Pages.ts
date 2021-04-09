@@ -51,7 +51,7 @@ class Pages extends Base {
         if (pageNumber != this.currentPage){
             // this.previousPage = this.currentPage;
             this.currentPage = pageNumber;
-            Render.update();
+            Render.update();Render.update(); /// whats up here?????? needed!
         }
     }
     byLabel(label:string): number {

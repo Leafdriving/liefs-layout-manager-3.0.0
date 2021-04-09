@@ -695,15 +695,17 @@ declare class ScrollBar extends Base {
     viewPortSize: number;
     barSize: number;
     offset: number;
-    scaleFactor: number;
+    ratioOffset: number;
+    ratio: number;
+    max_offset: number;
     ishor: boolean;
     coord: Coord;
-    parentDisplayCell: DisplayCell;
     scrollbarDisplayCell: DisplayCell;
     preBar: DisplayCell;
     Bar: DisplayCell;
     postBar: DisplayCell;
     lasttime: number;
+    BarPixels: number;
     constructor(...Arguments: any);
     build(): void;
     onBarDown(): void;
@@ -713,12 +715,10 @@ declare class ScrollBar extends Base {
     onBackArrow(mouseEvent?: MouseEvent, unit?: number): void;
     onForwardArrow(mouseEvent?: MouseEvent, unit?: number): void;
     validateOffsetAndRender(): void;
-    update(displaySize: number): number;
-    static Render(scrollbar_: ScrollBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
+    update(displaySize: number, viewportSize: number, x: number, y: number, width: number, height: number): number;
     delete(): void;
     onWheel(event: WheelEvent): void;
     static onWheel(event: WheelEvent): void;
-    static distOfMouseFromWheel(THIS: ScrollBar, event: WheelEvent): number;
 }
 declare function scrollbar(...Arguments: any): DisplayCell;
 declare class Context extends Base {
@@ -913,7 +913,6 @@ declare class Tree_ extends Base {
     derender(node: node_): void;
     derenderChildren(node: node_): void;
     static Render(thisTree: Tree_, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
-    static getOverlays(thisTree: Tree_): ScrollBar[];
 }
 declare function tree(...Arguments: any): DisplayCell;
 declare class Observe extends Base {

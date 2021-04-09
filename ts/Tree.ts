@@ -80,7 +80,6 @@ class Tree_ extends Base {
     scrollbarv:ScrollBar;
     onNodeCreation:(node: node_) => void;
 
-    
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         let THIS = this;
@@ -101,7 +100,6 @@ class Tree_ extends Base {
         }
         if (this.node_arg_map) node_.argMap = this.node_arg_map;
     }
-
     newRoot(node:node_){
         let THIS = this;
         this.derender(this.rootNode);
@@ -125,48 +123,31 @@ class Tree_ extends Base {
         for (let index = 0; index < node.children.length; index++)
             this.derender(node.children[index]);
     }    
-    // getScrollBarsFromOverlays(){
-    //     // console.log("getscrollbars");
-    //     let scrollbarh:ScrollBar, scrollbarv:ScrollBar;
-    //     let scrollbarOverlays:Overlay[] = this.parentDisplayCell.getOverlays("ScrollBar");
-    //     for (let index = 0; index < scrollbarOverlays.length; index++) {
-    //         let scrollbar_ = <ScrollBar>(scrollbarOverlays[index].returnObj);
-    //         if (scrollbar_.ishor) scrollbarh = scrollbar_;
-    //         else scrollbarv = scrollbar_;
-    //     }
-    //     return [scrollbarh, scrollbarv]
-    // }
+
     static Render(thisTree:Tree_, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         if (thisTree.preRenderCallback) {
             console.log("Tree Prerender Callback Called");
             thisTree.preRenderCallback();
         }
-        // console.log("render Tree")
-
-        
-        let [scrollbarh, scrollbarv] = Tree_.getOverlays(thisTree);
-        // console.log([scrollbarh, scrollbarv])
 
         let THIS:Tree_ = thisTree;
         let PDScoord = THIS.parentDisplayCell.coord;
-        let x_= PDScoord.x + THIS.sideMargin - thisTree.offsetx;
-        let y_= PDScoord.y + THIS.topMargin - thisTree.offsety;
+        let x_= PDScoord.x + THIS.sideMargin ;//- thisTree.offsetx;
+        let y_= PDScoord.y + THIS.topMargin ;
         let max_x2:number = 0;
         let renderChildren = new RenderChildren;
-        let boundHeight = PDScoord.height - ((scrollbarh) ? scrollbarh.barSize:0);
-        let boundWidth = PDScoord.width - ((scrollbarv) ? scrollbarv.barSize:0);
         zindex += Render.zIncrement;
-        //node.log();
 
         node_.traverse( THIS.rootNode,
             function traverseFunction(node:node_){
-                let x = x_ + (node.depth()-1)*THIS.tabSize;
-                let y = y_;
-                let width = PDScoord.width// - x;
+                let x = x_ + (node.depth()-1)*THIS.tabSize - thisTree.offsetx;
+                let y = y_- thisTree.offsety;
+                let width = PDScoord.width
                 let height = THIS.height;
                 node.displaycell.coord.assign(x, y, width, height,
-                                            PDScoord.x, PDScoord.y, boundWidth, boundHeight-2,
+                                            PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
                                             Handler.currentZindex + Handler.zindexIncrement);
+                node.displaycell.coord.within = THIS.parentDisplayCell.coord.within
                 y_ += THIS.height;
 
                 renderChildren.RenderSibling(node.displaycell, derender);
@@ -177,90 +158,123 @@ class Tree_ extends Base {
                     let bounding = el.getBoundingClientRect();
                     let x2 = bounding["x"] + bounding["width"];
                     if (x2 > max_x2) max_x2 = x2;
-                }
-                
+                }                
             },
             function traverseChildren(node: node_) {
                 return (!node.collapsed)
             },
         );
-        //let scrollbarh = thisTree.parentDisplayCell.getOverlays("ScrollBar")
-        max_x2 += ((scrollbarv) ? scrollbarv.barSize:0)
-        // check horizontal first
-        if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
-             if (!thisTree.scrollbarh) {
-                 //console.log("no way")
-                 let newOverlay = new Overlay("ScrollBar", "scrollbarh",thisTree.parentDisplayCell, true);
-                 thisTree.scrollbarh = <ScrollBar>newOverlay.returnObj;
-                 //console.log("herereere", thisTree.scrollbarh)
-             }
-            thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
-        } else {
-            if (thisTree.scrollbarh) {
-                thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
-                    return (<ScrollBar>overlay.returnObj).ishor;
-                });
-                thisTree.scrollbarh.delete();
-                thisTree.offsetx = 0;
-                thisTree.scrollbarh = undefined;
-            }
-        }
-        // check vertical second
-        if (y_ + THIS.height + 100 > boundHeight){
+        if (y_ + THIS.height > PDScoord.y + PDScoord.height) {
+            PDScoord.width = PDScoord.width - ScrollBar.defaults.barSize;
+            PDScoord.within.width = PDScoord.width;
             if (!thisTree.scrollbarv) {
-                let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, false);
-                thisTree.scrollbarv = <ScrollBar>newOverlay.returnObj;
-                // console.log(thisTree.scrollbarv)
+                thisTree.scrollbarv = new ScrollBar(`${thisTree.label}_scrollbarv`, false);
+                // console.log(thisTree.scrollbarv);
             }
-            thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height + 100);
+            thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height, PDScoord.y + PDScoord.height,
+                PDScoord.x + PDScoord.width,
+                PDScoord.y,
+                thisTree.scrollbarv.barSize,
+                PDScoord.height)
+            
+            renderChildren.RenderSibling(thisTree.scrollbarv.scrollbarDisplayCell, derender);
         } else {
             if (thisTree.scrollbarv) {
-                thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
-                    return !((<ScrollBar>overlay.returnObj).ishor)
-                });
                 thisTree.scrollbarv.delete();
                 thisTree.offsety = 0;
-                thisTree.scrollbarv = undefined;
+            }
+        }
+        if (max_x2 >= PDScoord.x + PDScoord.width) {
+            PDScoord.height = PDScoord.height - ScrollBar.defaults.barSize;
+            PDScoord.within.height = PDScoord.height;
+            if (!thisTree.scrollbarh) {
+                thisTree.scrollbarh = new ScrollBar(`${thisTree.label}_scrollbarh`, true);
+            }
+            thisTree.offsetx = thisTree.scrollbarh.update(max_x2, PDScoord.x + PDScoord.width,
+                PDScoord.x,
+                PDScoord.y + PDScoord.height,
+                PDScoord.width,
+                thisTree.scrollbarh.barSize,
+                )
+            
+            renderChildren.RenderSibling(thisTree.scrollbarh.scrollbarDisplayCell, derender);
+        } else {
+            if (thisTree.scrollbarh) {
+                thisTree.scrollbarh.delete();
+                thisTree.offsetx = 0;
             }
         }
 
         return {zindex,
             siblings: renderChildren.siblings};
     }
-    static getOverlays(thisTree:Tree_){
-        let overlayArray = thisTree.parentDisplayCell.getOverlays("ScrollBar");
-        let scrollbarh:ScrollBar
-        let scrollbarv:ScrollBar
-        for (let index = 0; index < overlayArray.length; index++) {
-            let overlay = <Overlay>overlayArray[index];
-            let scrollbar = <ScrollBar>overlay.returnObj
-            if (scrollbar.ishor) {
-                if (scrollbarh) console.log("Duplicate Horizontal Scrollbars Found!");
-                scrollbarh = scrollbar;
-            }
-            else {
-                if (scrollbarv) console.log("Duplicate Vertical Scrollbars Found!");
-                scrollbarv = scrollbar;
-            }
-        }
-        return [scrollbarh, scrollbarv];
-    }
-    // popOverlay(ishor:boolean){
-    //     let overlays = this.parentDisplayCell.overlays;
-    //     for (let index = 0; index < overlays.length; index++)
-    //         if (overlays[index].sourceClassName == "ScrollBar")
-    //             if ( (<ScrollBar>overlays[index].returnObj).ishor == ishor)
-    //                 overlays.splice(index, 1)
-    // }
 
 }
 Render.register("Tree_", Tree_);
-// function tree(...Arguments:any) {
-//     let overlay=new Overlay("Tree_", ...Arguments);
-//     let newTree_ = <Tree_>overlay.returnObj;
-//     let parentDisplaycell = newTree_.parentDisplayCell;
-//     parentDisplaycell.addOverlay(overlay);
-//     return parentDisplaycell;
-// }
 function tree(...Arguments:any): DisplayCell {return Overlay.new("Tree_", ...Arguments)};
 Overlay.classes["Tree_"] = Tree_;
+
+
+
+
+
+//let scrollbarh = thisTree.parentDisplayCell.getOverlays("ScrollBar")
+        // max_x2 += ((scrollbarv) ? scrollbarv.barSize:0)
+        // // check horizontal first
+        // if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
+        //      if (!thisTree.scrollbarh) {
+        //          //console.log("no way")
+        //          let newOverlay = new Overlay("ScrollBar", "scrollbarh",thisTree.parentDisplayCell, true);
+        //          thisTree.scrollbarh = <ScrollBar>newOverlay.returnObj;
+        //          //console.log("herereere", thisTree.scrollbarh)
+        //      }
+        //     thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
+        // } else {
+        //     if (thisTree.scrollbarh) {
+        //         thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
+        //             return (<ScrollBar>overlay.returnObj).ishor;
+        //         });
+        //         thisTree.scrollbarh.delete();
+        //         thisTree.offsetx = 0;
+        //         thisTree.scrollbarh = undefined;
+        //     }
+        // }
+        // // check vertical second
+        // if (y_ + THIS.height + 100 > boundHeight){
+        //     if (!thisTree.scrollbarv) {
+        //         let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, false);
+        //         thisTree.scrollbarv = <ScrollBar>newOverlay.returnObj;
+        //         // console.log(thisTree.scrollbarv)
+        //     }
+        //     thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height + 100);
+        // } else {
+        //     if (thisTree.scrollbarv) {
+        //         thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
+        //             return !((<ScrollBar>overlay.returnObj).ishor)
+        //         });
+        //         thisTree.scrollbarv.delete();
+        //         thisTree.offsety = 0;
+        //         thisTree.scrollbarv = undefined;
+        //     }
+        // }
+
+
+
+            // static getOverlays(thisTree:Tree_){
+    //     let overlayArray = thisTree.parentDisplayCell.getOverlays("ScrollBar");
+    //     let scrollbarh:ScrollBar
+    //     let scrollbarv:ScrollBar
+    //     for (let index = 0; index < overlayArray.length; index++) {
+    //         let overlay = <Overlay>overlayArray[index];
+    //         let scrollbar = <ScrollBar>overlay.returnObj
+    //         if (scrollbar.ishor) {
+    //             if (scrollbarh) console.log("Duplicate Horizontal Scrollbars Found!");
+    //             scrollbarh = scrollbar;
+    //         }
+    //         else {
+    //             if (scrollbarv) console.log("Duplicate Vertical Scrollbars Found!");
+    //             scrollbarv = scrollbar;
+    //         }
+    //     }
+    //     return [scrollbarh, scrollbarv];
+    // }

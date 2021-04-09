@@ -411,11 +411,6 @@ pf.mergeObjects = function (startObj, AddObj) {
 Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
 // export {mf, pf}
 class Render {
-    // static update(source:any = undefined, derender = false, zindex = 1){
-    //     pf.throttle(
-    //         function() {Render.update2(source, derender, zindex)},
-    //          50);
-    // }
     static update(source = undefined, derender = false, zindex = 1) {
         // if (source) console.log(`${BaseF.typeof(source)}:${source["label"]} ${derender}`)
         let renderChildren = new RenderChildren;
@@ -426,7 +421,7 @@ class Render {
             Render.RenderObjectList(renderChildren.siblings, Render.node, zindex);
         }
         else {
-            // console.log("RenderUpdate");
+            console.log("RenderUpdate");
             Render.oldRootnode = Render.node;
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);
@@ -799,6 +794,7 @@ class HtmlBlock extends Base {
             let attrstring = displaycell.coord.newAsAttributeString(zindex); // + clipString;
             if (el.style.cssText != attrstring)
                 el.style.cssText = attrstring;
+            // el.style.cssText = attrstring;
         }
         return { zindex };
     }
@@ -995,7 +991,6 @@ class DisplayCell extends Base {
             Handler.activeOffset = true;
         if (displaycell.preRenderCallback)
             displaycell.preRenderCallback(displaycell, derender);
-        //if (derender) Observe.derender(displaycell);
         if (displaycell.overlays.length)
             for (let index = 0; index < displaycell.overlays.length; index++)
                 renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
@@ -1030,19 +1025,15 @@ class DisplayCell extends Base {
                     Handler.currentZindex += Handler.zindexIncrement;
                 }
                 renderChildren.RenderSibling(displaygroup, derender);
-                //Handler.renderDisplayGroup(displaycell, derender);
             }
         }
-        // if (displaycell.overlays.length) {
-        //     for (let ovlay of displaycell.overlays) {
-        //         ovlay.renderOverlay(displaycell, parentDisplaygroup, index, derender);
-        //     }
-        // }
-        if (displaycell.overlays.length)
-            for (let index = 0; index < displaycell.overlays.length; index++)
-                renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
-        if (displaycell.postRenderCallback)
+        // if (displaycell.overlays.length) 
+        //     for (let index = 0; index < displaycell.overlays.length; index++) 
+        //         renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
+        if (displaycell.postRenderCallback) {
+            console.log("POST");
             displaycell.postRenderCallback(displaycell, derender);
+        }
         if (displaycell.coord.offset)
             Handler.activeOffset = false;
         return { zindex: zindex + Render.zIncrement,
@@ -1158,12 +1149,12 @@ class DisplayGroup extends Base {
         let parentDisplaycell = node.ParentNode.Arguments[1];
         if (BaseF.typeof(parentDisplaycell) != "DisplayCell")
             console.log(`DisplayGroup: ${displaygroup.label}  parent WASNT a displaycell????`);
-        if (displaygroup.scrollbar_) {
-            if (displaygroup.scrollbar_.ishor)
-                displaygroup.coord.height -= displaygroup.scrollbar_.barSize;
-            else
-                displaygroup.coord.width -= displaygroup.scrollbar_.barSize;
-        }
+        // if (displaygroup.scrollbar_){
+        //     if (displaygroup.scrollbar_.ishor) 
+        //         displaygroup.coord.height -= displaygroup.scrollbar_.barSize;
+        //     else
+        //         displaygroup.coord.width -= displaygroup.scrollbar_.barSize;
+        // }
         let ishor = displaygroup.ishor;
         let coord = displaygroup.coord;
         let cellArraylength = displaygroup.cellArray.length;
@@ -1230,27 +1221,56 @@ class DisplayGroup extends Base {
         // console.log(`Final dimarrayTotal ${dimArrayTotal} of ${maxpx}`, JSON.stringify(dimArray, null, 3));
         if (displaygroup.offset == undefined)
             displaygroup.offset = 0;
-        let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
-        displaygroup.scrollbar_ = (scrollbarOverlay) ? scrollbarOverlay.returnObj : undefined;
+        // let scrollbarOverlay = parentDisplaycell.getOverlay("ScrollBar");
+        // displaygroup.scrollbar_ = (scrollbarOverlay) ? <ScrollBar>scrollbarOverlay.returnObj : undefined
+        let renderChildren = new RenderChildren;
         if (dimArrayTotal > maxpx + 2) {
-            if (!scrollbarOverlay) {
-                scrollbarOverlay = new Overlay("ScrollBar", `${displaygroup.label}_scrollbar`, parentDisplaycell, displaygroup.ishor);
+            let x, y, width, height;
+            if (displaygroup.ishor) {
+                let coord = displaygroup.coord;
+                coord.height -= ScrollBar.defaults.barSize;
+                coord.within.height = displaygroup.coord.height;
+                x = coord.x;
+                y = coord.y + coord.height; // - ScrollBar.defaults.barSize;
+                width = coord.width;
+                height = ScrollBar.defaults.barSize;
             }
-            displaygroup.scrollbar_ = scrollbarOverlay.returnObj;
-            displaygroup.offset = displaygroup.scrollbar_.update(dimArrayTotal); ////
+            else {
+                displaygroup.coord.width -= ScrollBar.defaults.barSize;
+                displaygroup.coord.within.width = displaygroup.coord.width;
+                x = coord.x + coord.width; // - ScrollBar.defaults.barSize;
+                y = coord.y;
+                width = ScrollBar.defaults.barSize;
+                height = coord.height;
+            }
+            if (!displaygroup.scrollbar_) {
+                displaygroup.scrollbar_ = new ScrollBar(`${displaygroup.label}_scrollbar`, displaygroup.ishor);
+            }
+            displaygroup.offset = displaygroup.scrollbar_.update(dimArrayTotal, maxpx + 2, x, y, width, height);
+            renderChildren.RenderSibling(displaygroup.scrollbar_.scrollbarDisplayCell, derender);
         }
         else {
-            if (scrollbarOverlay) {
-                parentDisplaycell.popOverlay("ScrollBar");
+            if (displaygroup.scrollbar_) {
                 displaygroup.scrollbar_.delete();
                 displaygroup.offset = 0;
             }
         }
+        //     if (!scrollbarOverlay) {
+        //         scrollbarOverlay = new Overlay("ScrollBar", `${displaygroup.label}_scrollbar`, parentDisplaycell, displaygroup.ishor);
+        //     }
+        //     displaygroup.scrollbar_ =  <ScrollBar>scrollbarOverlay.returnObj;
+        //     displaygroup.offset = displaygroup.scrollbar_.update(dimArrayTotal); ////
+        // } else {
+        //     if (scrollbarOverlay){
+        //         parentDisplaycell.popOverlay("ScrollBar");
+        //         displaygroup.scrollbar_.delete();
+        //         displaygroup.offset = 0;
+        //     }
+        // }
         let x = displaygroup.coord.x - ((ishor) ? displaygroup.offset : 0);
         let y = displaygroup.coord.y - ((ishor) ? 0 : displaygroup.offset);
         let width;
         let height;
-        let renderChildren = new RenderChildren;
         for (let index = 0; index < cellArraylength; index++) {
             let displaycell = displaygroup.cellArray[index];
             let cellsizepx = dimArray[index].px;
@@ -1711,6 +1731,7 @@ class Pages extends Base {
             // this.previousPage = this.currentPage;
             this.currentPage = pageNumber;
             Render.update();
+            Render.update(); /// whats up here?????? needed!
         }
     }
     byLabel(label) {
@@ -2272,74 +2293,54 @@ class ScrollBar extends Base {
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
-        this.label = `${this.parentDisplayCell.label}_${this.type}`;
+        ScrollBar.makeLabel(this);
         this.build();
-        if (!this.coord)
-            this.coord = this.parentDisplayCell.coord;
-        // console.log("scrollbar Created", this.ishor, this.label);
     }
     build() {
+        // this.scrollbarDisplayCell = I("allblack","",css("allblack","background:black"));
         let THIS = this;
-        // console.log("label", this.label)
         let label = this.label + ((this.ishor) ? "_H" : "_V");
-        // console.log("label2", label)
-        this.preBar = I(`${label}_preBar`, DefaultTheme.ScrollBar_whiteBG, events({ onclick: THIS.onPreBar.bind(THIS) }));
-        this.Bar = I(`${label}_Bar`, DefaultTheme.ScrollBar_blackBG, events({ ondrag: { onDown: THIS.onBarDown.bind(THIS), onMove: THIS.onBarMove.bind(THIS) } }));
+        this.preBar = I(`${label}_preBar`, "20px", DefaultTheme.ScrollBar_whiteBG, events({ onclick: THIS.onPreBar.bind(THIS) }));
+        this.Bar = I(`${label}_Bar`, DefaultTheme.ScrollBar_blackBG, "20px", events({ ondrag: { onDown: THIS.onBarDown.bind(THIS), onMove: THIS.onBarMove.bind(THIS) } }));
         this.postBar = I(`${label}_postBar`, "100%", DefaultTheme.ScrollBar_whiteBG, events({ onclick: THIS.onPostBar.bind(THIS) }));
         this.scrollbarDisplayCell =
             h(`${label}_h`, `${this.barSize}px`, ((this.ishor) ? undefined : false), I(`${label}_backArrow`, `${this.barSize}px`, (this.ishor) ? DefaultTheme.leftArrowSVG("scrollArrows") : DefaultTheme.upArrowSVG("scrollArrows"), events({ onhold: { event: function (mouseEvent) { THIS.onBackArrow(mouseEvent); } } })), this.preBar, this.Bar, this.postBar, I(`${label}_forwardArrow`, `${this.barSize}px`, (this.ishor) ? DefaultTheme.rightArrowSVG("scrollArrows") : DefaultTheme.downArrowSVG("scrollArrows"), events({ onhold: { event: function (mouseEvent) { THIS.onForwardArrow(mouseEvent); } } })));
-        ScrollBar.activate(this);
+        // ScrollBar.activate(this);
     }
     onBarDown() { ScrollBar.startoffset = this.offset; }
     onBarMove(xmouseDiff) {
         let dist = (this.ishor) ? xmouseDiff["x"] : xmouseDiff["y"];
-        this.offset = ScrollBar.startoffset + dist / this.scaleFactor;
+        this.offset = ScrollBar.startoffset + Math.round(dist / this.ratio);
         this.validateOffsetAndRender();
     }
-    onPreBar(mouseEvent = undefined) { this.offset -= this.viewPortSize; this.validateOffsetAndRender(); }
-    onPostBar(mouseEvent = undefined) { this.offset += this.viewPortSize; this.validateOffsetAndRender(); }
-    onBackArrow(mouseEvent = undefined, unit = 3) { this.offset -= unit / this.scaleFactor; this.validateOffsetAndRender(); }
-    onForwardArrow(mouseEvent = undefined, unit = 3) { this.offset += unit / this.scaleFactor; this.validateOffsetAndRender(); }
+    onPreBar(mouseEvent = undefined) { this.offset -= 30; this.validateOffsetAndRender(); }
+    onPostBar(mouseEvent = undefined) { this.offset += 30; this.validateOffsetAndRender(); }
+    onBackArrow(mouseEvent = undefined, unit = 3) { this.offset -= unit; this.validateOffsetAndRender(); }
+    onForwardArrow(mouseEvent = undefined, unit = 3) { this.offset += unit; this.validateOffsetAndRender(); }
     validateOffsetAndRender() {
         if (this.offset <= 0)
-            this.offset = 1;
-        let max = this.displaySize - this.viewPortSize - 2;
-        if (this.offset >= max - 10)
-            this.offset = max - 10;
+            this.offset = 0;
+        if (this.offset / this.ratio > this.max_offset)
+            this.offset = this.max_offset * this.ratio;
         let thisTime = new Date().getTime();
         if (!(this.lasttime && (thisTime - this.lasttime < ScrollBar.debounce))) {
             Render.update();
             this.lasttime = thisTime;
         }
     }
-    update(displaySize) {
-        let coord = this.parentDisplayCell.coord;
-        let ishor = this.ishor;
-        let width = (ishor) ? coord.width : coord.width - this.barSize;
-        let height = (ishor) ? coord.height - this.barSize : coord.height;
-        let sbx = (ishor) ? coord.x : coord.x + coord.width - this.barSize;
-        let sby = (ishor) ? coord.y + coord.height - this.barSize : coord.y;
-        let scw = (ishor) ? coord.width : this.barSize;
-        let sch = (ishor) ? this.barSize : coord.height;
-        this.scrollbarDisplayCell.coord.assign(sbx, sby, scw, sch, sbx, sby, scw, sch, coord.zindex);
-        // this.scrollbarDisplayCell.coord.log()
-        this.displaySize = displaySize;
-        this.viewPortSize = (ishor) ? this.parentDisplayCell.coord.width : this.parentDisplayCell.coord.height;
-        let scrollBarSize = this.viewPortSize - this.barSize * 2;
-        this.scaleFactor = scrollBarSize / this.displaySize;
-        this.preBar.dim = `${Math.round(this.offset * this.scaleFactor)}px`;
-        this.Bar.dim = `${Math.round(this.viewPortSize * this.scaleFactor)}px`;
-        return this.offset;
-    }
-    static Render(scrollbar_, zindex, derender = false, node) {
-        let displaycell = scrollbar_.parentDisplayCell;
-        let width = displaycell.coord.width - ((scrollbar_.ishor) ? 0 : scrollbar_.barSize);
-        let height = displaycell.coord.height - ((scrollbar_.ishor) ? scrollbar_.barSize : 0);
-        displaycell.coord.assign(undefined, undefined, undefined, undefined, undefined, undefined, width, height);
-        let renderChildren = new RenderChildren;
-        renderChildren.RenderSibling(scrollbar_.scrollbarDisplayCell, derender);
-        return { zindex,
-            siblings: renderChildren.siblings };
+    update(displaySize, viewportSize, x, y, width, height) {
+        // console.log(displaySize, viewportSize)
+        this.scrollbarDisplayCell.coord.assign(x, y, width, height, x, y, width, height);
+        this.max_offset = displaySize - viewportSize - 1;
+        let scrollbarTotalPixels = (this.ishor) ? width : height;
+        let scrollbarPixels = scrollbarTotalPixels - this.barSize * 2;
+        this.BarPixels = Math.round(scrollbarPixels * (viewportSize / displaySize));
+        let pixelsForOffset = scrollbarPixels - this.BarPixels;
+        this.ratio = pixelsForOffset / (displaySize - viewportSize);
+        this.preBar.dim = `${this.offset}px`;
+        this.Bar.dim = `${this.BarPixels}px`;
+        //console.log(this.offset/this.ratio, displaySize - viewportSize -1)
+        return Math.round(this.offset / this.ratio);
     }
     delete() {
         ScrollBar.pop(this);
@@ -2354,40 +2355,18 @@ class ScrollBar extends Base {
             this.onBackArrow();
     }
     static onWheel(event) {
-        let selectedInstance;
-        let minDist = 100000;
-        let dist;
-        let scrollbar;
-        for (let instance of ScrollBar.activeInstances) {
-            if (instance.scrollbarDisplayCell.coord.isPointIn(event.clientX, event.clientY))
-                scrollbar = instance;
-            else if (instance.parentDisplayCell.coord.isPointIn(event.clientX, event.clientY))
-                scrollbar = instance;
-        }
-        if (scrollbar)
-            scrollbar.onWheel(event);
-    }
-    static distOfMouseFromWheel(THIS, event) {
-        let ishor = THIS.ishor;
-        let displaycell = THIS.parentDisplayCell;
-        let coord = displaycell.coord;
-        let x = event.clientX;
-        let y = event.clientY;
-        let dist = 0;
-        // console.log(ishor, x, y, coord)
-        if (!ishor) {
-            if (x < coord.x)
-                dist = coord.x - x;
-            if (x > coord.x + coord.width)
-                dist = x - (coord.x + coord.width);
-        }
-        else {
-            if (y < coord.y)
-                dist = coord.y - y;
-            if (y > coord.y + coord.height)
-                dist = y - (coord.y + coord.height);
-        }
-        return dist;
+        // //     let selectedInstance:ScrollBar;
+        // //     let minDist:number = 100000;
+        // //     let dist:number;
+        // //     let scrollbar: ScrollBar;
+        // //     for (let instance of ScrollBar.activeInstances) {
+        // //         if (instance.scrollbarDisplayCell.coord.isPointIn(event.clientX, event.clientY))
+        // //             scrollbar = instance;
+        // //         else
+        // //             if (instance.parentDisplayCell.coord.isPointIn(event.clientX, event.clientY))
+        // //                 scrollbar = instance;
+        // //     }
+        // //     if (scrollbar) scrollbar.onWheel(event)
     }
 }
 ScrollBar.labelNo = 0;
@@ -2400,7 +2379,7 @@ ScrollBar.argMap = {
     number: ["barSize"],
     boolean: ["ishor"],
 };
-ScrollBar.debounce = 75; // 
+ScrollBar.debounce = 75; //
 Render.register("ScrollBar", ScrollBar);
 function scrollbar(...Arguments) { return Overlay.new("ScrollBar", ...Arguments); }
 Overlay.classes["ScrollBar"] = ScrollBar;
@@ -2954,41 +2933,25 @@ class Tree_ extends Base {
         for (let index = 0; index < node.children.length; index++)
             this.derender(node.children[index]);
     }
-    // getScrollBarsFromOverlays(){
-    //     // console.log("getscrollbars");
-    //     let scrollbarh:ScrollBar, scrollbarv:ScrollBar;
-    //     let scrollbarOverlays:Overlay[] = this.parentDisplayCell.getOverlays("ScrollBar");
-    //     for (let index = 0; index < scrollbarOverlays.length; index++) {
-    //         let scrollbar_ = <ScrollBar>(scrollbarOverlays[index].returnObj);
-    //         if (scrollbar_.ishor) scrollbarh = scrollbar_;
-    //         else scrollbarv = scrollbar_;
-    //     }
-    //     return [scrollbarh, scrollbarv]
-    // }
     static Render(thisTree, zindex, derender = false, node) {
         if (thisTree.preRenderCallback) {
             console.log("Tree Prerender Callback Called");
             thisTree.preRenderCallback();
         }
-        // console.log("render Tree")
-        let [scrollbarh, scrollbarv] = Tree_.getOverlays(thisTree);
-        // console.log([scrollbarh, scrollbarv])
         let THIS = thisTree;
         let PDScoord = THIS.parentDisplayCell.coord;
-        let x_ = PDScoord.x + THIS.sideMargin - thisTree.offsetx;
-        let y_ = PDScoord.y + THIS.topMargin - thisTree.offsety;
+        let x_ = PDScoord.x + THIS.sideMargin; //- thisTree.offsetx;
+        let y_ = PDScoord.y + THIS.topMargin;
         let max_x2 = 0;
         let renderChildren = new RenderChildren;
-        let boundHeight = PDScoord.height - ((scrollbarh) ? scrollbarh.barSize : 0);
-        let boundWidth = PDScoord.width - ((scrollbarv) ? scrollbarv.barSize : 0);
         zindex += Render.zIncrement;
-        //node.log();
         node_.traverse(THIS.rootNode, function traverseFunction(node) {
-            let x = x_ + (node.depth() - 1) * THIS.tabSize;
-            let y = y_;
-            let width = PDScoord.width; // - x;
+            let x = x_ + (node.depth() - 1) * THIS.tabSize - thisTree.offsetx;
+            let y = y_ - thisTree.offsety;
+            let width = PDScoord.width;
             let height = THIS.height;
-            node.displaycell.coord.assign(x, y, width, height, PDScoord.x, PDScoord.y, boundWidth, boundHeight - 2, Handler.currentZindex + Handler.zindexIncrement);
+            node.displaycell.coord.assign(x, y, width, height, PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height, Handler.currentZindex + Handler.zindexIncrement);
+            node.displaycell.coord.within = THIS.parentDisplayCell.coord.within;
             y_ += THIS.height;
             renderChildren.RenderSibling(node.displaycell, derender);
             let cellArray = node.displaycell.displaygroup.cellArray;
@@ -3002,69 +2965,39 @@ class Tree_ extends Base {
         }, function traverseChildren(node) {
             return (!node.collapsed);
         });
-        //let scrollbarh = thisTree.parentDisplayCell.getOverlays("ScrollBar")
-        max_x2 += ((scrollbarv) ? scrollbarv.barSize : 0);
-        // check horizontal first
-        if (max_x2 > (PDScoord.x + PDScoord.width) + 2) {
-            if (!thisTree.scrollbarh) {
-                //console.log("no way")
-                let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, true);
-                thisTree.scrollbarh = newOverlay.returnObj;
-                //console.log("herereere", thisTree.scrollbarh)
-            }
-            thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
-        }
-        else {
-            if (thisTree.scrollbarh) {
-                thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay) {
-                    return overlay.returnObj.ishor;
-                });
-                thisTree.scrollbarh.delete();
-                thisTree.offsetx = 0;
-                thisTree.scrollbarh = undefined;
-            }
-        }
-        // check vertical second
-        if (y_ + THIS.height + 100 > boundHeight) {
+        if (y_ + THIS.height > PDScoord.y + PDScoord.height) {
+            PDScoord.width = PDScoord.width - ScrollBar.defaults.barSize;
+            PDScoord.within.width = PDScoord.width;
             if (!thisTree.scrollbarv) {
-                let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, false);
-                thisTree.scrollbarv = newOverlay.returnObj;
-                // console.log(thisTree.scrollbarv)
+                thisTree.scrollbarv = new ScrollBar(`${thisTree.label}_scrollbarv`, false);
+                // console.log(thisTree.scrollbarv);
             }
-            thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height + 100);
+            thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height, PDScoord.y + PDScoord.height, PDScoord.x + PDScoord.width, PDScoord.y, thisTree.scrollbarv.barSize, PDScoord.height);
+            renderChildren.RenderSibling(thisTree.scrollbarv.scrollbarDisplayCell, derender);
         }
         else {
             if (thisTree.scrollbarv) {
-                thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay) {
-                    return !(overlay.returnObj.ishor);
-                });
                 thisTree.scrollbarv.delete();
                 thisTree.offsety = 0;
-                thisTree.scrollbarv = undefined;
+            }
+        }
+        if (max_x2 >= PDScoord.x + PDScoord.width) {
+            PDScoord.height = PDScoord.height - ScrollBar.defaults.barSize;
+            PDScoord.within.height = PDScoord.height;
+            if (!thisTree.scrollbarh) {
+                thisTree.scrollbarh = new ScrollBar(`${thisTree.label}_scrollbarh`, true);
+            }
+            thisTree.offsetx = thisTree.scrollbarh.update(max_x2, PDScoord.x + PDScoord.width, PDScoord.x, PDScoord.y + PDScoord.height, PDScoord.width, thisTree.scrollbarh.barSize);
+            renderChildren.RenderSibling(thisTree.scrollbarh.scrollbarDisplayCell, derender);
+        }
+        else {
+            if (thisTree.scrollbarh) {
+                thisTree.scrollbarh.delete();
+                thisTree.offsetx = 0;
             }
         }
         return { zindex,
             siblings: renderChildren.siblings };
-    }
-    static getOverlays(thisTree) {
-        let overlayArray = thisTree.parentDisplayCell.getOverlays("ScrollBar");
-        let scrollbarh;
-        let scrollbarv;
-        for (let index = 0; index < overlayArray.length; index++) {
-            let overlay = overlayArray[index];
-            let scrollbar = overlay.returnObj;
-            if (scrollbar.ishor) {
-                if (scrollbarh)
-                    console.log("Duplicate Horizontal Scrollbars Found!");
-                scrollbarh = scrollbar;
-            }
-            else {
-                if (scrollbarv)
-                    console.log("Duplicate Vertical Scrollbars Found!");
-                scrollbarv = scrollbar;
-            }
-        }
-        return [scrollbarh, scrollbarv];
     }
 }
 Tree_.labelNo = 0;
@@ -3083,16 +3016,66 @@ Tree_.argMap = {
     node_: ["rootNode"],
 };
 Render.register("Tree_", Tree_);
-// function tree(...Arguments:any) {
-//     let overlay=new Overlay("Tree_", ...Arguments);
-//     let newTree_ = <Tree_>overlay.returnObj;
-//     let parentDisplaycell = newTree_.parentDisplayCell;
-//     parentDisplaycell.addOverlay(overlay);
-//     return parentDisplaycell;
-// }
 function tree(...Arguments) { return Overlay.new("Tree_", ...Arguments); }
 ;
 Overlay.classes["Tree_"] = Tree_;
+//let scrollbarh = thisTree.parentDisplayCell.getOverlays("ScrollBar")
+// max_x2 += ((scrollbarv) ? scrollbarv.barSize:0)
+// // check horizontal first
+// if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
+//      if (!thisTree.scrollbarh) {
+//          //console.log("no way")
+//          let newOverlay = new Overlay("ScrollBar", "scrollbarh",thisTree.parentDisplayCell, true);
+//          thisTree.scrollbarh = <ScrollBar>newOverlay.returnObj;
+//          //console.log("herereere", thisTree.scrollbarh)
+//      }
+//     thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
+// } else {
+//     if (thisTree.scrollbarh) {
+//         thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
+//             return (<ScrollBar>overlay.returnObj).ishor;
+//         });
+//         thisTree.scrollbarh.delete();
+//         thisTree.offsetx = 0;
+//         thisTree.scrollbarh = undefined;
+//     }
+// }
+// // check vertical second
+// if (y_ + THIS.height + 100 > boundHeight){
+//     if (!thisTree.scrollbarv) {
+//         let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, false);
+//         thisTree.scrollbarv = <ScrollBar>newOverlay.returnObj;
+//         // console.log(thisTree.scrollbarv)
+//     }
+//     thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height + 100);
+// } else {
+//     if (thisTree.scrollbarv) {
+//         thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
+//             return !((<ScrollBar>overlay.returnObj).ishor)
+//         });
+//         thisTree.scrollbarv.delete();
+//         thisTree.offsety = 0;
+//         thisTree.scrollbarv = undefined;
+//     }
+// }
+// static getOverlays(thisTree:Tree_){
+//     let overlayArray = thisTree.parentDisplayCell.getOverlays("ScrollBar");
+//     let scrollbarh:ScrollBar
+//     let scrollbarv:ScrollBar
+//     for (let index = 0; index < overlayArray.length; index++) {
+//         let overlay = <Overlay>overlayArray[index];
+//         let scrollbar = <ScrollBar>overlay.returnObj
+//         if (scrollbar.ishor) {
+//             if (scrollbarh) console.log("Duplicate Horizontal Scrollbars Found!");
+//             scrollbarh = scrollbar;
+//         }
+//         else {
+//             if (scrollbarv) console.log("Duplicate Vertical Scrollbars Found!");
+//             scrollbarv = scrollbar;
+//         }
+//     }
+//     return [scrollbarh, scrollbarv];
+// }
 // import {Base} from './Base';
 // import {DisplayCell} from './DisplayCell';
 // import {Handler} from './Handler';

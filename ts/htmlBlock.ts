@@ -103,6 +103,7 @@ class HtmlBlock extends Base {
             }
             let attrstring = displaycell.coord.newAsAttributeString(zindex) // + clipString;
             if (el.style.cssText != attrstring) el.style.cssText = attrstring;
+            // el.style.cssText = attrstring;
         }
         return {zindex}
     }

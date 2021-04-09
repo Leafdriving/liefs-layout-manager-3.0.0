@@ -28,6 +28,24 @@ declare class CSS {
     static centerButton: Css;
     static menu_SVG(size?: number, color?: string): string;
 }
+declare let bgLightBorder: Css;
+declare class CodeBlock extends Base {
+    static labelNo: number;
+    static instances: CodeBlock[];
+    static activeInstances: CodeBlock[];
+    static defaults: {};
+    static argMap: {
+        string: string[];
+    };
+    label: string;
+    javascript: string;
+    html: string;
+    displaycell: DisplayCell;
+    handler: Handler;
+    pages: Pages;
+    pagesDisplayCell: DisplayCell;
+    constructor(...Arguments: any);
+}
 declare var Prism: any;
 declare let clickTreeItemEvent: Events;
 declare function header(label: string, index: number, size?: number): DisplayCell;

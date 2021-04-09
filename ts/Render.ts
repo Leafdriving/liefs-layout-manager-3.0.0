@@ -4,11 +4,6 @@ class Render {
 
     static zIncrement:number =5;
     static zHandlerIncrement:number =100;
-    // static update(source:any = undefined, derender = false, zindex = 1){
-    //     pf.throttle(
-    //         function() {Render.update2(source, derender, zindex)},
-    //          50);
-    // }
     static update(source:any = undefined, derender = false, zindex = 1){
         // if (source) console.log(`${BaseF.typeof(source)}:${source["label"]} ${derender}`)
         let renderChildren = new RenderChildren;
@@ -17,7 +12,7 @@ class Render {
             renderChildren.RenderSibling( (BaseF.typeof(source) == "Array") ? source : [source], derender);
             Render.RenderObjectList( renderChildren.siblings, Render.node, zindex );
         } else {
-            // console.log("RenderUpdate");
+            console.log("RenderUpdate");
             Render.oldRootnode = Render.node;
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);

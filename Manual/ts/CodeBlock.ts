@@ -1,9 +1,107 @@
+//let bgLIGHT = css("bgLIGHT", `background:cyan`);
+let bgLightBorder = css("bgLight2border",
+                      `background: #F0F0F0;box-sizing: border-box;border: 1px solid darkgray;cursor:pointer`,
+                      `background: white;`,
+                      `background: DarkKhaki;`,
+                      {type:"CodeBlock"});
+class CodeBlock extends Base {
+    static labelNo = 0;
+    static instances:CodeBlock[] = [];
+    static activeInstances:CodeBlock[] = [];
+    static defaults = {}
+    static argMap = {
+        string : ["label", "javascript", "html"],
+
+    }
+    // retArgs:ArgsObj;   // <- this will appear
+    label:string;
+    javascript:string;
+    html:string;
+    displaycell: DisplayCell;
+    handler:Handler;
+    pages:Pages;
+    pagesDisplayCell: DisplayCell;
+    constructor(...Arguments:any){
+        super();this.buildBase(...Arguments);
+        CodeBlock.makeLabel(this);
+        let THIS = this;
+        let javascriptDisplayCell = I(`${this.label}_javascript`, `<pre><code class="language-javascript">H("My Handler", \n${this.javascript}\n)</code></pre>`, bgLightBorder);
+        let renderDisplayCell = eval(this.javascript);
+        let fullHTML = `&lt!doctype html>
+&lthtml lang="en">
+&lthead>
+  &ltmeta charset="utf-8">
+  &lttitle>Liefs Layout Manager&lt/title>
+  &ltscript src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3.0.0.GLOBALS.full.js">&lt/script>
+&lt/head>
+&ltbody>
+&lt/body>
+&lt/html>
+&ltscript>
+H("My Handler",
+${this.javascript}
+)
+&lt/script>`
+        this.pages = new Pages(`${this.label}_Pages`,
+                      h(`${this.label}_both`,
+                          javascriptDisplayCell,
+                          renderDisplayCell
+                      ),
+                      javascriptDisplayCell,
+                      I(`${this.label}_p3`, `<pre><code class="language-markup">${fullHTML}</code></pre>`, bgLightBorder),
+                      renderDisplayCell,
+                    );
+        // let postrender = {postRenderCallback: function(){ Prism.highlightAll() } }
+        this.pagesDisplayCell = new DisplayCell(`${this.label}_pages`, this.pages);
+        // this.pagesDisplayCell.postRenderCallback = function(){console.log("now");Prism.highlightAll();}
+        let p1 = I(`${this.label}_t1`, "Both", bgLightBorder, events({onclick: function(mouseEvent:MouseEvent){THIS.pages.setPage(0)}}));
+        let p2 = I(`${this.label}_t2`, "Javascript", bgLightBorder, events({onclick: function(mouseEvent:MouseEvent){THIS.pages.setPage(1)}}));
+        let p3 = I(`${this.label}_t3`, "Full (Html+Javascript+css)", bgLightBorder, events({onclick: function(mouseEvent:MouseEvent){THIS.pages.setPage(2)}}));
+        let p4 = I(`${this.label}_t4`, "rendered", bgLightBorder, events({onclick: function(mouseEvent:MouseEvent){THIS.pages.setPage(3)}}));
+        let temp = new Selected(`${this.label}_selected`, p1, p2, p3, p4);
+        temp.select(undefined, p1);
+        this.displaycell = v(`${this.label}_v`,
+          h(`${this.label}_toph`, "25px",
+            p1,
+            p2,
+            p3,
+            p4,
+          ),
+          this.pagesDisplayCell,
+        )
+        this.handler = H(this.label, this.displaycell, false);
+        this.handler.postRenderCallback = function(){
+          setTimeout(() => {
+            Prism.highlightAll();
+          }, 0);}
+    }
+}
+
 setTimeout(() => {
-  H("Example01",
-  I("Elllo","Hello World", DefaultTheme.context),
-  false,
-)  
+    let Example01 = new CodeBlock("Example01",
+`   h("MyHorizontal",
+      I("HelloWorld","Hello", css("backWhite","background:green")),
+      I("HelloWorld2","World", css("backPink","background:pink"))
+   )`
+    ,`none`);
 }, 0);
+
+
+
+// class CodeBlock {
+
+// }
+// let CssTab = css("tab", "background:green")
+
+// setTimeout(() => {
+//   H("Example01",
+//     v("Exmaple00_v",
+//       I("Example01_01", "top", "25px", CssTab),
+//       I("Example01_02", "bottom", CssTab),
+//     ),
+//   false,
+// )  
+// }, 0);
 
 
 // class CodeBlock {
