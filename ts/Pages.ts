@@ -12,7 +12,7 @@ class Pages extends Base {
 
     static defaults = {
         currentPage : 0, previousPage : 0,
-        evalFunction : function(thisPages:Pages):number {return thisPages.currentPage}
+        evalFunction : function (thisPages:Pages):number {return thisPages.currentPage}
     }
     static argMap = {
         string : ["label"],

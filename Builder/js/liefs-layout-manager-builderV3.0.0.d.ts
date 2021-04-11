@@ -35,6 +35,8 @@ declare class Properties extends Base {
     static DragBarTreeClicked(objectWithProperties: object): void;
     static Handler(): void;
     static HandlerTreeClicked(objectWithProperties: object): void;
+    static Pages(): void;
+    static PagesTreeClicked(objectWithProperties: Pages): void;
 }
 declare class htmlBlockProps {
     constructor();
@@ -146,6 +148,14 @@ declare class DragBarProps {
     static onCloseCallback(modal: Modal): void;
     static updateProperties(objectWithProperties: object): void;
 }
+declare class PagesProps {
+    static monacoContainer: any;
+    static MonicoContainerDisplayCell: DisplayCell;
+    constructor();
+    static treeClicked(objectWithProperties: Pages): void;
+    static onCloseCallback(modal: Modal): void;
+    static updateProperties(objectWithProperties: Pages): void;
+}
 declare class bCss {
     static editable: Css;
     static disabled: Css;
@@ -218,6 +228,7 @@ declare class Builder extends Base {
     static TOOLBAR: DisplayCell;
     static xboxSVG(boundCoord: Coord, Boxes: Coord[]): string;
     static onClickTree(mouseEvent: MouseEvent, el: HTMLElement): void;
+    static createDisplayGroup(displaygroup: DisplayGroup, displaycell: DisplayCell): void;
     static oncontextmenu(event: PointerEvent, el: HTMLElement): void;
     static get buttonIndex(): number;
     static onHoverTree(mouseEvent: MouseEvent, el: HTMLElement): void;

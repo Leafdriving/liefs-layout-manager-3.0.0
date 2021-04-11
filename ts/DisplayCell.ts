@@ -102,6 +102,15 @@ class DisplayCell extends Base {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({onmouseover:vMenuBar(menuObj)})            //////////////// COME BACK HERE!!!!
     }
+    delete(){
+        Render.update(this, true);
+        // if (this.overlays.length) 
+        //     for (let index = 0; index < this.overlays.length; index++) 
+        //         if ("delete" in this.overlays[index]) this.overlays[index]["delete"]();
+        console.log(this.renderNode);
+        // DisplayCell.pop(this);
+    }
+    isEmpty(){ if (this.htmlBlock || this.displaygroup || this.overlays.length) return false; return true; }
     static editable(displaycell:DisplayCell,
                     onedit:(e:FocusEvent, displaycell:DisplayCell, innerHTML:string)=>void,
                     validate:(e:KeyboardEvent, displaycell:DisplayCell, innerHTML:string)=>boolean = function(){return true}
@@ -174,7 +183,7 @@ class DisplayCell extends Base {
         //         renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
 
         if (displaycell.postRenderCallback) {
-            console.log("POST");
+            // console.log("POST");
             displaycell.postRenderCallback(displaycell, derender);
         }
         if (displaycell.coord.offset) Handler.activeOffset = false;

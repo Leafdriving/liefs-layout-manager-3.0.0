@@ -116,8 +116,6 @@ class ScrollBar extends Base {
         setTimeout(() => {
             Render.update(this.scrollbarDisplayCell, true);
         }, 0);
-
-
     }
     onWheel(event:WheelEvent) {
         if (event.deltaY > 0) this.onForwardArrow(undefined, 6);

@@ -23,7 +23,7 @@ class Builder extends Base {
 ///////////////////////////////////////////////////////////
 
     static clientHandler: Handler;
-    static context:Context = new Context("nodeTreeContext");
+    static context:Context = new Context("nodeTreeContext", 250);
     static buildClientHandler() {
         Builder.clientHandler =
             H("Client_Window",
@@ -32,10 +32,10 @@ class Builder extends Base {
                     //dragbar("SomeDragbarName", 300, 1000,
                         I("Client_M1","left", "backgroundLight", events({onclick:function(){console.log("Client_M1 clicked")}})),
                    // /*)*/),
-                    //P("ClientPages",
-                        dragbar("clientMain2Dragbar", I("Client_Main2","right", "backgroundCyan", "200px"), 100, 500),
-                        //I("Client_mainp2","right_p2", bCss.bgCyan, "200px"),
-                    //)
+                    P("ClientPages",
+                        I("Client_Main2","right", "backgroundCyan", "200px"),
+                        I("Client_mainp2","right_p2", bCss.bgCyan, "200px"),
+                    ),
                     
                     // v("Client_v", 5,
                     //     I("Client_Top","top", bCss.bgGreen),
@@ -158,16 +158,12 @@ function onNodeCreation(node:node_){
         Render.update();
         const node = Render.node.children[1]
 
-        //console.log("origional Node");
-        //node.log(true);
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function(node, newNode){
                 newNode["Arguments"] = node.Arguments;
                 newNode["typeof"] = BaseF.typeof(node.Arguments[1])
             })
             Builder.noDisplayCellnode = Builder.noDisplayCells();
-            //console.log("Copy");
-            //Builder.noDisplayCellnode.log(true);
             Tree_.byLabel("HandlerTree").newRoot( Builder.noDisplayCellnode );
         }
         Render.update();
@@ -258,7 +254,17 @@ function onNodeCreation(node:node_){
         let node = <node_>node_.byLabel(el.id.slice(0, -5));
         Properties.processNode(node)
     }
+    static createDisplayGroup(displaygroup:DisplayGroup, displaycell:DisplayCell):void {
+        let answer = prompt("Please enter new DisplayGroup label", `ParentOf${displaycell.label}`);
+        if (answer != null && answer.trim() != ""){
+            let index = displaygroup.cellArray.indexOf(displaycell);
+            displaygroup.cellArray[index] = h(answer, !displaygroup.ishor, displaycell, displaycell.dim);
+            displaycell.dim = "100%";
+        }
+        Builder.updateTree();
+    }
     static oncontextmenu(event:PointerEvent, el:HTMLElement){
+        // console.log("oncontextmenu", el)
         let node = <node_>node_.byLabel(el.id.slice(0, -5));
         let objectwithProperties = node.Arguments[1];
         let objectType = BaseF.typeof(objectwithProperties);
@@ -275,15 +281,47 @@ function onNodeCreation(node:node_){
         let x = coord.x + coord.width;
         let y = coord.y;
         let object_:object = {
-            hello:function(){console.log("one")},
-            two:function(){console.log("two")},
-            three:function(){console.log("three")},
+            one:function(event:PointerEvent, context:Context) {
+                console.log("one", objectType);
+            },
         }
         switch (objectType) {
-            case "HtmlBlock":
-                    object_ = {"Edit": function(mouseEvent:MouseEvent){ console.log("Edit Clicked") }}
+            case "DragBar":
+                    
+                    object_ = {"Delete Dragbar": function(mouseEvent:MouseEvent, context:Context){
+                                                    let dragbar = <DragBar>objectwithProperties;
+                                                    let displaycell = dragbar.parentDisplayCell;
+                                                    dragbar.delete();
+                                                    let prop = <Properties>Properties.byLabel("DragBar")
+                                                    if (prop) prop.winModal.modal.hide();
+                                                    Builder.updateTree();
+                                                }
+                            }
                 break;
-        
+            case "HtmlBlock": 
+                    let targetObject = <HtmlBlock>objectwithProperties;
+                    let displaycell = <DisplayCell>(targetObject.renderNode.parent().Arguments[1]);
+                    if (displaycell) {
+                        let displaygroup = <DisplayGroup>(targetObject.renderNode.parent().parent().Arguments[1]);
+                        object_ = {};
+                        if (displaygroup.ishor){
+                            object_["Create Vertical DisplayGroup"] = function(){Builder.createDisplayGroup(displaygroup, displaycell)};
+                        } else {
+                            object_["Create Horizontal DisplayGroup"] = function(){Builder.createDisplayGroup(displaygroup, displaycell)};
+                        }
+                    }
+                    
+                    
+                    // object_ = { 
+
+                    // }
+                    // object_ = {"Delete HtmlBlock": function(mouseEvent:MouseEvent, context:Context){
+                    //                                 let htmlblock = <DisplayCell>objectwithProperties;
+                    //                                 htmlblock.delete();
+                    //                                 Builder.updateTree();
+                    //                                 }
+                    //         }
+                break;
             default:
                 break;
         }
@@ -294,7 +332,6 @@ function onNodeCreation(node:node_){
     static onHoverTree(mouseEvent:MouseEvent, el:HTMLElement){
         if(Builder.buttonIndex == 1) {
             let node = <node_>node_.byLabel(el.innerText);
-            // console.log(node)
             let object_ = node.Arguments[ node.Arguments.length-1 ]
             let coord = object_.coord;
             if (!coord) {
@@ -302,7 +339,6 @@ function onNodeCreation(node:node_){
                 if (possibleDisplayCell) coord = possibleDisplayCell.coord;
             }
             let type = BaseF.typeof(node.Arguments[1]);
-            // console.log(coord, node.Arguments)
             if (coord == undefined) {
                 let [width, height] = pf.viewport();
                 coord = new Coord(0, 0, width, height)

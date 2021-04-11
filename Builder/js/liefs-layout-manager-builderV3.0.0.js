@@ -5,9 +5,7 @@ class Properties extends Base {
         Properties.makeLabel(this);
         if (this.rootDisplayCell) {
             let [width, height] = Properties.defaultsize;
-            this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false, 
-            // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
-            function (THIS) {
+            this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false, function (THIS) {
                 console.log(pf.preUnderscore(THIS.label));
                 switch (pf.preUnderscore(THIS.label)) {
                     case "HtmlBlock":
@@ -15,6 +13,9 @@ class Properties extends Base {
                         break;
                     case "DisplayGroup":
                         DisplayGroupProps.onCloseCallback(THIS);
+                        break;
+                    case "Pages":
+                        PagesProps.onCloseCallback(THIS);
                     default:
                         break;
                 }
@@ -283,6 +284,26 @@ class Properties extends Base {
         new Properties("Handler", rootcell, { keyCells });
     }
     static HandlerTreeClicked(objectWithProperties) { HandlerProps.treeClicked(objectWithProperties); }
+    static Pages() {
+        let keyCells = {
+            label: Properties.displayValue("PagesLabel", "label", true, function (htmlBlock, zindex, derender, node, displaycell) {
+                let propertiesInstance = Properties.byLabel("Pages");
+                htmlBlock.innerHTML = propertiesInstance.currentObject.label;
+            }),
+            currentPage: DisplayCell.editable(I("currentPage", bCss.bgWhiteBorder, function (htmlBlock, zindex, derender, node, displaycell) {
+                let propertiesInstance = Properties.byLabel("Pages");
+                htmlBlock.innerHTML = propertiesInstance.currentObject.currentPage.toString();
+            }), function (e, displaycell, innerHTML) {
+                let propertiesInstance = Properties.byLabel("Pages");
+                let pages = propertiesInstance.currentObject;
+                pages.currentPage = parseInt(innerHTML);
+                Builder.updateTree();
+            })
+        };
+        let rootcell = v(`Pages_prop_v`, h("Pages_props_h", "25px", I(`Pages_proph2`, "Label", bCss.bgLightBorder), keyCells.label, I(`Pages_proph3`, "currentPage", bCss.bgLightBorder), keyCells.currentPage), PagesProps.MonicoContainerDisplayCell);
+        new Properties("Pages", rootcell, { keyCells });
+    }
+    static PagesTreeClicked(objectWithProperties) { PagesProps.treeClicked(objectWithProperties); }
 }
 Properties.labelNo = 0;
 Properties.instances = [];
@@ -610,14 +631,17 @@ class DisplayGroupProps {
         Builder.updateTree();
     }
     static insertIndex(index) {
-        let propertiesInstance = Properties.byLabel("DisplayGroup");
-        let objectWithProperties = propertiesInstance.currentObject;
-        Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
-        objectWithProperties.cellArray.splice(index, 0, I({ innerHTML: "" }, bCss.bgwhite, "50px"));
-        propertiesInstance.winModal.modal.hide();
-        DisplayGroupProps.updateProperties(objectWithProperties);
-        propertiesInstance.winModal.modal.show();
-        Builder.updateTree();
+        let answer = prompt("New DislayCell Name", "new_name");
+        if (answer != null && answer.trim() != "") {
+            let propertiesInstance = Properties.byLabel("DisplayGroup");
+            let objectWithProperties = propertiesInstance.currentObject;
+            Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
+            objectWithProperties.cellArray.splice(index, 0, I(answer, "", bCss.bgwhite, "50px"));
+            propertiesInstance.winModal.modal.hide();
+            DisplayGroupProps.updateProperties(objectWithProperties);
+            propertiesInstance.winModal.modal.show();
+            Builder.updateTree();
+        }
     }
 }
 class HandlerProps {
@@ -650,6 +674,35 @@ class DragBarProps {
     static updateProperties(objectWithProperties) {
     }
 }
+class PagesProps {
+    constructor() { }
+    static treeClicked(objectWithProperties) {
+        let propertiesInstance = Properties.byLabel("Pages");
+        propertiesInstance.currentObject = objectWithProperties;
+        Properties.setHeaderText(propertiesInstance, "Pages - " + objectWithProperties["label"]);
+        PagesProps.updateProperties(objectWithProperties);
+        propertiesInstance.winModal.modal.show();
+    }
+    static onCloseCallback(modal) {
+        let propertiesInstance = Properties.byLabel("Pages");
+        let objectwithProperties = propertiesInstance.currentObject;
+        eval(`objectwithProperties.evalFunction = ${PagesProps.monacoContainer.getValue()}`);
+    }
+    static updateProperties(objectWithProperties) {
+        // console.log(objectWithProperties);
+        let propertiesInstance = Properties.byLabel("Pages");
+        PagesProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = htmlBlockProps.monacoStartString;
+        if (!propertiesInstance.winModal.modal.isShown())
+            propertiesInstance.winModal.modal.show();
+        else
+            Render.update();
+        setTimeout(() => {
+            PagesProps.monacoContainer = monacoContainer(objectWithProperties.evalFunction.toString(), "javascript");
+            PagesProps.MonicoContainerDisplayCell.htmlBlock.innerHTML = undefined;
+        }, 0);
+    }
+}
+PagesProps.MonicoContainerDisplayCell = I("MonicocontainerPages", `<div id="container" style="width:100%;height:100%"></div>`);
 class bCss {
     static bookSVG(classname) {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
@@ -900,8 +953,7 @@ class Builder extends Base {
             //dragbar("SomeDragbarName", 300, 1000,
             I("Client_M1", "left", "backgroundLight", events({ onclick: function () { console.log("Client_M1 clicked"); } })), 
             // /*)*/),
-            //P("ClientPages",
-            dragbar("clientMain2Dragbar", I("Client_Main2", "right", "backgroundCyan", "200px"), 100, 500)), false);
+            P("ClientPages", I("Client_Main2", "right", "backgroundCyan", "200px"), I("Client_mainp2", "right_p2", bCss.bgCyan, "200px"))), false);
     }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },
@@ -956,16 +1008,12 @@ class Builder extends Base {
     static updateTree() {
         Render.update();
         const node = Render.node.children[1];
-        //console.log("origional Node");
-        //node.log(true);
         if (node) {
             Builder.builderTreeRootNode = node_.copy(node, "_", function (node, newNode) {
                 newNode["Arguments"] = node.Arguments;
                 newNode["typeof"] = BaseF.typeof(node.Arguments[1]);
             });
             Builder.noDisplayCellnode = Builder.noDisplayCells();
-            //console.log("Copy");
-            //Builder.noDisplayCellnode.log(true);
             Tree_.byLabel("HandlerTree").newRoot(Builder.noDisplayCellnode);
         }
         Render.update();
@@ -1044,7 +1092,17 @@ class Builder extends Base {
         let node = node_.byLabel(el.id.slice(0, -5));
         Properties.processNode(node);
     }
+    static createDisplayGroup(displaygroup, displaycell) {
+        let answer = prompt("Please enter new DisplayGroup label", `ParentOf${displaycell.label}`);
+        if (answer != null && answer.trim() != "") {
+            let index = displaygroup.cellArray.indexOf(displaycell);
+            displaygroup.cellArray[index] = h(answer, !displaygroup.ishor, displaycell, displaycell.dim);
+            displaycell.dim = "100%";
+        }
+        Builder.updateTree();
+    }
     static oncontextmenu(event, el) {
+        // console.log("oncontextmenu", el)
         let node = node_.byLabel(el.id.slice(0, -5));
         let objectwithProperties = node.Arguments[1];
         let objectType = BaseF.typeof(objectwithProperties);
@@ -1059,13 +1117,44 @@ class Builder extends Base {
         let x = coord.x + coord.width;
         let y = coord.y;
         let object_ = {
-            hello: function () { console.log("one"); },
-            two: function () { console.log("two"); },
-            three: function () { console.log("three"); },
+            one: function (event, context) {
+                console.log("one", objectType);
+            },
         };
         switch (objectType) {
+            case "DragBar":
+                object_ = { "Delete Dragbar": function (mouseEvent, context) {
+                        let dragbar = objectwithProperties;
+                        let displaycell = dragbar.parentDisplayCell;
+                        dragbar.delete();
+                        let prop = Properties.byLabel("DragBar");
+                        if (prop)
+                            prop.winModal.modal.hide();
+                        Builder.updateTree();
+                    }
+                };
+                break;
             case "HtmlBlock":
-                object_ = { "Edit": function (mouseEvent) { console.log("Edit Clicked"); } };
+                let targetObject = objectwithProperties;
+                let displaycell = (targetObject.renderNode.parent().Arguments[1]);
+                if (displaycell) {
+                    let displaygroup = (targetObject.renderNode.parent().parent().Arguments[1]);
+                    object_ = {};
+                    if (displaygroup.ishor) {
+                        object_["Create Vertical DisplayGroup"] = function () { Builder.createDisplayGroup(displaygroup, displaycell); };
+                    }
+                    else {
+                        object_["Create Horizontal DisplayGroup"] = function () { Builder.createDisplayGroup(displaygroup, displaycell); };
+                    }
+                }
+                // object_ = { 
+                // }
+                // object_ = {"Delete HtmlBlock": function(mouseEvent:MouseEvent, context:Context){
+                //                                 let htmlblock = <DisplayCell>objectwithProperties;
+                //                                 htmlblock.delete();
+                //                                 Builder.updateTree();
+                //                                 }
+                //         }
                 break;
             default:
                 break;
@@ -1077,7 +1166,6 @@ class Builder extends Base {
     static onHoverTree(mouseEvent, el) {
         if (Builder.buttonIndex == 1) {
             let node = node_.byLabel(el.innerText);
-            // console.log(node)
             let object_ = node.Arguments[node.Arguments.length - 1];
             let coord = object_.coord;
             if (!coord) {
@@ -1086,7 +1174,6 @@ class Builder extends Base {
                     coord = possibleDisplayCell.coord;
             }
             let type = BaseF.typeof(node.Arguments[1]);
-            // console.log(coord, node.Arguments)
             if (coord == undefined) {
                 let [width, height] = pf.viewport();
                 coord = new Coord(0, 0, width, height);
@@ -1161,7 +1248,7 @@ Builder.defaults = {};
 Builder.argMap = {
     string: ["label"],
 };
-Builder.context = new Context("nodeTreeContext");
+Builder.context = new Context("nodeTreeContext", 250);
 //static TOOLBAR_currentButtonName:string;
 Builder.TOOLBAR_B1 = I("toolbarCursor", bCss.cursorSVG("buttonIcons"), events({ onclick: function (e) { console.log("hello"); } }), { attributes: { title: "Select Tool" } });
 Builder.TOOLBAR_B2 = I("toolbarMatch", bCss.matchSVG("buttonIcons"), { attributes: { title: "Match Tool" } });

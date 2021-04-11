@@ -222,6 +222,7 @@ declare class HtmlBlock extends Base {
     minDisplayGroupSize: number;
     evalInnerHtml: (htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_, displaycell: DisplayCell) => void;
     constructor(...Arguments: any);
+    delete(): void;
     static renderHtmlAttributes(el: HTMLElement, htmlblock: HtmlBlock, id: string): void;
     static Render(htmlBlock: HtmlBlock, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
@@ -281,6 +282,8 @@ declare class DisplayCell extends Base {
     popOverlay(label: string, validate?: (overlay: Overlay) => boolean): void;
     hMenuBar(menuObj: object, ...Arguments: any): void;
     vMenuBar(menuObj: object): void;
+    delete(): void;
+    isEmpty(): boolean;
     static editable(displaycell: DisplayCell, onedit: (e: FocusEvent, displaycell: DisplayCell, innerHTML: string) => void, validate?: (e: KeyboardEvent, displaycell: DisplayCell, innerHTML: string) => boolean): DisplayCell;
     static concatArray(main: DisplayCell[], added: DisplayCell[]): void;
     static Render(displaycell: DisplayCell, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
@@ -668,6 +671,7 @@ declare class DragBar extends Base {
     isLast: boolean;
     lasttime: number;
     constructor(...Arguments: any);
+    delete(): void;
     static Render(dragbar_: DragBar, zindex: number, derender: boolean, node: node_): zindexAndRenderChildren;
 }
 declare function dragbar(...Arguments: any): DisplayCell;

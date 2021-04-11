@@ -65,7 +65,7 @@ class Context extends Base {
                                     {innerHTML: key},
                                     this.css,
                                     events({onclick: function(mouseEvent:MouseEvent){
-                                        valueFunctionOrObject(mouseEvent);
+                                        valueFunctionOrObject(mouseEvent, THIS);
                                         THIS.popAll();
                                     }})
                                 ));

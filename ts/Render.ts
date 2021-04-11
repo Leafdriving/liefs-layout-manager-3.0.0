@@ -12,7 +12,7 @@ class Render {
             renderChildren.RenderSibling( (BaseF.typeof(source) == "Array") ? source : [source], derender);
             Render.RenderObjectList( renderChildren.siblings, Render.node, zindex );
         } else {
-            console.log("RenderUpdate");
+            // console.log("RenderUpdate");
             Render.oldRootnode = Render.node;
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);

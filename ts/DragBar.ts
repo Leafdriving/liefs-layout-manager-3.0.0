@@ -71,10 +71,25 @@ class DragBar extends Base {
         );
         
     }
+    delete(){
+        this.parentDisplayCell.popOverlay("DragBar");
+        DragBar.pop(this);
+
+        setTimeout(() => {
+            Render.update(this.displaycell, true);
+        }, 0);
+    }
 
     static Render(dragbar_:DragBar, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let displaycell = <DisplayCell>(node.parent().Arguments[1])
         let parentDisplaygroup = node.parent().parent().Arguments[1];
+        if (BaseF.typeof(parentDisplaygroup) != "DisplayGroup"){
+            parentDisplaygroup = node.parent().parent().parent().Arguments[1];
+            if (BaseF.typeof(parentDisplaygroup) != "DisplayGroup") {
+                console.log("Can Not Find Parent Display Group!");
+                return {zindex};
+            }
+        }
         let index = parentDisplaygroup.cellArray.indexOf(displaycell);
         zindex += Render.zIncrement;
 

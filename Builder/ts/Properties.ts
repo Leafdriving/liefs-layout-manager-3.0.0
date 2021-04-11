@@ -29,7 +29,6 @@ class Properties extends Base {
         if (this.rootDisplayCell) {
             let [width, height] = Properties.defaultsize;
             this.winModal = new winModal(`${this.label}_prop_winModal`, width, height, false,
-            // this.winModal = winmodal(`${this.label}_prop_winModal`, width, height, false,
                 function(THIS:any){
                     console.log(pf.preUnderscore(THIS.label))
                     switch (pf.preUnderscore(THIS.label)) {
@@ -38,6 +37,9 @@ class Properties extends Base {
                             break;
                         case "DisplayGroup":
                             DisplayGroupProps.onCloseCallback(THIS);
+                            break;
+                        case "Pages":
+                            PagesProps.onCloseCallback(THIS);
                         default:
                             break;
                     }
@@ -403,5 +405,38 @@ class Properties extends Base {
     new Properties("Handler", rootcell,  {keyCells});
     }
     static HandlerTreeClicked(objectWithProperties:object) {HandlerProps.treeClicked(objectWithProperties)}
+    static Pages(){
+        let keyCells = {
+            label:Properties.displayValue("PagesLabel", "label",  true ,
+                function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                    let propertiesInstance:Properties = <Properties>Properties.byLabel("Pages");
+                    htmlBlock.innerHTML = (<Pages>propertiesInstance.currentObject).label;
+                }),
+            currentPage: DisplayCell.editable( I("currentPage", bCss.bgWhiteBorder,
+                                                function(htmlBlock:HtmlBlock, zindex:number, derender:boolean, node:node_, displaycell:DisplayCell){
+                                                    let propertiesInstance:Properties = <Properties>Properties.byLabel("Pages");
+                                                    htmlBlock.innerHTML = (<Pages>propertiesInstance.currentObject).currentPage.toString();
+                                                }),
+                function(e: FocusEvent, displaycell: DisplayCell, innerHTML: string){
+                    let propertiesInstance:Properties = <Properties>Properties.byLabel("Pages");
+                    let pages = <Pages>propertiesInstance.currentObject;
+                    pages.currentPage = parseInt(innerHTML);
+                    Builder.updateTree();
+                }
+            )
+        }
+        
+        let rootcell = v(`Pages_prop_v`,
+        h("Pages_props_h", "25px",
+            I(`Pages_proph2`,"Label", bCss.bgLightBorder),
+            keyCells.label,
+            I(`Pages_proph3`,"currentPage", bCss.bgLightBorder),
+            keyCells.currentPage,
+        ),
+        PagesProps.MonicoContainerDisplayCell
+    );
+        new Properties("Pages", rootcell, {keyCells});
+    }
+    static PagesTreeClicked(objectWithProperties:Pages) {PagesProps.treeClicked(objectWithProperties)}
 }
 

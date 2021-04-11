@@ -61,6 +61,12 @@ class HtmlBlock extends Base {
 
         HtmlBlock.makeLabel(this);
     }
+    delete() {
+        let parentDisplayCell = <DisplayCell>(this.renderNode.parent().Arguments[1]);
+        Render.update(parentDisplayCell, true)
+        //parentDisplayCell.htmlBlock = undefined;
+        // if (parentDisplayCell.isEmpty()){parentDisplayCell.delete()}
+    }
     static renderHtmlAttributes(el:HTMLElement, htmlblock: HtmlBlock, id:string){
         for (let key in htmlblock.attributes) {
             let value = htmlblock.attributes[key];
@@ -72,39 +78,41 @@ class HtmlBlock extends Base {
     }
     static Render(htmlBlock:HtmlBlock, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
         let displaycell = <DisplayCell>(node.parent().Arguments[1])
-        if (htmlBlock.evalInnerHtml) htmlBlock.evalInnerHtml(htmlBlock, zindex, derender, node, displaycell);
-        // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
-        let el:HTMLElement = pf.elExists(displaycell.label);
-        let alreadyexists:boolean = (el) ? true : false;
-        derender = displaycell.coord.derender( derender );
-        let isUndefined = (htmlBlock.innerHTML == undefined);
-        let isNulDiv = (htmlBlock.css.trim() == "" &&
-                        htmlBlock.innerHTML == "" &&
-                        Object.keys( htmlBlock.attributes ).length == 0 &&
-                        !Handler.renderNullObjects)
-        if (derender || (isNulDiv && !isUndefined)) {
-            if (alreadyexists) el.remove();
-        } else {
-            if (!alreadyexists) {
-                el = document.createElement(htmlBlock.tag);
-                pf.setAttrib(el, "id", displaycell.label);
+        if (displaycell) {
+            if (htmlBlock.evalInnerHtml) htmlBlock.evalInnerHtml(htmlBlock, zindex, derender, node, displaycell);
+            // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
+            let el:HTMLElement = pf.elExists(displaycell.label);
+            let alreadyexists:boolean = (el) ? true : false;
+            derender = displaycell.coord.derender( derender );
+            let isUndefined = (htmlBlock.innerHTML == undefined);
+            let isNulDiv = (htmlBlock.css.trim() == "" &&
+                            htmlBlock.innerHTML == "" &&
+                            Object.keys( htmlBlock.attributes ).length == 0 &&
+                            !Handler.renderNullObjects)
+            if (derender || (isNulDiv && !isUndefined)) {
+                if (alreadyexists) el.remove();
+            } else {
+                if (!alreadyexists) {
+                    el = document.createElement(htmlBlock.tag);
+                    pf.setAttrib(el, "id", displaycell.label);
+                }
+                if (htmlBlock.css.trim()) {
+                    pf.setAttrib(el, "class", htmlBlock.css);
+                }
+                HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
+                if (el.innerHTML != htmlBlock.innerHTML) {
+                    if (!isUndefined) el.innerHTML = htmlBlock.innerHTML;
+                }
+                if (!alreadyexists) {
+                    document.body.appendChild(el);
+                    htmlBlock.el = el;
+                    if (htmlBlock.events) htmlBlock.events.applyToHtmlBlock(htmlBlock);
+                }
+                let attrstring = displaycell.coord.newAsAttributeString(zindex) // + clipString;
+                if (el.style.cssText != attrstring) el.style.cssText = attrstring;
+                // el.style.cssText = attrstring;
             }
-            if (htmlBlock.css.trim()) {
-                pf.setAttrib(el, "class", htmlBlock.css);
-            }
-            HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
-            if (el.innerHTML != htmlBlock.innerHTML) {
-                if (!isUndefined) el.innerHTML = htmlBlock.innerHTML;
-            }
-            if (!alreadyexists) {
-                document.body.appendChild(el);
-                htmlBlock.el = el;
-                if (htmlBlock.events) htmlBlock.events.applyToHtmlBlock(htmlBlock);
-            }
-            let attrstring = displaycell.coord.newAsAttributeString(zindex) // + clipString;
-            if (el.style.cssText != attrstring) el.style.cssText = attrstring;
-            // el.style.cssText = attrstring;
-        }
+        } else console.log(`htmlblock: ${htmlBlock} has no parent Display Cell????`)
         return {zindex}
     }
 }

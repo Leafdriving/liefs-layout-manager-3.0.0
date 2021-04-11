@@ -70,13 +70,16 @@ class DisplayGroupProps {
 
     }
     static insertIndex(index:number) {
-        let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
-        let objectWithProperties = <DisplayGroup>propertiesInstance.currentObject;
-        Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
-        objectWithProperties.cellArray.splice(index, 0, I({innerHTML:""}, bCss.bgwhite, "50px"));
-        propertiesInstance.winModal.modal.hide();
-        DisplayGroupProps.updateProperties(objectWithProperties);
-        propertiesInstance.winModal.modal.show();
-        Builder.updateTree();
+        let answer = prompt("New DislayCell Name","new_name");
+        if (answer != null && answer.trim() != "") {
+            let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
+            let objectWithProperties = <DisplayGroup>propertiesInstance.currentObject;
+            Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
+            objectWithProperties.cellArray.splice(index, 0, I(answer, "", bCss.bgwhite, "50px"));
+            propertiesInstance.winModal.modal.hide();
+            DisplayGroupProps.updateProperties(objectWithProperties);
+            propertiesInstance.winModal.modal.show();
+            Builder.updateTree();
+        }
     }
 }

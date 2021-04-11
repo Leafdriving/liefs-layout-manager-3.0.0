@@ -421,7 +421,7 @@ class Render {
             Render.RenderObjectList(renderChildren.siblings, Render.node, zindex);
         }
         else {
-            console.log("RenderUpdate");
+            // console.log("RenderUpdate");
             Render.oldRootnode = Render.node;
             Render.node = new node_("Root");
             renderChildren.RenderSibling(Handler.RenderStartingpoint(), derender);
@@ -744,6 +744,12 @@ class HtmlBlock extends Base {
         else
             Events.mergeEvents(this.label, __classPrivateFieldGet(this, _events_), events);
     }
+    delete() {
+        let parentDisplayCell = (this.renderNode.parent().Arguments[1]);
+        Render.update(parentDisplayCell, true);
+        //parentDisplayCell.htmlBlock = undefined;
+        // if (parentDisplayCell.isEmpty()){parentDisplayCell.delete()}
+    }
     static renderHtmlAttributes(el, htmlblock, id) {
         for (let key in htmlblock.attributes) {
             let value = htmlblock.attributes[key];
@@ -757,45 +763,49 @@ class HtmlBlock extends Base {
     }
     static Render(htmlBlock, zindex, derender = false, node) {
         let displaycell = (node.parent().Arguments[1]);
-        if (htmlBlock.evalInnerHtml)
-            htmlBlock.evalInnerHtml(htmlBlock, zindex, derender, node, displaycell);
-        // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
-        let el = pf.elExists(displaycell.label);
-        let alreadyexists = (el) ? true : false;
-        derender = displaycell.coord.derender(derender);
-        let isUndefined = (htmlBlock.innerHTML == undefined);
-        let isNulDiv = (htmlBlock.css.trim() == "" &&
-            htmlBlock.innerHTML == "" &&
-            Object.keys(htmlBlock.attributes).length == 0 &&
-            !Handler.renderNullObjects);
-        if (derender || (isNulDiv && !isUndefined)) {
-            if (alreadyexists)
-                el.remove();
+        if (displaycell) {
+            if (htmlBlock.evalInnerHtml)
+                htmlBlock.evalInnerHtml(htmlBlock, zindex, derender, node, displaycell);
+            // if (derender) console.log("HTMLBLOCK Derender: ", displaycell.label)
+            let el = pf.elExists(displaycell.label);
+            let alreadyexists = (el) ? true : false;
+            derender = displaycell.coord.derender(derender);
+            let isUndefined = (htmlBlock.innerHTML == undefined);
+            let isNulDiv = (htmlBlock.css.trim() == "" &&
+                htmlBlock.innerHTML == "" &&
+                Object.keys(htmlBlock.attributes).length == 0 &&
+                !Handler.renderNullObjects);
+            if (derender || (isNulDiv && !isUndefined)) {
+                if (alreadyexists)
+                    el.remove();
+            }
+            else {
+                if (!alreadyexists) {
+                    el = document.createElement(htmlBlock.tag);
+                    pf.setAttrib(el, "id", displaycell.label);
+                }
+                if (htmlBlock.css.trim()) {
+                    pf.setAttrib(el, "class", htmlBlock.css);
+                }
+                HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
+                if (el.innerHTML != htmlBlock.innerHTML) {
+                    if (!isUndefined)
+                        el.innerHTML = htmlBlock.innerHTML;
+                }
+                if (!alreadyexists) {
+                    document.body.appendChild(el);
+                    htmlBlock.el = el;
+                    if (htmlBlock.events)
+                        htmlBlock.events.applyToHtmlBlock(htmlBlock);
+                }
+                let attrstring = displaycell.coord.newAsAttributeString(zindex); // + clipString;
+                if (el.style.cssText != attrstring)
+                    el.style.cssText = attrstring;
+                // el.style.cssText = attrstring;
+            }
         }
-        else {
-            if (!alreadyexists) {
-                el = document.createElement(htmlBlock.tag);
-                pf.setAttrib(el, "id", displaycell.label);
-            }
-            if (htmlBlock.css.trim()) {
-                pf.setAttrib(el, "class", htmlBlock.css);
-            }
-            HtmlBlock.renderHtmlAttributes(el, htmlBlock, displaycell.label);
-            if (el.innerHTML != htmlBlock.innerHTML) {
-                if (!isUndefined)
-                    el.innerHTML = htmlBlock.innerHTML;
-            }
-            if (!alreadyexists) {
-                document.body.appendChild(el);
-                htmlBlock.el = el;
-                if (htmlBlock.events)
-                    htmlBlock.events.applyToHtmlBlock(htmlBlock);
-            }
-            let attrstring = displaycell.coord.newAsAttributeString(zindex); // + clipString;
-            if (el.style.cssText != attrstring)
-                el.style.cssText = attrstring;
-            // el.style.cssText = attrstring;
-        }
+        else
+            console.log(`htmlblock: ${htmlBlock} has no parent Display Cell????`);
         return { zindex };
     }
 }
@@ -965,6 +975,16 @@ class DisplayCell extends Base {
         menuObj["launchcell"] = this;
         this.htmlBlock.events = events({ onmouseover: vMenuBar(menuObj) }); //////////////// COME BACK HERE!!!!
     }
+    delete() {
+        Render.update(this, true);
+        // if (this.overlays.length) 
+        //     for (let index = 0; index < this.overlays.length; index++) 
+        //         if ("delete" in this.overlays[index]) this.overlays[index]["delete"]();
+        console.log(this.renderNode);
+        // DisplayCell.pop(this);
+    }
+    isEmpty() { if (this.htmlBlock || this.displaygroup || this.overlays.length)
+        return false; return true; }
     static editable(displaycell, onedit, validate = function () { return true; }) {
         displaycell.htmlBlock.attributes["contenteditable"] = "true";
         if (!displaycell.htmlBlock.events)
@@ -1031,7 +1051,7 @@ class DisplayCell extends Base {
         //     for (let index = 0; index < displaycell.overlays.length; index++) 
         //         renderChildren.RenderSibling(displaycell.overlays[index].returnObj, derender);
         if (displaycell.postRenderCallback) {
-            console.log("POST");
+            // console.log("POST");
             displaycell.postRenderCallback(displaycell, derender);
         }
         if (displaycell.coord.offset)
@@ -2224,9 +2244,23 @@ class DragBar extends Base {
                 // onUp: function(ouxmouseDifftput:object){}
             } }));
     }
+    delete() {
+        this.parentDisplayCell.popOverlay("DragBar");
+        DragBar.pop(this);
+        setTimeout(() => {
+            Render.update(this.displaycell, true);
+        }, 0);
+    }
     static Render(dragbar_, zindex, derender = false, node) {
         let displaycell = (node.parent().Arguments[1]);
         let parentDisplaygroup = node.parent().parent().Arguments[1];
+        if (BaseF.typeof(parentDisplaygroup) != "DisplayGroup") {
+            parentDisplaygroup = node.parent().parent().parent().Arguments[1];
+            if (BaseF.typeof(parentDisplaygroup) != "DisplayGroup") {
+                console.log("Can Not Find Parent Display Group!");
+                return { zindex };
+            }
+        }
         let index = parentDisplaygroup.cellArray.indexOf(displaycell);
         zindex += Render.zIncrement;
         // console.log(parentDisplaygroup);
@@ -2414,7 +2448,7 @@ class Context extends Base {
             let valueFunctionOrObject = menuObj[key];
             if (typeof (valueFunctionOrObject) == "function") {
                 cellArray.push(I(((index == numKeys - 1) ? "100%" : `${this.cellheight}px`), { innerHTML: key }, this.css, events({ onclick: function (mouseEvent) {
-                        valueFunctionOrObject(mouseEvent);
+                        valueFunctionOrObject(mouseEvent, THIS);
                         THIS.popAll();
                     } })));
             }
