@@ -10,6 +10,7 @@ declare class Properties extends Base {
         function: string[];
     };
     static defaultsize: number[];
+    static activeInstance: Properties;
     label: string;
     rootDisplayCell: DisplayCell;
     winModal: winModal;
@@ -20,6 +21,7 @@ declare class Properties extends Base {
     };
     currentObject: object;
     currentObjectParentDisplayCell: DisplayCell;
+    close: () => void;
     constructor(...Arguments: any);
     static processNode(node: node_ | object, parentDisplayCell?: DisplayCell): void;
     static setHeaderText(propertiesInstance: Properties, text: string): void;
@@ -117,7 +119,7 @@ declare class htmlBlockProps {
     static cssChange(mouseEvent: PointerEvent, choice: string, select: Select): void;
     static availableCss(objectWithProperties: HtmlBlock): string[];
     static onClickPreDefinedEvent(actionEventName: string): void;
-    static onCloseCallback(THIS: any): void;
+    static onCloseCallback(THIS?: any): void;
     static postConfirm(answer: string): void;
     static onChooseSelectEvent(pointerEvent: PointerEvent, key: string): void;
     static saveAndLoadEvent(pointerEvent: PointerEvent, eventName: string): void;
@@ -130,7 +132,7 @@ declare class DisplayGroupProps {
     static horizontalCellArray: DisplayCell;
     constructor();
     static treeClicked(objectWithProperties: DisplayGroup): void;
-    static onCloseCallback(modal: Modal): void;
+    static onCloseCallback(modal?: Modal): void;
     static updateProperties(objectWithProperties: DisplayGroup): void;
     static upIndex(index: number): void;
     static deleteIndex(index: number): void;
@@ -139,13 +141,13 @@ declare class DisplayGroupProps {
 declare class HandlerProps {
     constructor();
     static treeClicked(objectWithProperties: object): void;
-    static onCloseCallback(modal: Modal): void;
+    static onCloseCallback(modal?: Modal): void;
     static updateProperties(objectWithProperties: object): void;
 }
 declare class DragBarProps {
     constructor();
     static treeClicked(objectWithProperties: object): void;
-    static onCloseCallback(modal: Modal): void;
+    static onCloseCallback(modal?: Modal): void;
     static updateProperties(objectWithProperties: object): void;
 }
 declare class PagesProps {
@@ -153,7 +155,7 @@ declare class PagesProps {
     static MonicoContainerDisplayCell: DisplayCell;
     constructor();
     static treeClicked(objectWithProperties: Pages): void;
-    static onCloseCallback(modal: Modal): void;
+    static onCloseCallback(modal?: Modal): void;
     static updateProperties(objectWithProperties: Pages): void;
 }
 declare class bCss {

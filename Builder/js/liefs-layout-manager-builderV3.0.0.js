@@ -43,6 +43,9 @@ class Properties extends Base {
         if (!propInstance)
             console.log("No Definion in Properties for type " + objectType);
         else {
+            if (Properties.activeInstance) {
+                Properties.activeInstance.close();
+            }
             Properties[objectType + "TreeClicked"](objectWithProperties);
         }
         Render.update();
@@ -172,7 +175,10 @@ class Properties extends Base {
         let selecteds = new Selected("wysiwyg", wysiwyg, htmlButton, blockEvents, pickCSS);
         selecteds.select(undefined, wysiwyg);
         let rootcell = v(`HtmlBlock_prop_v`, h("topPropHtmlBlockBar", "20px", wysiwyg, htmlButton, blockEvents, pickCSS, I("tplabellabel", "label", bCss.bgLightBorder, "100px"), keyCells.label), Properties.Coord("HtmlBlock", keyCells), quillPagesDisplayCell);
-        new Properties("HtmlBlock", rootcell, { keyCells });
+        new Properties("HtmlBlock", rootcell, { keyCells, close: function () {
+                (Properties.byLabel("HtmlBlock")).winModal.modal.hide();
+                htmlBlockProps.onCloseCallback();
+            } });
     }
     static HtmlBlockChange(variable, value) {
         let propertiesInstance = Properties.byLabel("HtmlBlock");
@@ -233,7 +239,10 @@ class Properties extends Base {
         };
         DisplayGroupProps.horizontalCellArray = I("blank_o", "", "20px", bCss.bgLightBorder);
         DisplayGroupProps.rootcell = v(`DislayGroup_prop_v`, h("DisplayGroup_prop_hTop", "20px", I(`DisplayGroupLabel`, "Label:", bCss.bgLightBorder), keyCells.label, I(`DisplayGroupishor`, "IsHorizontal:", bCss.bgLightBorder), keyCells.ishor, I(`DisplayGroupMargin`, "Margin Between Cells:", "160px", bCss.bgLightBorder), keyCells.margin), I("DisplayGroupChildren", "DisplayGroup Children:", "20px", bCss.bgLightBorder), DisplayGroupProps.horizontalCellArray, I("Hello", "Hello", bCss.bgLightBorder));
-        new Properties("DisplayGroup", DisplayGroupProps.rootcell, { keyCells });
+        new Properties("DisplayGroup", DisplayGroupProps.rootcell, { keyCells, close: function () {
+                (Properties.byLabel("DisplayGroup")).winModal.modal.hide();
+                DisplayGroupProps.onCloseCallback();
+            } });
     }
     static DisplayGroupTreeClicked(objectWithProperties) { DisplayGroupProps.treeClicked(objectWithProperties); }
     static DragBar() {
@@ -262,7 +271,10 @@ class Properties extends Base {
             }),
         };
         let rootcell = v(`DragBar_prop_v`, h(`dragbar_h_`, "20px", I("DragBar_label", "Label:", bCss.bgLightBorder), keyCells.label), h(`dragbar_h2_`, "20px", I("DragBar_min", "Min:", bCss.bgLightBorder), keyCells.min, I("DragBar_max", "Max:", bCss.bgLightBorder), keyCells.max));
-        new Properties("DragBar", rootcell, { keyCells });
+        new Properties("DragBar", rootcell, { keyCells, close: function () {
+                (Properties.byLabel("DragBar")).winModal.modal.hide();
+                DragBarProps.onCloseCallback();
+            } });
     }
     static DragBarTreeClicked(objectWithProperties) {
         DragBarProps.treeClicked(objectWithProperties);
@@ -281,7 +293,10 @@ class Properties extends Base {
         // } ), 
         };
         let rootcell = v(`Handler_prop_v`, I("Hello", "Hello", bCss.bgLightBorder));
-        new Properties("Handler", rootcell, { keyCells });
+        new Properties("Handler", rootcell, { keyCells, close: function () {
+                (Properties.byLabel("Handler")).winModal.modal.hide();
+                HandlerProps.onCloseCallback();
+            } });
     }
     static HandlerTreeClicked(objectWithProperties) { HandlerProps.treeClicked(objectWithProperties); }
     static Pages() {
@@ -301,7 +316,10 @@ class Properties extends Base {
             })
         };
         let rootcell = v(`Pages_prop_v`, h("Pages_props_h", "25px", I(`Pages_proph2`, "Label", bCss.bgLightBorder), keyCells.label, I(`Pages_proph3`, "currentPage", bCss.bgLightBorder), keyCells.currentPage), PagesProps.MonicoContainerDisplayCell);
-        new Properties("Pages", rootcell, { keyCells });
+        new Properties("Pages", rootcell, { keyCells, close: function () {
+                (Properties.byLabel("Pages")).winModal.modal.hide();
+                PagesProps.onCloseCallback();
+            } });
     }
     static PagesTreeClicked(objectWithProperties) { PagesProps.treeClicked(objectWithProperties); }
 }
@@ -451,7 +469,7 @@ class htmlBlockProps {
         htmlBlockProps.selectInstanceWhichOnEvent.changeDisplayNameToIndex(htmlBlockProps.selectInstanceWhichOnEvent.choices.indexOf(actionEventName));
         /// what if not picked???? FIX!
     }
-    static onCloseCallback(THIS) {
+    static onCloseCallback(THIS = undefined) {
         console.log("closeCallback");
         htmlBlockProps.saveState();
         Render.update();
@@ -589,7 +607,7 @@ class DisplayGroupProps {
         DisplayGroupProps.updateProperties(objectWithProperties);
         propertiesInstance.winModal.modal.show();
     }
-    static onCloseCallback(modal) {
+    static onCloseCallback(modal = undefined) {
         //let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
     }
     static updateProperties(objectWithProperties) {
@@ -633,6 +651,7 @@ class DisplayGroupProps {
     static insertIndex(index) {
         let answer = prompt("New DislayCell Name", "new_name");
         if (answer != null && answer.trim() != "") {
+            console.log("inserting insertIndex");
             let propertiesInstance = Properties.byLabel("DisplayGroup");
             let objectWithProperties = propertiesInstance.currentObject;
             Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
@@ -653,7 +672,7 @@ class HandlerProps {
         HandlerProps.updateProperties(objectWithProperties);
         propertiesInstance.winModal.modal.show();
     }
-    static onCloseCallback(modal) {
+    static onCloseCallback(modal = undefined) {
         //let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
     }
     static updateProperties(objectWithProperties) {
@@ -668,7 +687,7 @@ class DragBarProps {
         DragBarProps.updateProperties(objectWithProperties);
         propertiesInstance.winModal.modal.show();
     }
-    static onCloseCallback(modal) {
+    static onCloseCallback(modal = undefined) {
         //let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
     }
     static updateProperties(objectWithProperties) {
@@ -683,7 +702,7 @@ class PagesProps {
         PagesProps.updateProperties(objectWithProperties);
         propertiesInstance.winModal.modal.show();
     }
-    static onCloseCallback(modal) {
+    static onCloseCallback(modal = undefined) {
         let propertiesInstance = Properties.byLabel("Pages");
         let objectwithProperties = propertiesInstance.currentObject;
         eval(`objectwithProperties.evalFunction = ${PagesProps.monacoContainer.getValue()}`);
@@ -953,7 +972,8 @@ class Builder extends Base {
             //dragbar("SomeDragbarName", 300, 1000,
             I("Client_M1", "left", "backgroundLight", events({ onclick: function () { console.log("Client_M1 clicked"); } })), 
             // /*)*/),
-            P("ClientPages", I("Client_Main2", "right", "backgroundCyan", "200px"), I("Client_mainp2", "right_p2", bCss.bgCyan, "200px"))), false);
+            //P("ClientPages",
+            I("Client_Main2", "right", "backgroundCyan", "200px"), I("Client_mainp2", "right_p2", bCss.bgCyan, "200px")), false);
     }
     static buildMainHandler() {
         let treePagesDisplayCell = P("pagename", tree("HandlerTree", I("Handler_Tree", bCss.bgLight), bCss.treenodeCss, sample().rootNode, events({ onmouseover: function (e) { Builder.onHoverTree(e, this); },

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>liefs-layout-managerV3 - Modals</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="../dist/liefs-layout-managerV3.0.0.GLOBALS.full.js"></script>
+</head>
+<style>.bgRed {background:red;color:white;}</style>
+<body>
+<div id="Three">Or, you can reference a 'div' by its name!<br>
+note: when you strech the screen, the 'One' div remails at 50 pixels,
+and the other two are split 60% 40%</div>
+</body>
+</html>
+
+
+<script>
+//let x = new winModal("My WinModal", I("Hello", "Hello"));
+css("MyCenter","text-align: center;font-size: 24px;background:cyan;"); // class "MyCenter Created"
+let twoCss = css("bgGreen","background:green");
+
+
+let two=`Text can be insert by string...<br>And there is a dragbar on the bottom`;
+
+let bottomHorizontal = 
+h("FooterH", "40px", 20, // note margin between cells is set to 20px here, with "Pink" background.
+    I("FooterLeft", "This is my Left Footer", "50%", "MyCenter"),
+    new DisplayCell("DisplayCellName", new HtmlBlock("FooterRight", "This is my Right Footer", "50%", "MyCenter"))
+);
+bottomHorizontal.htmlBlock = new HtmlBlock("pink", css("mypink","background:pink"))
+
+new winModal("My WinModal",
+    v("MainVertical",
+        I("Title", "Title - references Class by string", "50px", "MyCenter"),
+        h("MainHorizontal", 5,
+            dragbar(
+                I("One","Class Inline -> this is a dragbar", css("bgblue","background:blue;color:white"), "200px"),
+            100, 400),
+            I("Two", two, twoCss, "40%"),
+            I("Three", {css:"bgRed"},"60%"),
+        ),
+        dragbar(bottomHorizontal, 40, 150, 5) // note here, with margin 0, we need to specify the dragbar is 5 pixles
+    )
+)
+/*
+    This example illustrates how to use the basics of Liefs-layout-Manager. -> using a winModal
+
+    A "Handler"  H( ... ) is reqired to "Start Things Off"
+    "MainVertical" -> is a vertical Display Group which is 50pixels in the header, and 40pixles on the footer
+    "MainHorizontal" -> is 200pixels, then 40%, 60%
+
+    using css( ... ) allows you to edit the css in javascript, but is not required.
+
+    note I( ... ) is just a shortcut for new DisplayCell(new HtmlBlock())
+*/
+</script>
+

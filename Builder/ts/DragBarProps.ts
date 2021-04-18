@@ -8,7 +8,7 @@ class DragBarProps {
         propertiesInstance.winModal.modal.show();
         
     }
-    static onCloseCallback(modal:Modal) {
+    static onCloseCallback(modal:Modal = undefined) {
         //let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
     }
     static updateProperties(objectWithProperties:object){

@@ -11,6 +11,7 @@ class Properties extends Base {
         function : ["process"],
     }
     static defaultsize = [800,800];
+    static activeInstance:Properties;
     // retArgs:ArgsObj;   // <- this will appear
     label:string;
     rootDisplayCell :DisplayCell;
@@ -20,6 +21,7 @@ class Properties extends Base {
     keyCells:{[key: string]: DisplayCell;}
     currentObject:object;
     currentObjectParentDisplayCell: DisplayCell;
+    close:()=>void;
 
 
     constructor(...Arguments:any){
@@ -67,6 +69,9 @@ class Properties extends Base {
         let propInstance = <Properties>Properties.byLabel(objectType);
         if (!propInstance) console.log("No Definion in Properties for type "+objectType);
         else {
+            if (Properties.activeInstance){
+                Properties.activeInstance.close()
+            }
             Properties[objectType+"TreeClicked"](objectWithProperties)
         }
         Render.update();
@@ -259,7 +264,10 @@ class Properties extends Base {
             Properties.Coord("HtmlBlock", keyCells),
             quillPagesDisplayCell,
         )
-        new Properties("HtmlBlock", rootcell,  {keyCells});
+        new Properties("HtmlBlock", rootcell,  {keyCells, close:function(){
+            (<Properties>(Properties.byLabel("HtmlBlock"))).winModal.modal.hide();
+            htmlBlockProps.onCloseCallback();
+        }});
     }
 
     static HtmlBlockChange(variable:string, value:string){ // called when an input on Properties is changed
@@ -333,7 +341,10 @@ class Properties extends Base {
 
         I("Hello", "Hello", bCss.bgLightBorder)
     );
-    new Properties("DisplayGroup", DisplayGroupProps.rootcell,  {keyCells});
+    new Properties("DisplayGroup", DisplayGroupProps.rootcell,  {keyCells, close:function(){
+        (<Properties>(Properties.byLabel("DisplayGroup"))).winModal.modal.hide();
+        DisplayGroupProps.onCloseCallback();
+    }});
     }
     static DisplayGroupTreeClicked(objectWithProperties:DisplayGroup) {DisplayGroupProps.treeClicked(objectWithProperties)}
 
@@ -380,7 +391,10 @@ class Properties extends Base {
             keyCells.max,
         ),
     );
-    new Properties("DragBar", rootcell,  {keyCells});
+    new Properties("DragBar", rootcell,  {keyCells, close:function(){
+        (<Properties>(Properties.byLabel("DragBar"))).winModal.modal.hide();
+        DragBarProps.onCloseCallback();
+    }});
     }
     static DragBarTreeClicked(objectWithProperties:object) {
         DragBarProps.treeClicked(objectWithProperties);
@@ -402,7 +416,10 @@ class Properties extends Base {
         
         I("Hello", "Hello", bCss.bgLightBorder)
     );
-    new Properties("Handler", rootcell,  {keyCells});
+    new Properties("Handler", rootcell,  {keyCells, close:function(){
+        (<Properties>(Properties.byLabel("Handler"))).winModal.modal.hide();
+        HandlerProps.onCloseCallback();
+    }});
     }
     static HandlerTreeClicked(objectWithProperties:object) {HandlerProps.treeClicked(objectWithProperties)}
     static Pages(){
@@ -435,7 +452,10 @@ class Properties extends Base {
         ),
         PagesProps.MonicoContainerDisplayCell
     );
-        new Properties("Pages", rootcell, {keyCells});
+        new Properties("Pages", rootcell, {keyCells, close:function(){
+            (<Properties>(Properties.byLabel("Pages"))).winModal.modal.hide();
+            PagesProps.onCloseCallback();
+        }});
     }
     static PagesTreeClicked(objectWithProperties:Pages) {PagesProps.treeClicked(objectWithProperties)}
 }

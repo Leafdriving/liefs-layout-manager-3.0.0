@@ -170,7 +170,7 @@ class htmlBlockProps {
         htmlBlockProps.selectInstanceWhichOnEvent.changeDisplayNameToIndex( htmlBlockProps.selectInstanceWhichOnEvent.choices.indexOf(actionEventName) );
     /// what if not picked???? FIX!
     }
-    static onCloseCallback(THIS:any){
+    static onCloseCallback(THIS:any = undefined){
         console.log("closeCallback");
         htmlBlockProps.saveState();
         Render.update();

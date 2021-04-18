@@ -5,17 +5,33 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Page Title</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <script src="dist/liefs-layout-managerV3.0.0.GLOBALS.full.js"></script>
+    <script src="dist/liefs-layout-managerV3_CORE.js"></script>
+    <script src="dist/components/Scrollbar.js"></script>
+    <script src="dist/components/Pages.js"></script>
+    <script src="dist/components/Selected.js"></script>
+    <script src="dist/components/Tree.js"></script>
+    <!-- <script src="dist/components/Context.js"></script> -->
 </head>
 <body>
-    
 </body>
 </html>
 <script>
-H("Main Handler",
-    h("h_", 5,
-        I("One","One", css("bgblue","background:blue"), "400px"),
-        I("Two", "Two", css("bgGreen","background:green"), "400px"),
-    )
+    let B1 = I("B1","B1", css("bgGreen","background:green", "background:green;color:white", "background:green;color:blue"))
+            .addComponent( new Tree_("MyTree") )
+    let B2 = I("B2","B2", css("bgMagenta","background:magenta", "background:magenta;color:white", "background:magenta;color:blue"));
+    let pages = new Pages("MyPages", "300px",
+                            I("I2","I2", css("bgcyan","background:cyan")),
+                            I("I3","I3", css("bgred","background:red"))
+                        );
+    let pageDisplayCell = new DisplayCell(pages);
+H("MainHandler", 25,
+        h("hor1", 5,
+            v("Butons",
+                B1,
+                B2,
+            ),
+            pageDisplayCell,
+        )
 )
+let mySelected = new Selected("MySelected", [B1, B2], 0, pages);
 </script>

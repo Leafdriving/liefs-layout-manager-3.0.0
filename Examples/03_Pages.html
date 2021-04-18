@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>liefs-layout-managerV3 - Pages</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src="../dist/liefs-layout-managerV3.0.0.GLOBALS.full.js"></script>
+</head>
+<body>
+<div id="Page1">This is my page 1</div>
+<div id="Page2">This is my page 2</div>
+<div id="Page3">This is my page 3</div>
+</body>
+</html>
+<script>
+let hightlight = css("highlightbutton", `background:red;`, `background:green;`, `background:pink`);
+
+let page1 = I("Page1", css("mangentaBg","background:magenta;color:white;"))
+let page2 = I("Page2", css("orangeBg","background:orange;"))
+let page3 = I("Page3", css("cyanBg","background:cyan;"))
+let myPagesDisplayCell = P("MyPages",page1,page2,page3);
+let myPages = myPagesDisplayCell.pages;
+
+let b1 = I("Page1button", "Page1", hightlight, events({onclick: function(){ myPages.setPage("Page1") }}));
+let b2 = I("Page2button", "Page2", hightlight, events({onclick: function(){ myPages.setPage("Page2") }}));
+let b3 = I("Page3button", "Page3", hightlight, events({onclick: function(){ myPages.setPage("Page3") }}));
+
+let mySelected = new Selected("mySelected",b1, b2, b3);
+mySelected.select(undefined, b1);
+
+H("MyHandler",
+    v("MainVertical",
+        h("TopBar", "40px", 5,
+            b1, b2, b3,
+        ),
+        myPagesDisplayCell,
+    )
+)
+</script>

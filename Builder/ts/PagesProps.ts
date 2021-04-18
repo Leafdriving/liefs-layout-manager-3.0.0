@@ -10,7 +10,7 @@ class PagesProps {
         propertiesInstance.winModal.modal.show();
         
     }
-    static onCloseCallback(modal:Modal) {
+    static onCloseCallback(modal:Modal = undefined) {
         let propertiesInstance = <Properties>Properties.byLabel("Pages");
         let objectwithProperties = <Pages>propertiesInstance.currentObject;
         eval(`objectwithProperties.evalFunction = ${PagesProps.monacoContainer.getValue()}`)

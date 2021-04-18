@@ -32,10 +32,10 @@ class Builder extends Base {
                     //dragbar("SomeDragbarName", 300, 1000,
                         I("Client_M1","left", "backgroundLight", events({onclick:function(){console.log("Client_M1 clicked")}})),
                    // /*)*/),
-                    P("ClientPages",
+                    //P("ClientPages",
                         I("Client_Main2","right", "backgroundCyan", "200px"),
                         I("Client_mainp2","right_p2", bCss.bgCyan, "200px"),
-                    ),
+                    //),
                     
                     // v("Client_v", 5,
                     //     I("Client_Top","top", bCss.bgGreen),

@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "outFile" : "../../dist/liefs-layout-managerV3_CORE.js",
+        //"outDir" : "dist/modules",
+        "declaration" : true,        
+        "allowJs": false,
+        "target" : "es6",
+        // "module" :"amd",
+    },
+    "include": ["../../dist/components/Scrollbar.d.ts"],
+    "files": [
+        "PureFunctions.ts",
+        "Interfaces.ts",
+        "Arguments_.ts",
+        "Base.ts",
+        "FunctionStack.ts",        
+        "node_.ts",
+        "Coord.ts",
+        "Element_.ts",
+        "DisplayCell.ts",
+        "DisplayGroup.ts",
+        "Handler.ts",
+        "Css.ts",
+        "Render.ts",
+    ]
+}

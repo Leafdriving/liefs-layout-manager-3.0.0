@@ -12,7 +12,7 @@ class DisplayGroupProps {
         propertiesInstance.winModal.modal.show();
         
     }
-    static onCloseCallback(modal:Modal) {
+    static onCloseCallback(modal:Modal = undefined) {
         //let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
     }
     static updateProperties(objectWithProperties:DisplayGroup){
@@ -72,6 +72,7 @@ class DisplayGroupProps {
     static insertIndex(index:number) {
         let answer = prompt("New DislayCell Name","new_name");
         if (answer != null && answer.trim() != "") {
+            console.log("inserting insertIndex");
             let propertiesInstance = <Properties>Properties.byLabel("DisplayGroup");
             let objectWithProperties = <DisplayGroup>propertiesInstance.currentObject;
             Render.update(objectWithProperties.renderNode.ParentNode.Arguments[1], true);
