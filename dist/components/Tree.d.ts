@@ -18,6 +18,7 @@ declare class Tree_ extends Component {
     static extension: string;
     static toggleCollapse(el: HTMLElement, node: node_, mouseEvent: PointerEvent): void;
     static deRenderChildren(parentNode: node_): void;
+    static pointerCss: Css;
     label: string;
     offsetx: number;
     offsety: number;

@@ -479,9 +479,15 @@ var _x_, _y_, _width_, _height_;
 class Point {
 }
 class Within {
-    constructor(...Arguments) {
-        // [this.x, this.y, this.width, this.height] = Arguments_.argumentsByType(Arguments).string
-    }
+    constructor(...Arguments) { }
+    get x() { return (this.lockedToScreenSize) ? 0 : this.x_; }
+    set x(x) { this.x_ = x; }
+    get y() { return (this.lockedToScreenSize) ? 0 : this.y_; }
+    set y(y) { this.y_ = y; }
+    get width() { return (this.lockedToScreenSize) ? Handler.ScreenSizeCoord.width : this.width_; }
+    set width(width) { this.width_ = width; }
+    get height() { return (this.lockedToScreenSize) ? Handler.ScreenSizeCoord.height : this.height_; }
+    set height(height) { this.height_ = height; }
     reset() { this.x = this.y = this.width = this.height = undefined; }
     ;
 }
@@ -497,71 +503,82 @@ class Coord extends Base {
         Coord.makeLabel(this);
     }
     get x() { return __classPrivateFieldGet(this, _x_) + ((this.offset) ? this.offset.x : 0); }
-    set x(x) { __classPrivateFieldSet(this, _x_, x); }
+    set x(x) { if (!this.frozen)
+        __classPrivateFieldSet(this, _x_, x); }
     get y() { return __classPrivateFieldGet(this, _y_) + ((this.offset) ? this.offset.y : 0); }
-    set y(y) { __classPrivateFieldSet(this, _y_, y); }
+    set y(y) { if (!this.frozen)
+        __classPrivateFieldSet(this, _y_, y); }
     get width() { return __classPrivateFieldGet(this, _width_) + ((this.offset) ? this.offset.width : 0); }
-    set width(width) { __classPrivateFieldSet(this, _width_, width); }
+    set width(width) { if (!this.frozen)
+        __classPrivateFieldSet(this, _width_, width); }
     get height() { return __classPrivateFieldGet(this, _height_) + ((this.offset) ? this.offset.height : 0); }
-    set height(height) { __classPrivateFieldSet(this, _height_, height); }
+    set height(height) { if (!this.frozen)
+        __classPrivateFieldSet(this, _height_, height); }
     setOffset(x = 0, y = 0, width = 0, height = 0) {
         if (x == 0 && y == 0 && width == 0 && height == 0)
             this.offset = undefined;
         else
             this.offset = { x, y, width, height };
     }
-    cropWithin(within = this.within) {
-        let x = this.x, y = this.y, width = this.width, height = this.height, x2 = x + width, y2 = y + height;
-        let wx = within.x, wy = within.y, wwidth = within.width, wheight = within.height, wx2 = wx + wwidth, wy2 = wy + wheight;
-        let bx = (x > wx) ? x : wx;
-        let sx2 = (x2 < wx2) ? x2 : wx2;
-        let by = (y > wy) ? y : wy;
-        let sy2 = (y2 < wy2) ? y2 : wy2;
-        this.within.x = bx;
-        this.within.width = sx2 - bx;
-        this.within.y = by;
-        this.within.height = sy2 - by;
+    mergeWithin(p /* parent Coord */) {
+        if (!this.frozen) {
+            let ax1 = p.x, ax2 = p.x + p.width, ay1 = p.y, ay2 = p.y + p.height;
+            let bx1 = p.within.x, bx2 = bx1 + p.within.width, by1 = p.within.y, by2 = by1 + p.within.height;
+            this.within.x = (ax1 > bx1) ? ax1 : bx1;
+            this.within.width = (ax2 < bx2) ? ax2 - this.within.x : bx2 - this.within.x;
+            this.within.y = (ay1 > by1) ? ay1 : by1;
+            this.within.height = (ay2 < by2) ? ay2 - this.within.y : by2 - this.within.y;
+        }
+        return this;
     }
     applyMargins(left = 0, right = 0, top = 0, bottom = 0) {
         this.x += left;
-        this.within.x += left;
         this.y += top;
-        this.within.y += top;
         this.width -= (left + right);
-        this.within.width -= (left + right);
         this.height -= (top + bottom);
-        this.within.height -= (top + bottom);
+        return this;
     }
     assign(x = undefined, y = undefined, width = undefined, height = undefined, wx = undefined, wy = undefined, wwidth = undefined, wheight = undefined, zindex = undefined) {
-        if (x != undefined)
-            this.x = x;
-        if (y != undefined)
-            this.y = y;
-        if (width != undefined)
-            this.width = width;
-        if (height != undefined)
-            this.height = height;
-        if (wx != undefined)
-            this.within.x = wx;
-        if (wy != undefined)
-            this.within.y = wy;
-        if (wwidth != undefined)
-            this.within.width = wwidth;
-        if (wheight != undefined)
-            this.within.height = wheight;
-        if (zindex != undefined)
-            this.zindex = zindex;
+        if (!this.frozen) {
+            if (x != undefined)
+                this.x = x;
+            if (y != undefined)
+                this.y = y;
+            if (width != undefined)
+                this.width = width;
+            if (height != undefined)
+                this.height = height;
+            if (wx != undefined)
+                this.within.x = wx;
+            if (wy != undefined)
+                this.within.y = wy;
+            if (wwidth != undefined)
+                this.within.width = wwidth;
+            if (wheight != undefined)
+                this.within.height = wheight;
+            if (zindex != undefined)
+                this.zindex = zindex;
+        }
+        return this;
     }
-    copy(fromCoord) {
-        this.x = fromCoord.x;
-        this.y = fromCoord.y;
-        this.width = fromCoord.width;
-        this.height = fromCoord.height;
-        this.zindex = fromCoord.zindex;
-        this.within.x = fromCoord.within.x;
-        this.within.y = fromCoord.within.y;
-        this.within.width = fromCoord.within.width;
-        this.within.height = fromCoord.within.height;
+    copy(fromCoord, x = undefined, y = undefined, width = undefined, height = undefined, zindex = undefined) {
+        if (!this.frozen) {
+            let noX = (x == undefined);
+            this.zindex = (zindex == undefined) ? fromCoord.zindex : zindex;
+            this.x = noX ? fromCoord.x : x;
+            this.y = noX ? fromCoord.y : y;
+            this.width = noX ? fromCoord.width : width;
+            this.height = noX ? fromCoord.height : height;
+            if (noX) {
+                this.within.x = fromCoord.within.x;
+                this.within.y = fromCoord.within.y;
+                this.within.width = fromCoord.within.width;
+                this.within.height = fromCoord.within.height;
+            }
+            else
+                this.mergeWithin(fromCoord);
+        }
+        return this;
     }
     log() {
         console.log(`x=${this.x}`, `y=${this.y}`, `width=${this.width}`, `height=${this.height}`);
@@ -657,7 +674,7 @@ class Element_ extends Base {
     preRender() { }
     Render(derender, node) {
         let el = Element_.elExists(this.label);
-        if (derender) {
+        if (derender || this.coord.width <= 0) {
             if (el)
                 el.remove();
             return [];
@@ -787,7 +804,7 @@ class DisplayCell extends Component {
         let returnValue = false;
         for (let index = 0; index < this.children.length; index++) {
             const component = this.children[index];
-            console.log(Arguments_.typeof(component), component["label"], label);
+            // console.log(Arguments_.typeof(component), component["label"], label)
             if ((Arguments_.typeof(component) == type) && (!label || label == component["label"])) {
                 component["parentDisplayCell"] = undefined;
                 this.children.splice(index--, 1);
@@ -921,37 +938,31 @@ class DisplayGroup extends Component {
             let px = answersArray[index].px;
             pixelsUsed += px + ((index == 0) ? 0 : margin);
         }
-        if ("ScrollBar" in Render.classes) {
+        if (("ScrollBar" in Render.classes) && this.allowScrollBar) {
             if (pixelsUsed > pixelsAvailable + 1) {
-                //console.log(pixelsUsed, answersArray.length);
                 if (!this.scrollbar) {
                     this.scrollbar = scrollbar(this.label + "_ScrollBar", this.isHor);
                     this.parentDisplayCell.addComponent(this.scrollbar);
-                    //console.log("ScrollBar Created", this.label, this.parentDisplayCell.children);
                 }
                 this.offset = this.scrollbar.update(pixelsUsed, pixelsAvailable);
             }
             else {
                 if (this.scrollbar) {
-                    //console.log("Deleting Scrollbar");
                     this.scrollbar.delete();
                     this.parentDisplayCell.deleteComponent("ScrollBar");
                     this.scrollbar = undefined;
                 }
             }
         }
-        // console.log(TotalPixels, answersArray, morePixels);
         let x = this.coord.x - ((this.isHor) ? this.offset : 0);
         let y = this.coord.y - ((this.isHor) ? 0 : this.offset);
         let width;
         let height;
-        // let pixelsTaken=0;
         for (let index = 0; index < answersArray.length; index++) {
             let px = answersArray[index].px;
-            // pixelsUsed += px + ((index == 0) ? 0 : margin);
             width = (this.isHor) ? px : this.coord.width;
             height = (this.isHor) ? this.coord.height : px;
-            this.children[index].coord.assign(x, y, width, height, this.coord.x, this.coord.y, this.coord.width, this.coord.height, zindex);
+            this.children[index].coord.copy(this.coord, x, y, width, height, zindex);
             x += (this.isHor) ? width + margin : 0;
             y += (this.isHor) ? 0 : height + margin;
         }
@@ -1003,13 +1014,13 @@ class Handler extends Component {
         Handler.makeLabel(this);
         Handler.instances[this.label] = this;
         for (let index = 0; index < Arguments.length; index++) {
-            const argument = Arguments[index];
-            if (typeof (argument) == "object" && argument.constructor) {
-                if (argument.constructor.name == "Coord")
-                    this.coord = argument;
+            const newChildObject = Arguments[index];
+            if (typeof (newChildObject) == "object" && newChildObject.constructor) {
+                if (newChildObject.constructor.name == "Coord")
+                    this.coord = newChildObject;
                 else {
-                    DisplayCell.objectTypes.add(argument.constructor.name);
-                    this.children.push(argument);
+                    DisplayCell.objectTypes.add(newChildObject.constructor.name);
+                    this.children.push(newChildObject);
                 }
             }
         }
@@ -1020,7 +1031,9 @@ class Handler extends Component {
     }
     static updateScreenSizeCoord() {
         let win = window, doc = document, docElem = doc.documentElement, body = doc.getElementsByTagName('body')[0], x = win.innerWidth || docElem.clientWidth || body.clientWidth, y = win.innerHeight || docElem.clientHeight || body.clientHeight;
+        Handler.ScreenSizeCoord.frozen = false;
         Handler.ScreenSizeCoord.assign(0, 0, x, y, 0, 0, x, y);
+        Handler.ScreenSizeCoord.frozen = true;
     }
     static getHandlers() {
         let objectArray = [];
@@ -1029,11 +1042,8 @@ class Handler extends Component {
         return objectArray;
     }
     onConnect() {
-        // console.log("OnConnect Handler", this.label, this.retArgs);
-        if (this.retArgs["number"] && this.retArgs["number"].length >= 1) {
-            // console.log("Found Margins");
+        if (this.retArgs["number"] && this.retArgs["number"].length >= 1)
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
-        }
         if (this.isRendered)
             Render.scheduleUpdate();
     }
@@ -1170,6 +1180,7 @@ class Render {
         }
     }
     static fullupdate(derender = false) {
+        // console.log("FullUpdate");
         Css.update();
         Handler.updateScreenSizeCoord();
         Render.node = new node_("Root");
@@ -1180,7 +1191,6 @@ class Render {
     }
     static update(components_ = undefined, derender = false, parentNode = undefined, zindex = 0) {
         if (components_) {
-            // console.log("zindex", zindex)
             let components;
             if (Arguments_.typeof(components_) != "Array")
                 components = [components_];

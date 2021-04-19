@@ -20,12 +20,12 @@ class Handler extends Component {
         super();this.buildBase(...Arguments);
         Handler.makeLabel(this); Handler.instances[this.label] = this;
         for (let index = 0; index < Arguments.length; index++) {
-            const argument = Arguments[index];
-            if (typeof(argument) == "object" && argument.constructor) {
-                if (argument.constructor.name == "Coord") this.coord = <Coord>argument;
+            const newChildObject = Arguments[index];
+            if (typeof(newChildObject) == "object" && newChildObject.constructor) {
+                if (newChildObject.constructor.name == "Coord") this.coord = <Coord>newChildObject;
                 else {
-                    DisplayCell.objectTypes.add(argument.constructor.name);
-                    this.children.push(argument);
+                    DisplayCell.objectTypes.add(newChildObject.constructor.name);
+                    this.children.push(newChildObject);
                 }
             }
         }
@@ -38,7 +38,9 @@ class Handler extends Component {
         body = doc.getElementsByTagName('body')[0],
         x = win.innerWidth || docElem.clientWidth || body.clientWidth,
         y = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
+        Handler.ScreenSizeCoord.frozen = false;
         Handler.ScreenSizeCoord.assign(0, 0, x, y, 0, 0, x, y);
+        Handler.ScreenSizeCoord.frozen = true;
     }
     static getHandlers(): DisplayCell[] {
         let objectArray:DisplayCell[] = [];
@@ -47,11 +49,8 @@ class Handler extends Component {
         return objectArray;
     }
     onConnect() {
-        // console.log("OnConnect Handler", this.label, this.retArgs);
-        if (this.retArgs["number"] && this.retArgs["number"].length >= 1) {
-            // console.log("Found Margins");
+        if (this.retArgs["number"] && this.retArgs["number"].length >= 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
-        }
         if (this.isRendered) Render.scheduleUpdate();
     }
     preRender(derender:boolean, node:node_):void{

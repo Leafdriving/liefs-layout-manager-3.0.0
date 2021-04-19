@@ -61,7 +61,7 @@ class DisplayCell extends Component {
         let returnValue = false;
         for (let index = 0; index < this.children.length; index++) {
             const component = this.children[index];
-            console.log(Arguments_.typeof(component), component["label"], label)
+            // console.log(Arguments_.typeof(component), component["label"], label)
             if ((Arguments_.typeof(component) == type) && (!label || label == component["label"])) {
                 component["parentDisplayCell"] = undefined;
                 this.children.splice(index--, 1);
@@ -93,14 +93,11 @@ class DisplayCell extends Component {
                 cell.marginLeft = cell.marginRight = cell.marginTop = cell.marginBottom = numberArray[0];
                 break;
             case 2:
-                cell.marginLeft = cell.marginRight = numberArray[0];
-                cell.marginTop = cell.marginBottom = numberArray[1];
+                cell.marginLeft = cell.marginRight = numberArray[0];cell.marginTop = cell.marginBottom = numberArray[1];
                 break;
             case 4:
-                cell.marginLeft = numberArray[0];
-                cell.marginRight = numberArray[1];
-                cell.marginTop = numberArray[2];
-                cell.marginBottom = numberArray[3];
+                cell.marginLeft = numberArray[0];cell.marginRight = numberArray[1];
+                cell.marginTop = numberArray[2];cell.marginBottom = numberArray[3];
                 break;
             default:
                 break;

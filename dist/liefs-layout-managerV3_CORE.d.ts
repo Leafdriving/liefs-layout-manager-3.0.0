@@ -120,10 +120,19 @@ declare class Point {
     y: number;
 }
 declare class Within {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
+    lockedToScreenSize: boolean;
+    x_: number;
+    get x(): number;
+    set x(x: number);
+    y_: number;
+    get y(): number;
+    set y(y: number);
+    width_: number;
+    get width(): number;
+    set width(width: number);
+    height_: number;
+    get height(): number;
+    set height(height: number);
     constructor(...Arguments: any);
     reset(): void;
     toString: Function;
@@ -151,6 +160,7 @@ declare class Coord extends Base {
         number: string[];
     };
     label: string;
+    frozen: boolean;
     get x(): number;
     set x(x: number);
     get y(): number;
@@ -170,10 +180,10 @@ declare class Coord extends Base {
     };
     constructor(...Arguments: any);
     setOffset(x?: number, y?: number, width?: number, height?: number): void;
-    cropWithin(within?: Coord | Within): void;
-    applyMargins(left?: number, right?: number, top?: number, bottom?: number): void;
-    assign(x?: any, y?: any, width?: any, height?: any, wx?: any, wy?: any, wwidth?: any, wheight?: any, zindex?: any): void;
-    copy(fromCoord: Coord): void;
+    mergeWithin(p: Coord): this;
+    applyMargins(left?: number, right?: number, top?: number, bottom?: number): this;
+    assign(x?: any, y?: any, width?: any, height?: any, wx?: any, wy?: any, wwidth?: any, wheight?: any, zindex?: any): this;
+    copy(fromCoord: Coord, x?: number, y?: number, width?: number, height?: number, zindex?: number): this;
     log(): void;
     isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
     derender(derender: boolean): boolean;
@@ -284,6 +294,7 @@ declare class DisplayGroup extends Component {
     static argMap: {
         [key: string]: Array<string>;
     };
+    allowScrollBar: boolean;
     label: string;
     dim_: string;
     get dim(): string;

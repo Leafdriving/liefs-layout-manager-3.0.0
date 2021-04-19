@@ -17,8 +17,11 @@
 </html>
 <script>
     let B1 = I("B1","B1", css("bgGreen","background:green", "background:green;color:white", "background:green;color:blue"))
-            .addComponent( new Tree_("MyTree") )
-    let B2 = I("B2","B2", css("bgMagenta","background:magenta", "background:magenta;color:white", "background:magenta;color:blue"));
+            .addComponent( new Tree_("MyTree",
+            {events:{onclick:function(e){console.log(e, this)}},
+            Css:css("weird","color:black;background:Aquamarine;cursor:pointer")},
+            ) )
+    let B2 = I("B2","B2", css("bgMagenta","background:magenta;", "background:magenta;color:white", "background:magenta;color:blue"));
     let pages = new Pages("MyPages", "300px",
                             I("I2","I2", css("bgcyan","background:cyan")),
                             I("I3","I3", css("bgred","background:red"))
@@ -26,7 +29,7 @@
     let pageDisplayCell = new DisplayCell(pages);
 H("MainHandler", 25,
         h("hor1", 5,
-            v("Butons",
+            v("Butons", 5,
                 B1,
                 B2,
             ),

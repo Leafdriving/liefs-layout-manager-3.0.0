@@ -18,6 +18,7 @@ class Render {
         }
     }
     static fullupdate(derender = false){
+        // console.log("FullUpdate");
         Css.update();
         Handler.updateScreenSizeCoord();
         Render.node = new node_("Root");
@@ -34,7 +35,6 @@ class Render {
                     parentNode:node_ = undefined,
                     zindex=0) {
         if (components_) {
-            // console.log("zindex", zindex)
             let components:Component[];
             if (Arguments_.typeof(components_) != "Array") components = [<Component>components_];
             else components = <Component[]>components_;

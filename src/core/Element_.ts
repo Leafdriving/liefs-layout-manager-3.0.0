@@ -74,7 +74,7 @@ class Element_ extends Base {
     preRender(){}
     Render(derender: boolean, node:node_){
         let el = Element_.elExists(this.label);
-        if (derender) {
+        if (derender || this.coord.width <= 0) {
             if (el) el.remove();
             return [];
         }

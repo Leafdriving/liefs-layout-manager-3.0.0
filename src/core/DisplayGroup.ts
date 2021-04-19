@@ -10,6 +10,7 @@ class DisplayGroup extends Component {
         boolean: ["isHor"],
     }
     // retArgs:objectAny;   // <- this will appear
+    allowScrollBar:boolean;
     label:string;
     dim_:string;
     get dim(){return this.dim_};
@@ -35,7 +36,6 @@ class DisplayGroup extends Component {
         this.parentDisplayCell.setdim = function(value:string){THIS.dim = value}
         if (this.retArgs["number"] && this.retArgs["number"].length > 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"].slice(1));
-        
     };
     preRender(derender:boolean, node:node_):void{
         // console.log("DisplayGroup PreRender");
@@ -92,52 +92,36 @@ class DisplayGroup extends Component {
         }
 
 
-        if ("ScrollBar" in Render.classes) {
+        if (("ScrollBar" in Render.classes) && this.allowScrollBar) {
             if (pixelsUsed > pixelsAvailable +1) {
-                //console.log(pixelsUsed, answersArray.length);
                 if (!this.scrollbar) {
                     this.scrollbar = scrollbar(this.label+"_ScrollBar", this.isHor);
                     this.parentDisplayCell.addComponent(this.scrollbar);
-                    //console.log("ScrollBar Created", this.label, this.parentDisplayCell.children);
                 }
                 this.offset = this.scrollbar.update(pixelsUsed, pixelsAvailable);
             } else {
                 if (this.scrollbar) {
-                    //console.log("Deleting Scrollbar");
                     this.scrollbar.delete();
                     this.parentDisplayCell.deleteComponent("ScrollBar");
                     this.scrollbar = undefined;
                 }
             }
         }
-
-
-
-        // console.log(TotalPixels, answersArray, morePixels);
         let x = this.coord.x - ((this.isHor) ? this.offset : 0)
         let y = this.coord.y - ((this.isHor) ? 0 : this.offset);
         let width:number;
         let height:number;
         
-
-        // let pixelsTaken=0;
         for (let index = 0; index < answersArray.length; index++) {
             let px = answersArray[index].px;
-            // pixelsUsed += px + ((index == 0) ? 0 : margin);
             width = (this.isHor) ? px : this.coord.width;
             height = (this.isHor) ? this.coord.height : px;
-            this.children[index].coord.assign(x, y, width, height,
-                            this.coord.x, this.coord.y, this.coord.width, this.coord.height, zindex);
+            this.children[index].coord.copy(this.coord, x, y, width, height, zindex);
             x += (this.isHor) ? width + margin : 0;
             y += (this.isHor) ? 0 : height + margin;
         }
-
-
         return this.children;
-    }
-
-
-    
+    }    
     static forceMin(answersArray:{px:number, percent:number, min:number}[]) {
         let morePixels=0;
         let totalPercent = 0

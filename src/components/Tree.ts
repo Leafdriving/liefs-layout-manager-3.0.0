@@ -3,7 +3,7 @@ class Tree_ extends Component {
     static instances:{[key: string]: Tree_;} = {};
     static activeInstances:{[key: string]: Tree_;} = {};
     static defaults:{[key: string]: any;} = {collapsedIcon: Tree_.collapsedSVG(), expandedIcon: Tree_.expandedSVG(),
-                                            indent:10, topMargin:0, sideMargin:0, height:20}
+                                            indent:10, topMargin:0, sideMargin:0, height:20, offsetx:0, offsety:0}
     static argMap:{[key: string]: Array<string>;} = {
         string : ["label"],
         node_:["parentTreeNode"],
@@ -31,6 +31,7 @@ class Tree_ extends Component {
             });
         }
     }
+    static pointerCss = css("justpointer","cursor:pointer");
     label:string;
 
     offsetx:number;
@@ -84,7 +85,7 @@ class Tree_ extends Component {
             if (!element.css && THIS.css) element.css = THIS.css;
             if (THIS.events) element.addEvents(THIS.events);
             displaycell.coord.hideWidth = true;
-            let icon = I(`${node.label}_icon`, `${THIS.height}px`,
+            let icon = I(`${node.label}_icon`, `${THIS.height}px`, Tree_.pointerCss,
                                 Tree_.icon(node),
                                 events({onclick:function(e:PointerEvent){Tree_.toggleCollapse(this.parentElement, node, e)}}),
                                 (el:Element_)=>Tree_.icon(node),
@@ -108,16 +109,16 @@ class Tree_ extends Component {
         let THIS = this;
         let returnDisplayCellArray:DisplayCell[] = [];
         let PDCoord = this.parentDisplayCell.coord;
-        let x = PDCoord.x + this.sideMargin;
-        let y = PDCoord.y + this.topMargin;
+        let xWithoutIndent = PDCoord.x + this.sideMargin - this.offsetx;
+        let y = PDCoord.y + this.topMargin- this.offsety;
         let scheduleUpdate = true;
         this.displayWidth = 0;
         node_.traverse(this.parentTreeNode, function(node:node_){
             if (node != THIS.parentTreeNode){
                 let rendercell = node["rendercell"];
                 if (rendercell) {
-                    rendercell.coord.assign(x + node.depth(-2)*THIS.indent, y, PDCoord.width, THIS.height,
-                                            PDCoord.x, PDCoord.y, PDCoord.width, PDCoord.height, zindex);
+                    let x = xWithoutIndent + node.depth(-2)*THIS.indent;
+                    rendercell.coord.copy(PDCoord, x, y, PDCoord.x+PDCoord.width-x, THIS.height, zindex);
                     returnDisplayCellArray.push( rendercell );
                 }
                 y += THIS.height;
@@ -130,6 +131,37 @@ class Tree_ extends Component {
             }
         }, (node:node_)=>!node.collapsed,
         )
+        
+        if (("ScrollBar" in Render.classes)) {
+            // vertical first
+            if (y > PDCoord.y + PDCoord.height) {                
+                if (!this.scrollbarv) {
+                    this.scrollbarv = scrollbar(this.label+"_ScrollBarV", false);
+                    this.parentDisplayCell.addComponent(this.scrollbarv);
+                }
+                this.offsety = this.scrollbarv.update(y, PDCoord.y + PDCoord.height);
+            } else {
+                if (this.scrollbarv) {
+                    this.scrollbarv.delete();
+                    this.parentDisplayCell.deleteComponent("ScrollBar",this.label+"_ScrollBarV");
+                    this.scrollbarv = undefined;
+                }
+            }
+            // horizontal first
+            if (this.displayWidth > this.parentDisplayCell.coord.width) {                
+                if (!this.scrollbarh) {
+                    this.scrollbarh = scrollbar(this.label+"_ScrollBarH", true);
+                    this.parentDisplayCell.addComponent(this.scrollbarh);
+                }
+                this.offsetx = this.scrollbarh.update(this.displayWidth, this.parentDisplayCell.coord.width);
+            } else {
+                if (this.scrollbarh) {
+                    this.scrollbarh.delete();
+                    this.parentDisplayCell.deleteComponent("ScrollBar",this.label+"_ScrollBarH");
+                    this.scrollbarh = undefined;
+                }
+            }
+        }
         if (scheduleUpdate) Render.scheduleUpdate();
         return returnDisplayCellArray;
     };
