@@ -26,9 +26,9 @@
         // "../core/Render.ts",
         
         "Scrollbar.ts",
-        "Selected.ts",
+        // "Selected.ts",
         "Pages.ts",
         "Tree.ts",
-        // "Context.ts",
+        "Context.ts",
     ]
 }
