@@ -81,13 +81,6 @@ class Context extends Component {
     }
     launchContext(event = undefined) {
         let [lastContext, deep] = Context.currentInstance();
-        //console.log("launching", this.label, deep, this.contextNode.depth());
-        // if (lastContext) {
-        //     console.log("doubleCheck")
-        //     Context.ContextOnMouseMove(event);
-        // }
-        //if (deep >= this.contextNode.depth()) Context.pop();
-        //if (deep < this.contextNode.depth()) {
         event.preventDefault();
         this.launchEvent = event;
         if (!this.isShown) {
@@ -101,7 +94,6 @@ class Context extends Component {
             }
             Render.scheduleUpdate();
         }
-        //}
     }
     onConnect() {
         let element = (this.parentDisplayCell.getComponent("Element_"));

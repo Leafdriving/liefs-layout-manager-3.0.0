@@ -2,15 +2,16 @@ class Handler extends Component {
     static labelNo = 0;
     static instances:{[key: string]: Handler;} = {};
     static activeInstances:{[key: string]: Handler;} = {};
-    static defaults:{[key: string]: any;} = {isRendered: true}
+    static defaults:{[key: string]: any;} = {startRendered: true}
     static argMap:{[key: string]: Array<string>;} = {
         string : ["label"],
         Coord: ["coord"],
-        boolean: ["isRendered"],
+        boolean: ["startRendered"],
     }
     // retArgs:objectAny;   // <- this will appear
+    type:string;
     label: string;
-    isRendered: boolean
+    startRendered: boolean
     coord: Coord;
     parentDisplayCell:DisplayCell;
     children:Component[] = [];
@@ -30,7 +31,7 @@ class Handler extends Component {
             }
         }
         if (!this.coord) this.coord = Handler.ScreenSizeCoord;
-        if (this.isRendered) Handler.activeInstances[this.label] = this;
+        if (this.startRendered) Handler.activeInstances[this.label] = this;
     }
     static ScreenSizeCoord: Coord = new Coord();
     static updateScreenSizeCoord(){
@@ -51,7 +52,7 @@ class Handler extends Component {
     onConnect() {
         if (this.retArgs["number"] && this.retArgs["number"].length >= 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
-        if (this.isRendered) Render.scheduleUpdate();
+        if (this.startRendered) Render.scheduleUpdate();
     }
     preRender(derender:boolean, node:node_):void{
         this.parentDisplayCell.coord.copy(this.coord);

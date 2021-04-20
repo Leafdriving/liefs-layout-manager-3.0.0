@@ -13,6 +13,7 @@ class Within{
     height_: number;
     get height(){return (this.lockedToScreenSize) ? Handler.ScreenSizeCoord.height : this.height_}
     set height(height:number){this.height_=height}
+
     constructor(...Arguments: any) {}
     reset(){this.x = this.y = this.width = this.height = undefined};
     toString:Function;
@@ -45,6 +46,9 @@ class Coord extends Base {
     #height_: number;
     get height() {return this.#height_ + ((this.offset) ? this.offset.height : 0);}
     set height(height) {if (!this.frozen) this.#height_ = height}
+
+    get x2(){return this.x + this.width}
+    get y2(){return this.y + this.height}
 
     zindex: number;
     within: Within = new Within();

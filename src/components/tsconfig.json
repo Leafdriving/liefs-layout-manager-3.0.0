@@ -30,5 +30,6 @@
         "Pages.ts",
         "Tree.ts",
         "Context.ts",
+        "Modal.ts",
     ]
 }

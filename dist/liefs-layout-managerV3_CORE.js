@@ -514,6 +514,8 @@ class Coord extends Base {
     get height() { return __classPrivateFieldGet(this, _height_) + ((this.offset) ? this.offset.height : 0); }
     set height(height) { if (!this.frozen)
         __classPrivateFieldSet(this, _height_, height); }
+    get x2() { return this.x + this.width; }
+    get y2() { return this.y + this.height; }
     setOffset(x = 0, y = 0, width = 0, height = 0) {
         if (x == 0 && y == 0 && width == 0 && height == 0)
             this.offset = undefined;
@@ -1026,7 +1028,7 @@ class Handler extends Component {
         }
         if (!this.coord)
             this.coord = Handler.ScreenSizeCoord;
-        if (this.isRendered)
+        if (this.startRendered)
             Handler.activeInstances[this.label] = this;
     }
     static updateScreenSizeCoord() {
@@ -1044,7 +1046,7 @@ class Handler extends Component {
     onConnect() {
         if (this.retArgs["number"] && this.retArgs["number"].length >= 1)
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
-        if (this.isRendered)
+        if (this.startRendered)
             Render.scheduleUpdate();
     }
     preRender(derender, node) {
@@ -1059,11 +1061,11 @@ class Handler extends Component {
 Handler.labelNo = 0;
 Handler.instances = {};
 Handler.activeInstances = {};
-Handler.defaults = { isRendered: true };
+Handler.defaults = { startRendered: true };
 Handler.argMap = {
     string: ["label"],
     Coord: ["coord"],
-    boolean: ["isRendered"],
+    boolean: ["startRendered"],
 };
 Handler.ScreenSizeCoord = new Coord();
 function H(...Arguments) { return new DisplayCell(new Handler(...Arguments)); }

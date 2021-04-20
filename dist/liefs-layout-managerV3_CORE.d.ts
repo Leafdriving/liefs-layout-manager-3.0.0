@@ -169,6 +169,8 @@ declare class Coord extends Base {
     set width(width: number);
     get height(): number;
     set height(height: number);
+    get x2(): number;
+    get y2(): number;
     zindex: number;
     within: Within;
     hideWidth: boolean;
@@ -333,8 +335,9 @@ declare class Handler extends Component {
     static argMap: {
         [key: string]: Array<string>;
     };
+    type: string;
     label: string;
-    isRendered: boolean;
+    startRendered: boolean;
     coord: Coord;
     parentDisplayCell: DisplayCell;
     children: Component[];

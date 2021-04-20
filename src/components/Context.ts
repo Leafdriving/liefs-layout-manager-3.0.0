@@ -104,26 +104,18 @@ class Context extends Component {
     }
     launchContext(event:PointerEvent|MouseEvent = undefined){
         let [lastContext, deep] = Context.currentInstance();
-        //console.log("launching", this.label, deep, this.contextNode.depth());
-        // if (lastContext) {
-        //     console.log("doubleCheck")
-        //     Context.ContextOnMouseMove(event);
-        // }
-        //if (deep >= this.contextNode.depth()) Context.pop();
-        //if (deep < this.contextNode.depth()) {
-            event.preventDefault();
-            this.launchEvent = event;
-            if (!this.isShown) {
-                this.isShown = true;
-                if (!Context.rootInstance) {
-                    Context.rootInstance = this;
-                    window.onmousemove = <any>FunctionStack.push(window.onmousemove, Context.ContextOnMouseMove)
-                } else {
-                    lastContext.activeChild = this;
-                }
-                Render.scheduleUpdate();
+        event.preventDefault();
+        this.launchEvent = event;
+        if (!this.isShown) {
+            this.isShown = true;
+            if (!Context.rootInstance) {
+                Context.rootInstance = this;
+                window.onmousemove = <any>FunctionStack.push(window.onmousemove, Context.ContextOnMouseMove)
+            } else {
+                lastContext.activeChild = this;
             }
-        //}
+            Render.scheduleUpdate();
+        }
     }
     onConnect():void{
         let element = <Element_>(this.parentDisplayCell.getComponent("Element_"));
