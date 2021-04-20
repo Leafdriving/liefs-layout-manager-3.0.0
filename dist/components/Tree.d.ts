@@ -37,6 +37,12 @@ declare class Tree_ extends Component {
     parentTreeNode: node_;
     parentDisplayCell: DisplayCell;
     children: Component[];
+    useSelected: boolean;
+    selected: Selected;
+    selectedNode: node_;
+    selectedStartIndex: number;
+    selectParents: boolean;
+    cascadeCollapse: boolean;
     constructor(...Arguments: any);
     static icon(node: node_): string;
     newNode(node: node_): void;

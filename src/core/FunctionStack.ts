@@ -15,7 +15,7 @@ class FunctionStack extends FunctionStack_BASE {
             for (let index = 0; index < this.functionArray.length; index++)
                 this.functionArray[index].bind(elTarget)(...Arguments);
     }
-    static push(prevFunction:Function|FunctionStack, newFunction:Function = undefined) {
+    static push(prevFunction:Function|FunctionStack, newFunction:Function|FunctionStack = undefined) {
         let functionStackInstance:FunctionStack;
         if (prevFunction && prevFunction.constructor && prevFunction.constructor.name == "FunctionStack") 
             functionStackInstance = <FunctionStack>prevFunction;
@@ -24,7 +24,12 @@ class FunctionStack extends FunctionStack_BASE {
             if (prevFunction && typeof(prevFunction) == "function")
                 functionStackInstance.functionArray.push(<Function>prevFunction);
         }
-        if (newFunction) functionStackInstance.functionArray.push(newFunction);
+        if (newFunction) {
+            if (newFunction.constructor && newFunction.constructor.name == "FunctionStack")
+                functionStackInstance.functionArray = functionStackInstance.functionArray.concat( (<FunctionStack>newFunction).functionArray )
+            else
+                functionStackInstance.functionArray.push( <Function>newFunction );
+        }
         return functionStackInstance;
     }
     static pop(functionStackInstance:FunctionStack, label:string){
@@ -32,6 +37,11 @@ class FunctionStack extends FunctionStack_BASE {
             if (label == functionStackInstance.functionArray[index].name) 
                 functionStackInstance.functionArray.splice(index--, 1);
         return functionStackInstance;
+    }
+    static isIn(functionStackInstance:FunctionStack, label:string){
+        for (let index = 0; index < functionStackInstance.functionArray.length; index++) 
+            if (label == functionStackInstance.functionArray[index].name) return true;
+        return false;
     }
   }
   class debounce_ extends FunctionStack_BASE {

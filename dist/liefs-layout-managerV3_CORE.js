@@ -305,8 +305,12 @@ class FunctionStack extends FunctionStack_BASE {
             if (prevFunction && typeof (prevFunction) == "function")
                 functionStackInstance.functionArray.push(prevFunction);
         }
-        if (newFunction)
-            functionStackInstance.functionArray.push(newFunction);
+        if (newFunction) {
+            if (newFunction.constructor && newFunction.constructor.name == "FunctionStack")
+                functionStackInstance.functionArray = functionStackInstance.functionArray.concat(newFunction.functionArray);
+            else
+                functionStackInstance.functionArray.push(newFunction);
+        }
         return functionStackInstance;
     }
     static pop(functionStackInstance, label) {
@@ -314,6 +318,12 @@ class FunctionStack extends FunctionStack_BASE {
             if (label == functionStackInstance.functionArray[index].name)
                 functionStackInstance.functionArray.splice(index--, 1);
         return functionStackInstance;
+    }
+    static isIn(functionStackInstance, label) {
+        for (let index = 0; index < functionStackInstance.functionArray.length; index++)
+            if (label == functionStackInstance.functionArray[index].name)
+                return true;
+        return false;
     }
 }
 class debounce_ extends FunctionStack_BASE {
@@ -332,6 +342,7 @@ class debounce_ extends FunctionStack_BASE {
     }
 }
 function debounce(FUNCTION, delay) { return new debounce_(FUNCTION, delay); }
+//node_asArray(node, function(node){ return node.whatever})
 class node_ extends Base {
     constructor(...Arguments) {
         super();
@@ -346,6 +357,11 @@ class node_ extends Base {
         let newnode = new node_(...Arguments);
         newnode.ParentNodeTree = THIS.ParentNodeTree;
         return newnode;
+    }
+    static asArray(node, traverseFunction = function (node) { return node; }) {
+        let returnArray = [];
+        node_.traverse(node, function (node) { returnArray.push(traverseFunction(node)); });
+        return returnArray;
     }
     static traverse(node, traverseFunction, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
         if (traverseNode(node)) {
@@ -414,6 +430,11 @@ class node_ extends Base {
         newNode.ParentNode = this.ParentNode;
         this.NextSibling = newNode;
         return newNode;
+    }
+    pop() {
+        this.ParentNode.children.splice(this.ParentNode.children.indexOf(this), 1);
+        this.ParentNode = undefined;
+        return this;
     }
     done() { return this.ParentNodeTree; }
     root() {
@@ -620,6 +641,7 @@ class Element_ extends Base {
         if (this.Css)
             this.css = this.Css.classname;
         let el = Element_.elExists(this.label);
+        // console.log(this.label, el)
         if (el)
             this.loadElement(el);
         if (this.processEvents) {
@@ -650,7 +672,9 @@ class Element_ extends Base {
     loadElement(el) {
         this.el = el;
         this.attributes = Element_.getAttribs(el);
+        this.attributes["llm"] = "";
         this.innerHTML = el.innerHTML;
+        console.log("loading Element", el);
         el.remove();
     }
     applyEvents() { for (let key in this.events)
@@ -693,6 +717,20 @@ class Element_ extends Base {
         if (this.el.style.cssText != styleString)
             this.el.style.cssText = styleString;
         return [];
+    }
+    setAsSelected() {
+        if (!this.attributes.class.endsWith("Selected")) {
+            this.attributes.class += "Selected";
+            if (this.el)
+                Element_.setAttrib(this.el, "class", this.attributes.class);
+        }
+    }
+    setAsUnSelected() {
+        if (this.attributes.class.endsWith("Selected")) {
+            this.attributes.class = this.attributes.class.slice(0, -8);
+            if (this.el)
+                Element_.setAttrib(this.el, "class", this.attributes.class);
+        }
     }
     static clipStyleString(element) {
         let COORD = element.coord;
@@ -1182,7 +1220,6 @@ class Render {
         }
     }
     static fullupdate(derender = false) {
-        // console.log("FullUpdate");
         Css.update();
         Handler.updateScreenSizeCoord();
         Render.node = new node_("Root");

@@ -8,26 +8,37 @@
     <script src="dist/liefs-layout-managerV3_CORE.js"></script>
     <script src="dist/components/Scrollbar.js"></script>
     <script src="dist/components/Pages.js"></script>
+    <script src="dist/components/Selected.js"></script>
     <script src="dist/components/Tree.js"></script>
     <script src="dist/components/Context.js"></script>
     <script src="dist/components/Modal.js"></script>
-    <!-- <script src="dist/components/Context.js"></script> -->
 </head>
 <body>
+    <div id="TopThing" class="bgGreen">This is the Top Thing</div>
+    <div id="Next Thing" class="bgMagenta">This of course is the next thing</div>
 </body>
 </html>
 <script>
+    let treenode = new node_();
+    treenode.newChild("TopThing")
+            .newSibling("Next Thing");
+    let myTree = new Tree_("MyTree",
+                treenode,
+                {events:{onclick:function(e){console.log(e, this)}},
+                Css:css("weird","color:black;background:Aquamarine;cursor:pointer", "background:white;cursor:pointer", "cursor:pointer;background:black;color:white"),
+                useSelected: false,
+                },
+            )
+
     let B1 = I("B1","B1", css("bgGreen","background:green", "background:green;color:white", "background:green;color:blue"))
-            .addComponent( new Tree_("MyTree",
-            {events:{onclick:function(e){console.log(e, this)}},
-            Css:css("weird","color:black;background:Aquamarine;cursor:pointer")},
-            ) )
+            .addComponent( myTree )
     let B2 = I("B2","B2",
                 css("bgMagenta","background:magenta;", "background:magenta;color:white", "background:magenta;color:blue"),
                 ).addComponent( context("Mycontext") );
     let pages = new Pages("MyPages", "300px",
-                            I("I2","I2", css("bgcyan","background:cyan")),
-                            I("I3","I3", css("bgred","background:red"))
+                            myTree,
+                            //I("I2","I2", css("bgcyan","background:cyan")),
+                            //I("I3","I3", css("bgred","background:red"))
                         );
     let pageDisplayCell = new DisplayCell(pages);
 H("MainHandler", 25,
@@ -39,5 +50,5 @@ H("MainHandler", 25,
             pageDisplayCell,
         )
 )
-let mySelected = new Selected("MySelected", [B1, B2], 0, pages);
+//let mySelected = new Selected("ChooseTree", [B1, B2], 0, {onselect: function(index, displaycell){pages.currentPage = index;}});
 </script>

@@ -10,12 +10,14 @@ class Pages extends Base {
         string : ["label"],
         function: ["evalFunction"],
         dim:["dim_"],
-        // Selected: ["selected"],
+        Tree_:["tree"],
     }
     label:string;
     node:node_;
     parentDisplayCell:DisplayCell;
     children: Component[];
+
+    tree:Tree_ // if pages by a tree
 
     evalFunction:(thisPages:Pages)=>number;
     cellArray:DisplayCell[];
@@ -34,8 +36,25 @@ class Pages extends Base {
     // retArgs:objectAny;   // <- this will appear
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
+        let THIS = this;
         Pages.makeLabel(this); Pages.instances[this.label] = this;
         if ("DisplayCell" in this.retArgs) this.cellArray = this.retArgs["DisplayCell"];
+        let index=-1;
+        if (this.tree) {
+            this.cellArray = [];
+            node_.traverse(this.tree.parentTreeNode, function(node:node_){
+                let label = node.Arguments[0];
+                let displaycell = DisplayCell.instances[label];
+                if (!displaycell) displaycell = I(label);
+                let element_ = <Element_>(<DisplayCell>(node["displaycell"])).getComponent("Element_");
+                let i = index;
+                element_.addEvents({onclick:function(){THIS.currentPage = i}})
+                
+                THIS.cellArray.push( displaycell );
+                index++;
+            });
+            this.cellArray.shift();
+        }
 
         Pages.instances[this.label] = this;
     }
@@ -49,11 +68,10 @@ class Pages extends Base {
     };
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         let newPage = this.evalFunction(this);
-        if (newPage != this.prevPage) {
-            Render.update(this.cellArray[this.prevPage], true);
-            this.currentPage = newPage;
-            this.prevPage = newPage;
-        }
+        if (newPage != this.prevPage) Render.update(this.cellArray[this.prevPage], true);
+        this.currentPage_ = this.prevPage = newPage;
+        //console.log("parentDisplayCell", this.parentDisplayCell.label)
+        //this.parentDisplayCell.coord.log()
         this.cellArray[this.currentPage].coord.copy( this.parentDisplayCell.coord )
         return [ this.cellArray[this.currentPage] ]
     };
@@ -64,89 +82,4 @@ function P(...Arguments:any) {
     return new DisplayCell( new Pages(...Arguments) );
 }
 
-class Selected extends Base {
-    static labelNo = 0;
-    static instances:{[key: string]: Selected;} = {};
-    static activeInstances:{[key: string]: Selected;} = {};
-    static defaults = {indexer:[],}
-    static argMap = {
-        string : ["label"],
-        function: ["onselect", "onunselect"],
-        Array : ["indexer"],
-        number :["startValue"],
-        Pages: ["pages"],
-    }
-    label:string;
-    indexer:(DisplayCell|DisplayCell[])[];
-    onselect:(index:number, displaycell:DisplayCell)=>void
-    onunselect:(index:number, displaycell:DisplayCell)=>void;
-
-    startValue:number;
-    currentButtonIndex:number;
-    pages:Pages;
-
-    constructor(...Arguments:any){
-        super();this.buildBase(...Arguments);
-        Selected.makeLabel(this);
-        this.build()
-        if (this.startValue != undefined) this.select(this.startValue);
-        Selected.instances[this.label] = this;
-    }
-    build(){
-        let THIS = this;
-        for (let index = 0; index < this.indexer.length; index++) {
-            let displayCells:DisplayCell[];
-            let type = Arguments_.typeof( this.indexer[index] );
-            if ( type == "DisplayCell" ) displayCells = this.indexer[index] = [ <DisplayCell>(this.indexer[index]) ];
-            else if ( type == "Array" ) displayCells = <DisplayCell[]>( this.indexer[index] );
-            for (let index = 0; index < displayCells.length; index++) 
-                (<Element_>displayCells[index].getComponent("Element_"))
-                    .addEvents( {onclick:function(e:PointerEvent){ THIS.select(displayCells[index]) }} )      
-        }
-    }
-    select(displaycellOrNumber:DisplayCell|number) {
-        let newIndex:number;
-        let type = Arguments_.typeof(displaycellOrNumber);
-        if (type == "number") newIndex = <number>displaycellOrNumber;
-        else if (type == "DisplayCell") newIndex = this.indexOf(<DisplayCell>displaycellOrNumber);
-        if (newIndex != undefined) {
-            if (this.currentButtonIndex != newIndex){
-                if (this.currentButtonIndex != undefined) this.onUnselect( this.currentButtonIndex );
-                this.currentButtonIndex = newIndex;
-                this.onSelect( this.currentButtonIndex );
-            }
-        }
-    }
-    clear(){this.onUnselect( this.currentButtonIndex );this.currentButtonIndex = undefined}
-    indexOf(displaycell:DisplayCell): number {
-        for (let index = 0; index < this.indexer.length; index++) 
-            if ((<DisplayCell[]>this.indexer[index]).indexOf(displaycell) > -1) return index;
-        return undefined;
-    }
-    onSelect(index:number){
-        let selectArray = (<DisplayCell[]>(this.indexer[index]));
-        for (let i = 0; i < selectArray.length; i++) {
-            const displaycell = selectArray[i];
-            let element = <Element_>displaycell.getComponent("Element_");
-            if (element && !element.attributes.class.endsWith("Selected")) {
-                element.attributes.class += "Selected";
-                if (element.el) Element_.setAttrib(element.el, "class", element.attributes.class);
-            }
-            if (this.onselect) this.onselect(index, displaycell);
-        }
-        if (this.pages) this.pages.currentPage = index;
-    }
-    onUnselect(index:number){
-        let unSelectArray = (<DisplayCell[]>(this.indexer[index]));
-        for (let i = 0; i < unSelectArray.length; i++) {
-            const displaycell = unSelectArray[i];
-            let element = <Element_>displaycell.getComponent("Element_");
-            if (element && element.attributes.class.endsWith("Selected")) {
-                element.attributes.class = element.attributes.class.slice(0, -8);
-                if (element.el) Element_.setAttrib(element.el, "class", element.attributes.class);
-            }
-            if (this.onunselect) this.onunselect(index, displaycell);
-        }
-    }
-}
 

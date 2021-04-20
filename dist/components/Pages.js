@@ -3,10 +3,27 @@ class Pages extends Base {
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
+        let THIS = this;
         Pages.makeLabel(this);
         Pages.instances[this.label] = this;
         if ("DisplayCell" in this.retArgs)
             this.cellArray = this.retArgs["DisplayCell"];
+        let index = -1;
+        if (this.tree) {
+            this.cellArray = [];
+            node_.traverse(this.tree.parentTreeNode, function (node) {
+                let label = node.Arguments[0];
+                let displaycell = DisplayCell.instances[label];
+                if (!displaycell)
+                    displaycell = I(label);
+                let element_ = (node["displaycell"]).getComponent("Element_");
+                let i = index;
+                element_.addEvents({ onclick: function () { THIS.currentPage = i; } });
+                THIS.cellArray.push(displaycell);
+                index++;
+            });
+            this.cellArray.shift();
+        }
         Pages.instances[this.label] = this;
     }
     get dim() { return this.dim_; }
@@ -28,11 +45,11 @@ class Pages extends Base {
     ;
     Render(derender, node, zindex) {
         let newPage = this.evalFunction(this);
-        if (newPage != this.prevPage) {
+        if (newPage != this.prevPage)
             Render.update(this.cellArray[this.prevPage], true);
-            this.currentPage = newPage;
-            this.prevPage = newPage;
-        }
+        this.currentPage_ = this.prevPage = newPage;
+        //console.log("parentDisplayCell", this.parentDisplayCell.label)
+        //this.parentDisplayCell.coord.log()
         this.cellArray[this.currentPage].coord.copy(this.parentDisplayCell.coord);
         return [this.cellArray[this.currentPage]];
     }
@@ -50,98 +67,9 @@ Pages.argMap = {
     string: ["label"],
     function: ["evalFunction"],
     dim: ["dim_"],
-    // Selected: ["selected"],
+    Tree_: ["tree"],
 };
 Render.register("Pages", Pages);
 function P(...Arguments) {
     return new DisplayCell(new Pages(...Arguments));
 }
-class Selected extends Base {
-    constructor(...Arguments) {
-        super();
-        this.buildBase(...Arguments);
-        Selected.makeLabel(this);
-        this.build();
-        if (this.startValue != undefined)
-            this.select(this.startValue);
-        Selected.instances[this.label] = this;
-    }
-    build() {
-        let THIS = this;
-        for (let index = 0; index < this.indexer.length; index++) {
-            let displayCells;
-            let type = Arguments_.typeof(this.indexer[index]);
-            if (type == "DisplayCell")
-                displayCells = this.indexer[index] = [(this.indexer[index])];
-            else if (type == "Array")
-                displayCells = (this.indexer[index]);
-            for (let index = 0; index < displayCells.length; index++)
-                displayCells[index].getComponent("Element_")
-                    .addEvents({ onclick: function (e) { THIS.select(displayCells[index]); } });
-        }
-    }
-    select(displaycellOrNumber) {
-        let newIndex;
-        let type = Arguments_.typeof(displaycellOrNumber);
-        if (type == "number")
-            newIndex = displaycellOrNumber;
-        else if (type == "DisplayCell")
-            newIndex = this.indexOf(displaycellOrNumber);
-        if (newIndex != undefined) {
-            if (this.currentButtonIndex != newIndex) {
-                if (this.currentButtonIndex != undefined)
-                    this.onUnselect(this.currentButtonIndex);
-                this.currentButtonIndex = newIndex;
-                this.onSelect(this.currentButtonIndex);
-            }
-        }
-    }
-    clear() { this.onUnselect(this.currentButtonIndex); this.currentButtonIndex = undefined; }
-    indexOf(displaycell) {
-        for (let index = 0; index < this.indexer.length; index++)
-            if (this.indexer[index].indexOf(displaycell) > -1)
-                return index;
-        return undefined;
-    }
-    onSelect(index) {
-        let selectArray = (this.indexer[index]);
-        for (let i = 0; i < selectArray.length; i++) {
-            const displaycell = selectArray[i];
-            let element = displaycell.getComponent("Element_");
-            if (element && !element.attributes.class.endsWith("Selected")) {
-                element.attributes.class += "Selected";
-                if (element.el)
-                    Element_.setAttrib(element.el, "class", element.attributes.class);
-            }
-            if (this.onselect)
-                this.onselect(index, displaycell);
-        }
-        if (this.pages)
-            this.pages.currentPage = index;
-    }
-    onUnselect(index) {
-        let unSelectArray = (this.indexer[index]);
-        for (let i = 0; i < unSelectArray.length; i++) {
-            const displaycell = unSelectArray[i];
-            let element = displaycell.getComponent("Element_");
-            if (element && element.attributes.class.endsWith("Selected")) {
-                element.attributes.class = element.attributes.class.slice(0, -8);
-                if (element.el)
-                    Element_.setAttrib(element.el, "class", element.attributes.class);
-            }
-            if (this.onunselect)
-                this.onunselect(index, displaycell);
-        }
-    }
-}
-Selected.labelNo = 0;
-Selected.instances = {};
-Selected.activeInstances = {};
-Selected.defaults = { indexer: [], };
-Selected.argMap = {
-    string: ["label"],
-    function: ["onselect", "onunselect"],
-    Array: ["indexer"],
-    number: ["startValue"],
-    Pages: ["pages"],
-};

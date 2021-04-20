@@ -3,11 +3,13 @@ class Tree_ extends Component {
     static instances:{[key: string]: Tree_;} = {};
     static activeInstances:{[key: string]: Tree_;} = {};
     static defaults:{[key: string]: any;} = {collapsedIcon: Tree_.collapsedSVG(), expandedIcon: Tree_.expandedSVG(),
-                                            indent:10, topMargin:0, sideMargin:0, height:20, offsetx:0, offsety:0}
+                                            indent:10, topMargin:0, sideMargin:0, height:20, offsetx:0, offsety:0,
+                                            useSelected:true, selectedStartIndex:0, selectParents:true, cascadeCollapse:true}
     static argMap:{[key: string]: Array<string>;} = {
         string : ["label"],
         node_:["parentTreeNode"],
         DisplayCell:["parentDislayCell"],
+        boolean: ["useSelected"],
     }
     static scrollArrowsSVGCss = css(`scrollArrows`,`stroke: black;`,`fill: white;`, {type:"llm"});
     static collapsedSVG(classname:string = "scrollArrows"){return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
@@ -48,28 +50,68 @@ class Tree_ extends Component {
     displayWidth:number;
     displayHeight:number;
 
-    // tabSize:number;
-
     scrollbarh:ScrollBar;
     scrollbarv:ScrollBar;
-    // onNodeCreation:(node: node_) => void;
+
     node:node_;
     parentTreeNode:node_;
 
     parentDisplayCell:DisplayCell;
     children: Component[];
-    // retArgs:objectAny;   // <- this will appear
+
+    useSelected: boolean;
+    selected:Selected;
+    selectedNode: node_;
+    selectedStartIndex:number;
+    selectParents:boolean;
+
+    cascadeCollapse:boolean;
+
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
+        let THIS = this;
         Tree_.makeLabel(this); Tree_.instances[this.label] = this;
         if (this.Css) this.css = this.Css.classname;
         if (!this.parentTreeNode) this.parentTreeNode = sample();
         this.newNode(this.parentTreeNode);
-        // if (this.parentDisplayCell) this.parentDisplayCell.addComponent(this);
+        if (this.useSelected && this.selected == undefined) {
+            this.selected = new Selected(`${this.label}`, this.selectedStartIndex,
+                {getIndexerArray:function(selectedInstance:Selected){
+                                        return node_.asArray(THIS.parentTreeNode,
+                                            function(node){return [node["displaycell"]];}
+                                            );
+                                    },
+                onselect: function(index:number, displaycell:DisplayCell){
+                    let node = <node_>(node_.asArray(THIS.parentTreeNode)[index]);
+                    if (THIS.selectParents) {
+                        while (node.ParentNode) {
+                            node = node.ParentNode;
+                            let displaycell = <DisplayCell>node["displaycell"]
+                            let element = <Element_>(displaycell.getComponent("Element_"));
+                            if (element) element.setAsSelected();
+                        }
+                    }
+                },
+                onunselect: function(index:number, displaycell:DisplayCell){
+                    if (THIS.selectParents) {
+                        let node = <node_>(node_.asArray(THIS.parentTreeNode)[index]);
+                        while (node.ParentNode) {
+                            node = node.ParentNode;
+                            let displaycell = <DisplayCell>node["displaycell"]
+                            let element = <Element_>(displaycell.getComponent("Element_"));
+                            if (element) element.setAsUnSelected();
+                        }
+                    }
+                }
+                }
+            );
+        }
     }
+
     static icon(node:node_){
         return (node.children.length) ? ((node.collapsed) ? Tree_.collapsedSVG() : Tree_.expandedSVG()) : ""
     }
+
     newNode(node:node_) {
         let THIS = this;
         let argMap = {

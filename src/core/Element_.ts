@@ -48,14 +48,18 @@ class Element_ extends Base {
         if (this.Css) this.css = this.Css.classname;
 
         let el = Element_.elExists(this.label);
+        // console.log(this.label, el)
         if (el) this.loadElement(el);
 
         if (this.processEvents) {this.addEvents(this.processEvents);}
     }
     loadElement(el:HTMLDivElement) {
+        
         this.el = el;
         this.attributes = Element_.getAttribs(el);
+        this.attributes["llm"]="";
         this.innerHTML = el.innerHTML;
+        console.log("loading Element", el)
         el.remove();
     }
     applyEvents(){for (let key in this.events) this.el[key] = this.events[key];}
@@ -86,6 +90,18 @@ class Element_ extends Base {
         let styleString = Element_.style(this);
         if (this.el.style.cssText != styleString) this.el.style.cssText = styleString;
         return [];
+    }
+    setAsSelected(){
+        if (!this.attributes.class.endsWith("Selected")) {
+            this.attributes.class += "Selected";
+            if (this.el) Element_.setAttrib(this.el, "class", this.attributes.class);
+        }
+    }
+    setAsUnSelected(){
+        if (this.attributes.class.endsWith("Selected")) {
+            this.attributes.class = this.attributes.class.slice(0, -8);
+            if (this.el) Element_.setAttrib(this.el, "class", this.attributes.class);
+        }
     }
     static clipStyleString(element:Element_) {
         let COORD = element.coord;

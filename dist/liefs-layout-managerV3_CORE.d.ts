@@ -69,8 +69,9 @@ declare class FunctionStack extends FunctionStack_BASE {
     functionArray: Function[];
     constructor();
     __call__(...Arguments: any[]): void;
-    static push(prevFunction: Function | FunctionStack, newFunction?: Function): FunctionStack;
+    static push(prevFunction: Function | FunctionStack, newFunction?: Function | FunctionStack): FunctionStack;
     static pop(functionStackInstance: FunctionStack, label: string): FunctionStack;
+    static isIn(functionStackInstance: FunctionStack, label: string): boolean;
 }
 declare class debounce_ extends FunctionStack_BASE {
     FUNCTION: Function;
@@ -93,6 +94,7 @@ declare class node_ extends Base {
     };
     static argMap: objectStringArray;
     static newNode(THIS: node_, ...Arguments: any): node_;
+    static asArray(node: node_, traverseFunction?: (node: node_) => any): any[];
     static traverse(node: node_, traverseFunction: (node: node_) => void, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
     label: string;
     Arguments: any;
@@ -109,6 +111,7 @@ declare class node_ extends Base {
     length(count?: number): number;
     newChild(...Arguments: any): node_;
     newSibling(...Arguments: any): node_;
+    pop(): this;
     done(): any;
     root(): node_;
     parent(): node_;
@@ -236,6 +239,8 @@ declare class Element_ extends Base {
     onConnect(): void;
     preRender(): void;
     Render(derender: boolean, node: node_): any[];
+    setAsSelected(): void;
+    setAsUnSelected(): void;
     static clipStyleString(element: Element_): string;
     static style(element: Element_): string;
     static getAttribs(el: HTMLDivElement, retObj?: objectString): objectString;

@@ -1,3 +1,5 @@
+//node_asArray(node, function(node){ return node.whatever})
+
 class node_ extends Base {
     static labelNo = 0;
     static instances:{[key: string]: node_;} = {};
@@ -10,6 +12,11 @@ class node_ extends Base {
         let newnode = new node_(...Arguments);
         newnode.ParentNodeTree = THIS.ParentNodeTree;
         return newnode;
+    }
+    static asArray(node:node_, traverseFunction:(node:node_)=>any = function(node){return node}): any[] {
+        let returnArray:any[] = [];
+        node_.traverse(node, function(node:node_){returnArray.push( traverseFunction(node) )});
+        return returnArray;
     }
     static traverse(node:node_, traverseFunction:(node: node_) => void,
             traverseChildren:(node: node_)=>boolean = function(){return true},
@@ -91,6 +98,11 @@ class node_ extends Base {
         newNode.ParentNode = this.ParentNode;
         this.NextSibling = newNode;
         return newNode;
+    }
+    pop(){
+        this.ParentNode.children.splice(this.ParentNode.children.indexOf(this), 1);
+        this.ParentNode = undefined;
+        return this;
     }
     done(){return this.ParentNodeTree}
     root(){

@@ -18,7 +18,6 @@ class Render {
         }
     }
     static fullupdate(derender = false){
-        // console.log("FullUpdate");
         Css.update();
         Handler.updateScreenSizeCoord();
         Render.node = new node_("Root");

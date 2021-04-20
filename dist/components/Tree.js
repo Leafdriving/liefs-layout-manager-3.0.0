@@ -1,8 +1,8 @@
 class Tree_ extends Component {
-    // retArgs:objectAny;   // <- this will appear
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
+        let THIS = this;
         Tree_.makeLabel(this);
         Tree_.instances[this.label] = this;
         if (this.Css)
@@ -10,7 +10,36 @@ class Tree_ extends Component {
         if (!this.parentTreeNode)
             this.parentTreeNode = sample();
         this.newNode(this.parentTreeNode);
-        // if (this.parentDisplayCell) this.parentDisplayCell.addComponent(this);
+        if (this.useSelected && this.selected == undefined) {
+            this.selected = new Selected(`${this.label}`, this.selectedStartIndex, { getIndexerArray: function (selectedInstance) {
+                    return node_.asArray(THIS.parentTreeNode, function (node) { return [node["displaycell"]]; });
+                },
+                onselect: function (index, displaycell) {
+                    let node = (node_.asArray(THIS.parentTreeNode)[index]);
+                    if (THIS.selectParents) {
+                        while (node.ParentNode) {
+                            node = node.ParentNode;
+                            let displaycell = node["displaycell"];
+                            let element = (displaycell.getComponent("Element_"));
+                            if (element)
+                                element.setAsSelected();
+                        }
+                    }
+                },
+                onunselect: function (index, displaycell) {
+                    if (THIS.selectParents) {
+                        let node = (node_.asArray(THIS.parentTreeNode)[index]);
+                        while (node.ParentNode) {
+                            node = node.ParentNode;
+                            let displaycell = node["displaycell"];
+                            let element = (displaycell.getComponent("Element_"));
+                            if (element)
+                                element.setAsUnSelected();
+                        }
+                    }
+                }
+            });
+        }
     }
     static collapsedSVG(classname = "scrollArrows") {
         return `<svg class="${classname}" width="100%" height="100%" version="1.1" viewBox="-10 -10 45 45" xmlns="http://www.w3.org/2000/svg">
@@ -142,11 +171,13 @@ Tree_.labelNo = 0;
 Tree_.instances = {};
 Tree_.activeInstances = {};
 Tree_.defaults = { collapsedIcon: Tree_.collapsedSVG(), expandedIcon: Tree_.expandedSVG(),
-    indent: 10, topMargin: 0, sideMargin: 0, height: 20, offsetx: 0, offsety: 0 };
+    indent: 10, topMargin: 0, sideMargin: 0, height: 20, offsetx: 0, offsety: 0,
+    useSelected: true, selectedStartIndex: 0, selectParents: true, cascadeCollapse: true };
 Tree_.argMap = {
     string: ["label"],
     node_: ["parentTreeNode"],
     DisplayCell: ["parentDislayCell"],
+    boolean: ["useSelected"],
 };
 Tree_.scrollArrowsSVGCss = css(`scrollArrows`, `stroke: black;`, `fill: white;`, { type: "llm" });
 Tree_.extension = "_TreeNode";
