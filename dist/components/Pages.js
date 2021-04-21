@@ -31,6 +31,9 @@ class Pages extends Base {
     set currentPage(value) {
         this.currentPage_ = value;
         Render.scheduleUpdate();
+        setTimeout(() => {
+            Render.scheduleUpdate();
+        }, 10);
     }
     get currentPage() { return this.currentPage_; }
     onConnect() {

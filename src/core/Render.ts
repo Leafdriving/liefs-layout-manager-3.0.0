@@ -20,6 +20,7 @@ class Render {
     static fullupdate(derender = false){
         Css.update();
         Handler.updateScreenSizeCoord();
+        Handler.linkHandlers();
         Render.node = new node_("Root");
         let handlers = Handler.getHandlers(); 
         for (let index = 0; index < handlers.length; index++) {

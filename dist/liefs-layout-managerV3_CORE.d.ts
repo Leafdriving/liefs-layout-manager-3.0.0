@@ -198,6 +198,7 @@ declare function events(object_: object): {
     processEvents: object;
 };
 declare class Element_ extends Base {
+    static eventsArray: any[];
     static labelNo: number;
     static instances: {
         [key: string]: Element_;
@@ -340,6 +341,9 @@ declare class Handler extends Component {
     static argMap: {
         [key: string]: Array<string>;
     };
+    static linkHandlerOldList: Handler[];
+    static linkHandlerNewList: Handler[];
+    static linkHandlers(): void;
     type: string;
     label: string;
     startRendered: boolean;
@@ -347,6 +351,8 @@ declare class Handler extends Component {
     parentDisplayCell: DisplayCell;
     children: Component[];
     node: node_;
+    preRenderCallBack: (handler: Handler) => void;
+    postRenderCallBack: (handler: Handler) => void;
     constructor(...Arguments: any);
     static ScreenSizeCoord: Coord;
     static updateScreenSizeCoord(): void;

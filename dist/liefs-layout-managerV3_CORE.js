@@ -674,7 +674,7 @@ class Element_ extends Base {
         this.attributes = Element_.getAttribs(el);
         this.attributes["llm"] = "";
         this.innerHTML = el.innerHTML;
-        console.log("loading Element", el);
+        // console.log("loading Element", el)
         el.remove();
     }
     applyEvents() { for (let key in this.events)
@@ -780,6 +780,7 @@ class Element_ extends Base {
         }
     }
 }
+Element_.eventsArray = [];
 Element_.labelNo = 0;
 Element_.instances = {};
 Element_.activeInstances = {};
@@ -1069,6 +1070,39 @@ class Handler extends Component {
         if (this.startRendered)
             Handler.activeInstances[this.label] = this;
     }
+    static linkHandlers() {
+        let links = document.querySelectorAll("[handler]");
+        Handler.linkHandlerOldList = Handler.linkHandlerNewList;
+        Handler.linkHandlerNewList = [];
+        for (let index = 0; index < links.length; index++) {
+            const el = links[index];
+            let parentEl = el;
+            do {
+                parentEl = parentEl.parentElement;
+            } while (!(parentEl.id && Element_.instances[parentEl.id]) && (parentEl));
+            let coord = (parentEl) ? Element_.instances[parentEl.id].parentDisplayCell.coord : Handler.ScreenSizeCoord;
+            let handlerLabel = el.getAttribute("handler");
+            let handler = Handler.instances[handlerLabel];
+            if (handler) {
+                if (!Handler.activeInstances[handlerLabel])
+                    Handler.activeInstances[handlerLabel] = handler;
+                if (Handler.linkHandlerNewList.indexOf(handler) == -1)
+                    Handler.linkHandlerNewList.push(handler);
+                if (!handler.preRenderCallBack)
+                    handler.preRenderCallBack = FunctionStack.push(undefined, function setHandlerCoord(handler) {
+                        let { x, y, width, height } = el.getBoundingClientRect();
+                        handler.coord.copy(coord, x, y, width, height);
+                    });
+            }
+        }
+        for (let index = 0; index < Handler.linkHandlerOldList.length; index++) {
+            let handler = Handler.linkHandlerOldList[index];
+            if (Handler.linkHandlerNewList.indexOf(handler) == -1) {
+                Render.update(handler.parentDisplayCell, true);
+                delete Handler.activeInstances[handler.label];
+            }
+        }
+    }
     static updateScreenSizeCoord() {
         let win = window, doc = document, docElem = doc.documentElement, body = doc.getElementsByTagName('body')[0], x = win.innerWidth || docElem.clientWidth || body.clientWidth, y = win.innerHeight || docElem.clientHeight || body.clientHeight;
         Handler.ScreenSizeCoord.frozen = false;
@@ -1088,11 +1122,15 @@ class Handler extends Component {
             Render.scheduleUpdate();
     }
     preRender(derender, node) {
+        if (this.preRenderCallBack)
+            this.preRenderCallBack(this);
         this.parentDisplayCell.coord.copy(this.coord);
     }
     Render(derender, node, zindex) {
         for (let index = 0; index < this.children.length; index++)
             (this.children[index]).coord.copy(this.parentDisplayCell.coord);
+        if (this.postRenderCallBack)
+            this.postRenderCallBack(this);
         return this.children;
     }
 }
@@ -1105,6 +1143,8 @@ Handler.argMap = {
     Coord: ["coord"],
     boolean: ["startRendered"],
 };
+Handler.linkHandlerOldList = [];
+Handler.linkHandlerNewList = [];
 Handler.ScreenSizeCoord = new Coord();
 function H(...Arguments) { return new DisplayCell(new Handler(...Arguments)); }
 class Css extends Base {
@@ -1222,6 +1262,7 @@ class Render {
     static fullupdate(derender = false) {
         Css.update();
         Handler.updateScreenSizeCoord();
+        Handler.linkHandlers();
         Render.node = new node_("Root");
         let handlers = Handler.getHandlers();
         for (let index = 0; index < handlers.length; index++) {

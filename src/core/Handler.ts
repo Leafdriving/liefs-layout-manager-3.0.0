@@ -7,6 +7,40 @@ class Handler extends Component {
         string : ["label"],
         Coord: ["coord"],
         boolean: ["startRendered"],
+
+    }
+    static linkHandlerOldList:Handler[] = [];
+    static linkHandlerNewList:Handler[] = [];
+    static linkHandlers(){
+        let links = document.querySelectorAll("[handler]");
+        Handler.linkHandlerOldList = Handler.linkHandlerNewList;
+        Handler.linkHandlerNewList = [];
+        for (let index = 0; index < links.length; index++) {
+            const el = links[index];
+            let parentEl = el;
+            do {parentEl = parentEl.parentElement;}
+            while ( !(parentEl.id && Element_.instances[parentEl.id]) && (parentEl));
+            let coord = (parentEl) ? Element_.instances[parentEl.id].parentDisplayCell.coord : Handler.ScreenSizeCoord;
+            let handlerLabel = el.getAttribute("handler");
+            let handler = Handler.instances[handlerLabel];
+            if (handler) {
+                if (!Handler.activeInstances[handlerLabel]) Handler.activeInstances[handlerLabel] = handler;
+                if (Handler.linkHandlerNewList.indexOf(handler) == -1) Handler.linkHandlerNewList.push(handler);
+                if (!handler.preRenderCallBack) handler.preRenderCallBack = <any>FunctionStack.push(undefined,
+                        function setHandlerCoord(handler:Handler) {
+                            let {x, y, width, height} = el.getBoundingClientRect();
+                            handler.coord.copy(coord, x, y, width, height);
+                        }
+                    )
+            }
+        }
+        for (let index = 0; index < Handler.linkHandlerOldList.length; index++) {
+            let handler = Handler.linkHandlerOldList[index];
+            if (Handler.linkHandlerNewList.indexOf(handler) == -1) {
+                Render.update(handler.parentDisplayCell, true);
+                delete Handler.activeInstances[handler.label];
+            }
+        }
     }
     // retArgs:objectAny;   // <- this will appear
     type:string;
@@ -16,6 +50,8 @@ class Handler extends Component {
     parentDisplayCell:DisplayCell;
     children:Component[] = [];
     node:node_;
+    preRenderCallBack:(handler:Handler)=>void;
+    postRenderCallBack:(handler:Handler)=>void;
     
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
@@ -49,17 +85,20 @@ class Handler extends Component {
             objectArray.push(Handler.activeInstances[key].parentDisplayCell);
         return objectArray;
     }
+
     onConnect() {
         if (this.retArgs["number"] && this.retArgs["number"].length >= 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
         if (this.startRendered) Render.scheduleUpdate();
     }
     preRender(derender:boolean, node:node_):void{
+        if (this.preRenderCallBack) this.preRenderCallBack(this);
         this.parentDisplayCell.coord.copy(this.coord);
     }
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         for (let index = 0; index < this.children.length; index++) 
             (<DisplayCell>( this.children[index] )).coord.copy(this.parentDisplayCell.coord);
+        if (this.postRenderCallBack) this.postRenderCallBack(this);
         return this.children;
     }
 }

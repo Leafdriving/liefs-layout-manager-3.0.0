@@ -1,5 +1,6 @@
 function events(object_:object){return {processEvents:object_}}
 class Element_ extends Base {
+    static eventsArray = []
     static labelNo = 0;
     static instances:{[key: string]: Element_;} = {};
     static activeInstances:{[key: string]: Element_;} = {};
@@ -59,7 +60,7 @@ class Element_ extends Base {
         this.attributes = Element_.getAttribs(el);
         this.attributes["llm"]="";
         this.innerHTML = el.innerHTML;
-        console.log("loading Element", el)
+        // console.log("loading Element", el)
         el.remove();
     }
     applyEvents(){for (let key in this.events) this.el[key] = this.events[key];}
