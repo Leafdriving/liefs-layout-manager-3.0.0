@@ -6,5 +6,6 @@ H("core_01", 10, // set 10 pixels border on outside
         I("core_01_left","Left Side", greenBGCss, 5), // 5 pixel margin all sides
         I("core_01_right","Right Side", blueBGCss, 5), // 5 pixel margin all sides
     ),
-    I(`core_01_background`, redBGCss) // Background 
+    I(`core_01_background`, redBGCss), // Background 
+    false,
 );
