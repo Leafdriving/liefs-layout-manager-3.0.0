@@ -111,9 +111,7 @@ class Modal extends Component {
     closeWith(...displaycells) {
         let THIS = this;
         for (let index = 0; index < displaycells.length; index++) {
-            const displaycell = displaycells[index];
-            let element = displaycell.getComponent("Element_");
-            element.addEvents({ onclick: THIS.hide.bind(THIS) });
+            displaycells[index].addEvents({ onclick: THIS.hide.bind(THIS) });
         }
     }
 }

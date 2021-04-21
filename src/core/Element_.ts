@@ -1,5 +1,5 @@
 function events(object_:object){return {processEvents:object_}}
-class Element_ extends Base {
+class Element_ extends Component {
     static eventsArray = []
     static labelNo = 0;
     static instances:{[key: string]: Element_;} = {};
@@ -76,7 +76,6 @@ class Element_ extends Base {
         if (this.dim_) {this.parentDisplayCell.dim = this.dim_;this.dim_ = undefined;}
         if (this.retArgs["number"]) DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
     }
-    preRender(){}
     Render(derender: boolean, node:node_){
         let el = Element_.elExists(this.label);
         if (derender || this.coord.width <= 0) {

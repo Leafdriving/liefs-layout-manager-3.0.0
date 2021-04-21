@@ -19,26 +19,6 @@ class pf {
                 returnStringArray.push(index);
         return returnStringArray;
     }
-    // static sortArgs(Args:any[],                                                 // 1st argument is a list of args.
-    //                 label = "unlabeled",                                        // 2nd argument is a debug label
-    //                 customTypes:Function[] = []) { // 3rd argument is a list of functions for custion types.
-    //     customTypes= customTypes.concat(pf.defaultIsChecks) // assumed these are included.
-    //     let returnArray : objectAny = {};
-    //     let valueType:string;
-    //     let returnValue:string;
-    //     for (let value of Args) {
-    //         valueType = typeof(value);                                   // evaluate type
-    //         for (let checkFunction of customTypes) {                // check if it is a custom Type
-    //             returnValue = checkFunction(value);
-    //             if (returnValue) {valueType = returnValue;}
-    //         }
-    //         if (!(valueType in returnArray)) {                           // If type doesn't exist, add empty array
-    //             returnArray[valueType] = [];
-    //         }
-    //         returnArray[valueType].push(value);                          // Assign Type Value
-    //     };
-    //     return returnArray;
-    // }
     static viewport() {
         var width = window.innerWidth || document.documentElement.clientWidth ||
             document.body.clientWidth;
@@ -61,7 +41,6 @@ class pf {
             }
         }
         arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
-        // return arr; // for testing
     }
     ;
     static undefinedIs(thing, value = 0) { return (thing == undefined) ? value : thing; }
@@ -83,17 +62,6 @@ class pf {
     }
     static decimalPlaces(number, places) { return Math.round(Math.pow(10, places) * number) / Math.pow(10, places); }
 }
-//    static modifyClassProperties(argobj:object, targetobject:object){
-//     for (let key of Object.keys(argobj))
-//         if (typeof(argobj[key]) == "function" && key=="label") targetobject[key] = argobj[key]();
-//         else targetobject[key] = argobj[key];
-//     }
-// static applyArguments(callLabel:string, Arguments: any, classDefaults:object, classArgmap:object, THIS:object, customtypes : Function[] = []) {
-//     let retArgs : objectAny = pf.sortArgs(Arguments, callLabel, customtypes);
-//     let updatedDefaults : Object = pf.ifObjectMergeWithDefaults(retArgs, classDefaults);
-//     let retArgsMapped : Object = pf.retArgsMapped(retArgs, updatedDefaults, classArgmap);
-//     pf.modifyClassProperties(retArgsMapped, THIS);
-// }
 pf.isTypePx = function (it) { if (typeof (it) == "string" && it.substr(-2) == "px")
     return true; return false; };
 pf.pxAsNumber = function (dim) { return +(dim.slice(0, -2)); };
@@ -114,33 +82,6 @@ pf.pad_with_zeroes = function (Number, length = 3) {
         returnString = '0' + returnString;
     return returnString;
 };
-// static retArgsMapped(retArgs:objectAny, defaults: object, argsMap: object) : object {
-//     let returnObject: object = {};
-//     let propertyName:string;
-//     let indexNo: number;
-//     for (let i in defaults) returnObject[i] = defaults[i];
-//     for (let typeName in retArgs) {
-//         if (typeName in argsMap){
-//             indexNo = 0;
-//             while (indexNo < retArgs[typeName].length && 
-//                    indexNo < argsMap[typeName].length
-//                 ) {
-//                     returnObject[ argsMap[typeName][indexNo] ] = retArgs[typeName][indexNo];
-//                     indexNo++;
-//                 }
-//         }
-//     }
-//     return returnObject;
-// }
-// static ifObjectMergeWithDefaults(retArgs:objectAny, defaults: object) : object{
-//     if ("object" in retArgs) {
-//         let returnObj = defaults;
-//         for (let key in retArgs["object"]) 
-//             returnObj = pf.mergeObjects(returnObj, retArgs["object"][key])
-//         return returnObj;
-//     }
-//     return defaults;
-// }
 pf.mergeObjects = function (startObj, AddObj) {
     let returnObject = {};
     for (let i in startObj)
@@ -149,26 +90,6 @@ pf.mergeObjects = function (startObj, AddObj) {
         returnObject[j] = AddObj[j];
     return returnObject;
 };
-// Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
-// interface ArgsObj {
-//     [type: string]: any[];   
-// }
-// interface ArgsFunctions {
-//     [type: string]: Function[];
-// }
-// interface ArgMap {
-//     [key: string]: string[];
-// }
-// interface Offset {x:number;y:number;width:number;height:number}
-// interface RenderChild{
-//     child:object,
-//     derender:boolean
-// }
-// interface zindexAndRenderChildren{
-//     zindex:number,
-//     children?:RenderChild[];
-//     siblings?:RenderChild[];
-// }
 class Arguments_ {
     static ifObjectMergeWithDefaults(THIS, CLASS) {
         if ("object" in THIS.retArgs) {
@@ -627,9 +548,8 @@ Coord.argMap = {
 };
 Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
     number: ["x", "y", "width", "height", "zindex"] };
-// export {Point, Within, Coord}
 function events(object_) { return { processEvents: object_ }; }
-class Element_ extends Base {
+class Element_ extends Component {
     constructor(...Arguments) {
         super();
         this.events = {};
@@ -697,7 +617,6 @@ class Element_ extends Base {
         if (this.retArgs["number"])
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
     }
-    preRender() { }
     Render(derender, node) {
         let el = Element_.elExists(this.label);
         if (derender || this.coord.width <= 0) {
@@ -872,6 +791,11 @@ class DisplayCell extends Component {
         this.coord.zindex = zindex;
         return this.children;
     }
+    addEvents(Argument) {
+        let element_ = this.getComponent("Element_");
+        if (element_)
+            element_.addEvents(Argument);
+    }
     static marginAssign(cell, numberArray) {
         switch (numberArray.length) {
             case 1:
@@ -921,10 +845,6 @@ class DisplayGroup extends Component {
         this.parentDisplayCell.setdim = function (value) { THIS.dim = value; };
         if (this.retArgs["number"] && this.retArgs["number"].length > 1)
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"].slice(1));
-    }
-    ;
-    preRender(derender, node) {
-        // console.log("DisplayGroup PreRender");
     }
     ;
     Render(derender, node, zindex) {

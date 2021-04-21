@@ -134,4 +134,3 @@ class Coord extends Base {
     isPointIn(x:number, y:number): boolean {return (this.x <= x && x <= this.x+this.width && this.y <= y && y <= this.y+this.height)}
 
 }
-// export {Point, Within, Coord}

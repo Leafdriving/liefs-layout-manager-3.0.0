@@ -140,9 +140,6 @@ class Tree_ extends Component {
         })
         this.parentTreeNode = node;
     }
-    onConnect():void{
-        // console.log("OnConnect");
-    };
     preRender(derender:boolean, node:node_, zindex:number):Component[]|void{
         this.displayHeight = (this.topMargin + this.parentTreeNode.length()*this.height)-this.parentDisplayCell.coord.y;
         return undefined;

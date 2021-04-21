@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        //"outFile" : "dist/liefs-layout-managerV3_FULL.js",
+        //"outDir" : "dist/modules",
+        "declaration" : true,        
+        "allowJs": false,
+        "target" : "es6",
+        // "module" :"amd",
+    },
+    "include": ["../dist/liefs-layout-managerV3_FULL.d.ts"],
+    "files": [
+        "Manual.ts",
+    ]
+}

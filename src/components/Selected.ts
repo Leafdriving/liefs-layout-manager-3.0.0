@@ -36,11 +36,8 @@ class Selected extends Base {
             let type = Arguments_.typeof( this.indexer[index] );
             if ( type == "DisplayCell" ) displayCells = this.indexer[index] = [ <DisplayCell>(this.indexer[index]) ];
             else if ( type == "Array" ) displayCells = <DisplayCell[]>( this.indexer[index] );
-            for (let index = 0; index < displayCells.length; index++) {
-                let element = (<Element_>displayCells[index].getComponent("Element_"));
-                //if (element.){}
-                element.addEvents( {onclick:function selected(e:PointerEvent){ THIS.select(displayCells[index]) }} )
-            }
+            for (let index = 0; index < displayCells.length; index++) 
+                displayCells[index].addEvents( {onclick:function selected(e:PointerEvent){ THIS.select(displayCells[index]) }} );
         }
     }
     select(displaycellOrNumber:DisplayCell|number) {

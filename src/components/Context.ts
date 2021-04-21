@@ -46,14 +46,14 @@ class Context extends Component {
             let label = childNode.Arguments[0];
             if (Arguments_.typeof(displaycell) == "DisplayCell") childNode["displaycell"] = displaycell;
             else displaycell = childNode["displaycell"] = I(`${this.label}_${label}`, label, Context.Css);
-            let element = <Element_>displaycell.getComponent("Element_");
+            //let element = <Element_>displaycell.getComponent("Element_");
             let eventObject = {onclick:function(e:MouseEvent){Context.onclick(e, <DisplayCell>(DisplayCell.instances[`${THIS.label}_${label}`]), childNode)}}
             if (childNode.children.length) {
                 (<DisplayCell>(childNode["displaycell"])).addComponent( 
                     context(`${childNode.label}_context`, "onmouseover", false, childNode)
                 )
             }
-            element.addEvents( eventObject );
+            displaycell.addEvents( eventObject );
             displaycells.push( displaycell );
         }
         this.displaycell = v(`${this.label}_ContextV`, ...displaycells);
@@ -118,11 +118,11 @@ class Context extends Component {
         }
     }
     onConnect():void{
-        let element = <Element_>(this.parentDisplayCell.getComponent("Element_"));
+        //let element = <Element_>(this.parentDisplayCell.getComponent("Element_"));
         // console.log(element)
         let eventObject:object = {};
         eventObject[this.eventType] = this.launchContext.bind(this);
-        element.addEvents( eventObject );
+        this.parentDisplayCell.addEvents( eventObject );
     };
     setCoord(Pcoord=this.parentDisplayCell.coord, event:MouseEvent|PointerEvent = this.launchEvent){
         let Dcoord = this.displaycell.coord;
@@ -134,7 +134,6 @@ class Context extends Component {
         if (y + height > Mcoord.y + Mcoord.height) height = Mcoord.y + Mcoord.height - y; 
         this.displaycell.coord.copy(Mcoord, x, y, width, height);
     }
-    preRender(derender:boolean, node:node_, zindex:number):Component[]|void{return undefined};
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         if (this.isShown) {
             this.setCoord();

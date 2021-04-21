@@ -39,7 +39,6 @@ declare class Context extends Component {
     launchContext(event?: PointerEvent | MouseEvent): void;
     onConnect(): void;
     setCoord(Pcoord?: Coord, event?: MouseEvent | PointerEvent): void;
-    preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
     Render(derender: boolean, node: node_, zindex: number): Component[];
     getChild(label: string): Component;
     delete(): void;

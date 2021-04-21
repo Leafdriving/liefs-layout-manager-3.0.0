@@ -1,4 +1,4 @@
-class Pages extends Base {
+class Pages extends Component {
     // retArgs:objectAny;   // <- this will appear
     constructor(...Arguments) {
         super();
@@ -29,21 +29,21 @@ class Pages extends Base {
     get dim() { return this.dim_; }
     set dim(value) { this.dim_ = value; }
     set currentPage(value) {
-        this.currentPage_ = value;
-        Render.scheduleUpdate();
-        setTimeout(() => {
+        if (value < 0)
+            value = 0;
+        if (value >= this.cellArray.length)
+            value = this.cellArray.length - 1;
+        if (value != this.currentPage_) {
+            this.currentPage_ = value;
             Render.scheduleUpdate();
-        }, 10);
+            setTimeout(() => { Render.scheduleUpdate(); }, 10);
+        }
     }
     get currentPage() { return this.currentPage_; }
     onConnect() {
         let THIS = this;
         this.parentDisplayCell.getdim = function () { return THIS.dim; };
         this.parentDisplayCell.setdim = function (value) { THIS.dim = value; };
-    }
-    ;
-    preRender(derender, node) {
-        return undefined;
     }
     ;
     Render(derender, node, zindex) {

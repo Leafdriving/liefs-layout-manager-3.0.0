@@ -411,3 +411,411 @@ declare class Render {
     static classes: {};
     static register(label: string, object_: object): void;
 }
+declare class ScrollBar extends Component {
+    static labelNo: number;
+    static instances: {
+        [key: string]: ScrollBar;
+    };
+    static activeInstances: {
+        [key: string]: ScrollBar;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    static ScrollBar_whiteBG: Css;
+    static ScrollBar_blackBG: Css;
+    static scrollArrowsSVGCss: Css;
+    static arrowSVGCss: Css;
+    static leftArrowSVG(classname: string): string;
+    static rightArrowSVG(classname: string): string;
+    static upArrowSVG(classname: string): string;
+    static downArrowSVG(classname: string): string;
+    static startoffset: number;
+    node: node_;
+    parentDisplayCell: DisplayCell;
+    totalPixels: number;
+    viewingPixels: number;
+    scrollbarDisplayCell: DisplayCell;
+    preBar: DisplayCell;
+    Bar: DisplayCell;
+    postBar: DisplayCell;
+    isHor: boolean;
+    barSize: number;
+    pixelsUsed: number;
+    pixelsAvailable: number;
+    offset: number;
+    scrollMultiplier: number;
+    get scrollbarPixels(): number;
+    get ratio(): number;
+    update(pixelsUsed: number, pixelsAvailable: number): number;
+    limit(): void;
+    constructor(...Arguments: any);
+    onConnect(): void;
+    preRender(derender: boolean, node: node_): void;
+    Render(derender: boolean, node: node_, zindex: number): Component[];
+    delete(): void;
+    build(): void;
+    onSmallArrow(e: PointerEvent): void;
+    onBigArrow(e: PointerEvent): void;
+    onSmallerBar(e: PointerEvent): void;
+    onBiggerBar(e: PointerEvent): void;
+    onBarDown(e: MouseEvent): void;
+    onBarMove(e: MouseEvent, xmouseDiff: object): void;
+}
+declare function scrollbar(...Arguments: any): ScrollBar;
+declare class onDrag_ extends Base {
+    static instances: onDrag_[];
+    static activeInstances: onDrag_[];
+    static defaults: {};
+    static argMap: {
+        string: string[];
+        function: string[];
+    };
+    label: string;
+    el: HTMLDivElement;
+    onDown: Function;
+    onMove: Function;
+    onUp: Function;
+    isDown: boolean;
+    mousePos: object;
+    mouseDiff: object;
+    returnObject: object;
+    constructor(...Arguments: any);
+    reset(): void;
+    static disableSelect(event: MouseEvent): void;
+}
+declare function onDrag(...Arguments: any): object;
+declare class onHoldClick_ extends Base {
+    static labelNo: number;
+    static instances: {
+        [key: string]: onHoldClick_;
+    };
+    static activeInstances: {
+        [key: string]: onHoldClick_;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    label: string;
+    initialDelay: number;
+    repeatDelay: number;
+    FUNCTION: Function;
+    returnObject: object;
+    isDown: number;
+    timeDown: number;
+    mouseDownEvent: PointerEvent;
+    constructor(...Arguments: any);
+    repeat(): void;
+    onDown(e: MouseEvent): void;
+}
+declare function onHoldClick(...Arguments: any): object;
+declare class Selected extends Base {
+    static labelNo: number;
+    static instances: {
+        [key: string]: Selected;
+    };
+    static activeInstances: {
+        [key: string]: Selected;
+    };
+    static defaults: {
+        indexer: any[];
+        getIndexerArray: (selectedInstance: Selected) => (DisplayCell | DisplayCell[])[];
+    };
+    static argMap: {
+        string: string[];
+        function: string[];
+        Array: string[];
+        number: string[];
+        Pages: string[];
+    };
+    label: string;
+    indexer_: (DisplayCell | DisplayCell[])[];
+    get indexer(): (DisplayCell | DisplayCell[])[];
+    set indexer(value: (DisplayCell | DisplayCell[])[]);
+    getIndexerArray: (selectedInstance: Selected) => (DisplayCell | DisplayCell[])[];
+    onselect: (index: number, displaycell: DisplayCell) => void;
+    onunselect: (index: number, displaycell: DisplayCell) => void;
+    startValue: number;
+    currentButtonIndex: number;
+    constructor(...Arguments: any);
+    updateEvents(): void;
+    select(displaycellOrNumber: DisplayCell | number): void;
+    clear(): void;
+    indexOf(displaycell: DisplayCell): number;
+    onSelect(index: number): void;
+    onUnselect(index: number): void;
+}
+declare class Pages extends Component {
+    static labelNo: number;
+    static instances: {
+        [key: string]: Pages;
+    };
+    static activeInstances: {
+        [key: string]: Pages;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    label: string;
+    node: node_;
+    parentDisplayCell: DisplayCell;
+    children: Component[];
+    tree: Tree_;
+    evalFunction: (thisPages: Pages) => number;
+    cellArray: DisplayCell[];
+    dim_: string;
+    get dim(): string;
+    set dim(value: string);
+    prevPage: number;
+    currentPage_: number;
+    set currentPage(value: number);
+    get currentPage(): number;
+    constructor(...Arguments: any);
+    onConnect(): void;
+    Render(derender: boolean, node: node_, zindex: number): Component[];
+    delete(): void;
+}
+declare function P(...Arguments: any): DisplayCell;
+declare class Tree_ extends Component {
+    static labelNo: number;
+    static instances: {
+        [key: string]: Tree_;
+    };
+    static activeInstances: {
+        [key: string]: Tree_;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    static scrollArrowsSVGCss: Css;
+    static collapsedSVG(classname?: string): string;
+    static expandedSVG(classname?: string): string;
+    static extension: string;
+    static toggleCollapse(el: HTMLElement, node: node_, mouseEvent: PointerEvent): void;
+    static deRenderChildren(parentNode: node_): void;
+    static pointerCss: Css;
+    label: string;
+    offsetx: number;
+    offsety: number;
+    css: string;
+    Css: Css;
+    indent: number;
+    events: object;
+    topMargin: number;
+    sideMargin: number;
+    height: number;
+    displayWidth: number;
+    displayHeight: number;
+    scrollbarh: ScrollBar;
+    scrollbarv: ScrollBar;
+    node: node_;
+    parentTreeNode: node_;
+    parentDisplayCell: DisplayCell;
+    children: Component[];
+    useSelected: boolean;
+    selected: Selected;
+    selectedNode: node_;
+    selectedStartIndex: number;
+    selectParents: boolean;
+    cascadeCollapse: boolean;
+    constructor(...Arguments: any);
+    static icon(node: node_): string;
+    newNode(node: node_): void;
+    preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
+    Render(derender: boolean, node: node_, zindex: number): Component[];
+    delete(): void;
+}
+declare class Context extends Component {
+    static Css: Css;
+    static labelNo: number;
+    static instances: {
+        [key: string]: Context;
+    };
+    static activeInstances: {
+        [key: string]: Context;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    static pointOffset: number;
+    static rootInstance: Context;
+    byPoint: boolean;
+    toTheRight: boolean;
+    eventType: string;
+    node: node_;
+    parentDisplayCell: DisplayCell;
+    children: Component[];
+    contextNode: node_;
+    width: number;
+    height: number;
+    isShown: boolean;
+    activeChild: Context;
+    displaycell: DisplayCell;
+    displaygroup: DisplayGroup;
+    launchEvent: MouseEvent | PointerEvent;
+    constructor(...Arguments: any);
+    build(): void;
+    static onclick(e: MouseEvent, displaycell: DisplayCell, node: node_): void;
+    static currentAndParent(): Context[];
+    static ContextOnMouseMove(event: MouseEvent | PointerEvent): void;
+    static pop(): void;
+    static currentInstance(deep?: number): [Context, number];
+    launchContext(event?: PointerEvent | MouseEvent): void;
+    onConnect(): void;
+    setCoord(Pcoord?: Coord, event?: MouseEvent | PointerEvent): void;
+    Render(derender: boolean, node: node_, zindex: number): Component[];
+    getChild(label: string): Component;
+    delete(): void;
+}
+declare function context(...Arguments: any): Context;
+declare class Modal extends Component {
+    static labelNo: number;
+    static instances: {
+        [key: string]: Modal;
+    };
+    static activeInstances: {
+        [key: string]: Modal;
+    };
+    static closeCss: Css;
+    static closeSVGCss: Css;
+    static closeSVG: string;
+    static movingInstace: Modal;
+    static offset: {
+        x: number;
+        y: number;
+    };
+    static onDown(): void;
+    static onMove(mouseEvent: MouseEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static onUp(mouseEvent: MouseEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    static x: number;
+    static y: number;
+    rootDisplayCell: DisplayCell;
+    label: string;
+    node: node_;
+    parentDisplayCell: DisplayCell;
+    handler: Handler;
+    get coord(): Coord;
+    startCoord: Coord;
+    sizer: {
+        minWidth?: number;
+        maxWidth?: number;
+        minHeight?: number;
+        maxHeight?: number;
+        width?: number;
+        height?: number;
+    };
+    constructor(...Arguments: any);
+    onConnect(): void;
+    preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
+    Render(derender: boolean, node: node_, zindex: number): Component[];
+    getChild(label: string): Component;
+    delete(): void;
+    show(): void;
+    hide(event?: MouseEvent | PointerEvent): void;
+    isShown(): boolean;
+    dragWith(...displaycells: DisplayCell[]): void;
+    closeWith(...displaycells: DisplayCell[]): void;
+}
+declare class winModal extends Base {
+    static labelNo: number;
+    static instances: {
+        [key: string]: winModal;
+    };
+    static activeInstances: {
+        [key: string]: winModal;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    static titleCss: Css;
+    static closeSVGCss: Css;
+    static closeSVG: string;
+    static whiteBGCss: Css;
+    node: node_;
+    parentDisplayCell: DisplayCell;
+    children: Component[];
+    modal: Modal;
+    titleText: string;
+    innerHTML: string;
+    headerHeight: number;
+    fullDisplayCell: DisplayCell;
+    titleDisplayCell: DisplayCell;
+    closeDisplayCell: DisplayCell;
+    headerDisplayCell: DisplayCell;
+    bodyDisplayCell: DisplayCell;
+    show(): void;
+    hide(): void;
+    constructor(...Arguments: any);
+    build(): void;
+}
+declare class DragBar extends Component {
+    static labelNo: number;
+    static instances: {
+        [key: string]: DragBar;
+    };
+    static activeInstances: {
+        [key: string]: DragBar;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    static horCss: Css;
+    static verCss: Css;
+    static parentDisplayGroup(THIS: DragBar): [DisplayGroup, boolean];
+    static dragStartDim: number;
+    static onDown(e: MouseEvent | PointerEvent): void;
+    static onMove(e: MouseEvent | PointerEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static onUp(e: MouseEvent | PointerEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    node: node_;
+    parentDisplayCell: DisplayCell;
+    parentDisplayGroup: DisplayGroup;
+    parentDisplayGroupChild: DisplayCell;
+    children: Component[];
+    min: number;
+    max: number;
+    width: number;
+    dragbarDisplayCell: DisplayCell;
+    get isHor(): boolean;
+    isLast: boolean;
+    constructor(...Arguments: any);
+    Render(derender: boolean, node: node_, zindex: number): Component[];
+}

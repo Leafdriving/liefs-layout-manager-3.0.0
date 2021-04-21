@@ -46,7 +46,6 @@ declare class Tree_ extends Component {
     constructor(...Arguments: any);
     static icon(node: node_): string;
     newNode(node: node_): void;
-    onConnect(): void;
     preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
     Render(derender: boolean, node: node_, zindex: number): Component[];
     delete(): void;

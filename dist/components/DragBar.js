@@ -40,8 +40,7 @@ class DragBar extends Component {
         }
         if (!this.dragbarDisplayCell)
             this.dragbarDisplayCell = I(`${this.label}_Dragbar`, (this.isHor) ? DragBar.horCss : DragBar.verCss);
-        (this.dragbarDisplayCell.getComponent("Element_"))
-            .addEvents({ ondrag: [DragBar.onDown.bind(this), DragBar.onMove.bind(this), DragBar.onUp.bind(this)] });
+        this.dragbarDisplayCell.addEvents({ ondrag: [DragBar.onDown.bind(this), DragBar.onMove.bind(this), DragBar.onUp.bind(this)] });
         this.children = [this.dragbarDisplayCell];
         let PDcoord = this.parentDisplayCell.coord;
         let PDG = this.parentDisplayGroup;

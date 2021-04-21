@@ -37,9 +37,6 @@ class DisplayGroup extends Component {
         if (this.retArgs["number"] && this.retArgs["number"].length > 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"].slice(1));
     };
-    preRender(derender:boolean, node:node_):void{
-        // console.log("DisplayGroup PreRender");
-    };
     Render(derender:boolean, node:node_, zindex:number):DisplayCell[]{
         // console.log("Render")
         let TotalPixels = ((this.isHor) ? this.coord.width : this.coord.height)-(this.children.length-1)*((this.margin) ? this.margin : 0)

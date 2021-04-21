@@ -87,6 +87,10 @@ class DisplayCell extends Component {
         this.coord.zindex = zindex;
         return this.children;
     }
+    addEvents(Argument:object){
+        let element_ = <Element_>this.getComponent("Element_");
+        if (element_) element_.addEvents(Argument)
+    }
     static marginAssign(cell:DisplayCell, numberArray:number[]) {
         switch (numberArray.length) {
             case 1:

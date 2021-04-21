@@ -20,12 +20,12 @@ class Context extends Component {
                 childNode["displaycell"] = displaycell;
             else
                 displaycell = childNode["displaycell"] = I(`${this.label}_${label}`, label, Context.Css);
-            let element = displaycell.getComponent("Element_");
+            //let element = <Element_>displaycell.getComponent("Element_");
             let eventObject = { onclick: function (e) { Context.onclick(e, (DisplayCell.instances[`${THIS.label}_${label}`]), childNode); } };
             if (childNode.children.length) {
                 (childNode["displaycell"]).addComponent(context(`${childNode.label}_context`, "onmouseover", false, childNode));
             }
-            element.addEvents(eventObject);
+            displaycell.addEvents(eventObject);
             displaycells.push(displaycell);
         }
         this.displaycell = v(`${this.label}_ContextV`, ...displaycells);
@@ -96,11 +96,11 @@ class Context extends Component {
         }
     }
     onConnect() {
-        let element = (this.parentDisplayCell.getComponent("Element_"));
+        //let element = <Element_>(this.parentDisplayCell.getComponent("Element_"));
         // console.log(element)
         let eventObject = {};
         eventObject[this.eventType] = this.launchContext.bind(this);
-        element.addEvents(eventObject);
+        this.parentDisplayCell.addEvents(eventObject);
     }
     ;
     setCoord(Pcoord = this.parentDisplayCell.coord, event = this.launchEvent) {
@@ -114,8 +114,6 @@ class Context extends Component {
             height = Mcoord.y + Mcoord.height - y;
         this.displaycell.coord.copy(Mcoord, x, y, width, height);
     }
-    preRender(derender, node, zindex) { return undefined; }
-    ;
     Render(derender, node, zindex) {
         if (this.isShown) {
             this.setCoord();

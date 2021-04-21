@@ -1,4 +1,4 @@
-class Pages extends Base {
+class Pages extends Component {
     static labelNo = 0;
     static instances:{[key: string]: Pages;} = {};
     static activeInstances:{[key: string]: Pages;} = {};
@@ -28,11 +28,13 @@ class Pages extends Base {
     prevPage:number;
     currentPage_:number;
     set currentPage(value:number) {
-        this.currentPage_ = value;
-        Render.scheduleUpdate();
-        setTimeout(() => {
+        if (value < 0) value = 0;
+        if (value >= this.cellArray.length ) value = this.cellArray.length-1;
+        if (value != this.currentPage_) {
+            this.currentPage_ = value;
             Render.scheduleUpdate();
-        }, 10);
+            setTimeout(() => {Render.scheduleUpdate();}, 10);
+        }
     }
     get currentPage(){return this.currentPage_}
     
@@ -65,9 +67,6 @@ class Pages extends Base {
         let THIS = this;
         this.parentDisplayCell.getdim = function(){return THIS.dim}
         this.parentDisplayCell.setdim = function(value:string){THIS.dim = value}
-    };
-    preRender(derender:boolean, node:node_):void{
-        return undefined
     };
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         let newPage = this.evalFunction(this);

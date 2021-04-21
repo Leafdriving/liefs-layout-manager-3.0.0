@@ -1,16 +1,4 @@
 class pf {
-
-//    static modifyClassProperties(argobj:object, targetobject:object){
-//     for (let key of Object.keys(argobj))
-//         if (typeof(argobj[key]) == "function" && key=="label") targetobject[key] = argobj[key]();
-//         else targetobject[key] = argobj[key];
-//     }
-    // static applyArguments(callLabel:string, Arguments: any, classDefaults:object, classArgmap:object, THIS:object, customtypes : Function[] = []) {
-    //     let retArgs : objectAny = pf.sortArgs(Arguments, callLabel, customtypes);
-    //     let updatedDefaults : Object = pf.ifObjectMergeWithDefaults(retArgs, classDefaults);
-    //     let retArgsMapped : Object = pf.retArgsMapped(retArgs, updatedDefaults, classArgmap);
-    //     pf.modifyClassProperties(retArgsMapped, THIS);
-    // }
     static isTypePx = function(it:any){if (typeof(it) == "string" && it.substr(-2) == "px") return true;return false;}
     static pxAsNumber = function(dim:string){ return +(dim.slice(0, -2));}
     static isTypePercent = function(it:any){if (typeof(it) == "string" && it.substr(-1) == "%") return true;return false;}
@@ -33,66 +21,12 @@ class pf {
         while (returnString.length < length) returnString = '0' + returnString;
         return returnString;
     }
-    // static retArgsMapped(retArgs:objectAny, defaults: object, argsMap: object) : object {
-    //     let returnObject: object = {};
-    //     let propertyName:string;
-    //     let indexNo: number;
-    //     for (let i in defaults) returnObject[i] = defaults[i];
-
-    //     for (let typeName in retArgs) {
-    //         if (typeName in argsMap){
-    //             indexNo = 0;
-    //             while (indexNo < retArgs[typeName].length && 
-    //                    indexNo < argsMap[typeName].length
-    //                 ) {
-    //                     returnObject[ argsMap[typeName][indexNo] ] = retArgs[typeName][indexNo];
-    //                     indexNo++;
-    //                 }
-    //         }
-    //     }
-    //     return returnObject;
-    // }
-    // static ifObjectMergeWithDefaults(retArgs:objectAny, defaults: object) : object{
-    //     if ("object" in retArgs) {
-    //         let returnObj = defaults;
-    //         for (let key in retArgs["object"]) 
-    //             returnObj = pf.mergeObjects(returnObj, retArgs["object"][key])
-    //         return returnObj;
-    //     }
-    //     return defaults;
-    // }
     static mergeObjects = function (startObj: object, AddObj: object){
         let returnObject: object = {};
         for (let i in startObj) returnObject[i] = startObj[i];
         for (let j in AddObj) returnObject[j] = AddObj[j];
         return returnObject;
     };
-    // static sortArgs(Args:any[],                                                 // 1st argument is a list of args.
-    //                 label = "unlabeled",                                        // 2nd argument is a debug label
-    //                 customTypes:Function[] = []) { // 3rd argument is a list of functions for custion types.
-    //     customTypes= customTypes.concat(pf.defaultIsChecks) // assumed these are included.
-
-    //     let returnArray : objectAny = {};
-    //     let valueType:string;
-    //     let returnValue:string;
-
-    //     for (let value of Args) {
-    //         valueType = typeof(value);                                   // evaluate type
-
-    //         for (let checkFunction of customTypes) {                // check if it is a custom Type
-    //             returnValue = checkFunction(value);
-    //             if (returnValue) {valueType = returnValue;}
-    //         }
-
-    //         if (!(valueType in returnArray)) {                           // If type doesn't exist, add empty array
-    //             returnArray[valueType] = [];
-    //         }
-    //         returnArray[valueType].push(value);                          // Assign Type Value
-    //     };
-    //     return returnArray;
-    // }
-
-
     static viewport()
     {
         var width  = window.innerWidth || document.documentElement.clientWidth || 
@@ -116,7 +50,6 @@ class pf {
             }
         }
         arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
-        // return arr; // for testing
     };
     static undefinedIs(thing:any,value:any=0){return (thing == undefined) ? value : thing}
     static preUnderscore(someString:string) {return someString.substring(0, someString.indexOf("_"));}
@@ -142,5 +75,3 @@ class pf {
     }
     static decimalPlaces(number:number,places:number) {return Math.round(Math.pow(10,places)*number)/Math.pow(10,places);}
 }
-
-// Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];

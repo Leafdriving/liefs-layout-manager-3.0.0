@@ -1,4 +1,4 @@
-declare class Pages extends Base {
+declare class Pages extends Component {
     static labelNo: number;
     static instances: {
         [key: string]: Pages;
@@ -28,7 +28,6 @@ declare class Pages extends Base {
     get currentPage(): number;
     constructor(...Arguments: any);
     onConnect(): void;
-    preRender(derender: boolean, node: node_): void;
     Render(derender: boolean, node: node_, zindex: number): Component[];
     delete(): void;
 }
