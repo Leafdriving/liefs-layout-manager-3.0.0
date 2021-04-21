@@ -85,7 +85,6 @@ class Handler extends Component {
             objectArray.push(Handler.activeInstances[key].parentDisplayCell);
         return objectArray;
     }
-
     onConnect() {
         if (this.retArgs["number"] && this.retArgs["number"].length >= 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);

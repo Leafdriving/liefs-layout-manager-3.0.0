@@ -31,5 +31,6 @@
         "Tree.ts",
         "Context.ts",
         "Modal.ts",
+        "DragBar.ts",
     ]
 }

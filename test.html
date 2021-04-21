@@ -12,6 +12,7 @@
     <script src="dist/components/Tree.js"></script>
     <script src="dist/components/Context.js"></script>
     <script src="dist/components/Modal.js"></script>
+    <script src="dist/components/DragBar.js"></script>
 </head>
 <body>
     <div id="TopThing" class="bgGreen">This is the Top Thing
@@ -37,7 +38,7 @@
                 css("bgMagenta","background:magenta;", "background:magenta;color:white", "background:magenta;color:blue"),
                 ).addComponent( context("Mycontext") );
     let pages = new Pages("MyPages", "300px", myTree);
-    let pageDisplayCell = new DisplayCell(pages);
+    let pageDisplayCell = new DisplayCell(pages).addComponent(new DragBar(100,500,5));
 H("MainHandler", 25,
         h("hor1", 5,
             v("Butons", 5,
