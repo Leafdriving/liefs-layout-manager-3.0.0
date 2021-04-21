@@ -4,12 +4,52 @@
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Page Title</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.min.css" integrity="sha512-RhnuJxgda82cBylRysVDqdpwnBcSkMzxz1+BxGwBPNMzBJlvaOjHz7P2kXELC0bdNxazsNSyJb7KAww0T5iUdQ==" crossorigin="anonymous" />
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script src="../dist/liefs-layout-managerV3_FULL.js"></script>
 </head>
 <body>
-    <div id="Introduction">Introduction</div>
+    <script>
+        var require = {paths: {'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/'}}
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/loader.min.js" integrity="sha512-+8+MX2hyUZxaUfMJT0ew+rPsrTGiTmCg8oksa6uVE/ZlR/g3SJtyozqcqDGkw/W785xYAvcx1LxXPP+ywD0SNw==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.nls.min.js" integrity="sha512-3aAqsDS5ClTlwyzxufRhW9WMwZlYn3V8GLRl324pMIftp+CA6kvxfjlm8TG7Wi53eBcerEdX0YfXm3QLvf1Pqg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.js" integrity="sha512-sOJZBKiSvh/6vxIimdXkjO45Nd3v2n3ZYtrwktgj5SJh0+PCqNQ5oqzxEr6c/o4ULczn1Wo2yh1qrz+ghduDUA==" crossorigin="anonymous"></script>
+
+<div id="Introduction">
+    <div class="heading">Introduction</div><p class="body">
+Lief's Layout Manager is a  Typescript/Javascript 'div' management framework, which add layout and
+event capabilities to your client code.  It works in addition to all your current layout techniques.
+</p><div class="subHeading">Use Cases</div><p class="body">
+Lief's Layout Manager was designed to make the following easier:
+<ul>
+    <li>Front End Applications (Electron)</li>
+    <li>Dynamic Page Layout (Adjusts for All Screen Sizes)</li>
+    <li>Expanded Events (Multiple Functions running onclick for example)</li>
+    <li>Dynamic Feedback to 'div's</li>
+</ul>    
+</p>
+</div>
+
+<div id="Installation">
+    <div class="heading">Installation</div><p class="body">
+Lief's Layout Manager
+<div class="button">Something That is ver long</div>
+</p>
+</div>
 </body>
 </html>
+<script>
+    require.config({paths: {'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/'}})
+  let monacoContainer = function(code, language="html", elementId = 'container'){
+      var editor;
+      require(['vs/editor/editor.main'], function () {
+          editor = monaco.editor.create(document.getElementById(elementId), {
+              value: code,
+              language: language,
+          });
+      });
+      return editor;
+  }
+  </script>
 <script src="Manual.js"></script>
-

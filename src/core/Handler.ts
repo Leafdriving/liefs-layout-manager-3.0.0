@@ -100,5 +100,8 @@ class Handler extends Component {
         if (this.postRenderCallBack) this.postRenderCallBack(this);
         return this.children;
     }
+    show(){Handler.activeInstances[this.label] = this;Render.scheduleUpdate();}
+    hide(){Render.update(this.parentDisplayCell, true);
+           delete Handler.activeInstances[this.label]}
 }
 function H(...Arguments:any){return new DisplayCell( new Handler(...Arguments) )}

@@ -1053,6 +1053,11 @@ class Handler extends Component {
             this.postRenderCallBack(this);
         return this.children;
     }
+    show() { Handler.activeInstances[this.label] = this; Render.scheduleUpdate(); }
+    hide() {
+        Render.update(this.parentDisplayCell, true);
+        delete Handler.activeInstances[this.label];
+    }
 }
 Handler.labelNo = 0;
 Handler.instances = {};

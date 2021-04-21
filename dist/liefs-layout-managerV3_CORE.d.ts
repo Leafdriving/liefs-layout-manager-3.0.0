@@ -359,6 +359,8 @@ declare class Handler extends Component {
     onConnect(): void;
     preRender(derender: boolean, node: node_): void;
     Render(derender: boolean, node: node_, zindex: number): Component[];
+    show(): void;
+    hide(): void;
 }
 declare function H(...Arguments: any): DisplayCell;
 declare class Css extends Base {
