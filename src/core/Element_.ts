@@ -84,7 +84,10 @@ class Element_ extends Component {
         }
         if (!this.el) this.el = document.createElement("div");
         if (!el) document.body.appendChild(this.el);
-        if (this.innerHTML && (!this.ignoreInner) && this.innerHTML != this.el.innerHTML) this.el.innerHTML = this.evalInner(this);
+        if (this.innerHTML && (!this.ignoreInner) && this.innerHTML != this.el.innerHTML) {
+            let newinner = this.evalInner(this);
+            if (newinner != undefined) this.el.innerHTML = newinner;
+        }
         this.renderHtmlAttributes();
         this.applyEvents();
         let styleString = Element_.style(this);
