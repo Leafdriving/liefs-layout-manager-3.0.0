@@ -27,12 +27,43 @@ class Manual {
         let b1 = Manual.showJavascriptButton(label);
         let b2 = Manual.showHtmlButton(label);
         let b3 = Manual.showRenderButton(label);
+        let b4 = Manual.launchAsModalButton(label);
+        let b5 = Manual.launchAsNewWindow(label);
         let dc = h(`${label}_buttonBar`, `${height}px`, b1, b2, b3, 5);
-        return [dc, b1, b2, b3];
+        let dcb = h(`${label}_BbuttonBar`, `${height}px`, b4, b5, 5);
+        return [dc, b1, b2, b3, dcb];
+    }
+    static launchAsModal(e, label) {
+        let displaygroup = DisplayGroup.instances[`${label}_buttonBar`];
+        if (displaygroup.children.length == 3) {
+            let pages = Pages.instances[`${label}_P`];
+            if (pages.currentPage == 2) {
+                let selectInstnce = Selected.instances[label];
+                selectInstnce.select(0);
+                pages.currentPage = 0;
+            }
+            Render.update(displaygroup.children[displaygroup.children.length - 1], true);
+            displaygroup["temp"] = displaygroup.children[displaygroup.children.length - 1];
+            displaygroup.children.splice(-1, 1);
+            if (!Handler.instances[label])
+                eval(Manual.fileObject[`${label}.js`]);
+            let handler = Handler.instances[label];
+            let winModal_ = new winModal(`${label}_`, `Example - ${label}`, handler.children[0], function () {
+                displaygroup.children.push(displaygroup["temp"]);
+                Render.scheduleUpdate();
+            });
+        }
     }
     static showJavascriptButton(label) { return I(`${label}_showJavascript`, "Show Javascript", Manual.tabCss); }
     static showHtmlButton(label) { return I(`${label}_showHtml`, "Show Html", Manual.tabCss); }
     static showRenderButton(label) { return I(`${label}_Render`, "Show Rendered", Manual.tabCss); }
+    static launchAsModalButton(label) {
+        return I(`${label}_launchAsModal`, "Launch As Modal", Manual.bottomTabCss, events({ onclick: function (e) { Manual.launchAsModal(e, label); } }));
+    }
+    static launchAsNewWindow(label) {
+        return I(`${label}_launchAsNewWindow`, "Launch As New Window", Manual.bottomTabCss, events({ onclick: function () { console.log("Launching"); window.open(`../Examples/${label}.html`, '_blank', 'location=yes,left=100, top=150, height=350,width=500,status=yes'); } }));
+    }
+    // <a onclick="window.open(document.URL, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');">
     static getLibrary(label, element, language, returnString = "Not Found") {
         if (!element["monaco"]) {
             let returnString_ = Manual.fileObject[label];
@@ -50,38 +81,25 @@ class Manual {
         }, 50);
         return undefined;
     }
-    // static handlerToItem(label:string):DisplayCell {
-    //     let javascript = Manual.fileObject[label];
-    //     console.log("javascript", javascript);
-    //     // eval(Manual.fileObject[label]);
-    //     // let handler = Handler.instances[label];
-    //     // console.log(handler);
-    //     // //let displaycell = I(`${label}_rendered`)
-    //     return I(`${label}_myTemp`,"temp");
-    // }
     static example(label) {
-        let [buttonBar, b1, b2, b3] = Manual.buttonBar(label);
+        let [buttonBar, b1, b2, b3, bottomButtonBar] = Manual.buttonBar(label);
         let page1DisplayCell = I(`${label}_page1`, `${label}_page1`, Manual.borderCss, function (THIS) { return Manual.getLibrary(`${label}.js`, THIS, "javascript"); });
         let page2DisplayCell = I(`${label}_page2`, `${label}_page2`, Manual.borderCss, function (THIS) { return Manual.getLibrary(`${label}.html`, THIS, "html"); });
         let page3DisplayCell = I(`${label}_page3`, `${label}_page3`, Manual.borderCss, function (THIS) {
             if (!THIS["happend"]) {
-                let javascript = Manual.fileObject[`${label}.js`];
-                eval(javascript);
+                eval(Manual.fileObject[`${label}.js`]);
                 let handler = Handler.instances[label];
                 let exmapleDisplayCell = (handler.children[0]);
                 let parentPages = (THIS.node.ParentNode.ParentNode.Arguments[1]);
-                setTimeout(() => {
-                    Render.update(THIS.parentDisplayCell, true);
-                }, 0);
+                setTimeout(() => { Render.update(THIS.parentDisplayCell, true); }, 0);
                 parentPages.cellArray[2] = exmapleDisplayCell;
-                //console.log(parentPages);
                 THIS["happened"] = true;
             }
             return undefined;
         });
         let pages = new Pages(`${label}_P`, page1DisplayCell, page2DisplayCell, page3DisplayCell);
-        let vert = v(`v_${label}`, buttonBar, new DisplayCell(pages));
-        let mySelected = new Selected(`${label}`, [b1, b2, b3], 0, { onselect: function (index, displaycell) { pages.currentPage = index; } });
+        let vert = v(`v_${label}`, buttonBar, new DisplayCell(pages), bottomButtonBar);
+        let mySelected = new Selected(`${label}`, [b1, b2, b3], 0, { onselect: function (index, displaycell) { console.log("clicked"); pages.currentPage = index; } });
         return vert;
     }
 }
@@ -109,6 +127,11 @@ Manual.tabCss = css("tab", `-webkit-border-radius: 10px 10px 0px 0px;
     border-radius: 10px 10px 0px 0px;background:orange;cursor:pointer;`, `background:purple`, `-webkit-border-radius: 10px 10px 0px 0px;
     -moz-border-radius: 10px 10px 0px 0px;
     border-radius: 10px 10px 0px 0px;background:black;color:white;text-align:center;font-size:20px;`);
+Manual.bottomTabCss = css("btab", `-webkit-border-radius: 0px 0px 10px 10px;
+    -moz-border-radius: 0px 0px 10px 10px;text-align:center;font-size:20px;
+    border-radius: 0px 0px 10px 10px;background:orange;cursor:pointer;`, `background:purple`, `-webkit-border-radius: 0px 0px 10px 10px;
+    -moz-border-radius: 0px 0px 10px 10px;
+    border-radius: 0px 0px 10px 10px;background:black;color:white;text-align:center;font-size:20px;`);
 Manual.borderCss = css("blackBorder", `box-sizing: border-box;-moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;border: 2px solid black;`);
 Manual.titleText = "Lief's Layout Manager - The Manual";

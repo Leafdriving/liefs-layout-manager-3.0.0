@@ -6,6 +6,7 @@ declare class Manual {
     static bodyCss: Css;
     static buttonCss: Css;
     static tabCss: Css;
+    static bottomTabCss: Css;
     static borderCss: Css;
     static titleText: string;
     static titleDisplayCell: DisplayCell;
@@ -21,9 +22,12 @@ declare class Manual {
     static fileObject: {};
     static loadFiles: void;
     static buttonBar(label: string, height?: number): DisplayCell[];
+    static launchAsModal(e: MouseEvent, label: string): void;
     static showJavascriptButton(label: string): DisplayCell;
     static showHtmlButton(label: string): DisplayCell;
     static showRenderButton(label: string): DisplayCell;
+    static launchAsModalButton(label: string): DisplayCell;
+    static launchAsNewWindow(label: string): DisplayCell;
     static getLibrary(label: string, element: Element_, language: string, returnString?: string): string;
     static example(label: string): DisplayCell;
 }

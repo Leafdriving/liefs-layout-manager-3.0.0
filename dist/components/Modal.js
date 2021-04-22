@@ -141,6 +141,8 @@ class winModal extends Base {
         this.modal = new Modal(`${this.label}`, this.fullDisplayCell);
         this.modal.dragWith(this.titleDisplayCell);
         this.modal.closeWith(this.closeDisplayCell);
+        if (this.onclose)
+            this.closeDisplayCell.addEvents({ onclick: this.onclose });
         this.show();
     }
     show() { this.modal.show(); }
@@ -161,6 +163,7 @@ winModal.defaults = { headerHeight: 20, titleText: "My Title", innerHTML: "Body"
 winModal.argMap = {
     string: ["label", "titleText", "innerHTML"],
     DisplayCell: ["bodyDisplayCell"],
+    function: ["onclose"],
 };
 winModal.titleCss = css(`titleCss`, `background:#00CED1;cursor:pointer;text-align: center;box-sizing: border-box;
     -moz-box-sizing: border-box;-webkit-box-sizing: border-box;border: 1px solid black;`, { type: "llm" });

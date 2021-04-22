@@ -134,6 +134,7 @@ class winModal extends Base {
     static argMap:{[key: string]: Array<string>;} = {
         string : ["label", "titleText", "innerHTML"],
         DisplayCell: ["bodyDisplayCell"],
+        function: ["onclose"],
     }
     static titleCss = css(`titleCss`,`background:#00CED1;cursor:pointer;text-align: center;box-sizing: border-box;
     -moz-box-sizing: border-box;-webkit-box-sizing: border-box;border: 1px solid black;`, {type:"llm"});
@@ -159,6 +160,7 @@ class winModal extends Base {
     bodyDisplayCell:DisplayCell;
     show(){this.modal.show()}
     hide(){this.modal.hide()}
+    onclose:()=>void;
     
 
     constructor(...Arguments:any){
@@ -168,6 +170,7 @@ class winModal extends Base {
         this.modal = new Modal(`${this.label}`, this.fullDisplayCell);
         this.modal.dragWith(this.titleDisplayCell);
         this.modal.closeWith(this.closeDisplayCell);
+        if (this.onclose) this.closeDisplayCell.addEvents({onclick:this.onclose})
         this.show();
     }
     build(){
