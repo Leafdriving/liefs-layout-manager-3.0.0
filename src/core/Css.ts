@@ -104,7 +104,8 @@ class Css extends Base {
         if (!alreadyexists) document.getElementsByTagName('head')[0].appendChild(style);
     }
     static advisedDiv = new Css("div[llm]","position:absolute;", false, {type:"llm"});
-    static advisedBody = new Css("body","overflow: hidden;", false, {type:"llm"});
+    static advisedBody = new Css("body","overflow: auto hidden;", false, {type:"llm"});
+    static advisedHtml = new Css("html","overflow: auto hidden;", false, {type:"llm"});
 }
 function css(...Arguments:any){return new Css(...Arguments);}
 // export {Css, css}

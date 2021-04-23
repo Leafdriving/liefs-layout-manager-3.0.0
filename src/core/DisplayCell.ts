@@ -84,7 +84,8 @@ class DisplayCell extends Component {
     }
     Render(derender = false, node:node_, zindex:number) {
         this.coord.applyMargins(this.marginLeft, this.marginRight, this.marginTop, this.marginBottom);
-        this.coord.zindex = zindex;
+        if (this.coord.zindex < 0) this.coord.zindex *=  -1;
+        else this.coord.zindex = zindex;
         return this.children;
     }
     addEvents(Argument:object){

@@ -1,5 +1,6 @@
 declare function monacoContainer(code: string, language: string, elementId?: string): object;
 declare class Manual {
+    static allowScroll: Css;
     static centeredTitleCss: Css;
     static headingCss: Css;
     static subHeadingCss: Css;

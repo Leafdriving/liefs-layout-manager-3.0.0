@@ -791,7 +791,10 @@ class DisplayCell extends Component {
     }
     Render(derender = false, node, zindex) {
         this.coord.applyMargins(this.marginLeft, this.marginRight, this.marginTop, this.marginBottom);
-        this.coord.zindex = zindex;
+        if (this.coord.zindex < 0)
+            this.coord.zindex *= -1;
+        else
+            this.coord.zindex = zindex;
         return this.children;
     }
     addEvents(Argument) {
@@ -1170,7 +1173,8 @@ Css.argMap = {
 };
 Css.deleteOnFirstRunClassname = ".remove";
 Css.advisedDiv = new Css("div[llm]", "position:absolute;", false, { type: "llm" });
-Css.advisedBody = new Css("body", "overflow: hidden;", false, { type: "llm" });
+Css.advisedBody = new Css("body", "overflow: auto hidden;", false, { type: "llm" });
+Css.advisedHtml = new Css("html", "overflow: auto hidden;", false, { type: "llm" });
 function css(...Arguments) { return new Css(...Arguments); }
 // export {Css, css}
 class Render {
@@ -1178,6 +1182,8 @@ class Render {
         if (Render.firstRun) {
             Render.firstRun = false;
             window.onresize = FunctionStack.push(undefined, function fullupdate(e) { Render.fullupdate(); });
+            window.addEventListener('scroll', function () { Render.fullupdate(); }, true);
+            window.onwheel = FunctionStack.push(undefined, function fullupdate(e) { Render.fullupdate(); });
         }
         if (!Render.pleaseUpdate) {
             Render.pleaseUpdate = true;

@@ -35,6 +35,7 @@ declare class Modal extends Component {
     label: string;
     node: node_;
     parentDisplayCell: DisplayCell;
+    children: Component[];
     handler: Handler;
     get coord(): Coord;
     startCoord: Coord;
@@ -46,7 +47,16 @@ declare class Modal extends Component {
         width?: number;
         height?: number;
     };
+    stretch: Stretch;
     constructor(...Arguments: any);
+    evalNumbers(numbers: number[]): {
+        minWidth?: number;
+        maxWidth?: number;
+        minHeight?: number;
+        maxHeight?: number;
+        width?: number;
+        height?: number;
+    };
     onConnect(): void;
     preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
     Render(derender: boolean, node: node_, zindex: number): Component[];
@@ -77,7 +87,8 @@ declare class winModal extends Base {
     static closeSVG: string;
     static whiteBGCss: Css;
     node: node_;
-    parentDisplayCell: DisplayCell;
+    get parentDisplayCell(): DisplayCell;
+    set parentDisplayCell(value: DisplayCell);
     children: Component[];
     modal: Modal;
     titleText: string;
@@ -93,4 +104,57 @@ declare class winModal extends Base {
     onclose: () => void;
     constructor(...Arguments: any);
     build(): void;
+}
+declare class Stretch extends Component {
+    static labelNo: number;
+    static instances: {
+        [key: string]: Stretch;
+    };
+    static activeInstances: {
+        [key: string]: Stretch;
+    };
+    static defaults: {
+        [key: string]: any;
+    };
+    static argMap: {
+        [key: string]: Array<string>;
+    };
+    static CssNE: Css;
+    static CssNW: Css;
+    static pixelSize: number;
+    static startDrag: Coord;
+    static setStart(e: MouseEvent): void;
+    static updateCoord(modal: Modal, x: number, y: number, w: number, h: number, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static ulDrag(e: MouseEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static urDrag(e: MouseEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static llDrag(e: MouseEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    static lrDrag(e: MouseEvent, offset: {
+        x: number;
+        y: number;
+    }): void;
+    node: node_;
+    parentDisplayCell: DisplayCell;
+    children: Component[];
+    modal: Modal;
+    upperLeft: DisplayCell;
+    upperRight: DisplayCell;
+    lowerLeft: DisplayCell;
+    lowerRight: DisplayCell;
+    constructor(...Arguments: any);
+    build(): void;
+    onConnect(): void;
+    preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
+    Render(derender: boolean, node: node_, zindex: number): Component[];
 }

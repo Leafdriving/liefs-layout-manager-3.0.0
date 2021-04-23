@@ -1,5 +1,6 @@
 declare function monacoContainer(code:string, language:string, elementId?:string):object;
 class Manual {
+    static allowScroll = css("allowScroll",`overflow-y: auto;`)
     static centeredTitleCss = css("centeredTitle", `display: grid;place-items: center;background:#c6ddf5;font-size: 25px;`);
     static headingCss = css("heading","font-size: 25px;text-decoration: underline;margin: 10px;");
     static subHeadingCss = css("subHeading","font-size: 20px;text-decoration: underline;margin: 10px;");
@@ -103,7 +104,7 @@ class Manual {
                 function(){
                     displaygroup.children.push( displaygroup["temp"] );
                     Render.scheduleUpdate();
-                });
+                }, {sizer:{ minWidth:150, maxWidth:800, minHeight:150, maxHeight:600, width:400, height:400 }});
         }
     }
     static showJavascriptButton(label:string) {return I(`${label}_showJavascript`, "Show Javascript", Manual.tabCss)}
@@ -113,8 +114,7 @@ class Manual {
         events({onclick:function(e:MouseEvent){Manual.launchAsModal(e, label)}})    
     )}
     static launchAsNewWindow(label:string){return I(`${label}_launchAsNewWindow`, "Launch As New Window", Manual.bottomTabCss,
-    events({onclick: function(){console.log("Launching");window.open(`../Examples/${label}.html`,'_blank', 'location=yes,left=100, top=150, height=350,width=500,status=yes') }}))}
-    // <a onclick="window.open(document.URL, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');">
+        events({onclick: function(){console.log("Launching");window.open(`../Examples/${label}.html`,'_blank', 'location=yes,left=100, top=150, height=350,width=500,status=yes') }}))}
     static getLibrary (label:string, element:Element_, language:string, returnString = "Not Found"){
         if (!element["monaco"]) {
             let returnString_ = Manual.fileObject[label];
@@ -127,9 +127,7 @@ class Manual {
             }
             return returnString;
         }
-        setTimeout(() => {
-            element["monaco"].layout();    
-        }, 50);
+        setTimeout(() => {element["monaco"].layout();}, 50);
         return undefined;
     }
 
@@ -162,7 +160,7 @@ class Manual {
             new DisplayCell(pages),
             bottomButtonBar,
         )
-        let mySelected = new Selected(`${label}`, [b1, b2, b3], 0, {onselect: function(index:number, displaycell:DisplayCell){console.log("clicked");pages.currentPage = index;}} );
+        let mySelected = new Selected(`${label}`, [b1, b2, b3], 0, {onselect: function(index:number, displaycell:DisplayCell){pages.currentPage = index;}} );
         return vert;
     }
 }

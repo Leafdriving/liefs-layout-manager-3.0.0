@@ -8,6 +8,8 @@ class Render {
         if (Render.firstRun){
             Render.firstRun = false;
             window.onresize = <any>FunctionStack.push(undefined, function fullupdate(e:Event){Render.fullupdate()})
+            window.addEventListener('scroll', function () {Render.fullupdate();}, true);
+            window.onwheel = <any>FunctionStack.push(undefined, function fullupdate(e:Event){Render.fullupdate()});
         }
         if (!Render.pleaseUpdate) {
             Render.pleaseUpdate = true;

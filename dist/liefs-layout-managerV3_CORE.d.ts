@@ -399,6 +399,7 @@ declare class Css extends Base {
     static update(): void;
     static advisedDiv: Css;
     static advisedBody: Css;
+    static advisedHtml: Css;
 }
 declare function css(...Arguments: any): Css;
 declare class Render {
