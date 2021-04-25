@@ -1,10 +1,13 @@
 declare function monacoContainer(code:string, language:string, elementId?:string):object;
+declare class Prism {
+    static highlightAll:()=>void;
+}
 class Manual {
     static allowScroll = css("allowScroll",`overflow-y: auto;`)
     static centeredTitleCss = css("centeredTitle", `display: grid;place-items: center;background:#c6ddf5;font-size: 25px;`);
     static headingCss = css("heading","font-size: 25px;text-decoration: underline;margin: 10px;");
     static subHeadingCss = css("subHeading","font-size: 20px;text-decoration: underline;margin: 10px;");
-    static bodyCss = css("body", "text-indent: 50px;margin:10px;");
+    // static bodyCss = css("body", "text-indent: 50px;margin:10px;");
     static buttonCss = css("button", `box-shadow: 0px 0px 0px 2px #9fb4f2;
     background:linear-gradient(to bottom, #7892c2 5%, #476e9e 100%);
     background-color:#7892c2;
@@ -42,7 +45,18 @@ class Manual {
     static contentsTreeNode = function(){
         let contentsTreeNode = new node_();
         contentsTreeNode.newChild("Introduction")
-                        .newSibling("Installation");
+                        .newSibling("Installation")
+                        .newSibling("Usage")
+                            .newChild("Core-Quick Glance")
+                                .newChild("Arguments By Type")
+                                .newSibling("FunctionStack")
+                                .newSibling("DisplayCell")
+                                .newSibling("DisplayGroup")
+                                .newSibling("Handler")
+                                .newSibling("Element_")
+                            .parent()
+                            .newSibling("Examples")
+                                .newChild("Handler 01")
         return contentsTreeNode}();
     static treeNodeCss = css("treenode", `cursor:pointer`, `background:black;color:white`, `background:#82fa95;color:black`);
 
@@ -101,10 +115,15 @@ class Manual {
             if (!Handler.instances[label]) eval(Manual.fileObject[`${label}.js`]);
             let handler = Handler.instances[label];
             let winModal_ = new winModal(`${label}_`,`Example - ${label}`, handler.children[0],
+            //let winModal_ = new winModal(`${label}_`,`Example - ${label}`, handler,
                 function(){
                     displaygroup.children.push( displaygroup["temp"] );
                     Render.scheduleUpdate();
                 }, {sizer:{ minWidth:150, maxWidth:800, minHeight:150, maxHeight:600, width:400, height:400 }});
+            let element_ = <Element_>handler.parentDisplayCell.getComponent("Element_");
+            if (element_) console.log("TREU")
+            else console.log("nope", handler)
+
         }
     }
     static showJavascriptButton(label:string) {return I(`${label}_showJavascript`, "Show Javascript", Manual.tabCss)}
@@ -164,17 +183,22 @@ class Manual {
         return vert;
     }
 }
-H(`MainHandler`,
+H(`MainHandler`, 8,
     v("Main_V",
         Manual.titleDisplayCell,
-        h("Main_H",
+        h("Main_H", 8,
             Manual.treeDisplayCell,
             Manual.pageDisplayCell,
         )
-    )
+    ),
 );
-H(`test`,
+H("core_00_",
     Manual.example("core_00"),
+    false,
+    new Coord(),
+);
+H("core_01_",
+    Manual.example("core_01"),
     false,
     new Coord(),
 )

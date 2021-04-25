@@ -787,6 +787,7 @@ declare class winModal extends Base {
     closeDisplayCell: DisplayCell;
     headerDisplayCell: DisplayCell;
     bodyDisplayCell: DisplayCell;
+    suppliedHandler: Handler;
     show(): void;
     hide(): void;
     onclose: () => void;

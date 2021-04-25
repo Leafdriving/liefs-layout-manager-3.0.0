@@ -1,10 +1,12 @@
 declare function monacoContainer(code: string, language: string, elementId?: string): object;
+declare class Prism {
+    static highlightAll: () => void;
+}
 declare class Manual {
     static allowScroll: Css;
     static centeredTitleCss: Css;
     static headingCss: Css;
     static subHeadingCss: Css;
-    static bodyCss: Css;
     static buttonCss: Css;
     static tabCss: Css;
     static bottomTabCss: Css;

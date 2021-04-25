@@ -33,6 +33,7 @@ class Modal extends Component {
         string : ["label"],
         DisplayCell:["rootDisplayCell"],
         Coord: ["startCoord"],
+        Handler: ["handler"],
     }
     static x:number;
     static y:number;
@@ -50,15 +51,16 @@ class Modal extends Component {
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         Modal.makeLabel(this); Modal.instances[this.label] = this;
-        this.handler = new Handler(`${this.label}_handler`, false, this.rootDisplayCell, new Coord());
-        this.parentDisplayCell = new DisplayCell(this.label).addComponent(this).addComponent(this.handler)
+        if (!this.handler) this.handler = new Handler(`${this.label}_handler`, false, this.rootDisplayCell, new Coord());
+        if (!this.handler.coord) this.handler.coord = new Coord();
+        if (this.handler.parentDisplayCell) this.parentDisplayCell = this.handler.parentDisplayCell;
+        else this.parentDisplayCell = new DisplayCell(this.label).addComponent(this.handler)
+        this.parentDisplayCell.addComponent(this);
         if (this.startCoord) {
             this.sizer.width = this.startCoord.width;
             this.sizer.height = this.startCoord.height;
         }
         if ("number" in this.retArgs) this.sizer = this.evalNumbers(this.retArgs["number"]);
-        // console.log(this.sizer , !this.stretch)
-        //if (this.sizer.minWidth && !this.stretch) this.stretch = new Stretch(this);
     }
     evalNumbers(numbers:number[]):{ minWidth?:number, maxWidth?:number, minHeight?:number, maxHeight?:number, width?:number, height?:number }{
         let qty = numbers.length;
@@ -141,6 +143,7 @@ class winModal extends Base {
         string : ["label", "titleText", "innerHTML"],
         DisplayCell: ["bodyDisplayCell"],
         function: ["onclose"],
+        Handler:["suppliedHandler"],
     }
     static titleCss = css(`titleCss`,`background:#00CED1;cursor:pointer;text-align: center;box-sizing: border-box;
     -moz-box-sizing: border-box;-webkit-box-sizing: border-box;border: 1px solid black;`, {type:"llm"});
@@ -165,6 +168,7 @@ class winModal extends Base {
     closeDisplayCell:DisplayCell;
     headerDisplayCell:DisplayCell;
     bodyDisplayCell:DisplayCell;
+    suppliedHandler:Handler;
     show(){this.modal.show()}
     hide(){this.modal.hide()}
     onclose:()=>void;
@@ -173,7 +177,7 @@ class winModal extends Base {
         super();this.buildBase(...Arguments);
         winModal.makeLabel(this); winModal.instances[this.label] = this;
         this.build();
-        this.modal = new Modal(`${this.label}`, this.fullDisplayCell);
+        this.modal = new Modal(`${this.label}`, (this.suppliedHandler) ? this.suppliedHandler : this.fullDisplayCell);
         this.modal.dragWith(this.titleDisplayCell);
         this.modal.closeWith(this.closeDisplayCell);
         if (this.onclose) this.closeDisplayCell.addEvents({onclick:this.onclose})
@@ -189,7 +193,11 @@ class winModal extends Base {
             this.closeDisplayCell,
         )
         if (!this.bodyDisplayCell) this.bodyDisplayCell = I(`${this.label}_body`, this.innerHTML, winModal.whiteBGCss);
-        this.fullDisplayCell = v(`${this.label}_full`, this.headerDisplayCell, this.bodyDisplayCell);
+        if (this.suppliedHandler) {
+            this.fullDisplayCell = v(`${this.label}_full`, this.headerDisplayCell, this.suppliedHandler.parentDisplayCell);
+        }
+        else
+            this.fullDisplayCell = v(`${this.label}_full`, this.headerDisplayCell, this.bodyDisplayCell);
     }
 }
 class Stretch extends Component {

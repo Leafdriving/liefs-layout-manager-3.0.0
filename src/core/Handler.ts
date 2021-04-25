@@ -7,7 +7,7 @@ class Handler extends Component {
         string : ["label"],
         Coord: ["coord"],
         boolean: ["startRendered"],
-
+        function: ["preRenderCallBack", "postRenderCallBack"]
     }
     static linkHandlerOldList:Handler[] = [];
     static linkHandlerNewList:Handler[] = [];
@@ -23,20 +23,29 @@ class Handler extends Component {
             let coord = (parentEl) ? Element_.instances[parentEl.id].parentDisplayCell.coord : Handler.ScreenSizeCoord;
             let handlerLabel = el.getAttribute("handler");
             let handler = Handler.instances[handlerLabel];
+            //console.log("label", handlerLabel, handler);
             if (handler) {
-                if (!Handler.activeInstances[handlerLabel]) Handler.activeInstances[handlerLabel] = handler;
+                if (!Handler.activeInstances[handlerLabel]) {
+                    Handler.activeInstances[handlerLabel] = handler;
+                    //console.log("Found Handler", handler.label, "now Active Instance", links)
+                }
                 if (Handler.linkHandlerNewList.indexOf(handler) == -1) Handler.linkHandlerNewList.push(handler);
-                if (!handler.preRenderCallBack) handler.preRenderCallBack = <any>FunctionStack.push(undefined,
+                if (!handler.preRenderCallBack) {
+                    //console.log("Setting", handler.label, "Callback")
+                    handler.preRenderCallBack = <any>FunctionStack.push(undefined,
                         function setHandlerCoord(handler:Handler) {
                             let {x, y, width, height} = el.getBoundingClientRect();
                             handler.coord.copy(coord, x, y, width, height);
                         }
                     )
+                }
             }
         }
         for (let index = 0; index < Handler.linkHandlerOldList.length; index++) {
             let handler = Handler.linkHandlerOldList[index];
             if (Handler.linkHandlerNewList.indexOf(handler) == -1) {
+                //console.log("removing Handler", handler.label)
+                delete handler.preRenderCallBack;
                 Render.update(handler.parentDisplayCell, true);
                 delete Handler.activeInstances[handler.label];
             }

@@ -5,9 +5,15 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Page Title</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.min.css" integrity="sha512-RhnuJxgda82cBylRysVDqdpwnBcSkMzxz1+BxGwBPNMzBJlvaOjHz7P2kXELC0bdNxazsNSyJb7KAww0T5iUdQ==" crossorigin="anonymous" />
+    <link href="../prism/prism.css" rel="stylesheet" />
+    <script src="../prism/prism.js"></script>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script src="../dist/liefs-layout-managerV3_FULL.js"></script>
 </head>
+<style>
+    pre {padding:10px;background:Beige;overflow: auto;}
+    p {text-indent: 50px;margin:10px;}
+</style>
 <body>
     <script>
         var require = {paths: {'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/'}}
@@ -15,12 +21,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/loader.min.js" integrity="sha512-+8+MX2hyUZxaUfMJT0ew+rPsrTGiTmCg8oksa6uVE/ZlR/g3SJtyozqcqDGkw/W785xYAvcx1LxXPP+ywD0SNw==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.nls.min.js" integrity="sha512-3aAqsDS5ClTlwyzxufRhW9WMwZlYn3V8GLRl324pMIftp+CA6kvxfjlm8TG7Wi53eBcerEdX0YfXm3QLvf1Pqg==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.js" integrity="sha512-sOJZBKiSvh/6vxIimdXkjO45Nd3v2n3ZYtrwktgj5SJh0+PCqNQ5oqzxEr6c/o4ULczn1Wo2yh1qrz+ghduDUA==" crossorigin="anonymous"></script>
+<script>
+let js=function(id, newString){
+    let x = document.getElementById(id);
+    x.innerHTML = Prism.highlight((newString)? newString :x.innerHTML, Prism.languages.javascript, 'javascript');
+}
+let html=function(id, newString){
+    let x = document.getElementById(id);
+    x.innerHTML = Prism.highlight((newString)?  newString : x.innerHTML, Prism.languages.markup, 'markup');}
+let closescript = "</"+"script>";
+</script>
+<div class="remove" style="font-size: larger;">Loading...</div>
+<div class="remove" style="display:none">
+
 
 <div id="Introduction" class="allowScroll">
     <div class="heading">Introduction</div><p class="body">
 Lief's Layout Manager is a  Typescript/Javascript 'div' management framework, which add layout and
 event capabilities to your client code.  It works in addition to all your current layout techniques.
-</p><div class="subHeading">Use Cases</div><p class="body">
+</p><div class="subHeading">Use Cases</div><p>
 Lief's Layout Manager was designed to make the following easier:
 <ul>
     <li>Front End Applications (Electron)</li>
@@ -31,14 +50,201 @@ Lief's Layout Manager was designed to make the following easier:
 </p>
 </div>
 
+
+
 <div id="Installation" class="allowScroll">
-    <div class="heading">Installation</div><p class="body">
-Lief's Layout Manager
-<div class="button">Something That is ver long</div>
-<div handler="test" style="width:100%;height:400px;"></div>
-</p>
+    <div class="heading">Installation</div><p>
+Lief's Layout Manager is a simply a small amount of javascript code.  Simply add one line to the beginning of your
+code.</p>
+<pre><code id="Installation1"></code>&lt;/script></pre>
+<script>html("Installation1",`<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3_FULL.js">`);</script>
+<p>This will be published on NPM in the near future.</p>
+<div handler="core_00_" style="width:100%;height:400px;"></div>
+<p>The above code shows a basic example of how to use Liefs-layout-manager.</p>
 </div>
-</body>
+
+<div id="Usage" class="allowScroll">
+    <div class="heading">Usage</div><p>
+Lief's Layout manager is TINY! (Full is about half of Jquery), however, you can only load what you need.
+If you want the entire layout manager, simply use:</p>
+<pre><code id="Usage1"></code></pre>
+<script>html("Usage1",`<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3_FULL.js">${closescript}`);</script>
+<p>By using this link, you are ensured to have all the components properly loaded.  This is the equivelent to the following:</p>
+<pre><code id="Usage2"></code></pre>
+<script>html("Usage2",
+`<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3_CORE.js">${closescript}
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/Context.js">${closescript}
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/DragBar.js">${closescript}
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/Modal.js">${closescript}
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/Pages.js">${closescript}
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/Scrollbar.js">${closescript}
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/Selected.js">${closescript}
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/Tree.js">${closescript}`);</script>
+<p>Lief's Layout Manager is divided in Components, so that you can only load, what you only need, keeping your code size TINY</p>
+</div>
+
+
+<div id="Core-Quick Glance" class="allowScroll">
+    <div class="heading">Core</div>
+    <div class="subHeading">Core of Lief's Layout Manager</div><p>
+        Lief's Layout Manager "Core" is the essentials to work this software
+    </p>
+</div>
+
+
+
+
+<div id="Arguments By Type" class="allowScroll">
+    <div class="heading">Core</div>
+    <div class="subHeading">Arguments By Type</div><p>
+Liefs's Layout Manager Objects use "By Type, then Index" notation, rather than standard, "By Index" notation.
+Normally, when you define an object or function, the order is critical:</p>
+<pre><code id="ABT1"></code></pre>
+<script>js("ABT1",`let someFunction = function(firstTypeNumber, typeString, typeFunction, secondTypeNumber){};
+new SomeObject(firstTypeNumber, typeString, typeFunction, secondTypeNumber);`);</script>
+<p>But Lief's layout manager sees the above as One Number, One String, and One Function.  The order is not important
+unless you have multiple entryies as the same type.  This means that Lief's Layout Manager sees this as equivelent to:</p>
+<pre><code id="ABT2"></code></pre>
+<script>js("ABT2",`let someFunction = function(typeFunction, firstTypeNumber,secondTypeNumber ,typeString){};
+new SomeObject(firstTypeNumber, typeString, typeFunction, secondTypeNumber);`);</script>
+</div>
+
+
+<div id="FunctionStack" class="allowScroll">
+    <div class="heading">Core</div>
+    <div class="subHeading">FunctionStack</div><p>
+        Lief's Layout Manager implements FunctionStack, which is a simple way to stack functions on all events.
+        It works on any event.</p>
+<pre><code id="FunctionStack1">window.onmousemove = FunctionStack.push(window.onmousemove, function one(){console.log("one")});
+window.onmousemove = FunctionStack.push(window.onmousemove, function two(){console.log("two")});
+window.onmousemove = FunctionStack.push(window.onmousemove, function three(){console.log("three")});
+window.onmousemove = FunctionStack.push(window.onmousemove, function four(){console.log("four")});</code></pre>
+<script>js("FunctionStack1");</script>
+<p>Now, the window.onmousemove event triggers ALL of the functions. To remove an object, just pop it using the name of the function</p>
+<pre><code id="FunctionStack2">window.onmousemove = FunctionStack.pop(window.onmousemove, "one");</code></pre>
+    <script>js("FunctionStack2");</script>
+<p>You can try the above code in the Console (F12) now.</p>
+</div>
+
+
+<div id="DisplayCell" class="allowScroll">
+    <div class="heading">Core</div>
+    <div class="subHeading">DisplayCell</div><p>
+Lief's layout manager creates a "Render Tree".  There is a root object, then children of that, then children of those,
+and so on.  Each of these "nodes" are wrapped in a DisplayCell Object,</p>
+<pre><code id="DisplayCell_1">let myNewDisplayCell = new DisplayCell("someName")</code></pre>
+<script>js("DisplayCell_1");</script>
+<p>There are a few ways of implementing this wrapping process.</p>
+<pre><code id="DisplayCell2">let myNewDisplayCell = new DisplayCell( new Element_("myElementName") );
+let myNewDisplayCell = new DisplayCell().addComponent( new Element_("myElementName"));
+let myNewDisplayCell = I("myElementName");
+</code></pre>
+<script>js("DisplayCell2");</script>
+<p>The above lines are all equivelent.  It depends on how you like to build your project.</p>
+</div>
+
+
+<div id="DisplayGroup" class="allowScroll">
+    <div class="heading">Core</div>
+    <div class="subHeading">DisplayGroup</div><p>
+DisplayGroups divide a DisplayCell in to either a Horizontal Array, or a Vertical Array.
+The size of each item in the Array is determined by the "dim" value of each child DisplayCell.
+Any string that ends with "%" or "px" is recgonized as a "dim" value.  DisplayGroups are the most common
+way to layout your screen.</p>
+</div>
+
+
+
+
+<div id="Handler" class="allowScroll">
+    <div class="heading">Core</div>
+    <div class="subHeading">Handler</div><p>
+The "Handler" object is a "Root" node of a Render Tree.  By Default, Handlers use the outer screen size
+as the default.  Handler size can be assigned programatically, or assigned to some other 'div'</p>
+<pre><code id="DisplayCell1">let myNewHandler = new Handler("someName"); let handlerDisplayCell = new DisplayCell( myNewHandler );
+let handlerDisplayCell = new DisplayCell("someName").addComponent( new Handler("someName") );
+let handlerDisplayCell = H("someName");</code></pre>
+<p>The above lines are all equivelent.  Again, it depends how you like to program.</p>
+<script>js("DisplayCell1");</script>
+</div>
+
+
+
+
+<div id="Element_" class="allowScroll">
+    <div class="heading">Core</div>
+    <div class="subHeading">Element_</div><p>
+Lief's Layout Manager manages a div with an Element_ Object.</p>
+<pre><code id="Element_1">let myNewDisplayCell = new DisplayCell( new Element_("myElementName") );
+let myNewDisplayCell = new DisplayCell().addComponent( new Element_("myElementName"));
+let myNewDisplayCell = I("myElementName");
+</code></pre><p>
+Lets stick to the 3rd method, because it uses less code.  To create an element, ('div') simply create one as follows:</p>
+<pre><code id="Element_2">let myNewElement = I("SomeName", "This is the 'innerHTML' of the div", "cssClassName");
+// Completely Created in Javascript
+let myNewElement = I("SomeName", {css:"cssClassName"});
+// since no innerHTML was specified, checks the dom for a 'div' with id="SomeName"
+</code></pre>
+<script>js("Element_2");</script>
+<p>To Add Events (for example 'onclick') simply add as shown</p>
+<pre><code id="Element_3">let SomeNameEvents = events({onclick:function(e){console.log(e,this);}})
+let myNewElement = I("SomeName", "This is the 'innerHTML' of the div", "cssClassName", SomeNameEvents);
+// Completely Created in Javascript
+let myNewElement = I("SomeName", {css:"cssClassName"}, events({onclick:function(e){console.log(e,this);}}));
+// since no innerHTML was specified, checks the dom for a 'div' with id="SomeName"
+</code></pre>
+    <script>js("Element_3");</script>
+</div>
+
+
+
+
+
+<div id="Examples" class="allowScroll">
+    <div class="heading">Examples</div>
+<p>I hope the following Exmaples help explain how Lief's Layout Manager Works.</p>
+</div>
+
+
+
+<div id="Handler 01" class="allowScroll">
+    <div class="heading">Handler Example 01</div>
+<p>Let's look at our origional example again</p>
+<div handler="core_00_" style="width:100%;height:400px;"></div>
+<p>The Above Examples Shows:
+<ul>
+    <li>two css creations class="greenBG" and class="blueBG.  If you check the dom,
+(F12) you can see the css was passed on here</li>
+<li>The Creation of a "Handler" labeled "core_00" containing a Horizontal DisplayGroup</li>
+<li>The Creation of a Horizontal DisplayGroup labeled "core_00_h" within the handler</li>
+<li>The Creation of Two Elements_ labeled "core_00_left" and "core_00_right"</li>
+<li>the "false" flag indicates NOT to show the handler upon creation, but to await HandlerInstance.show()</li>
+</ul>
+These Objects can be accessed by their "labels".  For example, try this in the console now (F12) *Note you must click Show Render Above First*</p>
+<pre><code id="Handler 01_1">// * Note * try these lines one at a time, as each represents an object.
+Css.instances.greenBG                   // By Defining Css in Javascript, you can modify it easily in Javascript
+Css.instances.blueBG                    // a css file WILL work fine like normal, but I like it all in one place.
+Handler.instances.core_00               // The Handler instance defined with H() (wrapped in a DisplayCell)
+DisplayGroup.instances.core_00_h        // The DisplayGroup instance h() 'h' for Horizontal, (wrapped in a DisplayCell)
+Element_.instances.core_00_left         // The Element_ instance "core_00_left" ('div') (wrapped in a DisplayCell)
+Element_.instances.core_00_right        // The Element_ instance "core_00_right" ('div') (wrapped in a DisplayCell)
+DisplayCell.instances.core_00           // This is the DisplayCell that wraps the Handler,
+DisplayCell.instances.core_00_h         // This is the DisplayCell that wraps the DisplayGroup,
+DisplayCell.instances.core_00_left      // This is the DisplayCell that wraps the Element_ labeled left
+DisplayCell.instances.core_00_right     // This is the DisplayCell that wraps the Element_ labeled right
+</code></pre>
+    <script>js("Handler 01_1");</script>
+<p>Margins can be set on ANY DisplayCell.  The following shows how to apply Margins.</p>
+<div handler="core_01_" style="width:100%;height:400px;"></div>
+</div>
+
+
+
+
+
+
+
+</div></body>
 </html>
 <script>
     require.config({paths: {'vs':'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/'}})

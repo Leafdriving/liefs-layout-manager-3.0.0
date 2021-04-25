@@ -1009,21 +1009,28 @@ class Handler extends Component {
             let coord = (parentEl) ? Element_.instances[parentEl.id].parentDisplayCell.coord : Handler.ScreenSizeCoord;
             let handlerLabel = el.getAttribute("handler");
             let handler = Handler.instances[handlerLabel];
+            //console.log("label", handlerLabel, handler);
             if (handler) {
-                if (!Handler.activeInstances[handlerLabel])
+                if (!Handler.activeInstances[handlerLabel]) {
                     Handler.activeInstances[handlerLabel] = handler;
+                    //console.log("Found Handler", handler.label, "now Active Instance", links)
+                }
                 if (Handler.linkHandlerNewList.indexOf(handler) == -1)
                     Handler.linkHandlerNewList.push(handler);
-                if (!handler.preRenderCallBack)
+                if (!handler.preRenderCallBack) {
+                    //console.log("Setting", handler.label, "Callback")
                     handler.preRenderCallBack = FunctionStack.push(undefined, function setHandlerCoord(handler) {
                         let { x, y, width, height } = el.getBoundingClientRect();
                         handler.coord.copy(coord, x, y, width, height);
                     });
+                }
             }
         }
         for (let index = 0; index < Handler.linkHandlerOldList.length; index++) {
             let handler = Handler.linkHandlerOldList[index];
             if (Handler.linkHandlerNewList.indexOf(handler) == -1) {
+                //console.log("removing Handler", handler.label)
+                delete handler.preRenderCallBack;
                 Render.update(handler.parentDisplayCell, true);
                 delete Handler.activeInstances[handler.label];
             }
@@ -1073,6 +1080,7 @@ Handler.argMap = {
     string: ["label"],
     Coord: ["coord"],
     boolean: ["startRendered"],
+    function: ["preRenderCallBack", "postRenderCallBack"]
 };
 Handler.linkHandlerOldList = [];
 Handler.linkHandlerNewList = [];
@@ -1184,6 +1192,9 @@ class Render {
             window.onresize = FunctionStack.push(undefined, function fullupdate(e) { Render.fullupdate(); });
             window.addEventListener('scroll', function () { Render.fullupdate(); }, true);
             window.onwheel = FunctionStack.push(undefined, function fullupdate(e) { Render.fullupdate(); });
+            let deletes = document.getElementsByClassName("remove");
+            for (let index = 0; index < deletes.length; index++)
+                deletes[index].remove();
         }
         if (!Render.pleaseUpdate) {
             Render.pleaseUpdate = true;
@@ -1195,13 +1206,25 @@ class Render {
     }
     static fullupdate(derender = false) {
         Css.update();
+        Render.node = new node_("Root");
         Handler.updateScreenSizeCoord();
         Handler.linkHandlers();
-        Render.node = new node_("Root");
         let handlers = Handler.getHandlers();
+        let currentNumberOfHandlers = handlers.length;
         for (let index = 0; index < handlers.length; index++) {
             Render.update([handlers[index]], derender, Render.node, index * Render.zindexHandlerIncrement);
         }
+        // // The first pass can create handlers!
+        // Handler.linkHandlers();
+        // let newHandlers = Handler.getHandlers();
+        // if (newHandlers.length > currentNumberOfHandlers) {
+        //     for (let index = currentNumberOfHandlers-1; index < newHandlers.length; index++) {
+        //         Render.update([newHandlers[index]],
+        //                         derender,
+        //                         Render.node,
+        //                         index*Render.zindexHandlerIncrement);
+        //     }   
+        // }
     }
     static update(components_ = undefined, derender = false, parentNode = undefined, zindex = 0) {
         if (components_) {
@@ -2372,16 +2395,21 @@ class Modal extends Component {
         this.buildBase(...Arguments);
         Modal.makeLabel(this);
         Modal.instances[this.label] = this;
-        this.handler = new Handler(`${this.label}_handler`, false, this.rootDisplayCell, new Coord());
-        this.parentDisplayCell = new DisplayCell(this.label).addComponent(this).addComponent(this.handler);
+        if (!this.handler)
+            this.handler = new Handler(`${this.label}_handler`, false, this.rootDisplayCell, new Coord());
+        if (!this.handler.coord)
+            this.handler.coord = new Coord();
+        if (this.handler.parentDisplayCell)
+            this.parentDisplayCell = this.handler.parentDisplayCell;
+        else
+            this.parentDisplayCell = new DisplayCell(this.label).addComponent(this.handler);
+        this.parentDisplayCell.addComponent(this);
         if (this.startCoord) {
             this.sizer.width = this.startCoord.width;
             this.sizer.height = this.startCoord.height;
         }
         if ("number" in this.retArgs)
             this.sizer = this.evalNumbers(this.retArgs["number"]);
-        // console.log(this.sizer , !this.stretch)
-        //if (this.sizer.minWidth && !this.stretch) this.stretch = new Stretch(this);
     }
     static onDown() {
         let THIS = this;
@@ -2505,6 +2533,7 @@ Modal.argMap = {
     string: ["label"],
     DisplayCell: ["rootDisplayCell"],
     Coord: ["startCoord"],
+    Handler: ["handler"],
 };
 class winModal extends Base {
     constructor(...Arguments) {
@@ -2513,7 +2542,7 @@ class winModal extends Base {
         winModal.makeLabel(this);
         winModal.instances[this.label] = this;
         this.build();
-        this.modal = new Modal(`${this.label}`, this.fullDisplayCell);
+        this.modal = new Modal(`${this.label}`, (this.suppliedHandler) ? this.suppliedHandler : this.fullDisplayCell);
         this.modal.dragWith(this.titleDisplayCell);
         this.modal.closeWith(this.closeDisplayCell);
         if (this.onclose)
@@ -2536,7 +2565,11 @@ class winModal extends Base {
         this.headerDisplayCell = h(`${this.label}_header`, `${this.headerHeight}px`, this.titleDisplayCell, this.closeDisplayCell);
         if (!this.bodyDisplayCell)
             this.bodyDisplayCell = I(`${this.label}_body`, this.innerHTML, winModal.whiteBGCss);
-        this.fullDisplayCell = v(`${this.label}_full`, this.headerDisplayCell, this.bodyDisplayCell);
+        if (this.suppliedHandler) {
+            this.fullDisplayCell = v(`${this.label}_full`, this.headerDisplayCell, this.suppliedHandler.parentDisplayCell);
+        }
+        else
+            this.fullDisplayCell = v(`${this.label}_full`, this.headerDisplayCell, this.bodyDisplayCell);
     }
 }
 winModal.labelNo = 0;
@@ -2547,6 +2580,7 @@ winModal.argMap = {
     string: ["label", "titleText", "innerHTML"],
     DisplayCell: ["bodyDisplayCell"],
     function: ["onclose"],
+    Handler: ["suppliedHandler"],
 };
 winModal.titleCss = css(`titleCss`, `background:#00CED1;cursor:pointer;text-align: center;box-sizing: border-box;
     -moz-box-sizing: border-box;-webkit-box-sizing: border-box;border: 1px solid black;`, { type: "llm" });

@@ -10,6 +10,8 @@ class Render {
             window.onresize = <any>FunctionStack.push(undefined, function fullupdate(e:Event){Render.fullupdate()})
             window.addEventListener('scroll', function () {Render.fullupdate();}, true);
             window.onwheel = <any>FunctionStack.push(undefined, function fullupdate(e:Event){Render.fullupdate()});
+            let deletes  = document.getElementsByClassName("remove");
+            for (let index = 0; index < deletes.length; index++) deletes[index].remove();
         }
         if (!Render.pleaseUpdate) {
             Render.pleaseUpdate = true;
@@ -21,16 +23,30 @@ class Render {
     }
     static fullupdate(derender = false){
         Css.update();
-        Handler.updateScreenSizeCoord();
-        Handler.linkHandlers();
         Render.node = new node_("Root");
-        let handlers = Handler.getHandlers(); 
+        Handler.updateScreenSizeCoord();
+
+        Handler.linkHandlers();
+        let handlers = Handler.getHandlers();
+        let currentNumberOfHandlers = handlers.length;
         for (let index = 0; index < handlers.length; index++) {
             Render.update([handlers[index]],
                             derender,
                             Render.node,
                             index*Render.zindexHandlerIncrement);
         }
+        // // The first pass can create handlers!
+        // Handler.linkHandlers();
+        // let newHandlers = Handler.getHandlers();
+        // if (newHandlers.length > currentNumberOfHandlers) {
+        //     for (let index = currentNumberOfHandlers-1; index < newHandlers.length; index++) {
+        //         Render.update([newHandlers[index]],
+        //                         derender,
+        //                         Render.node,
+        //                         index*Render.zindexHandlerIncrement);
+        //     }   
+        // }
+        
     }
     static update(components_:Component[]|Component = undefined,
                     derender = false,

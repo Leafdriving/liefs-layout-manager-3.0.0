@@ -1009,21 +1009,28 @@ class Handler extends Component {
             let coord = (parentEl) ? Element_.instances[parentEl.id].parentDisplayCell.coord : Handler.ScreenSizeCoord;
             let handlerLabel = el.getAttribute("handler");
             let handler = Handler.instances[handlerLabel];
+            //console.log("label", handlerLabel, handler);
             if (handler) {
-                if (!Handler.activeInstances[handlerLabel])
+                if (!Handler.activeInstances[handlerLabel]) {
                     Handler.activeInstances[handlerLabel] = handler;
+                    //console.log("Found Handler", handler.label, "now Active Instance", links)
+                }
                 if (Handler.linkHandlerNewList.indexOf(handler) == -1)
                     Handler.linkHandlerNewList.push(handler);
-                if (!handler.preRenderCallBack)
+                if (!handler.preRenderCallBack) {
+                    //console.log("Setting", handler.label, "Callback")
                     handler.preRenderCallBack = FunctionStack.push(undefined, function setHandlerCoord(handler) {
                         let { x, y, width, height } = el.getBoundingClientRect();
                         handler.coord.copy(coord, x, y, width, height);
                     });
+                }
             }
         }
         for (let index = 0; index < Handler.linkHandlerOldList.length; index++) {
             let handler = Handler.linkHandlerOldList[index];
             if (Handler.linkHandlerNewList.indexOf(handler) == -1) {
+                //console.log("removing Handler", handler.label)
+                delete handler.preRenderCallBack;
                 Render.update(handler.parentDisplayCell, true);
                 delete Handler.activeInstances[handler.label];
             }
@@ -1073,6 +1080,7 @@ Handler.argMap = {
     string: ["label"],
     Coord: ["coord"],
     boolean: ["startRendered"],
+    function: ["preRenderCallBack", "postRenderCallBack"]
 };
 Handler.linkHandlerOldList = [];
 Handler.linkHandlerNewList = [];
@@ -1184,6 +1192,9 @@ class Render {
             window.onresize = FunctionStack.push(undefined, function fullupdate(e) { Render.fullupdate(); });
             window.addEventListener('scroll', function () { Render.fullupdate(); }, true);
             window.onwheel = FunctionStack.push(undefined, function fullupdate(e) { Render.fullupdate(); });
+            let deletes = document.getElementsByClassName("remove");
+            for (let index = 0; index < deletes.length; index++)
+                deletes[index].remove();
         }
         if (!Render.pleaseUpdate) {
             Render.pleaseUpdate = true;
@@ -1195,13 +1206,25 @@ class Render {
     }
     static fullupdate(derender = false) {
         Css.update();
+        Render.node = new node_("Root");
         Handler.updateScreenSizeCoord();
         Handler.linkHandlers();
-        Render.node = new node_("Root");
         let handlers = Handler.getHandlers();
+        let currentNumberOfHandlers = handlers.length;
         for (let index = 0; index < handlers.length; index++) {
             Render.update([handlers[index]], derender, Render.node, index * Render.zindexHandlerIncrement);
         }
+        // // The first pass can create handlers!
+        // Handler.linkHandlers();
+        // let newHandlers = Handler.getHandlers();
+        // if (newHandlers.length > currentNumberOfHandlers) {
+        //     for (let index = currentNumberOfHandlers-1; index < newHandlers.length; index++) {
+        //         Render.update([newHandlers[index]],
+        //                         derender,
+        //                         Render.node,
+        //                         index*Render.zindexHandlerIncrement);
+        //     }   
+        // }
     }
     static update(components_ = undefined, derender = false, parentNode = undefined, zindex = 0) {
         if (components_) {
