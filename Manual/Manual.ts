@@ -202,3 +202,8 @@ H("core_01_",
     false,
     new Coord(),
 )
+H("core_displaygroup01_",
+    Manual.example("core_displaygroup01"),
+    false,
+    new Coord(),
+)

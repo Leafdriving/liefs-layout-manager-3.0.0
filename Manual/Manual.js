@@ -177,3 +177,4 @@ Manual.loadFiles = function () {
 H(`MainHandler`, 8, v("Main_V", Manual.titleDisplayCell, h("Main_H", 8, Manual.treeDisplayCell, Manual.pageDisplayCell)));
 H("core_00_", Manual.example("core_00"), false, new Coord());
 H("core_01_", Manual.example("core_01"), false, new Coord());
+H("core_displaygroup01_", Manual.example("core_displaygroup01"), false, new Coord());

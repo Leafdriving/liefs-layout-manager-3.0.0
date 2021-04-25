@@ -1,6 +1,5 @@
 let greenBGCenteredCss = css("greenBGCentered", "background:green;text-align: center;");
 let blueBGCss = css("blueBG", "background:blue;color:white");
-let redBGCss = css("redBG", "background:red;color:white");
 let magentaBGCss = css("magentaBG", "background:magenta;color:white");
 let cyanBGCss = css("cyanBG", "background:cyan;");
 let myButtonCss = css("myButton", "background:black;color:white", "background:white;color:black");
