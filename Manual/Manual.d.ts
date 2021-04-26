@@ -21,9 +21,8 @@ declare class Manual {
     static pages: Pages;
     static pageDisplayCell: DisplayCell;
     static nameToUrl(name: string): string;
-    static load(name: string, cb?: (data: string) => void): Promise<void>;
     static fileObject: {};
-    static loadFiles: void;
+    static fileObjectsLoaded: number;
     static buttonBar(label: string, height?: number): DisplayCell[];
     static launchAsModal(e: MouseEvent, label: string): void;
     static showJavascriptButton(label: string): DisplayCell;
@@ -33,4 +32,6 @@ declare class Manual {
     static launchAsNewWindow(label: string): DisplayCell;
     static getLibrary(label: string, element: Element_, language: string, returnString?: string): string;
     static example(label: string): DisplayCell;
+    static names: string[];
+    static load(name: string, cb?: (data: string) => void): Promise<void>;
 }

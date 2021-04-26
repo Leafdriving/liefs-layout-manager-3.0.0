@@ -38,7 +38,7 @@ class Manual {
     -moz-border-radius: 0px 0px 10px 10px;
     border-radius: 0px 0px 10px 10px;background:black;color:white;text-align:center;font-size:20px;`)
     static borderCss = css("blackBorder",`box-sizing: border-box;-moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;border: 2px solid black;`)
+    -webkit-box-sizing: border-box;border: 2px solid black;background:white;`)
     static titleText = "Lief's Layout Manager - The Manual";
     static titleDisplayCell = I("Title", "30px", Manual.titleText , Manual.centeredTitleCss);
 
@@ -54,6 +54,7 @@ class Manual {
                                 .newSibling("DisplayGroup")
                                 .newSibling("Handler")
                                 .newSibling("Element_")
+                                .newSibling("Events")
                             .parent()
                             .newSibling("Examples")
                                 .newChild("Handler 01")
@@ -73,23 +74,8 @@ class Manual {
     static pages = new Pages("ContentsPages", Manual.contentsTree);
     static pageDisplayCell = new DisplayCell(Manual.pages);
     static nameToUrl(name:string){return `https://leafdriving.github.io/liefs-layout-manager-3.0.0/Examples/${name}`}
-    static async load(name:string, cb:(data:string)=>void = undefined) {
-        try {
-          const response = await fetch( Manual.nameToUrl(name) );
-          const data = await response.text();
-          if (cb) cb(data);
-          Manual.fileObject[name] = data;
-        } catch (err) {
-          console.error(err);
-        }
-    }
     static fileObject = {};
-    static loadFiles = function(){
-        let names = ["core_00", "core_01"];
-        for (let index = 0; index < names.length; index++) {
-          Manual.load(`${names[index]}.js`);Manual.load(`${names[index]}.html`);  
-        }
-      }();
+    static fileObjectsLoaded = 0;
     static buttonBar(label:string, height=25) {
         let b1 = Manual.showJavascriptButton(label);
         let b2 = Manual.showHtmlButton(label);
@@ -115,15 +101,11 @@ class Manual {
             if (!Handler.instances[label]) eval(Manual.fileObject[`${label}.js`]);
             let handler = Handler.instances[label];
             let winModal_ = new winModal(`${label}_`,`Example - ${label}`, handler.children[0],
-            //let winModal_ = new winModal(`${label}_`,`Example - ${label}`, handler,
                 function(){
                     displaygroup.children.push( displaygroup["temp"] );
                     Render.scheduleUpdate();
                 }, {sizer:{ minWidth:150, maxWidth:800, minHeight:150, maxHeight:600, width:400, height:400 }});
-            let element_ = <Element_>handler.parentDisplayCell.getComponent("Element_");
-            if (element_) console.log("TREU")
-            else console.log("nope", handler)
-
+            if (handler.children.length > 1) winModal_.modal.handler.children.push(handler.children[1]);
         }
     }
     static showJavascriptButton(label:string) {return I(`${label}_showJavascript`, "Show Javascript", Manual.tabCss)}
@@ -161,10 +143,22 @@ class Manual {
                 if (!THIS["happend"]) {
                     eval(Manual.fileObject[`${label}.js`]);
                     let handler = Handler.instances[label];
-                    let exmapleDisplayCell = <DisplayCell>(handler.children[0]);
+                    let exampleDisplayCell:DisplayCell;
+                    // if (handler.children.length > 1) {
+                    //     exampleDisplayCell = h(`${label}_junk`,handler.children[0])
+                    //     exampleDisplayCell.children.push(handler.children[1]) 
+                    // }
+                    //  else 
+                     exampleDisplayCell = <DisplayCell>(handler.children[0]);
+                    //let exampleDisplayCell = handler.parentDisplayCell;
+                    // exampleDisplayCell.deleteComponent("Handler");
+
+
+                    // if (handler.children.length > 1) exmapleDisplayCell.addComponent(handler.children[1])
                     let parentPages = <Pages>(THIS.node.ParentNode.ParentNode.Arguments[1]);
                     setTimeout(() => {Render.update(THIS.parentDisplayCell, true)}, 0);
-                    parentPages.cellArray[2] = exmapleDisplayCell;
+                    parentPages.cellArray[2] = exampleDisplayCell;
+                    //if (handler.children.length > 1) parentPages.cellArray[2].children.push(handler.children[1])
                     THIS["happened"] = true;
                 }
                 return undefined;
@@ -182,7 +176,30 @@ class Manual {
         let mySelected = new Selected(`${label}`, [b1, b2, b3], 0, {onselect: function(index:number, displaycell:DisplayCell){pages.currentPage = index;}} );
         return vert;
     }
+    static names = ["core_00", "core_01", "core_displaygroup01", "events_00"];
+    static async load(name:string, cb:(data:string)=>void = undefined) {
+        try {
+          const response = await fetch( Manual.nameToUrl(name) );
+          const data = await response.text();
+          if (cb) cb(data);
+          Manual.fileObject[name] = data;
+          
+          if (++Manual.fileObjectsLoaded == Manual.names.length) {
+                for (let index = 0; index < Manual.names.length; index++) {
+                    H(`${Manual.names[index]}_`,
+                        Manual.example(Manual.names[index]),
+                        false,
+                        new Coord(),
+                    );
+                }
+          }
+        } catch (err) {
+          console.error(err);
+        }
+    }
 }
+for (let index = 0; index < Manual.names.length; index++) {
+    Manual.load(`${Manual.names[index]}.js`);Manual.load(`${Manual.names[index]}.html`);}
 H(`MainHandler`, 8,
     v("Main_V",
         Manual.titleDisplayCell,
@@ -192,18 +209,3 @@ H(`MainHandler`, 8,
         )
     ),
 );
-H("core_00_",
-    Manual.example("core_00"),
-    false,
-    new Coord(),
-);
-H("core_01_",
-    Manual.example("core_01"),
-    false,
-    new Coord(),
-)
-H("core_displaygroup01_",
-    Manual.example("core_displaygroup01"),
-    false,
-    new Coord(),
-)

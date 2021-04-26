@@ -87,8 +87,17 @@ If you want the entire layout manager, simply use:</p>
 <div id="Core-Quick Glance" class="allowScroll">
     <div class="heading">Core</div>
     <div class="subHeading">Core of Lief's Layout Manager</div><p>
-        Lief's Layout Manager "Core" is the essentials to work this software
-    </p>
+        Lief's Layout Manager "Core" is the essentials to work this software.</p>
+<ul>
+<li>A "Handler" (could be many) determines the "outer" dimensions you wish to start with.  By default, its the screen size</li>
+<li>This "Handler" is (like all components) within a DisplayCell, which hold the Co-ordinates.</li>
+<li>All DisplayCells can be divided up in to rows or columns called DisplayGroups. (Which of course contain an Array of DisplayCells)
+DisplayGroups can be nested until you have the desired result</li>
+<li>Eventually, you will fill a DisplayCell with an 'Element_'. Element_s are 'div' elements rendered in the dom.</li>
+<li>Elements_ can have 'events' attached to them. (onclick, onhover, etc...)</li>
+</ul><p>
+By combining DisplayCells with Element_s and Events, you can layout ANY rectangular web page.    
+</p>
 </div>
 
 
@@ -151,7 +160,25 @@ DisplayGroups divide a DisplayCell in to either a Horizontal Array, or a Vertica
 The size of each item in the Array is determined by the "dim" value of each child DisplayCell.
 Any string that ends with "%" or "px" is recgonized as a "dim" value.  DisplayGroups are the most common
 way to layout your screen.</p>
-<div handler="core_displaygroup01_" style="width:100%;height:400px;"></div>
+<div handler="core_displaygroup01_" style="width:100%;height:400px;"></div><p>
+The Above example illistrates how to nest 'DisplayGroups' with 'Element_'s.
+<ul><li>lines 1-5 defines css classes</li>
+    <li>line 6 defines button arrays</li>
+    <li>line  defines 'events' -> onclick, alert what was clicked</li>
+    <li>lines 8-11 define top and bottom buttons as Element_s (wrapped in DisplayCells)</li>
+    <li>line 12 Create a Handler, with and outside margin of 10 pixels</li>
+    <li>line 13 Create a vertical DisplayGroup with 2 pixels between vertical cells</li>
+    <li>line 14 Create an Element_ ('div') to be the Top 'div' </li>
+    <li>line 15 Create a Horizontal DisplayGroup of Buttons -> Note The spread operator ...b1 50 pixels high</li>
+    <li>line 16 Create a Horizontal DisplayGroup of "Left" and "right" side, 2 pixels between them</li>
+    <li>line 17 Create an Element_ "left" which is FIXED to 200 pixels</li>
+    <li>line 18 Create a Vertical DisplayGroup on the "right"</li>
+    <li>line 19 Create a Top Element_ on the right side</li>
+    <li>line 20 Create a Bottom Element_ on the right side</li>
+    <li>line 23 Create a Horizontal DisplayGroup of Buttons -> Note The spread operator ...b2 50 pixels high</li>
+    <li>line 24 Create an Element_ ('div') to be the Top 'div' </li>
+</ul>
+</p>
 </div>
 
 
@@ -187,14 +214,25 @@ let myNewElement = I("SomeName", {css:"cssClassName"});
 // since no innerHTML was specified, checks the dom for a 'div' with id="SomeName"
 </code></pre>
 <script>js("Element_2");</script>
-<p>To Add Events (for example 'onclick') simply add as shown</p>
-<pre><code id="Element_3">let SomeNameEvents = events({onclick:function(e){console.log(e,this);}})
+</div>
+
+
+
+<div id="Events" class="allowScroll">
+    <div class="heading">Events</div>
+<p>Events are attached to 'Elements_' ('div')'s.  This is done as shown:</p>
+<pre><code id="Events_1">let SomeNameEvents = events({onclick:function(e){console.log(e,this);}})
 let myNewElement = I("SomeName", "This is the 'innerHTML' of the div", "cssClassName", SomeNameEvents);
 // Completely Created in Javascript
 let myNewElement = I("SomeName", {css:"cssClassName"}, events({onclick:function(e){console.log(e,this);}}));
 // since no innerHTML was specified, checks the dom for a 'div' with id="SomeName"
 </code></pre>
-    <script>js("Element_3");</script>
+<script>js("Events_1");</script>
+<div handler="core_displaygroup01_" style="width:100%;height:400px;"></div>
+<p>In the above example, we have attached the same 'onclick' event to all Elements_, however we could
+attach any event(s) as selectivly as we choose.</p>
+<p>Events Can be Stacked.  For Example, you can add or remove multiple events of the same time to an element</p>
+<div handler="events_00_" style="width:100%;height:400px;"></div>
 </div>
 
 
