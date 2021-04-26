@@ -11,6 +11,7 @@ H("events_00",
     v("events_00_top",
         topDiv,
         I("events_00_bottom","Bottom Div", blueBGCenteredCss, events({onclick:function(){console.log("Bottom Clicked")}})),
-    )
+    ),
+    false,
 )
 DisplayCell.instances["events_00_bottom"].addEvents({onclick:function(){console.log("Bottom Again")}});
