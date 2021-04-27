@@ -22,6 +22,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.nls.min.js" integrity="sha512-3aAqsDS5ClTlwyzxufRhW9WMwZlYn3V8GLRl324pMIftp+CA6kvxfjlm8TG7Wi53eBcerEdX0YfXm3QLvf1Pqg==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.23.0/min/vs/editor/editor.main.js" integrity="sha512-sOJZBKiSvh/6vxIimdXkjO45Nd3v2n3ZYtrwktgj5SJh0+PCqNQ5oqzxEr6c/o4ULczn1Wo2yh1qrz+ghduDUA==" crossorigin="anonymous"></script>
 <script>
+//typescript    
+let typescript=function(id, newString){
+    let x = document.getElementById(id);
+    x.innerHTML = Prism.highlight((newString)? newString :x.innerHTML, Prism.languages.typescript, 'typescript');
+}
 let js=function(id, newString){
     let x = document.getElementById(id);
     x.innerHTML = Prism.highlight((newString)? newString :x.innerHTML, Prism.languages.javascript, 'javascript');
@@ -136,6 +141,40 @@ window.onmousemove = FunctionStack.push(window.onmousemove, function four(){cons
 </div>
 
 
+<div id="Coord" class="allowScroll">
+    <div class="heading">Coord</div>
+<p>A Coord Object simply stores the x, y, width, height, and zindex of an element.  The instance
+properties are as follows:
+</p>
+<pre><code id="Coord">label:string; // label of the Coord
+frozen:boolean; // if true, it cant be changed until set to false again
+x: number;  // the x component
+y: number;  // the y component
+width_: number; // the width component
+height: number; // the height component
+x2:number;      // read only - returns x + width
+y2:number;      // read only - return y + width
+zindex: number;
+within: Within = new Within();
+hideWidth: boolean;
+offset: {x:number, y:number, width:number, height:number};
+setOffset(x=0, y=0, width=0, height=0);
+assign(x=undefined, y=undefined, width=undefined, height=undefined,
+        wx=undefined, wy=undefined, wwidth=undefined, wheight=undefined, zindex=undefined);
+copy(fromCoord:Coord,
+    x:number=undefined, y:number=undefined, width:number=undefined, height:number=undefined,
+    zindex:number=undefined):Coord;
+log();
+isCoordCompletelyOutside(WITHIN: Coord|Within = this.within):boolean;
+isPointIn(x:number, y:number): boolean;
+    
+</code></pre>
+    <script>typescript("FunctionStack2");</script>
+
+        
+</div>
+
+
 <div id="DisplayCell" class="allowScroll">
     <div class="heading">Core</div>
     <div class="subHeading">DisplayCell</div><p>
@@ -150,6 +189,51 @@ let myNewDisplayCell = I("myElementName");
 </code></pre>
 <script>js("DisplayCell2");</script>
 <p>The above lines are all equivelent.  It depends on how you like to build your project.</p>
+
+<div class="subHeading">DisplayCell - Deep Dive</div>
+<p>A DisplayCell Instance has the following properties and methods</p>
+<pre><code id="DisplayCell3">coord: Coord;                // Each DisplayCell has a Co-ordinates Object (Assigned Automatically)
+children: Component[];                                    // Array of children Objects in render Tree
+parentDisplayCell: DisplayCell;                           // If not the root DisplayCell, it's parent DisplayCel
+marginLeft: number;                                       // optional Margin
+marginRight: number;                                      // optional Margin
+marginTop: number;                                        // optional Margin
+marginBottom: number;                                     // optional Margin
+node: node_;                                              // Render Node - Created during the Render Process (Designed as Read Only)
+dim: string;                                              // a number string ending with either "px" or "%" - used with DisplayGroup
+min: number;                                              // a minimum number of pixels this cell will be in a DisplayGroup (Default 1)
+addComponent(component: Component): DisplayCell;          // Add a child Component.
+getComponent(type: string, label?: string): object;       // Get a Child Component for example ("DisplayGroup", "myDisplayGroup")
+deleteComponent(type: string, label?: string): boolean;   // Delete a child Component for example ("DisplayGroup", "myDisplayGroup")
+addEvents(Argument: object): void;                        // Assuming Child "Element_" -> Adds events to the child
+</code></pre>
+<script>typescript("DisplayCell3");</script>
+<pre><code id="DisplayCell4">//Example
+let leftSideElement = new Element_("Left Side", "Left Side InnerHtml");
+let leftSide = new DisplayCell( "200px",{
+    marginLeft: 10,
+    marginRight: 5,
+    marginTop: 2,
+    marginBottom : 7,
+}).addComponent( leftSideElement ).addEvent({onclick:function(){console.log("left clicked")}});
+let rightSide = I("Right Side","Right Side InnerHtml", events({console.log("right clicked")}));
+let horizontal = h("horizontalDisplayGroup",leftSide, rightSide)
+horizontal.marginLeft = 20;
+H("SomeHandler", horizontal);
+</code></pre>
+    <script>js("DisplayCell4");</script>
+<p>DisplayCell Object (static, not instance) has the following properties:</p>
+<pre><code id="DisplayCell5">static instances:{[key: string]: DisplayCell;} = {};
+static defaults:{[key: string]: any;};
+static argMap:{[key: string]: Array<string>;}
+static objectTypes:Set<string>;
+//to look at these type this in the Console:
+DisplayCell.instances               // Stores all instances Created in an Object
+DisplayCell.defaults                // Default instance values
+DisplayCell.argMap                  // A mapping of argument types, to properties
+DisplayCell.objectTypes             // All Componenets registered (to check if non core componenet is loaded)
+</code></pre>
+<script>typescript("DisplayCell5");</script>
 </div>
 
 
@@ -177,8 +261,29 @@ The Above example illistrates how to nest 'DisplayGroups' with 'Element_'s.
     <li>line 20 Create a Bottom Element_ on the right side</li>
     <li>line 23 Create a Horizontal DisplayGroup of Buttons -> Note The spread operator ...b2 50 pixels high</li>
     <li>line 24 Create an Element_ ('div') to be the Top 'div' </li>
-</ul>
-</p>
+</ul>A DisplayGroup Instance has the following properties and methods</p>
+<div class="subHeading">DisplayGroup - A Deep Dive</div>
+<pre><code id="DisplayGroup1">allowScrollBar:boolean;         // set to be true, if a scrollbar is desired (and loaded - Componenet, not Core)
+label:string;                   // the label for this instance
+dim:string;                     // Used if this DisplayGroup, is a child of a different DisplayGroup
+margin:number;                  // The distance bewteen the Cells of the DisplayGroup
+node:node_;                     // Render Node -> Created a Render stage.
+parentDisplayCell:DisplayCell;  // It's DisplayCell Parent
+children: DisplayCell[] = [];   // The Array of Child DisplayCells
+isHor: boolean;                 // true (default) if Horizontal, false if vertical
+scrollbar: ScrollBar;           // Active Scrollbar (Assuming allowScrollBar is true, and Scrollbar Comonenet is loaded)
+offset:number;                  // Internal use -> offset provided by scrollbar</code></pre>
+<script>typescript("DisplayGroup1");</script>
+<p>DisplayGroup Object (static, not instance) has the following properties:</p>
+<pre><code id="DisplayGroup2">static instances:{[key: string]: DisplayGroup;}
+static defaults:{[key: string]: any;};
+static argMap:{[key: string]: Array<string>;};
+// So, in the Console, try:
+DisplayGroup.instances
+DisplayGroup.defaults
+DisplayGroup.argMap
+</code></pre>
+<script>typescript("DisplayGroup2");</script>
 </div>
 
 
@@ -194,6 +299,27 @@ let handlerDisplayCell = new DisplayCell("someName").addComponent( new Handler("
 let handlerDisplayCell = H("someName");</code></pre>
 <p>The above lines are all equivelent.  Again, it depends how you like to program.</p>
 <script>js("DisplayCell1");</script>
+<div class="subHeading">DisplayGroup - A Deep Dive</div>
+<p>A Handler Instance has the following Properties:</p>
+<pre><code id="Handler_1">
+type: string;                           // the type of Handler (modals go to the top layer)
+label: string;                          // the label of the Hander
+startRendered: boolean;                 // if true, render on define, if false await handlerInstance.show();
+coord: Coord;                           // co-ordinate of the Handler ()
+parentDisplayCell: DisplayCell;         // Parent DisplayCell, holding the Handler
+children: Component[];                  // Children to be rendered
+node: node_;                            // Render Node, Created when Rendered
+preRenderCallBack: function(handler: Handler){};  // optional callback
+postRenderCallBack: function(handler: Handler){}; // optional callback
+show(): void;                           // shows the handler rendered
+hide(): void;                           // remove the handler, and stop rendering it</code></pre>
+<script>typescript("Handler_1");</script><p>
+A Handler static (not instance) methods are as follows:
+</p><pre><code id="Handler_2">Handler.instances:{[key: string]: Handler;};
+Handler.defaults:{[key: string]: any;};
+Handler.argMap:{[key: string]: Array<string>;}
+Handler.ScreenSizeCoord: Coord;</code></pre>
+<script>typescript("Handler_2");</script>
 </div>
 
 
@@ -214,6 +340,30 @@ let myNewElement = I("SomeName", {css:"cssClassName"});
 // since no innerHTML was specified, checks the dom for a 'div' with id="SomeName"
 </code></pre>
 <script>js("Element_2");</script>
+<div class="subHeading">Element_ a Deep Dive</div><p>
+An Element_ instance has the following Properties:</p>
+<pre><code id="Element_3">ignoreInner:boolean;      // set true if some "funtionality" sets the innerHTML
+label:string;       // label of the Element_
+el:HTMLDivElement;  // the actual div element in the dom
+evalInner:function(THIS:Element_){return string};  // function to set the value of the innerHTML
+innerHTML:string;   // value of innerHTML (if constant)
+css:string;         // the class="css" value
+dim:string;         // used in DisplayGroup, and passed on to the parent DisplayCell
+Css:Css;            // Setting the CSS using a Css Instance
+events:objectFunction;  // an object that holds events ie: {onclick:function(){console.log("clicked")}}
+processEvents:objectFunction;   // a pre-holding place for events, so FunctionStack can be applied
+attributes:objectString;        // attribute object for the div element, for example {title:"On Hover Comment"}
+parentDisplayCell: DisplayCell; // Parent DisplayCell (Co-Ordinates of Element_)
+addEvents(eventObject:object);  // add events (which can be stacked) to an Element_, for example {onclick:function(){console.log("clicked")}}
+</code></pre>
+<script>typescript("Element_3");</script>
+<p>The Element_ Object has the following Static Properties</p>
+<pre><code id="Element_4">Element_.instances:{[key: string]: Element_;}
+Element_.defaults:{[key: string]: any;}
+Element_.argMap:{[key: string]: Array<string>;}
+Element_.customEvents:{[type: string]: (newData:any)=>object;};
+</code></pre>
+<script>typescript("Element_4");</script>
 </div>
 
 
@@ -236,6 +386,19 @@ attach any event(s) as selectivly as we choose.</p>
 </div>
 
 
+
+<div id="node_" class="allowScroll">
+    <div class="heading">node_</div>
+<p>a node_ is a basic tree object that has a parent, and children (so a tree object).
+By itself, it doesn't do a lot, but you can use it to assign data to a tree form.
+When objects are rendered, they produce a tree.  For example: try this in the console:
+<pre><code id="node_1">
+
+    
+    </code></pre>
+    <script>js("node_1");</script>
+</p>
+</div>
 
 
 

@@ -159,6 +159,7 @@ Manual.contentsTreeNode = function () {
         .newChild("Core-Quick Glance")
         .newChild("Arguments By Type")
         .newSibling("FunctionStack")
+        .newSibling("Coord")
         .newSibling("DisplayCell")
         .newSibling("DisplayGroup")
         .newSibling("Handler")
