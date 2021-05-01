@@ -11,34 +11,34 @@ class Tree_ extends Component {
             this.parentTreeNode = sample();
         this.newNode(this.parentTreeNode);
         if (this.useSelected && this.selected == undefined) {
-            this.selected = new Selected(`${this.label}`, this.selectedStartIndex, { getIndexerArray: function (selectedInstance) {
-                    return node_.asArray(THIS.parentTreeNode, function (node) { return [node["displaycell"]]; });
-                },
-                onselect: function (index, displaycell) {
-                    let node = (node_.asArray(THIS.parentTreeNode)[index]);
-                    if (THIS.selectParents) {
-                        while (node.ParentNode) {
-                            node = node.ParentNode;
-                            let displaycell = node["displaycell"];
-                            let element = (displaycell.getComponent("Element_"));
-                            if (element)
-                                element.setAsSelected();
-                        }
-                    }
-                },
-                onunselect: function (index, displaycell) {
-                    if (THIS.selectParents) {
-                        let node = (node_.asArray(THIS.parentTreeNode)[index]);
-                        while (node.ParentNode) {
-                            node = node.ParentNode;
-                            let displaycell = node["displaycell"];
-                            let element = (displaycell.getComponent("Element_"));
-                            if (element)
-                                element.setAsUnSelected();
-                        }
+            let getIndexerArray = function (selectedInstance) {
+                return node_.asArray(THIS.parentTreeNode, function (node) { return [node["displaycell"]]; });
+            };
+            let onselect = function (index, displaycell) {
+                let node = (node_.asArray(THIS.parentTreeNode)[index]);
+                if (THIS.selectParents) {
+                    while (node.ParentNode) {
+                        node = node.ParentNode;
+                        let displaycell = node["displaycell"];
+                        let element = (displaycell.getComponent("Element_"));
+                        if (element)
+                            element.setAsSelected();
                     }
                 }
-            });
+            };
+            let onunselect = function (index, displaycell) {
+                if (THIS.selectParents) {
+                    let node = (node_.asArray(THIS.parentTreeNode)[index]);
+                    while (node.ParentNode) {
+                        node = node.ParentNode;
+                        let displaycell = node["displaycell"];
+                        let element = (displaycell.getComponent("Element_"));
+                        if (element)
+                            element.setAsUnSelected();
+                    }
+                }
+            };
+            this.selected = new Selected(`${this.label}`, this.selectedStartIndex, { getIndexerArray, onselect, onunselect });
         }
     }
     static collapsedSVG(classname = "scrollArrows") {
@@ -78,6 +78,7 @@ class Tree_ extends Component {
         node_.traverse(node, function (node) {
             node.retArgs = Arguments_.argumentsByType(node.Arguments);
             Arguments_.modifyClassProperties(Arguments_.retArgsMapped({}, node, { argMap }), node);
+            // if (node["DisplayCell"]) alert("told ya so!");
             if (!node["displaycell"])
                 node["displaycell"] = I(node.label + Tree_.extension, node.label);
             let displaycell = (node["displaycell"]);

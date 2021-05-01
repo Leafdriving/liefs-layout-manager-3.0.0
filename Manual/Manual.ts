@@ -38,7 +38,8 @@ class Manual {
     -moz-border-radius: 0px 0px 10px 10px;
     border-radius: 0px 0px 10px 10px;background:black;color:white;text-align:center;font-size:20px;`)
     static borderCss = css("blackBorder",`box-sizing: border-box;-moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;border: 2px solid black;background:white;`)
+    -webkit-box-sizing: border-box;border: 2px solid black;background:white;`);
+    static justWhiteCss = css("justWhite","background:white");
     static titleText = "Lief's Layout Manager - The Manual";
     static titleDisplayCell = I("Title", "30px", Manual.titleText , Manual.centeredTitleCss);
 
@@ -47,19 +48,29 @@ class Manual {
         contentsTreeNode.newChild("Introduction")
                         .newSibling("Installation")
                         .newSibling("Usage")
-                            .newChild("Core-Quick Glance")
-                                .newChild("Arguments By Type")
-                                .newSibling("FunctionStack")
-                                .newSibling("Coord")
-                                .newSibling("DisplayCell")
-                                .newSibling("DisplayGroup")
-                                .newSibling("Handler")
-                                .newSibling("Element_")
-                                .newSibling("Events")
-                                .newSibling("node_")
-                            .parent()
-                            .newSibling("Examples")
-                                .newChild("Handler 01")
+                        .newSibling("Core")
+                            .newChild("Arguments By Type")
+                            .newSibling("FunctionStack")
+                            .newSibling("Coord")
+                            .newSibling("DisplayCell")
+                            .newSibling("DisplayGroup")
+                            .newSibling("Handler")
+                            .newSibling("Element_")
+                            .newSibling("Events")
+                            .newSibling("node_")
+                            .newSibling("Render")
+                        .parent()
+                        .newSibling("Components")
+                            .newChild("Context")
+                            .newSibling("DragBar")
+                            .newSibling("Modal")
+                            .newSibling("Pages")
+                            .newSibling("Scrollbar")
+                            .newSibling("Selected")
+                            .newSibling("Tree")
+                        .parent()                                
+                        .newSibling("Examples")
+                            .newChild("Handler 01")
         return contentsTreeNode}();
     static treeNodeCss = css("treenode", `cursor:pointer`, `background:black;color:white`, `background:#82fa95;color:black`);
 
@@ -102,7 +113,7 @@ class Manual {
             displaygroup.children.splice(-1,1);
             if (!Handler.instances[label]) eval(Manual.fileObject[`${label}.js`]);
             let handler = Handler.instances[label];
-            let winModal_ = new winModal(`${label}_`,`Example - ${label}`, handler.children[0],
+            let winModal_ = new winModal(`${label}_`,`Example - ${label}`, Manual.newHandler( handler ),
                 function(){
                     displaygroup.children.push( displaygroup["temp"] );
                     Render.scheduleUpdate();
@@ -133,7 +144,25 @@ class Manual {
         setTimeout(() => {element["monaco"].layout();}, 50);
         return undefined;
     }
+    static newHandler(handler:Handler) : Component {
+        let displaycell:DisplayCell;
+        if ( DisplayCell.instances[`${handler.label}_PDC`] ) displaycell = DisplayCell.instances[`${handler.label}_PDC`];
+        else {
+            displaycell = I(`${handler.label}_PDC`, Manual.justWhiteCss);
+            displaycell.marginBottom = handler.parentDisplayCell.marginBottom;
+            displaycell.marginTop = handler.parentDisplayCell.marginTop;
+            displaycell.marginLeft = handler.parentDisplayCell.marginLeft;
+            displaycell.marginRight = handler.parentDisplayCell.marginRight;
 
+            for (let i = 0; i < handler.children.length; i++) {
+                let handlerChildDisplayCell = handler.children[i];
+                for (let index = 0; index < handlerChildDisplayCell.children.length; index++)
+                    displaycell.addComponent( handlerChildDisplayCell.children[index] ) 
+            }
+        }
+        console.log(displaycell)
+        return displaycell;
+    }
     static example(label:string){
         let [buttonBar, b1, b2, b3, bottomButtonBar] = Manual.buttonBar(label);
         let page1DisplayCell = I(`${label}_page1`, `${label}_page1`, Manual.borderCss,
@@ -146,21 +175,10 @@ class Manual {
                     eval(Manual.fileObject[`${label}.js`]);
                     let handler = Handler.instances[label];
                     let exampleDisplayCell:DisplayCell;
-                    // if (handler.children.length > 1) {
-                    //     exampleDisplayCell = h(`${label}_junk`,handler.children[0])
-                    //     exampleDisplayCell.children.push(handler.children[1]) 
-                    // }
-                    //  else 
-                     exampleDisplayCell = <DisplayCell>(handler.children[0]);
-                    //let exampleDisplayCell = handler.parentDisplayCell;
-                    // exampleDisplayCell.deleteComponent("Handler");
-
-
-                    // if (handler.children.length > 1) exmapleDisplayCell.addComponent(handler.children[1])
+                     exampleDisplayCell = <DisplayCell>(Manual.newHandler( handler ));
                     let parentPages = <Pages>(THIS.node.ParentNode.ParentNode.Arguments[1]);
                     setTimeout(() => {Render.update(THIS.parentDisplayCell, true)}, 0);
                     parentPages.cellArray[2] = exampleDisplayCell;
-                    //if (handler.children.length > 1) parentPages.cellArray[2].children.push(handler.children[1])
                     THIS["happened"] = true;
                 }
                 return undefined;
@@ -178,7 +196,7 @@ class Manual {
         let mySelected = new Selected(`${label}`, [b1, b2, b3], 0, {onselect: function(index:number, displaycell:DisplayCell){pages.currentPage = index;}} );
         return vert;
     }
-    static names = ["core_00", "core_01", "core_displaygroup01", "events_00"];
+    static names = ["core_00", "core_01", "core_displaygroup01", "events_00", "context_01"];
     static async load(name:string, cb:(data:string)=>void = undefined) {
         try {
           const response = await fetch( Manual.nameToUrl(name) );

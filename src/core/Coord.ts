@@ -132,5 +132,14 @@ class Coord extends Base {
     }
     derender(derender:boolean) {return derender || this.isCoordCompletelyOutside()}
     isPointIn(x:number, y:number): boolean {return (this.x <= x && x <= this.x+this.width && this.y <= y && y <= this.y+this.height)}
-
+    red(id="red"){
+        let div = document.getElementById(id);
+        if (!div) {
+            div = document.createElement("div");
+            Element_.setAttrib(div, "id", id);
+            Element_.setAttrib(div, "llm", "");
+            document.body.appendChild(div);
+        }
+        div.style.cssText = `background:red;left: ${this.x}px; top: ${this.y}px; width: ${this.width}px; height: ${this.height}px; z-index: 1000;`; //style="left: 559px; top: 25px; width: 300px; height: 829px; z-index: 30;"
+    }
 }

@@ -11,6 +11,7 @@ declare class Manual {
     static tabCss: Css;
     static bottomTabCss: Css;
     static borderCss: Css;
+    static justWhiteCss: Css;
     static titleText: string;
     static titleDisplayCell: DisplayCell;
     static contentsTreeNode: node_;
@@ -31,6 +32,7 @@ declare class Manual {
     static launchAsModalButton(label: string): DisplayCell;
     static launchAsNewWindow(label: string): DisplayCell;
     static getLibrary(label: string, element: Element_, language: string, returnString?: string): string;
+    static newHandler(handler: Handler): Component;
     static example(label: string): DisplayCell;
     static names: string[];
     static load(name: string, cb?: (data: string) => void): Promise<void>;

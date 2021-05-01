@@ -4,15 +4,17 @@ class Context extends Component {
     static instances:{[key: string]: Context;} = {};
     static activeInstances:{[key: string]: Context;} = {};
     static defaults:{[key: string]: any;} = {width:150,height:20, isShown:false, byPoint:true,
-                                                eventType:"oncontextmenu", toTheRight:true}
+            eventType:"oncontextmenu", toTheRight:true, newFunctionReplacesold:false}
     static argMap:{[key: string]: Array<string>;} = {
         string : ["label","eventType"],
         node_:["contextNode"],
         number:["width", "height"],
         boolean:["byPoint", "toTheRight"],
+        function: ["onclick"],
     }
     static pointOffset = 5;
-    static rootInstance:Context;
+    static activeInstanceArray:Context[] = [];
+    newFunctionReplacesold:boolean;
     byPoint:boolean; // if true, on point, if false, by parent location
     toTheRight:boolean;
     eventType:string; // default oncontextmenu
@@ -26,9 +28,11 @@ class Context extends Component {
     isShown:boolean;
     activeChild:Context;
 
+
     displaycell:DisplayCell;
     displaygroup:DisplayGroup;
     launchEvent:MouseEvent|PointerEvent;
+    onclick:(e:MouseEvent, displaycell:DisplayCell, node:node_)=>void;
 
     // retArgs:objectAny;   // <- this will appear
     constructor(...Arguments:any){
@@ -42,84 +46,72 @@ class Context extends Component {
         let displaycells:DisplayCell[] = [];
         for (let index = 0; index < this.contextNode.children.length; index++) {
             let childNode = this.contextNode.children[index];
-            let displaycell = <DisplayCell>childNode.Arguments[1];
-            let label = childNode.Arguments[0];
-            if (Arguments_.typeof(displaycell) == "DisplayCell") childNode["displaycell"] = displaycell;
-            else displaycell = childNode["displaycell"] = I(`${this.label}_${label}`, label, Context.Css);
-            //let element = <Element_>displaycell.getComponent("Element_");
-            let eventObject = {onclick:function(e:MouseEvent){Context.onclick(e, <DisplayCell>(DisplayCell.instances[`${THIS.label}_${label}`]), childNode)}}
-            if (childNode.children.length) {
-                (<DisplayCell>(childNode["displaycell"])).addComponent( 
-                    context(`${childNode.label}_context`, "onmouseover", false, childNode)
-                )
+            let retArgs = Arguments_.argumentsByType(childNode.Arguments);
+            let label = ("string" in retArgs) ? retArgs["string"][0]: undefined;
+            let displaycell = ("DisplayCell" in retArgs) ? <DisplayCell>retArgs["DisplayCell"][0] : undefined;
+            let function_ = ("function" in retArgs) ? <Function>retArgs["function"][0] : undefined;
+
+            if (!label && displaycell) label = displaycell.label;
+            displaycell = (displaycell) ? displaycell : I(`${this.label}_${label}`, label, Context.Css);
+            let onclick = (THIS.onclick) ? (e:MouseEvent)=>{Context.popAll();THIS.onclick(e, displaycell, childNode);}
+                                         : (e:MouseEvent)=>{Context.popAll();}
+            if (function_) {
+                displaycell.addEvents({onclick: function_});
+                if (THIS.onclick && !this.newFunctionReplacesold) displaycell.addEvents( {onclick} );
+            } else {
+                displaycell.addEvents({onclick})
             }
-            displaycell.addEvents( eventObject );
+            if (childNode.children.length) 
+                displaycell.addComponent( context(`${childNode.label}_context`, "onmouseover", false, childNode, this.onclick) );
+            childNode["displaycell"] = displaycell;
+            
             displaycells.push( displaycell );
         }
-        this.displaycell = v(`${this.label}_ContextV`, ...displaycells);
-        this.displaygroup = <DisplayGroup>this.displaycell.getComponent("DisplayGroup");
-    }
-    static onclick(e:MouseEvent, displaycell:DisplayCell, node:node_){
-        console.log("click",e,displaycell, node);
-    }
-    static currentAndParent(){
-        let currentInstance =  Context.rootInstance;
-        let parentInstance:Context;
-        while (currentInstance && currentInstance.activeChild) {
-            parentInstance = currentInstance;
-            currentInstance = currentInstance.activeChild;
-        }
-        return [currentInstance, parentInstance];
+        this.displaygroup = new DisplayGroup(`${this.label}_ContextV`, false, ...displaycells);
+        this.displaycell = new DisplayCell(this.displaygroup);
     }
     static ContextOnMouseMove(event:MouseEvent|PointerEvent){
-        let [currentInstance, parentInstance] = Context.currentAndParent();
-        let inDisplayCell = currentInstance.displaycell.coord.isPointIn(event.clientX, event.clientY);
-        if (currentInstance.byPoint) {
-            if (!inDisplayCell) Context.pop();
-        } else {
-            let inParentCell = currentInstance.parentDisplayCell.coord.isPointIn(event.clientX, event.clientY);
-            if (!inDisplayCell && !inParentCell) Context.pop();
-        }
+        let X = event.clientX, Y = event.clientY;
+        let length = Context.activeInstanceArray.length;
+        let topInstance = Context.activeInstanceArray[length -1];
+        let valid = ((topInstance.parentDisplayCell.coord.isPointIn(X, Y) && (length > 1 || !topInstance.byPoint))
+                    || topInstance.displaycell.coord.isPointIn(X, Y))
+        if (!valid) topInstance.pop();
+        return Context.activeInstanceArray.length
     }
-    static pop(){
-        let [currentInstance, parentInstance] = Context.currentAndParent();
-        //console.log("popping", currentInstance.label)
-        for (let index = 0; index < currentInstance.contextNode.children.length; index++) 
-            Render.update( <DisplayCell>(currentInstance.contextNode.children[index]["displaycell"]), true );
-        currentInstance.isShown = false;
-        if (parentInstance && parentInstance.activeChild) parentInstance.activeChild = undefined;
-        if (Context.rootInstance == currentInstance) {
-            Context.rootInstance = undefined;
-            window.onmousemove = <any>FunctionStack.pop(window.onmousemove as unknown as FunctionStack, "ContextOnMouseMove");
-        }
+    static popAll(keepFunction=false){
+        while (Context.activeInstanceArray.length)
+            Context.activeInstanceArray[Context.activeInstanceArray.length-1].pop(keepFunction);
     }
-    static currentInstance(deep:number = 0):[Context, number]{
-        let currentInstance = Context.rootInstance;
-        if (currentInstance) ++deep;
-        while (currentInstance && currentInstance.activeChild) {
-            currentInstance = currentInstance.activeChild;
-            ++deep;
+    pop(keepFunction=false){
+        // console.log("pop")
+        let index = Context.activeInstanceArray.indexOf(this);
+        if (index != -1) {
+            Render.update(this.displaycell, true);
+            this.isShown = false;
+            Context.activeInstanceArray.splice(index, 1);
+            if (Context.activeInstanceArray.length == 0 && !keepFunction) 
+                window.onmousemove = <any>FunctionStack.pop(window.onmousemove as any as FunctionStack, "ContextOnMouseMove");
         }
-        return [currentInstance, deep];
     }
     launchContext(event:PointerEvent|MouseEvent = undefined){
-        let [lastContext, deep] = Context.currentInstance();
+        // console.log("launch")
         event.preventDefault();
-        this.launchEvent = event;
-        if (!this.isShown) {
-            this.isShown = true;
-            if (!Context.rootInstance) {
-                Context.rootInstance = this;
-                window.onmousemove = <any>FunctionStack.push(window.onmousemove, Context.ContextOnMouseMove)
-            } else {
-                lastContext.activeChild = this;
+        let length = Context.activeInstanceArray.length;
+        if (length) {
+            if (this.contextNode.root() != Context.activeInstanceArray[0].contextNode.root()) Context.popAll(true);
+            else {
+                let lastContextInstance = Context.activeInstanceArray[ length-1 ];
+                if (this.contextNode.depth() <= lastContextInstance.contextNode.depth()) lastContextInstance.pop();
             }
-            Render.scheduleUpdate();
-        }
+        } else window.onmousemove = <any>FunctionStack.push(window.onmousemove, Context.ContextOnMouseMove);
+
+        Context.activeInstanceArray.push(this)
+        this.launchEvent = event;
+        this.isShown = true;
+        Render.scheduleUpdate();
     }
     onConnect():void{
-        //let element = <Element_>(this.parentDisplayCell.getComponent("Element_"));
-        // console.log(element)
         let eventObject:object = {};
         eventObject[this.eventType] = this.launchContext.bind(this);
         this.parentDisplayCell.addEvents( eventObject );
@@ -141,12 +133,7 @@ class Context extends Component {
         } 
         return undefined
     };
-    getChild(label:string) {
-        for (let index = 0; index < this.children.length; index++) 
-            if (this.children[index].label == label) return this.children[index];
-        return undefined;
-    }
-    delete(){}
+
 }
 function context(...Arguments:any){ return new Context(...Arguments); }
 Render.register("Context", Context);

@@ -536,6 +536,16 @@ class Coord extends Base {
     }
     derender(derender) { return derender || this.isCoordCompletelyOutside(); }
     isPointIn(x, y) { return (this.x <= x && x <= this.x + this.width && this.y <= y && y <= this.y + this.height); }
+    red(id = "red") {
+        let div = document.getElementById(id);
+        if (!div) {
+            div = document.createElement("div");
+            Element_.setAttrib(div, "id", id);
+            Element_.setAttrib(div, "llm", "");
+            document.body.appendChild(div);
+        }
+        div.style.cssText = `background:red;left: ${this.x}px; top: ${this.y}px; width: ${this.width}px; height: ${this.height}px; z-index: 1000;`; //style="left: 559px; top: 25px; width: 300px; height: 829px; z-index: 30;"
+    }
 }
 _x_ = new WeakMap(), _y_ = new WeakMap(), _width_ = new WeakMap(), _height_ = new WeakMap();
 Coord.instances = [];
@@ -1214,17 +1224,6 @@ class Render {
         for (let index = 0; index < handlers.length; index++) {
             Render.update([handlers[index]], derender, Render.node, index * Render.zindexHandlerIncrement);
         }
-        // // The first pass can create handlers!
-        // Handler.linkHandlers();
-        // let newHandlers = Handler.getHandlers();
-        // if (newHandlers.length > currentNumberOfHandlers) {
-        //     for (let index = currentNumberOfHandlers-1; index < newHandlers.length; index++) {
-        //         Render.update([newHandlers[index]],
-        //                         derender,
-        //                         Render.node,
-        //                         index*Render.zindexHandlerIncrement);
-        //     }   
-        // }
     }
     static update(components_ = undefined, derender = false, parentNode = undefined, zindex = 0) {
         if (components_) {
@@ -1669,34 +1668,34 @@ class Tree_ extends Component {
             this.parentTreeNode = sample();
         this.newNode(this.parentTreeNode);
         if (this.useSelected && this.selected == undefined) {
-            this.selected = new Selected(`${this.label}`, this.selectedStartIndex, { getIndexerArray: function (selectedInstance) {
-                    return node_.asArray(THIS.parentTreeNode, function (node) { return [node["displaycell"]]; });
-                },
-                onselect: function (index, displaycell) {
-                    let node = (node_.asArray(THIS.parentTreeNode)[index]);
-                    if (THIS.selectParents) {
-                        while (node.ParentNode) {
-                            node = node.ParentNode;
-                            let displaycell = node["displaycell"];
-                            let element = (displaycell.getComponent("Element_"));
-                            if (element)
-                                element.setAsSelected();
-                        }
-                    }
-                },
-                onunselect: function (index, displaycell) {
-                    if (THIS.selectParents) {
-                        let node = (node_.asArray(THIS.parentTreeNode)[index]);
-                        while (node.ParentNode) {
-                            node = node.ParentNode;
-                            let displaycell = node["displaycell"];
-                            let element = (displaycell.getComponent("Element_"));
-                            if (element)
-                                element.setAsUnSelected();
-                        }
+            let getIndexerArray = function (selectedInstance) {
+                return node_.asArray(THIS.parentTreeNode, function (node) { return [node["displaycell"]]; });
+            };
+            let onselect = function (index, displaycell) {
+                let node = (node_.asArray(THIS.parentTreeNode)[index]);
+                if (THIS.selectParents) {
+                    while (node.ParentNode) {
+                        node = node.ParentNode;
+                        let displaycell = node["displaycell"];
+                        let element = (displaycell.getComponent("Element_"));
+                        if (element)
+                            element.setAsSelected();
                     }
                 }
-            });
+            };
+            let onunselect = function (index, displaycell) {
+                if (THIS.selectParents) {
+                    let node = (node_.asArray(THIS.parentTreeNode)[index]);
+                    while (node.ParentNode) {
+                        node = node.ParentNode;
+                        let displaycell = node["displaycell"];
+                        let element = (displaycell.getComponent("Element_"));
+                        if (element)
+                            element.setAsUnSelected();
+                    }
+                }
+            };
+            this.selected = new Selected(`${this.label}`, this.selectedStartIndex, { getIndexerArray, onselect, onunselect });
         }
     }
     static collapsedSVG(classname = "scrollArrows") {
@@ -1736,6 +1735,7 @@ class Tree_ extends Component {
         node_.traverse(node, function (node) {
             node.retArgs = Arguments_.argumentsByType(node.Arguments);
             Arguments_.modifyClassProperties(Arguments_.retArgsMapped({}, node, { argMap }), node);
+            // if (node["DisplayCell"]) alert("told ya so!");
             if (!node["displaycell"])
                 node["displaycell"] = I(node.label + Tree_.extension, node.label);
             let displaycell = (node["displaycell"]);
@@ -2109,90 +2109,77 @@ class Context extends Component {
         let displaycells = [];
         for (let index = 0; index < this.contextNode.children.length; index++) {
             let childNode = this.contextNode.children[index];
-            let displaycell = childNode.Arguments[1];
-            let label = childNode.Arguments[0];
-            if (Arguments_.typeof(displaycell) == "DisplayCell")
-                childNode["displaycell"] = displaycell;
-            else
-                displaycell = childNode["displaycell"] = I(`${this.label}_${label}`, label, Context.Css);
-            //let element = <Element_>displaycell.getComponent("Element_");
-            let eventObject = { onclick: function (e) { Context.onclick(e, (DisplayCell.instances[`${THIS.label}_${label}`]), childNode); } };
-            if (childNode.children.length) {
-                (childNode["displaycell"]).addComponent(context(`${childNode.label}_context`, "onmouseover", false, childNode));
-            }
-            displaycell.addEvents(eventObject);
-            displaycells.push(displaycell);
-        }
-        this.displaycell = v(`${this.label}_ContextV`, ...displaycells);
-        this.displaygroup = this.displaycell.getComponent("DisplayGroup");
-    }
-    static onclick(e, displaycell, node) {
-        console.log("click", e, displaycell, node);
-    }
-    static currentAndParent() {
-        let currentInstance = Context.rootInstance;
-        let parentInstance;
-        while (currentInstance && currentInstance.activeChild) {
-            parentInstance = currentInstance;
-            currentInstance = currentInstance.activeChild;
-        }
-        return [currentInstance, parentInstance];
-    }
-    static ContextOnMouseMove(event) {
-        let [currentInstance, parentInstance] = Context.currentAndParent();
-        let inDisplayCell = currentInstance.displaycell.coord.isPointIn(event.clientX, event.clientY);
-        if (currentInstance.byPoint) {
-            if (!inDisplayCell)
-                Context.pop();
-        }
-        else {
-            let inParentCell = currentInstance.parentDisplayCell.coord.isPointIn(event.clientX, event.clientY);
-            if (!inDisplayCell && !inParentCell)
-                Context.pop();
-        }
-    }
-    static pop() {
-        let [currentInstance, parentInstance] = Context.currentAndParent();
-        //console.log("popping", currentInstance.label)
-        for (let index = 0; index < currentInstance.contextNode.children.length; index++)
-            Render.update((currentInstance.contextNode.children[index]["displaycell"]), true);
-        currentInstance.isShown = false;
-        if (parentInstance && parentInstance.activeChild)
-            parentInstance.activeChild = undefined;
-        if (Context.rootInstance == currentInstance) {
-            Context.rootInstance = undefined;
-            window.onmousemove = FunctionStack.pop(window.onmousemove, "ContextOnMouseMove");
-        }
-    }
-    static currentInstance(deep = 0) {
-        let currentInstance = Context.rootInstance;
-        if (currentInstance)
-            ++deep;
-        while (currentInstance && currentInstance.activeChild) {
-            currentInstance = currentInstance.activeChild;
-            ++deep;
-        }
-        return [currentInstance, deep];
-    }
-    launchContext(event = undefined) {
-        let [lastContext, deep] = Context.currentInstance();
-        event.preventDefault();
-        this.launchEvent = event;
-        if (!this.isShown) {
-            this.isShown = true;
-            if (!Context.rootInstance) {
-                Context.rootInstance = this;
-                window.onmousemove = FunctionStack.push(window.onmousemove, Context.ContextOnMouseMove);
+            let retArgs = Arguments_.argumentsByType(childNode.Arguments);
+            let label = ("string" in retArgs) ? retArgs["string"][0] : undefined;
+            let displaycell = ("DisplayCell" in retArgs) ? retArgs["DisplayCell"][0] : undefined;
+            let function_ = ("function" in retArgs) ? retArgs["function"][0] : undefined;
+            if (!label && displaycell)
+                label = displaycell.label;
+            displaycell = (displaycell) ? displaycell : I(`${this.label}_${label}`, label, Context.Css);
+            let onclick = (THIS.onclick) ? (e) => { Context.popAll(); THIS.onclick(e, displaycell, childNode); }
+                : (e) => { Context.popAll(); };
+            if (function_) {
+                displaycell.addEvents({ onclick: function_ });
+                if (THIS.onclick && !this.newFunctionReplacesold)
+                    displaycell.addEvents({ onclick });
             }
             else {
-                lastContext.activeChild = this;
+                displaycell.addEvents({ onclick });
             }
-            Render.scheduleUpdate();
+            if (childNode.children.length)
+                displaycell.addComponent(context(`${childNode.label}_context`, "onmouseover", false, childNode, this.onclick));
+            childNode["displaycell"] = displaycell;
+            displaycells.push(displaycell);
+        }
+        this.displaygroup = new DisplayGroup(`${this.label}_ContextV`, false, ...displaycells);
+        this.displaycell = new DisplayCell(this.displaygroup);
+    }
+    static ContextOnMouseMove(event) {
+        let X = event.clientX, Y = event.clientY;
+        let length = Context.activeInstanceArray.length;
+        let topInstance = Context.activeInstanceArray[length - 1];
+        let valid = ((topInstance.parentDisplayCell.coord.isPointIn(X, Y) && (length > 1 || !topInstance.byPoint))
+            || topInstance.displaycell.coord.isPointIn(X, Y));
+        if (!valid)
+            topInstance.pop();
+        return Context.activeInstanceArray.length;
+    }
+    static popAll(keepFunction = false) {
+        while (Context.activeInstanceArray.length)
+            Context.activeInstanceArray[Context.activeInstanceArray.length - 1].pop(keepFunction);
+    }
+    pop(keepFunction = false) {
+        // console.log("pop")
+        let index = Context.activeInstanceArray.indexOf(this);
+        if (index != -1) {
+            Render.update(this.displaycell, true);
+            this.isShown = false;
+            Context.activeInstanceArray.splice(index, 1);
+            if (Context.activeInstanceArray.length == 0 && !keepFunction)
+                window.onmousemove = FunctionStack.pop(window.onmousemove, "ContextOnMouseMove");
         }
     }
+    launchContext(event = undefined) {
+        // console.log("launch")
+        event.preventDefault();
+        let length = Context.activeInstanceArray.length;
+        if (length) {
+            if (this.contextNode.root() != Context.activeInstanceArray[0].contextNode.root())
+                Context.popAll(true);
+            else {
+                let lastContextInstance = Context.activeInstanceArray[length - 1];
+                if (this.contextNode.depth() <= lastContextInstance.contextNode.depth())
+                    lastContextInstance.pop();
+            }
+        }
+        else
+            window.onmousemove = FunctionStack.push(window.onmousemove, Context.ContextOnMouseMove);
+        Context.activeInstanceArray.push(this);
+        this.launchEvent = event;
+        this.isShown = true;
+        Render.scheduleUpdate();
+    }
     onConnect() {
-        //let element = <Element_>(this.parentDisplayCell.getComponent("Element_"));
-        // console.log(element)
         let eventObject = {};
         eventObject[this.eventType] = this.launchContext.bind(this);
         this.parentDisplayCell.addEvents(eventObject);
@@ -2217,27 +2204,22 @@ class Context extends Component {
         return undefined;
     }
     ;
-    getChild(label) {
-        for (let index = 0; index < this.children.length; index++)
-            if (this.children[index].label == label)
-                return this.children[index];
-        return undefined;
-    }
-    delete() { }
 }
 Context.Css = css("ContextCss", `color:black;background:white`, `color:white;background:black:cursor:pointer`);
 Context.labelNo = 0;
 Context.instances = {};
 Context.activeInstances = {};
 Context.defaults = { width: 150, height: 20, isShown: false, byPoint: true,
-    eventType: "oncontextmenu", toTheRight: true };
+    eventType: "oncontextmenu", toTheRight: true, newFunctionReplacesold: false };
 Context.argMap = {
     string: ["label", "eventType"],
     node_: ["contextNode"],
     number: ["width", "height"],
     boolean: ["byPoint", "toTheRight"],
+    function: ["onclick"],
 };
 Context.pointOffset = 5;
+Context.activeInstanceArray = [];
 function context(...Arguments) { return new Context(...Arguments); }
 Render.register("Context", Context);
 // class Context extends Base {

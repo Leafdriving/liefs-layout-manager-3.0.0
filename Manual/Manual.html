@@ -89,7 +89,7 @@ If you want the entire layout manager, simply use:</p>
 </div>
 
 
-<div id="Core-Quick Glance" class="allowScroll">
+<div id="Core" class="allowScroll">
     <div class="heading">Core</div>
     <div class="subHeading">Core of Lief's Layout Manager</div><p>
         Lief's Layout Manager "Core" is the essentials to work this software.</p>
@@ -104,8 +104,6 @@ DisplayGroups can be nested until you have the desired result</li>
 By combining DisplayCells with Element_s and Events, you can layout ANY rectangular web page.    
 </p>
 </div>
-
-
 
 
 <div id="Arguments By Type" class="allowScroll">
@@ -391,13 +389,49 @@ attach any event(s) as selectivly as we choose.</p>
     <div class="heading">node_</div>
 <p>a node_ is a basic tree object that has a parent, and children (so a tree object).
 By itself, it doesn't do a lot, but you can use it to assign data to a tree form.
-When objects are rendered, they produce a tree.  For example: try this in the console:
-<pre><code id="node_1">
+When objects are rendered, they produce a tree.  For example: try this in the console:</p>
+<pre><code id="node_1">function sample(){
+    let node = new node_();                     // first you create a root node
+    node.newChild("One")                        // the first child IS the top node
+            .newChild("One-A")
+                .newChild("One-A-1")
+                .newSibling("One-A-2")
+            .parent()                           // be sure to use .parent() to move back up the tree
+            .newSibling("One-B")
+                .newChild("One-B-1")
+                .newSibling("One-B-2")
+                    .newChild("One-B-2-1")
+                .parent()                       // be sure to use .parent() to move back up the tree
+            .parent()                           // be sure to use .parent() to move back up the tree
+            .newSibling("One-C")
+        .parent()                               // be sure to use .parent() to move back up the tree
+        .newSibling("Two")
+            .newChild("Two-A")
+                .newChild("Two-A-1")
+            .parent()                           // be sure to use .parent() to move back up the tree
+            .newSibling("Two-B")
+        .parent()                               // be sure to use .parent() to move back up the tree
+        .newSibling("Three")
+    return node;
+}</code></pre><script>js("node_1");</script>
+<p>This sample is built in to Lief's Layout manager. To view it, simply type:</p>
+<pre><code id="node_2">// Try this in the console now! (F12)
+let node = sample(); // create the above node tree
+node.log() // show tree, without object nodes
+node.log(true) // show tree with object nodes
+</code></pre><script>js("node_2");</script>
+<p>This is the standard tree object used with Lief's layout manager.  By looking at:</p>
+<pre><code id="node_3">Render.node.log(true);  // try this in the console now!</code></pre><script>js("node_3");</script>
+<p>You can see how the elements on the page are rendered</p>
+</div>
 
-    
-    </code></pre>
-    <script>js("node_1");</script>
-</p>
+
+
+<div id="Render" class="allowScroll">
+    <div class="heading">Render</div>
+<p>The Render object renders the output to the screen.  Whenever you change anything that changes the content
+on the screen, use:</p>
+<pre><code id="Render_1">Render.scheduleUpdate();  // tells the system to update on next tic (so now)</code></pre><script>js("Render_1");</script>
 </div>
 
 
@@ -406,6 +440,59 @@ When objects are rendered, they produce a tree.  For example: try this in the co
     <div class="heading">Examples</div>
 <p>I hope the following Exmaples help explain how Lief's Layout Manager Works.</p>
 </div>
+
+
+
+<div id="Components" class="allowScrollBar">
+    <div class="heading">Components</div>
+<p>Components are additional functionality added to Lief's Layout Manager.</p>
+</div>
+
+
+
+<div id="Context" class="allowScroll">
+    <div class="heading">Context</div>
+<p>Context is simply a drop down menu.  This could occur on a "right-click" or a "click" or a "onhover" etc... 
+How it is used is up to you.  Lets look at an example.</p>
+<div handler="context_01_" style="width:100%;height:400px;"></div>
+</div>
+
+
+<div id="DragBar" class="allowScroll">
+    <div class="heading">DragBar</div>
+<p>A DragBar resizes one DisplayCell within a DisplayGroup.</p>
+</div>
+
+
+<div id="Modal" class="allowScroll">
+    <div class="heading">Modal</div>
+<p>A Modal is a Handler, defined within a "window".</p>
+</div>
+
+
+
+<div id="Pages" class="allowScroll">
+    <div class="heading">Pages</div>
+<p>The Pages Object describes a 'div' that could have different values.  Each Value, is refered to as a page.</p>
+</div>
+
+
+<div id="Scrollbar" class="allowScroll">
+    <div class="heading">Scrollbar</div>
+<p>A ScrollBar</p>
+</div>
+
+
+<div id="Selected" class="allowScroll">
+    <div class="heading">Selected</div>
+</div>
+
+
+<div id="Tree" class="allowScroll">
+    <div class="heading">Tree</div>
+</div>
+
+
 
 
 

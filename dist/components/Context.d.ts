@@ -14,7 +14,8 @@ declare class Context extends Component {
         [key: string]: Array<string>;
     };
     static pointOffset: number;
-    static rootInstance: Context;
+    static activeInstanceArray: Context[];
+    newFunctionReplacesold: boolean;
     byPoint: boolean;
     toTheRight: boolean;
     eventType: string;
@@ -29,18 +30,15 @@ declare class Context extends Component {
     displaycell: DisplayCell;
     displaygroup: DisplayGroup;
     launchEvent: MouseEvent | PointerEvent;
+    onclick: (e: MouseEvent, displaycell: DisplayCell, node: node_) => void;
     constructor(...Arguments: any);
     build(): void;
-    static onclick(e: MouseEvent, displaycell: DisplayCell, node: node_): void;
-    static currentAndParent(): Context[];
-    static ContextOnMouseMove(event: MouseEvent | PointerEvent): void;
-    static pop(): void;
-    static currentInstance(deep?: number): [Context, number];
+    static ContextOnMouseMove(event: MouseEvent | PointerEvent): number;
+    static popAll(keepFunction?: boolean): void;
+    pop(keepFunction?: boolean): void;
     launchContext(event?: PointerEvent | MouseEvent): void;
     onConnect(): void;
     setCoord(Pcoord?: Coord, event?: MouseEvent | PointerEvent): void;
     Render(derender: boolean, node: node_, zindex: number): Component[];
-    getChild(label: string): Component;
-    delete(): void;
 }
 declare function context(...Arguments: any): Context;

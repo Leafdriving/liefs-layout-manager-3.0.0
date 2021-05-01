@@ -193,6 +193,7 @@ declare class Coord extends Base {
     isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
     derender(derender: boolean): boolean;
     isPointIn(x: number, y: number): boolean;
+    red(id?: string): void;
 }
 declare function events(object_: object): {
     processEvents: object;

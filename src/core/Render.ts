@@ -35,18 +35,6 @@ class Render {
                             Render.node,
                             index*Render.zindexHandlerIncrement);
         }
-        // // The first pass can create handlers!
-        // Handler.linkHandlers();
-        // let newHandlers = Handler.getHandlers();
-        // if (newHandlers.length > currentNumberOfHandlers) {
-        //     for (let index = currentNumberOfHandlers-1; index < newHandlers.length; index++) {
-        //         Render.update([newHandlers[index]],
-        //                         derender,
-        //                         Render.node,
-        //                         index*Render.zindexHandlerIncrement);
-        //     }   
-        // }
-        
     }
     static update(components_:Component[]|Component = undefined,
                     derender = false,

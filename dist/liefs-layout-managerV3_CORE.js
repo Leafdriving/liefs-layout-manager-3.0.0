@@ -536,6 +536,16 @@ class Coord extends Base {
     }
     derender(derender) { return derender || this.isCoordCompletelyOutside(); }
     isPointIn(x, y) { return (this.x <= x && x <= this.x + this.width && this.y <= y && y <= this.y + this.height); }
+    red(id = "red") {
+        let div = document.getElementById(id);
+        if (!div) {
+            div = document.createElement("div");
+            Element_.setAttrib(div, "id", id);
+            Element_.setAttrib(div, "llm", "");
+            document.body.appendChild(div);
+        }
+        div.style.cssText = `background:red;left: ${this.x}px; top: ${this.y}px; width: ${this.width}px; height: ${this.height}px; z-index: 1000;`; //style="left: 559px; top: 25px; width: 300px; height: 829px; z-index: 30;"
+    }
 }
 _x_ = new WeakMap(), _y_ = new WeakMap(), _width_ = new WeakMap(), _height_ = new WeakMap();
 Coord.instances = [];
@@ -1214,17 +1224,6 @@ class Render {
         for (let index = 0; index < handlers.length; index++) {
             Render.update([handlers[index]], derender, Render.node, index * Render.zindexHandlerIncrement);
         }
-        // // The first pass can create handlers!
-        // Handler.linkHandlers();
-        // let newHandlers = Handler.getHandlers();
-        // if (newHandlers.length > currentNumberOfHandlers) {
-        //     for (let index = currentNumberOfHandlers-1; index < newHandlers.length; index++) {
-        //         Render.update([newHandlers[index]],
-        //                         derender,
-        //                         Render.node,
-        //                         index*Render.zindexHandlerIncrement);
-        //     }   
-        // }
     }
     static update(components_ = undefined, derender = false, parentNode = undefined, zindex = 0) {
         if (components_) {

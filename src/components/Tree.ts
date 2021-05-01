@@ -75,36 +75,33 @@ class Tree_ extends Component {
         if (!this.parentTreeNode) this.parentTreeNode = sample();
         this.newNode(this.parentTreeNode);
         if (this.useSelected && this.selected == undefined) {
-            this.selected = new Selected(`${this.label}`, this.selectedStartIndex,
-                {getIndexerArray:function(selectedInstance:Selected){
-                                        return node_.asArray(THIS.parentTreeNode,
-                                            function(node){return [node["displaycell"]];}
-                                            );
-                                    },
-                onselect: function(index:number, displaycell:DisplayCell){
+            let getIndexerArray = function(selectedInstance:Selected):any{
+                return node_.asArray(THIS.parentTreeNode, function(node){return [node["displaycell"]];}
+);
+            };
+            let onselect = function(index:number, displaycell:DisplayCell):any {
+                let node = <node_>(node_.asArray(THIS.parentTreeNode)[index]);
+                if (THIS.selectParents) {
+                    while (node.ParentNode) {
+                        node = node.ParentNode;
+                        let displaycell = <DisplayCell>node["displaycell"]
+                        let element = <Element_>(displaycell.getComponent("Element_"));
+                        if (element) element.setAsSelected();
+                    }
+                }
+            };
+            let onunselect = function(index:number, displaycell:DisplayCell){
+                if (THIS.selectParents) {
                     let node = <node_>(node_.asArray(THIS.parentTreeNode)[index]);
-                    if (THIS.selectParents) {
-                        while (node.ParentNode) {
-                            node = node.ParentNode;
-                            let displaycell = <DisplayCell>node["displaycell"]
-                            let element = <Element_>(displaycell.getComponent("Element_"));
-                            if (element) element.setAsSelected();
-                        }
-                    }
-                },
-                onunselect: function(index:number, displaycell:DisplayCell){
-                    if (THIS.selectParents) {
-                        let node = <node_>(node_.asArray(THIS.parentTreeNode)[index]);
-                        while (node.ParentNode) {
-                            node = node.ParentNode;
-                            let displaycell = <DisplayCell>node["displaycell"]
-                            let element = <Element_>(displaycell.getComponent("Element_"));
-                            if (element) element.setAsUnSelected();
-                        }
+                    while (node.ParentNode) {
+                        node = node.ParentNode;
+                        let displaycell = <DisplayCell>node["displaycell"]
+                        let element = <Element_>(displaycell.getComponent("Element_"));
+                        if (element) element.setAsUnSelected();
                     }
                 }
-                }
-            );
+            };
+            this.selected = new Selected(`${this.label}`, this.selectedStartIndex,{getIndexerArray,onselect,onunselect});
         }
     }
 
@@ -121,6 +118,7 @@ class Tree_ extends Component {
         node_.traverse(node, function(node:node_){
             node.retArgs = Arguments_.argumentsByType(node.Arguments);
             Arguments_.modifyClassProperties(Arguments_.retArgsMapped({}, node, {argMap}), node);
+            // if (node["DisplayCell"]) alert("told ya so!");
             if (!node["displaycell"]) node["displaycell"] = I(node.label+Tree_.extension, node.label);
             let displaycell = <DisplayCell>(node["displaycell"]);
             let element = <Element_>displaycell.getComponent("Element_");
