@@ -2667,7 +2667,9 @@ class DragBar extends Component {
             node = node.ParentNode;
         } while (node != undefined && Arguments_.typeof(node.Arguments[1]) != "DisplayGroup");
         THIS.parentDisplayGroupChild = prev.Arguments[1];
-        return (node) ? [node.Arguments[1], (node.children.indexOf(prev) == node.children.length - 1)] : [undefined, undefined];
+        let displaygroup = node.Arguments[1];
+        return (node) ? [node.Arguments[1], (displaygroup.children.indexOf(THIS.parentDisplayCell) == displaygroup.children.length - 1)]
+            : [undefined, undefined];
     }
     static onDown(e) {
         let THIS = this;
@@ -2688,6 +2690,7 @@ class DragBar extends Component {
     Render(derender, node, zindex) {
         if (!this.parentDisplayGroup) {
             [this.parentDisplayGroup, this.isLast] = DragBar.parentDisplayGroup(this);
+            console.log(this.label, this.isLast);
             if (this.parentDisplayGroup.margin > 2)
                 this.width = this.parentDisplayGroup.margin;
         }

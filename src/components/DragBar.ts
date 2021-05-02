@@ -18,7 +18,10 @@ class DragBar extends Component {
         }
         while (node != undefined && Arguments_.typeof(node.Arguments[1]) != "DisplayGroup" );
         THIS.parentDisplayGroupChild = prev.Arguments[1];
-        return (node) ? [node.Arguments[1], (node.children.indexOf(prev) == node.children.length-1)] : [undefined, undefined];
+        let displaygroup = <DisplayGroup>node.Arguments[1];
+
+        return (node) ? [node.Arguments[1], (displaygroup.children.indexOf(THIS.parentDisplayCell) == displaygroup.children.length-1)]
+                      : [undefined, undefined];
     }
     static dragStartDim:number;
     static onDown(e:MouseEvent|PointerEvent){
@@ -53,6 +56,7 @@ class DragBar extends Component {
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         if (!this.parentDisplayGroup) {
             [this.parentDisplayGroup, this.isLast] = DragBar.parentDisplayGroup(this);
+            console.log(this.label, this.isLast)
             if (this.parentDisplayGroup.margin > 2) this.width = this.parentDisplayGroup.margin;
         }
         if (!this.dragbarDisplayCell)
