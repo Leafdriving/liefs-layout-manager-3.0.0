@@ -202,7 +202,7 @@ Manual.pages = new Pages("ContentsPages", Manual.contentsTree);
 Manual.pageDisplayCell = new DisplayCell(Manual.pages);
 Manual.fileObject = {};
 Manual.fileObjectsLoaded = 0;
-Manual.names = ["core_00", "core_01", "core_displaygroup01", "events_00", "context_01"];
+Manual.names = ["core_00", "core_01", "core_displaygroup01", "events_00", "context_01", "DragBar_01"];
 for (let index = 0; index < Manual.names.length; index++) {
     Manual.load(`${Manual.names[index]}.js`);
     Manual.load(`${Manual.names[index]}.html`);
