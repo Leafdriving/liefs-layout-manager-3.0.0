@@ -2690,7 +2690,7 @@ class DragBar extends Component {
     Render(derender, node, zindex) {
         if (!this.parentDisplayGroup) {
             [this.parentDisplayGroup, this.isLast] = DragBar.parentDisplayGroup(this);
-            console.log(this.label, this.isLast);
+            // console.log(this.label, this.isLast)
             if (this.parentDisplayGroup.margin > 2)
                 this.width = this.parentDisplayGroup.margin;
         }

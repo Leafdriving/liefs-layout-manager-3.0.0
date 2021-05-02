@@ -196,7 +196,8 @@ class Manual {
         let mySelected = new Selected(`${label}`, [b1, b2, b3], 0, {onselect: function(index:number, displaycell:DisplayCell){pages.currentPage = index;}} );
         return vert;
     }
-    static names = ["core_00", "core_01", "core_displaygroup01", "events_00", "context_01", "DragBar_01"];
+    static names = ["core_00", "core_01", "core_displaygroup01", "events_00", "context_01", "DragBar_01",
+                    "Pages_01", "Pages_02", "Pages_03"];
     static async load(name:string, cb:(data:string)=>void = undefined) {
         try {
           const response = await fetch( Manual.nameToUrl(name) );
