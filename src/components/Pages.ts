@@ -1,3 +1,6 @@
+/**
+ * Pages
+ */
 class Pages extends Component {
     static labelNo = 0;
     static instances:{[key: string]: Pages;} = {};
@@ -39,6 +42,10 @@ class Pages extends Component {
     get currentPage(){return this.currentPage_}
     
     // retArgs:objectAny;   // <- this will appear
+    /**
+     * Creates an instance of pages.
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         let THIS = this;
@@ -63,11 +70,21 @@ class Pages extends Component {
 
         Pages.instances[this.label] = this;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect():void{
         let THIS = this;
         this.parentDisplayCell.getdim = function(){return THIS.dim}
         this.parentDisplayCell.setdim = function(value:string){THIS.dim = value}
     };
+    /**
+     * Renders pages
+     * @param derender 
+     * @param node 
+     * @param zindex 
+     * @returns render 
+     */
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         let newPage = this.evalFunction(this);
         if (newPage != this.prevPage) Render.update(this.cellArray[this.prevPage], true);
@@ -77,7 +94,6 @@ class Pages extends Component {
         this.cellArray[this.currentPage].coord.copy( this.parentDisplayCell.coord )
         return [ this.cellArray[this.currentPage] ]
     };
-    delete(){}
 }
 Render.register("Pages", Pages);
 function P(...Arguments:any) {

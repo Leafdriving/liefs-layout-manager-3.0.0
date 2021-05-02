@@ -1,5 +1,11 @@
+/**
+ * Display cell
+ */
 class DisplayCell extends Component {
     static labelNo = 0;
+    /**
+     * Instances  of display cell
+     */
     static instances:{[key: string]: DisplayCell;} = {};
     static activeInstances:{[key: string]: DisplayCell;} = {};
     static defaults:{[key: string]: any;} = {getdim:function(){return this.dim_},
@@ -24,6 +30,10 @@ class DisplayCell extends Component {
     get dim(){return this.getdim();}
     min:number; // minimum number of pixels in displayGroup
 
+    /**
+     * Creates an instance of display cell.
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         if (!this.coord) this.coord = new Coord();
@@ -39,6 +49,11 @@ class DisplayCell extends Component {
         if (!this.label) DisplayCell.makeLabel(this);
         DisplayCell.instances[this.label] = this;
     }
+    /**
+     * Adds component
+     * @param component 
+     * @returns component 
+     */
     addComponent(component:Component) : DisplayCell {
         DisplayCell.objectTypes.add(component.constructor.name);
         this.children.push(component);
@@ -47,6 +62,12 @@ class DisplayCell extends Component {
         if (!this.label) this.label = component.label;
         return this;
     }
+    /**
+     * Gets component
+     * @param type 
+     * @param [label] 
+     * @returns component 
+     */
     getComponent(type:string, label:string = undefined) : object {
         for (let index = 0; index < this.children.length; index++) {
             const component = this.children[index];
@@ -57,6 +78,12 @@ class DisplayCell extends Component {
         }
         return undefined;
     }
+    /**
+     * Deletes component
+     * @param type 
+     * @param [label] 
+     * @returns true if component 
+     */
     deleteComponent(type:string, label:string = undefined): boolean {
         let returnValue = false;
         for (let index = 0; index < this.children.length; index++) {
@@ -70,6 +97,13 @@ class DisplayCell extends Component {
         }
         return returnValue;
     }
+    /**
+     * Pre render
+     * @param derender 
+     * @param node 
+     * @param zindex 
+     * @returns  
+     */
     preRender(derender:boolean, node:node_, zindex:number){
         let returnArray = [];
         for (let index = 0; index < this.children.length; index++){
@@ -82,16 +116,32 @@ class DisplayCell extends Component {
         }
         return returnArray;
     }
+    /**
+     * Renders display cell
+     * @param [derender] 
+     * @param node 
+     * @param zindex 
+     * @returns  
+     */
     Render(derender = false, node:node_, zindex:number) {
         this.coord.applyMargins(this.marginLeft, this.marginRight, this.marginTop, this.marginBottom);
         if (this.coord.zindex < 0) this.coord.zindex *=  -1;
         else this.coord.zindex = zindex;
         return this.children;
     }
+    /**
+     * Adds events
+     * @param Argument 
+     */
     addEvents(Argument:object){
         let element_ = <Element_>this.getComponent("Element_");
         if (element_) element_.addEvents(Argument)
     }
+    /**
+     * Margins assign
+     * @param cell 
+     * @param numberArray 
+     */
     static marginAssign(cell:DisplayCell, numberArray:number[]) {
         switch (numberArray.length) {
             case 1:

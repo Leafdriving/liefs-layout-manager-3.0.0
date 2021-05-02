@@ -1,5 +1,6 @@
-//node_asArray(node, function(node){ return node.whatever})
-
+/**
+ * Node 
+ */
 class node_ extends Base {
     static labelNo = 0;
     static instances:{[key: string]: node_;} = {};
@@ -8,16 +9,35 @@ class node_ extends Base {
     static argMap:objectStringArray = {
         string : ["label"],
     }
+    /**
+     * News node
+     * @param THIS 
+     * @param Arguments 
+     * @returns  
+     */
     static newNode(THIS:node_, ...Arguments:any){
         let newnode = new node_(...Arguments);
         newnode.ParentNodeTree = THIS.ParentNodeTree;
         return newnode;
     }
+    /**
+     * Determines whether array as
+     * @param node 
+     * @param [traverseFunction] 
+     * @returns array 
+     */
     static asArray(node:node_, traverseFunction:(node:node_)=>any = function(node){return node}): any[] {
         let returnArray:any[] = [];
         node_.traverse(node, function(node:node_){returnArray.push( traverseFunction(node) )});
         return returnArray;
     }
+    /**
+     * Traverses node 
+     * @param node 
+     * @param traverseFunction 
+     * @param [traverseChildren] 
+     * @param [traverseNode] 
+     */
     static traverse(node:node_, traverseFunction:(node: node_) => void,
             traverseChildren:(node: node_)=>boolean = function(){return true},
             traverseNode:(node: node_)=>boolean = function(){return true}) {
@@ -59,11 +79,20 @@ class node_ extends Base {
     }
     collapsed: boolean;
     children:node_[] = [];
+    /**
+     * Creates an instance of node .
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         this.Arguments = Arguments;
         if (!this.label) node_.makeLabel(this);
     }
+    /**
+     * Depths node 
+     * @param [deep] 
+     * @returns  
+     */
     depth(deep=0){
         let node = <node_>this;
         while(node){
@@ -72,10 +101,20 @@ class node_ extends Base {
         };
         return deep;
     }
+    /**
+     * Lengths node 
+     * @param [count] 
+     * @returns  
+     */
     length(count = -1){
         node_.traverse(this, function(node:node_){count++});
         return count;
     }
+    /**
+     * News child
+     * @param Arguments 
+     * @returns child 
+     */
     newChild(...Arguments:any): node_{
         let newNode:node_;
         if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
@@ -88,6 +127,11 @@ class node_ extends Base {
         return newNode;
         
     }
+    /**
+     * News sibling
+     * @param Arguments 
+     * @returns sibling 
+     */
     newSibling(...Arguments:any): node_ {
         let newNode:node_;
         if (typeof(Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
@@ -99,18 +143,38 @@ class node_ extends Base {
         this.NextSibling = newNode;
         return newNode;
     }
+    /**
+     * Pops node 
+     * @returns  
+     */
     pop(){
         this.ParentNode.children.splice(this.ParentNode.children.indexOf(this), 1);
         this.ParentNode = undefined;
         return this;
     }
+    /**
+     * Dones node 
+     * @returns  
+     */
     done(){return this.ParentNodeTree}
+    /**
+     * Roots node 
+     * @returns  
+     */
     root(){
         let node:node_ = this;
         while(node.parent()){node = node.parent()}
         return node;
     }
+    /**
+     * Parents node 
+     * @returns  
+     */
     parent(){return this.ParentNode}
+    /**
+     * Logs node 
+     * @param [showNode] 
+     */
     log(showNode:boolean = false){
         if (this.children.length) {
             console.groupCollapsed(this.label);

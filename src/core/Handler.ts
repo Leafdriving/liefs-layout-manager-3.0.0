@@ -1,3 +1,6 @@
+/**
+ * Handler
+ */
 class Handler extends Component {
     static labelNo = 0;
     static instances:{[key: string]: Handler;} = {};
@@ -11,6 +14,9 @@ class Handler extends Component {
     }
     static linkHandlerOldList:Handler[] = [];
     static linkHandlerNewList:Handler[] = [];
+    /**
+     * Links handlers
+     */
     static linkHandlers(){
         let links = document.querySelectorAll("[handler]");
         Handler.linkHandlerOldList = Handler.linkHandlerNewList;
@@ -23,15 +29,12 @@ class Handler extends Component {
             let coord = (parentEl) ? Element_.instances[parentEl.id].parentDisplayCell.coord : Handler.ScreenSizeCoord;
             let handlerLabel = el.getAttribute("handler");
             let handler = Handler.instances[handlerLabel];
-            //console.log("label", handlerLabel, handler);
             if (handler) {
-                if (!Handler.activeInstances[handlerLabel]) {
+                if (!Handler.activeInstances[handlerLabel])
                     Handler.activeInstances[handlerLabel] = handler;
-                    //console.log("Found Handler", handler.label, "now Active Instance", links)
-                }
+                
                 if (Handler.linkHandlerNewList.indexOf(handler) == -1) Handler.linkHandlerNewList.push(handler);
                 if (!handler.preRenderCallBack) {
-                    //console.log("Setting", handler.label, "Callback")
                     handler.preRenderCallBack = <any>FunctionStack.push(undefined,
                         function setHandlerCoord(handler:Handler) {
                             let {x, y, width, height} = el.getBoundingClientRect();
@@ -44,14 +47,12 @@ class Handler extends Component {
         for (let index = 0; index < Handler.linkHandlerOldList.length; index++) {
             let handler = Handler.linkHandlerOldList[index];
             if (Handler.linkHandlerNewList.indexOf(handler) == -1) {
-                //console.log("removing Handler", handler.label)
                 delete handler.preRenderCallBack;
                 Render.update(handler.parentDisplayCell, true);
                 delete Handler.activeInstances[handler.label];
             }
         }
     }
-    // retArgs:objectAny;   // <- this will appear
     type:string;
     label: string;
     startRendered: boolean
@@ -62,6 +63,10 @@ class Handler extends Component {
     preRenderCallBack:(handler:Handler)=>void;
     postRenderCallBack:(handler:Handler)=>void;
     
+    /**
+     * Creates an instance of handler.
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         Handler.makeLabel(this); Handler.instances[this.label] = this;
@@ -78,7 +83,13 @@ class Handler extends Component {
         if (!this.coord) this.coord = Handler.ScreenSizeCoord;
         if (this.startRendered) Handler.activeInstances[this.label] = this;
     }
+    /**
+     * Screen size coord of handler
+     */
     static ScreenSizeCoord: Coord = new Coord();
+    /**
+     * Updates screen size coord
+     */
     static updateScreenSizeCoord(){
         let win = window, doc = document, docElem = doc.documentElement,
         body = doc.getElementsByTagName('body')[0],
@@ -88,28 +99,53 @@ class Handler extends Component {
         Handler.ScreenSizeCoord.assign(0, 0, x, y, 0, 0, x, y);
         Handler.ScreenSizeCoord.frozen = true;
     }
+    /**
+     * Gets handlers
+     * @returns handlers 
+     */
     static getHandlers(): DisplayCell[] {
         let objectArray:DisplayCell[] = [];
         for (const key in Handler.activeInstances) 
             objectArray.push(Handler.activeInstances[key].parentDisplayCell);
         return objectArray;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         if (this.retArgs["number"] && this.retArgs["number"].length >= 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
         if (this.startRendered) Render.scheduleUpdate();
     }
+    /**
+     * Pre render
+     * @param derender 
+     * @param node 
+     */
     preRender(derender:boolean, node:node_):void{
         if (this.preRenderCallBack) this.preRenderCallBack(this);
         this.parentDisplayCell.coord.copy(this.coord);
     }
+    /**
+     * Renders handler
+     * @param derender 
+     * @param node 
+     * @param zindex 
+     * @returns render 
+     */
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         for (let index = 0; index < this.children.length; index++) 
             (<DisplayCell>( this.children[index] )).coord.copy(this.parentDisplayCell.coord);
         if (this.postRenderCallBack) this.postRenderCallBack(this);
         return this.children;
     }
+    /**
+     * Shows handler
+     */
     show(){Handler.activeInstances[this.label] = this;Render.scheduleUpdate();}
+    /**
+     * Hides handler
+     */
     hide(){Render.update(this.parentDisplayCell, true);
            delete Handler.activeInstances[this.label]}
 }

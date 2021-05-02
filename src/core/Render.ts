@@ -1,9 +1,15 @@
+/**
+ * Render
+ */
 class Render {
     static node:node_;
     static zindexIncrement:number = 5;
     static zindexHandlerIncrement:number = 100;
     static pleaseUpdate:boolean = false;
     static firstRun=true;
+    /**
+     * Schedules update
+     */
     static scheduleUpdate(){
         if (Render.firstRun){
             Render.firstRun = false;
@@ -21,6 +27,10 @@ class Render {
             }, 0);
         }
     }
+    /**
+     * Fullupdates render
+     * @param [derender] 
+     */
     static fullupdate(derender = false){
         Css.update();
         Render.node = new node_("Root");
@@ -36,6 +46,13 @@ class Render {
                             index*Render.zindexHandlerIncrement);
         }
     }
+    /**
+     * Updates render
+     * @param [components_] 
+     * @param [derender] 
+     * @param [parentNode] 
+     * @param [zindex] 
+     */
     static update(components_:Component[]|Component = undefined,
                     derender = false,
                     parentNode:node_ = undefined,
@@ -63,6 +80,14 @@ class Render {
             }
         }
     }
+    /**
+     * Classes  of render
+     */
     static classes = { /* DragBar,for wxample... filled in when modules load. */};
+    /**
+     * Registers render
+     * @param label 
+     * @param object_ 
+     */
     static register(label:string, object_:object){Render.classes[label] = object_;}
 }

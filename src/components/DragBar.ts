@@ -1,3 +1,6 @@
+/**
+ * Drag bar
+ */
 class DragBar extends Component {
     static labelNo = 0;
     static instances:{[key: string]: DragBar;} = {};
@@ -9,6 +12,11 @@ class DragBar extends Component {
     }
     static horCss = css("db_hor","background-color:black;cursor: ew-resize;");
     static verCss = css("db_ver","background-color:black;cursor: ns-resize;");
+    /**
+     * Parents display group
+     * @param THIS 
+     * @returns display group 
+     */
     static parentDisplayGroup(THIS:DragBar) : [DisplayGroup, boolean]{
         let node = THIS.parentDisplayCell.node;
         let prev:node_;
@@ -23,11 +31,23 @@ class DragBar extends Component {
         return (node) ? [node.Arguments[1], (displaygroup.children.indexOf(THIS.parentDisplayCell) == displaygroup.children.length-1)]
                       : [undefined, undefined];
     }
+    /**
+     * Drag start dim of drag bar
+     */
     static dragStartDim:number;
+    /**
+     * Determines whether down on
+     * @param e 
+     */
     static onDown(e:MouseEvent|PointerEvent){
         let THIS = this as unknown as DragBar;
         DragBar.dragStartDim = pf.pxAsNumber(THIS.parentDisplayGroupChild.dim);
     }
+    /**
+     * Determines whether move on
+     * @param e 
+     * @param offset 
+     */
     static onMove(e:MouseEvent|PointerEvent, offset:{x:number, y:number}){
         let THIS = this as unknown as DragBar;
         let newdim = DragBar.dragStartDim + (((THIS.isHor) ? offset.x : offset.y) * ((THIS.isLast) ? -1 : 1));
@@ -36,6 +56,11 @@ class DragBar extends Component {
         THIS.parentDisplayGroupChild.dim = `${newdim}px`;
         Render.scheduleUpdate();
     }
+    /**
+     * Determines whether up on
+     * @param e 
+     * @param offset 
+     */
     static onUp(e:MouseEvent|PointerEvent, offset:{x:number, y:number}){DragBar.dragStartDim = undefined;}
     node:node_;
     parentDisplayCell:DisplayCell;
@@ -48,11 +73,22 @@ class DragBar extends Component {
     dragbarDisplayCell:DisplayCell;
     get isHor(){return this.parentDisplayGroup.isHor}
     isLast:boolean;
+    /**
+     * Creates an instance of drag bar.
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         DragBar.makeLabel(this); DragBar.instances[this.label] = this;
         DragBar.instances[this.label] = this;
     }
+    /**
+     * Renders drag bar
+     * @param derender 
+     * @param node 
+     * @param zindex 
+     * @returns render 
+     */
     Render(derender:boolean, node:node_, zindex:number):Component[]{
         if (!this.parentDisplayGroup) {
             [this.parentDisplayGroup, this.isLast] = DragBar.parentDisplayGroup(this);

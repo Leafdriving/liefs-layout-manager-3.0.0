@@ -1,9 +1,17 @@
+/**
+ * Css
+ */
 class Css extends Base {
     static theme:any // set by theme class
     static elementId="llmStyle";
     static instances:{[key: string]: Css;} = {};
     static activeInstances:{[key: string]: Css;} = {};
 
+    /**
+     * label
+     * @param classname 
+     * @returns label 
+     */
     static byLabel(classname:string):Css{
         for (let key in Css.instances)
             if (Css.instances[key].classname == classname)
@@ -11,10 +19,16 @@ class Css extends Base {
         return undefined;
     }
     static defaults = {isClassname : true}
+    /**
+     * Arg map of css
+     */
     static argMap = {
         string : ["classname", "css", "cssHover", "cssSelect", "cssSelectHover"],
         boolean : ["isClassname"]
     }
+    /**
+     * Delete on first run classname of css
+     */
     static deleteOnFirstRunClassname=".remove";
     classname:string;
     type:string;
@@ -33,6 +47,10 @@ class Css extends Base {
 
     isClassname:boolean;
 
+    /**
+     * Creates an instance of css.
+     * @param Arguments 
+     */
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
 
@@ -50,10 +68,21 @@ class Css extends Base {
         }
         Css.instances[this.classname] = this;
     }
+    /**
+     * News string
+     * @param data 
+     */
     newString(data:string){
         this.cssObj = this.makeObj(data);
         this.css = this.makeString();
     }
+    /**
+     * Makes string
+     * @param [obj] 
+     * @param [postfix] 
+     * @param [addToClassName] 
+     * @returns string 
+     */
     makeString(obj:object = this.cssObj, postfix:string = "", addToClassName=""):string{
         let returnString:string  = `${(this.isClassname)?".":""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix:""} {\n`;
         for (let key in obj) 
@@ -61,6 +90,11 @@ class Css extends Base {
         returnString += "}"
         return returnString;
     }
+    /**
+     * Makes obj
+     * @param [str] 
+     * @returns obj 
+     */
     makeObj(str:string = this.css):object {
         //let str = this.asString;
         let obj = {};
@@ -80,10 +114,10 @@ class Css extends Base {
         }
         return obj;
     }
-    // static byname(css:string){
-    //     for (let cssInstance of Css.instances) if (cssInstance.css == css) return cssInstance;
-    //     return undefined;
-    // }
+
+    /**
+     * Updates css
+     */
     static update() {
         let style:HTMLElement = document.getElementById(Css.elementId);
         let alreadyexists = true;    
@@ -108,4 +142,3 @@ class Css extends Base {
     static advisedHtml = new Css("html","overflow: auto hidden;", false, {type:"llm"});
 }
 function css(...Arguments:any){return new Css(...Arguments);}
-// export {Css, css}

@@ -1,4 +1,10 @@
+/**
+ * Point
+ */
 class Point{x:number;y:number}
+/**
+ * Within
+ */
 class Within{
     lockedToScreenSize:boolean;
     x_: number;
@@ -14,24 +20,58 @@ class Within{
     get height(){return (this.lockedToScreenSize) ? Handler.ScreenSizeCoord.height : this.height_}
     set height(height:number){this.height_=height}
 
+    /**
+     * Creates an instance of within.
+     * @param Arguments 
+     */
     constructor(...Arguments: any) {}
+    /**
+     * Resets within
+     */
     reset(){this.x = this.y = this.width = this.height = undefined};
+    /**
+     * To string of within
+     */
     toString:Function;
 }
+/**
+ * Coord
+ */
 class Coord extends Base {
+    /**
+     * Instances  of coord
+     */
     static instances:Coord[] = [];
+    /**
+     * Active instances of coord
+     */
     static activeInstances:Coord[] = [];
 
+    /**
+     * Defaults  of coord
+     */
     static defaults = {x : 0, y : 0, width : 0, height: 0, zindex: 0};
+    /**
+     * Arg map of coord
+     */
     static argMap = {
         string : ["label"],
         number : ["x", "y", "width", "height", "zindex"],
         boolean : ["hideWidth"]
     };
+    /**
+     * Copy arg map of coord
+     */
     static CopyArgMap = {Within : ["Within"],Coord : ["Coord"], boolean:["isRoot"],
                          number : ["x", "y", "width", "height", "zindex"]};
 
+    /**
+     * Label  of coord
+     */
     label:string;
+    /**
+     * Frozen  of coord
+     */
     frozen:boolean;
 
     #x_: number;
@@ -47,12 +87,30 @@ class Coord extends Base {
     get height() {return this.#height_ + ((this.offset) ? this.offset.height : 0);}
     set height(height) {if (!this.frozen) this.#height_ = height}
 
+    /**
+     * Gets x2
+     */
     get x2(){return this.x + this.width}
+    /**
+     * Gets y2
+     */
     get y2(){return this.y + this.height}
 
+    /**
+     * Zindex  of coord
+     */
     zindex: number;
+    /**
+     * Within  of coord
+     */
     within: Within = new Within();
+    /**
+     * Hide width of coord
+     */
     hideWidth: boolean;
+    /**
+     * Offset  of coord
+     */
     offset: {x:number, y:number, width:number, height:number};
 
     constructor(...Arguments: any) {
@@ -60,10 +118,22 @@ class Coord extends Base {
         
         Coord.makeLabel(this);
     }
+    /**
+     * Sets offset
+     * @param [x] 
+     * @param [y] 
+     * @param [width] 
+     * @param [height] 
+     */
     setOffset(x=0, y=0, width=0, height=0){
         if (x==0 && y==0 && width ==0 && height == 0) this.offset = undefined;
         else this.offset = {x, y, width, height};
     }
+    /**
+     * Merges within
+     * @param p 
+     * @returns  
+     */
     mergeWithin(p:Coord /* parent Coord */){
         if (!this.frozen) {
             let ax1=p.x, ax2=p.x+p.width, ay1=p.y, ay2=p.y+p.height;
@@ -75,6 +145,14 @@ class Coord extends Base {
         }
         return this;
     }
+    /**
+     * Applys margins
+     * @param [left] 
+     * @param [right] 
+     * @param [top] 
+     * @param [bottom] 
+     * @returns  
+     */
     applyMargins(left:number = 0, right:number = 0, top:number =0, bottom:number =0){
         this.x += left;
         this.y += top;
@@ -82,6 +160,19 @@ class Coord extends Base {
         this.height -= (top + bottom);
         return this;
     }
+    /**
+     * Assigns coord
+     * @param [x] 
+     * @param [y] 
+     * @param [width] 
+     * @param [height] 
+     * @param [wx] 
+     * @param [wy] 
+     * @param [wwidth] 
+     * @param [wheight] 
+     * @param [zindex] 
+     * @returns  
+     */
     assign(x=undefined, y=undefined, width=undefined, height=undefined,
             wx=undefined, wy=undefined, wwidth=undefined, wheight=undefined, zindex=undefined){
         if (!this.frozen) {
@@ -99,6 +190,16 @@ class Coord extends Base {
         }
         return this;
     }
+    /**
+     * Copys coord
+     * @param fromCoord 
+     * @param [x] 
+     * @param [y] 
+     * @param [width] 
+     * @param [height] 
+     * @param [zindex] 
+     * @returns  
+     */
     copy(fromCoord:Coord,
         x:number=undefined, y:number=undefined, width:number=undefined, height:number=undefined,
         zindex:number=undefined){
@@ -119,19 +220,42 @@ class Coord extends Base {
         }
         return this;
     }
+    /**
+     * Logs coord
+     */
     log(){
         console.log(`x=${this.x}`, `y=${this.y}`, `width=${this.width}`, `height=${this.height}`);
         console.log(`wx=${this.within.x}`, `wy=${this.within.y}`, `wwidth=${this.within.width}`, `wheight=${this.within.height}`);
     }
 
+    /**
+     * Determines whether coord completely outside is
+     * @param [WITHIN] 
+     * @returns  
+     */
     isCoordCompletelyOutside(WITHIN: Coord|Within = this.within){
         return ((WITHIN.x + WITHIN.width < this.x) ||
                 (WITHIN.x > this.x + this.width) ||
                 (WITHIN.y + WITHIN.height < this.y) ||
                 (WITHIN.y > this.y + this.height)) 
     }
+    /**
+     * Derenders coord
+     * @param derender 
+     * @returns  
+     */
     derender(derender:boolean) {return derender || this.isCoordCompletelyOutside()}
+    /**
+     * Determines whether point in is
+     * @param x 
+     * @param y 
+     * @returns true if point in 
+     */
     isPointIn(x:number, y:number): boolean {return (this.x <= x && x <= this.x+this.width && this.y <= y && y <= this.y+this.height)}
+    /**
+     * Red coord
+     * @param [id] 
+     */
     red(id="red"){
         let div = document.getElementById(id);
         if (!div) {

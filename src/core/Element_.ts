@@ -1,4 +1,7 @@
 function events(object_:object){return {processEvents:object_}}
+/**
+ * Element 
+ */
 class Element_ extends Component {
     static eventsArray = []
     static labelNo = 0;
@@ -11,6 +14,9 @@ class Element_ extends Component {
         Css: ["Css"],
         function: ["evalInner"],
     }
+    /**
+     * Custom events of element 
+     */
     static customEvents:{[type: string]: (newData:any)=>object;} = {};
     // retArgs:objectAny;   // <- this will appear
     ignoreInner:boolean;
@@ -41,6 +47,10 @@ class Element_ extends Component {
     parentDisplayCell: DisplayCell;
     get coord(){if (this.parentDisplayCell) return this.parentDisplayCell.coord; return undefined}
     
+    /**
+     * Creates an instance of element .
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         Element_.makeLabel(this); Element_.instances[this.label] = this;
@@ -54,6 +64,10 @@ class Element_ extends Component {
 
         if (this.processEvents) {this.addEvents(this.processEvents);}
     }
+    /**
+     * Loads element
+     * @param el 
+     */
     loadElement(el:HTMLDivElement) {
         
         this.el = el;
@@ -63,7 +77,14 @@ class Element_ extends Component {
         // console.log("loading Element", el)
         el.remove();
     }
+    /**
+     * Applys events
+     */
     applyEvents(){for (let key in this.events) this.el[key] = this.events[key];}
+    /**
+     * Adds events
+     * @param eventObject 
+     */
     addEvents(eventObject:object){
         for (const key in eventObject) {
             if (key in Element_.customEvents) 
@@ -71,11 +92,23 @@ class Element_ extends Component {
             else this.events[key] = FunctionStack.push(this.events[key], eventObject[key]);
         }
     }
+    /**
+     * Renders html attributes
+     */
     renderHtmlAttributes(){for (let key in this.attributes) Element_.setAttrib(this.el, key, this.attributes[key]);}
+    /**
+     * Determines whether connect on
+     */
     onConnect(){
         if (this.dim_) {this.parentDisplayCell.dim = this.dim_;this.dim_ = undefined;}
         if (this.retArgs["number"]) DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
     }
+    /**
+     * Renders element 
+     * @param derender 
+     * @param node 
+     * @returns  
+     */
     Render(derender: boolean, node:node_){
         let el = Element_.elExists(this.label);
         if (derender || this.coord.width <= 0) {
@@ -94,18 +127,29 @@ class Element_ extends Component {
         if (this.el.style.cssText != styleString) this.el.style.cssText = styleString;
         return [];
     }
+    /**
+     * Sets as selected
+     */
     setAsSelected(){
         if (!this.attributes.class.endsWith("Selected")) {
             this.attributes.class += "Selected";
             if (this.el) Element_.setAttrib(this.el, "class", this.attributes.class);
         }
     }
+    /**
+     * Sets as un selected
+     */
     setAsUnSelected(){
         if (this.attributes.class.endsWith("Selected")) {
             this.attributes.class = this.attributes.class.slice(0, -8);
             if (this.el) Element_.setAttrib(this.el, "class", this.attributes.class);
         }
     }
+    /**
+     * Clips style string
+     * @param element 
+     * @returns  
+     */
     static clipStyleString(element:Element_) {
         let COORD = element.coord;
         let WITHIN = element.coord.within;
@@ -124,6 +168,11 @@ class Element_ extends Component {
             returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`
         return returnString;
     }
+    /**
+     * Styles element 
+     * @param element 
+     * @returns style 
+     */
     static style(element:Element_):string {
         let coord = element.coord;
         let clip = Element_.clipStyleString(element);
@@ -133,17 +182,38 @@ class Element_ extends Component {
         + ((element.attributes.style) ? element.attributes.style : "");
         return returnString;
     }
+    /**
+     * Gets attribs
+     * @param el 
+     * @param [retObj] 
+     * @returns attribs 
+     */
     static getAttribs(el:HTMLDivElement, retObj:objectString = {}): objectString {
         for (let i = 0; i < el.attributes.length; i++) 
             if (Element_.attribFilter.indexOf(el.attributes[i].name) == -1)
                 retObj[el.attributes[i].name] = el.attributes[i].value;
         return retObj;
     }
+    /**
+     * exists
+     * @param id_label 
+     * @returns  
+     */
     static elExists(id_label:string){return <HTMLDivElement>document.getElementById(id_label)}
+    /**
+     * Sets attribs
+     * @param element 
+     */
     static setAttribs(element:Element_) {
         for (const key in element.attributes) 
             Element_.setAttrib(element.el, key, element.attributes[key]);
     }
+    /**
+     * Sets attrib
+     * @param el 
+     * @param attrib 
+     * @param value 
+     */
     static setAttrib(el:HTMLElement, attrib:string, value:string) {
         let prevAttrib = el.getAttribute(attrib);
         if (prevAttrib != value) {
@@ -152,8 +222,9 @@ class Element_ extends Component {
             el.setAttributeNode(att);
         }
     }
+    /**
+     * Attrib filter of element 
+     */
     static attribFilter = ["id"];
 }
-function I(...Arguments:any) {
-    return new DisplayCell( new Element_(...Arguments) );
-}
+function I(...Arguments:any) {return new DisplayCell( new Element_(...Arguments) );}

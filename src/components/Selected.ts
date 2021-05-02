@@ -1,4 +1,6 @@
-
+/**
+ * Selected
+ */
 class Selected extends Base {
     static labelNo = 0;
     static instances:{[key: string]: Selected;} = {};
@@ -22,6 +24,10 @@ class Selected extends Base {
     startValue:number;
     currentButtonIndex:number;
 
+    /**
+     * Creates an instance of selected.
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         Selected.makeLabel(this);
@@ -29,6 +35,9 @@ class Selected extends Base {
         if (this.startValue != undefined) this.select(this.startValue);
         Selected.instances[this.label] = this;
     }
+    /**
+     * Updates events
+     */
     updateEvents(){
         let THIS = this;
         for (let index = 0; index < this.indexer.length; index++) {
@@ -40,6 +49,10 @@ class Selected extends Base {
                 displayCells[index].addEvents( {onclick:function selected(e:PointerEvent){ THIS.select(displayCells[index]) }} );
         }
     }
+    /**
+     * Selects selected
+     * @param displaycellOrNumber 
+     */
     select(displaycellOrNumber:DisplayCell|number) {
         let newIndex:number;
         let type = Arguments_.typeof(displaycellOrNumber);
@@ -53,12 +66,24 @@ class Selected extends Base {
             }
         }
     }
+    /**
+     * Clears selected
+     */
     clear(){this.onUnselect( this.currentButtonIndex );this.currentButtonIndex = undefined}
+    /**
+     * Indexs of
+     * @param displaycell 
+     * @returns of 
+     */
     indexOf(displaycell:DisplayCell): number {
         for (let index = 0; index < this.indexer.length; index++) 
             if ((<DisplayCell[]>this.indexer[index]).indexOf(displaycell) > -1) return index;
         return undefined;
     }
+    /**
+     * Determines whether select on
+     * @param index 
+     */
     onSelect(index:number){
         // console.log("onSelectCalled", this.indexer)
 
@@ -70,6 +95,10 @@ class Selected extends Base {
             if (this.onselect) this.onselect(index, displaycell);
         }
     }
+    /**
+     * Determines whether unselect on
+     * @param index 
+     */
     onUnselect(index:number){
         let unSelectArray = (<DisplayCell[]>(this.indexer[index]));
         for (let i = 0; i < unSelectArray.length; i++) {

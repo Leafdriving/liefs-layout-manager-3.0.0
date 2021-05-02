@@ -1,3 +1,6 @@
+/**
+ * Display group
+ */
 class DisplayGroup extends Component {
     static labelNo = 0;
     static instances:{[key: string]: DisplayGroup;} = {};
@@ -9,7 +12,6 @@ class DisplayGroup extends Component {
         dim : ["dim_"],
         boolean: ["isHor"],
     }
-    // retArgs:objectAny;   // <- this will appear
     allowScrollBar:boolean;
     label:string;
     dim_:string;
@@ -24,12 +26,19 @@ class DisplayGroup extends Component {
     scrollbar: ScrollBar;
     offset:number;
     
+    /**
+     * Creates an instance of display group.
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         DisplayGroup.makeLabel(this); DisplayGroup.instances[this.label] = this;
         DisplayGroup.instances[this.label] = this;
         if ("DisplayCell" in this.retArgs) this.children = this.retArgs["DisplayCell"];
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect():void{
         let THIS = this;
         this.parentDisplayCell.getdim = function(){return THIS.dim}
@@ -37,6 +46,13 @@ class DisplayGroup extends Component {
         if (this.retArgs["number"] && this.retArgs["number"].length > 1) 
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"].slice(1));
     };
+    /**
+     * Renders display group
+     * @param derender 
+     * @param node 
+     * @param zindex 
+     * @returns render 
+     */
     Render(derender:boolean, node:node_, zindex:number):DisplayCell[]{
         // console.log("Render")
         let TotalPixels = ((this.isHor) ? this.coord.width : this.coord.height)-(this.children.length-1)*((this.margin) ? this.margin : 0)
@@ -118,6 +134,11 @@ class DisplayGroup extends Component {
         }
         return this.children;
     }    
+    /**
+     * Forces min
+     * @param answersArray 
+     * @returns  
+     */
     static forceMin(answersArray:{px:number, percent:number, min:number}[]) {
         let morePixels=0;
         let totalPercent = 0

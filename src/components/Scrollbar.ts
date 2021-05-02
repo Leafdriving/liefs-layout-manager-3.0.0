@@ -48,33 +48,62 @@ class ScrollBar extends Component {
     get ratio(){
       return pf.decimalPlaces(this.pixelsUsed/this.scrollbarPixels , 3);
     }
+    /**
+     * Updates scroll bar
+     * @param pixelsUsed 
+     * @param pixelsAvailable 
+     * @returns update 
+     */
     update(pixelsUsed:number, pixelsAvailable:number): number {
       this.pixelsUsed=pixelsUsed;
       this.pixelsAvailable=pixelsAvailable;
       this.limit();
       return this.offset;
     }
+    /**
+     * Limits scroll bar
+     */
     limit(){
       if (this.offset < 0) this.offset = 0;
       if (this.offset > this.pixelsUsed-this.pixelsAvailable) this.offset = this.pixelsUsed-this.pixelsAvailable;
     }
-    // retArgs:objectAny;   // <- this will appear
+
+    /**
+     * Creates an instance of scroll bar.
+     * @param Arguments 
+     */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
         ScrollBar.makeLabel(this); ScrollBar.instances[this.label] = this;
         this.build();
         ScrollBar.instances[this.label] = this;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect():void{
       this.preRender(undefined, undefined);
       Render.scheduleUpdate();
     };
+    /**
+     * Pre render
+     * @param derender 
+     * @param node 
+     * @returns render 
+     */
     preRender(derender:boolean, node:node_):void{
       if (this.isHor) this.parentDisplayCell.coord.height -= this.barSize;
       else this.parentDisplayCell.coord.width -= this.barSize;
       
       return undefined
       };
+    /**
+     * Renders scroll bar
+     * @param derender 
+     * @param node 
+     * @param zindex 
+     * @returns render 
+     */
     Render(derender:boolean, node:node_, zindex:number):Component[]{
       // console.log("Scrollbar Render");
       let coord = this.parentDisplayCell.coord;
@@ -91,10 +120,16 @@ class ScrollBar extends Component {
 
       return [this.scrollbarDisplayCell]
     };
+    /**
+     * Deletes scroll bar
+     */
     delete(){
       Render.update(this.scrollbarDisplayCell, true);
       Render.scheduleUpdate();
     }
+    /**
+     * Builds scroll bar
+     */
     build(){
         let label = this.label + ((this.isHor) ? "_H" : "_V");
         this.preBar = I(`${label}_preBar`,  ScrollBar.ScrollBar_whiteBG, events({onclick:this.onSmallerBar.bind(this)}));
@@ -113,14 +148,10 @@ class ScrollBar extends Component {
             ),
         );
     }
-    onSmallArrow(e:PointerEvent){this.offset -= this.ratio*this.scrollMultiplier;
-      this.limit();Render.scheduleUpdate();}
-    onBigArrow(e:PointerEvent){this.offset += this.ratio*this.scrollMultiplier;
-      this.limit();Render.scheduleUpdate();}
-    onSmallerBar(e:PointerEvent){this.offset -= this.pixelsAvailable;
-      this.limit();Render.scheduleUpdate();}
-    onBiggerBar(e:PointerEvent){this.offset += this.pixelsAvailable;
-      this.limit();Render.scheduleUpdate();}
+    onSmallArrow(e:PointerEvent){this.offset -= this.ratio*this.scrollMultiplier;this.limit();Render.scheduleUpdate();}
+    onBigArrow(e:PointerEvent){this.offset += this.ratio*this.scrollMultiplier;this.limit();Render.scheduleUpdate();}
+    onSmallerBar(e:PointerEvent){this.offset -= this.pixelsAvailable;this.limit();Render.scheduleUpdate();}
+    onBiggerBar(e:PointerEvent){this.offset += this.pixelsAvailable;this.limit();Render.scheduleUpdate();}
     onBarDown(e:MouseEvent){ScrollBar.startoffset = this.offset;}
     onBarMove(e:MouseEvent, xmouseDiff:object){
         let dist = (this.isHor) ? xmouseDiff["x"] : xmouseDiff["y"];
@@ -134,6 +165,9 @@ function scrollbar(...Arguments:any):ScrollBar {
     return new ScrollBar(...Arguments)
 }
 
+/**
+ * On drag 
+ */
 class onDrag_ extends Base {
   static instances:onDrag_[] = [];
   static activeInstances:onDrag_[] = [];
@@ -153,6 +187,10 @@ class onDrag_ extends Base {
 
   returnObject:object;
 
+  /**
+   * Creates an instance of on drag .
+   * @param Arguments 
+   */
   constructor(...Arguments: any) {
       super();this.buildBase(...Arguments);
       if ("Array" in this.retArgs) {
@@ -185,6 +223,9 @@ class onDrag_ extends Base {
           }
       }
   }
+  /**
+   * Resets on drag 
+   */
   reset(){
       FunctionStack.pop(<any>(window.onmousemove), "onDragMove");
       FunctionStack.pop(<any>(window.onmouseup), "onDragUp");
@@ -196,6 +237,9 @@ class onDrag_ extends Base {
 function onDrag(...Arguments:any){return (new onDrag_(...Arguments)).returnObject;}
 Element_.customEvents["ondrag"] = function(newData:any){ return onDrag(newData); }
 
+/**
+ * On hold click 
+ */
 class onHoldClick_ extends Base {
   static labelNo = 0;
   static instances:{[key: string]: onHoldClick_;} = {};
@@ -217,6 +261,10 @@ class onHoldClick_ extends Base {
   timeDown:number;
   mouseDownEvent:PointerEvent;
 
+  /**
+   * Creates an instance of on hold click .
+   * @param Arguments 
+   */
   constructor(...Arguments:any){
       super();this.buildBase(...Arguments);
       onHoldClick_.makeLabel(this); onHoldClick_.instances[this.label] = this;
@@ -243,6 +291,9 @@ class onHoldClick_ extends Base {
           }
       }
   }
+  /**
+   * Repeats on hold click 
+   */
   repeat(){let THIS = this;this.FUNCTION(this.mouseDownEvent);
       setTimeout(() => {if (THIS.isDown) THIS.repeat()}, THIS.repeatDelay);}
   onDown(e:MouseEvent){this.FUNCTION(e);}
