@@ -197,7 +197,7 @@ class Manual {
         return vert;
     }
     static names = ["core_00", "core_01", "core_displaygroup01", "events_00", "context_01", "DragBar_01",
-                    "Pages_01", "Pages_02", "Pages_03"];
+                    "Pages_01", "Pages_02", "Pages_03", "Pages_04"];
     static async load(name:string, cb:(data:string)=>void = undefined) {
         try {
           const response = await fetch( Manual.nameToUrl(name) );

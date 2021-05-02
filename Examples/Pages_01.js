@@ -23,7 +23,7 @@ let inVer =  v("Pages_01_hor_", 5, ...myPagesArray);
 pageButtons.push( I(`Pages_01_grid`, `Grid`, greenBG,events({onclick:()=>{ myPages.currentPage = 6;console.log("grid")}}) ));
 let inGrid =  v("Pages_01_grid1", 5,
                     h("Pages_01_grid1_a", 5, myPagesArray[0], myPagesArray[1]),
-                    h("Pages_01_grid1_a", 5, myPagesArray[2], myPagesArray[3]),
+                    h("Pages_01_grid1_b", 5, myPagesArray[2], myPagesArray[3]),
                 );
 
 myPages.cellArray = myPagesArray.concat([ inHor, inVer, inGrid ]);
