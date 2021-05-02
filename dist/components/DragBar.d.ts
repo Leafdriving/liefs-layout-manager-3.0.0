@@ -39,3 +39,4 @@ declare class DragBar extends Component {
     constructor(...Arguments: any);
     Render(derender: boolean, node: node_, zindex: number): Component[];
 }
+declare let dragbar: (...Arguments: any) => DragBar;

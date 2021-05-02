@@ -2720,4 +2720,5 @@ DragBar.argMap = {
 };
 DragBar.horCss = css("db_hor", "background-color:black;cursor: ew-resize;");
 DragBar.verCss = css("db_ver", "background-color:black;cursor: ns-resize;");
+let dragbar = function (...Arguments) { return new DragBar(...Arguments); };
 Render.register("DragBar", DragBar);

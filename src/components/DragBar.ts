@@ -74,4 +74,5 @@ class DragBar extends Component {
         return [this.dragbarDisplayCell];
     };
 }
+let dragbar = function(...Arguments:any){return new DragBar(...Arguments)}
 Render.register("DragBar", DragBar);
