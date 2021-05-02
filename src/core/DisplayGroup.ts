@@ -88,7 +88,6 @@ class DisplayGroup extends Component {
             pixelsUsed += px + ((index == 0) ? 0 : margin);
         }
 
-
         if (("ScrollBar" in Render.classes) && this.allowScrollBar) {
             if (pixelsUsed > pixelsAvailable +1) {
                 if (!this.scrollbar) {
