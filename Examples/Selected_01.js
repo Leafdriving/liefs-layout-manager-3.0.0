@@ -14,7 +14,7 @@ for (let index = 0; index < 4; index++) {
     for (let i = 0; i < 4; i++) 
         bArray.push(I( `Selected_01_b${index}_${i}`,`Group ${index} Button ${i}`,
                         [greenSelect, blueSelect, redSelect, orangeSelect][index]));
-    hArray.push( h(`Selected_01_${index}`, 5, "100px", ...bArray) );
+    hArray.push( h(`Selected_01_${index}`, 5, "30px", ...bArray) );
     new Selected(`Selected_01_${index}`, [...bArray],
         (indexSelected)=> {
             let el = document.getElementById(`SelectedOutput${index}`);
