@@ -1,3 +1,6 @@
+/**
+ * Modal
+ */
 declare class Modal extends Component {
     static labelNo: number;
     static instances: {
@@ -14,11 +17,24 @@ declare class Modal extends Component {
         x: number;
         y: number;
     };
+    /**
+     * Determines whether down on
+     */
     static onDown(): void;
+    /**
+     * Determines whether move on
+     * @param mouseEvent
+     * @param offset
+     */
     static onMove(mouseEvent: MouseEvent, offset: {
         x: number;
         y: number;
     }): void;
+    /**
+     * Determines whether up on
+     * @param mouseEvent
+     * @param offset
+     */
     static onUp(mouseEvent: MouseEvent, offset: {
         x: number;
         y: number;
@@ -48,7 +64,16 @@ declare class Modal extends Component {
         height?: number;
     };
     stretch: Stretch;
+    /**
+     * Creates an instance of modal.
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Evals numbers
+     * @param numbers
+     * @returns numbers
+     */
     evalNumbers(numbers: number[]): {
         minWidth?: number;
         maxWidth?: number;
@@ -57,17 +82,60 @@ declare class Modal extends Component {
         width?: number;
         height?: number;
     };
+    /**
+     * Determines whether connect on
+     */
     onConnect(): void;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
+    /**
+     * Renders modal
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender: boolean, node: node_, zindex: number): Component[];
+    /**
+     * Gets child
+     * @param label
+     * @returns
+     */
     getChild(label: string): Component;
-    delete(): void;
+    /**
+     * Shows modal
+     */
     show(): void;
+    /**
+     * Hides modal
+     * @param [event]
+     */
     hide(event?: MouseEvent | PointerEvent): void;
+    /**
+     * Determines whether shown is
+     * @returns
+     */
     isShown(): boolean;
+    /**
+     * Drags with
+     * @param displaycells
+     */
     dragWith(...displaycells: DisplayCell[]): void;
+    /**
+     * Closes with
+     * @param displaycells
+     */
     closeWith(...displaycells: DisplayCell[]): void;
 }
+/**
+ * Win modal
+ */
 declare class winModal extends Base {
     static labelNo: number;
     static instances: {
@@ -103,9 +171,19 @@ declare class winModal extends Base {
     show(): void;
     hide(): void;
     onclose: () => void;
+    /**
+     * Creates an instance of win modal.
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Builds win modal
+     */
     build(): void;
 }
+/**
+ * Stretch
+ */
 declare class Stretch extends Component {
     static labelNo: number;
     static instances: {
@@ -153,9 +231,33 @@ declare class Stretch extends Component {
     upperRight: DisplayCell;
     lowerLeft: DisplayCell;
     lowerRight: DisplayCell;
+    /**
+     * Creates an instance of stretch.
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Builds stretch
+     */
     build(): void;
+    /**
+     * Determines whether connect on
+     */
     onConnect(): void;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
+    /**
+     * Renders stretch
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender: boolean, node: node_, zindex: number): Component[];
 }

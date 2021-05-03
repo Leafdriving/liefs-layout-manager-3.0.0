@@ -1,11 +1,11 @@
 class pf {
-    static isTypePx = function(it:any){if (typeof(it) == "string" && it.substr(-2) == "px") return true;return false;}
-    static pxAsNumber = function(dim:string){ return +(dim.slice(0, -2));}
-    static isTypePercent = function(it:any){if (typeof(it) == "string" && it.substr(-1) == "%") return true;return false;}
-    static percentAsNumber = function(dim:string){ return +(dim.slice(0, -1));}
-    static isDim = function(it:any){if ((typeof(it) == "string") && (it.substr(-2) == "px" || it.substr(-1) == "%")) return "dim"}
-    static isArray = function(it:any){if (typeof(it) == "object" && Array.isArray(it)) return "Array"}
-    static isObjectAClass = function(it:any){if (typeof(it) == "object" && it.constructor.name != "Object") return it.constructor.name}
+    static isTypePx = function(it:any):boolean{if (typeof(it) == "string" && it.substr(-2) == "px") return true;return false;}
+    static pxAsNumber = function(dim:string):number{ return +(dim.slice(0, -2));}
+    static isTypePercent = function(it:any):boolean{if (typeof(it) == "string" && it.substr(-1) == "%") return true;return false;}
+    static percentAsNumber = function(dim:string):number{ return +(dim.slice(0, -1));}
+    static isDim = function(it:any):string{if ((typeof(it) == "string") && (it.substr(-2) == "px" || it.substr(-1) == "%")) return "dim"}
+    static isArray = function(it:any):string{if (typeof(it) == "object" && Array.isArray(it)) return "Array"}
+    static isObjectAClass = function(it:any):string{if (typeof(it) == "object" && it.constructor.name != "Object") return it.constructor.name}
     static defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
 
     static classProperties = function(a:string[]){return Object.getOwnPropertyNames(a)}
@@ -16,7 +16,7 @@ class pf {
             if (index in obj2) returnStringArray.push(index);
         return returnStringArray;
     }
-    static pad_with_zeroes = function(Number: number, length: number = 3) {
+    static pad_with_zeroes = function(Number: number, length: number = 3):string {
         let returnString = '' + Number;
         while (returnString.length < length) returnString = '0' + returnString;
         return returnString;

@@ -90,34 +90,18 @@ pf.mergeObjects = function (startObj, AddObj) {
         returnObject[j] = AddObj[j];
     return returnObject;
 };
+/**
+ * Arguments_ :
+ * This object is responsible for sorting Arguments for a new class or function.
+ *
+ */
 class Arguments_ {
-    static ifObjectMergeWithDefaults(THIS, CLASS) {
-        if ("object" in THIS.retArgs) {
-            let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
-            for (let key in THIS.retArgs["object"])
-                returnObj = Arguments_.mergeObjects(returnObj, THIS.retArgs["object"][key]);
-            return returnObj;
-        }
-        return CLASS.defaults;
-    }
-    static retArgsMapped(updatedDefaults, THIS, CLASS) {
-        let returnObject = {};
-        let indexNo;
-        for (let i in updatedDefaults)
-            returnObject[i] = updatedDefaults[i];
-        for (let typeName in THIS.retArgs) {
-            if (typeName in CLASS.argMap) {
-                indexNo = 0;
-                while (indexNo < THIS.retArgs[typeName].length &&
-                    indexNo < CLASS.argMap[typeName].length) {
-                    returnObject[CLASS.argMap[typeName][indexNo]] = THIS.retArgs[typeName][indexNo];
-                    indexNo++;
-                }
-            }
-        }
-        return returnObject;
-    }
-    static typeof(Argument) { return (Object.keys(Arguments_.argumentsByType([Argument])))[0]; }
+    /**
+     * Arguments by type
+     * @param Args Array of Arguments ie new Class(...Args)
+     * @param [customTypes] Array of Functions returning Type Name (if qualifies), or undefined.
+     * @returns An Object Key "TypeName", value Array of Arguments, of that Type, in the order discovered
+     */
     static argumentsByType(Args, // 1st argument is a list of args.
     customTypes = []) {
         customTypes = customTypes.concat(Base.defaultIsChecks); // assumed these are included.
@@ -137,11 +121,64 @@ class Arguments_ {
         }
         return returnObject;
     }
+    /**
+     * This function merges the defaults Object, with Argument Object(s)
+     * @param THIS - Class Object instance, like "DisplayCell"
+     * @param CLASS - Class (static) Object
+     * @returns Defaults Objects merged with Argument Objects
+     */
+    static ifObjectMergeWithDefaults(THIS, CLASS) {
+        if ("object" in THIS.retArgs) {
+            let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
+            for (let key in THIS.retArgs["object"])
+                returnObj = Arguments_.mergeObjects(returnObj, THIS.retArgs["object"][key]);
+            return returnObj;
+        }
+        return CLASS.defaults;
+    }
+    /**
+     * retArgsMapped
+     * @param updatedDefaults (Return of Arguments_.ifObjectMergeWithDefaults())
+     * @param THIS - Class Object instance, like "DisplayCell"
+     * @param CLASS - Class (static) Object
+     * @returns args mapped
+     */
+    static retArgsMapped(updatedDefaults, THIS, CLASS) {
+        let returnObject = {};
+        let indexNo;
+        for (let i in updatedDefaults)
+            returnObject[i] = updatedDefaults[i];
+        for (let typeName in THIS.retArgs) {
+            if (typeName in CLASS.argMap) {
+                indexNo = 0;
+                while (indexNo < THIS.retArgs[typeName].length &&
+                    indexNo < CLASS.argMap[typeName].length) {
+                    returnObject[CLASS.argMap[typeName][indexNo]] = THIS.retArgs[typeName][indexNo];
+                    indexNo++;
+                }
+            }
+        }
+        return returnObject;
+    }
+    /**
+     * Similar to javascript typeof, but returns custom types like "dim" (ending in "px" or "%")
+     * @param Argument
+     * @returns Type Name (If Object, Class Name)
+     */
+    static typeof(Argument) { return (Object.keys(Arguments_.argumentsByType([Argument])))[0]; }
+    /**
+     * Modifys class properties
+     * @param argobj - Object to be mapped from
+     * @param targetobject - Object (Class Instance) to be mapped to
+     */
     static modifyClassProperties(argobj, targetobject) {
         for (let key of Object.keys(argobj))
             targetobject[key] = argobj[key];
     }
 }
+/**
+ * Standard Merge objects function
+ */
 Arguments_.mergeObjects = function (startObj, AddObj) {
     let returnObject = {};
     for (let i in startObj)
@@ -150,9 +187,22 @@ Arguments_.mergeObjects = function (startObj, AddObj) {
         returnObject[j] = AddObj[j];
     return returnObject;
 };
+/**
+ * Base Class for most Classes (Extends Base)
+ */
 class Base /* extends Function */ {
+    /**
+     * Creates an instance of base.  This is called by the extended class
+     * @param neverRead
+     */
     constructor(...neverRead) { }
     buildBase(...Arguments) { this.constructor["buildBase"](this, ...Arguments); }
+    /**
+     * Sorts Agruments by type, then applies them as attributes to the Class Object Instance,
+     * according to default arguments map (argMap)  This is called by all Objects in the Constructor
+     * @param THIS
+     * @param Arguments
+     */
     static buildBase(THIS, ...Arguments) {
         let CLASS = this;
         THIS.retArgs = Arguments_.argumentsByType(Arguments);
@@ -160,6 +210,10 @@ class Base /* extends Function */ {
         let retArgsMapped = Arguments_.retArgsMapped(updatedDefaults, THIS, CLASS);
         Arguments_.modifyClassProperties(retArgsMapped, THIS);
     }
+    /**
+     * If label is not defined, create One.
+     * @param instance
+     */
     static makeLabel(instance) {
         let CLASS = this;
         if (instance["label"] == undefined || instance["label"].trim() == "") {
@@ -167,22 +221,53 @@ class Base /* extends Function */ {
         }
     }
 }
+/**
+ * Default custom check Function List (Array)
+ */
 Base.defaultIsChecks = [pf.isArray, pf.isObjectAClass, pf.isDim];
 class Component extends Base {
+    /**
+     * When Parent DisplayCell Discovers this Component, onConnect is called by the Parent DisplayCell
+     */
     onConnect() { }
     ;
+    /**
+     * Pre Stage of Rendering a Page.  It is useful if a child component wished to modify a parent
+     * component.  The parent is first altered here, then properly rendered at the Render Stage
+     * @param derender - True if this and children are to be DE-Rendered, not rendered.
+     * @param node - Render Node passed by Render Class
+     * @param zindex - Current zindex - Note: this is normally READ ONlY
+     * @returns array of children to be rendered (Normally empty, since Render phase is usually a better choice)
+     */
     preRender(derender, node, zindex) { return undefined; }
     ;
+    /**
+     * Rendering stage of aa Page.(After preRender phase).  In this function, usually the Co-ordinates of
+     * a child/childrend are calculated, and assigned, to be returned as an array
+     * @param derender  - True if this and children are to be DE-Rendered, not rendered.
+     * @param node - Render Node passed by Render Class
+     * @param zindex - Current zindex - Note: this is normally READ ONlY
+     * @returns array of children to be rendered
+     */
     Render(derender, node, zindex) { return undefined; }
     ;
+    /**
+     * Returns Child (in .children) by label
+     * @param label
+     * @returns child DisplayCell/Component
+     */
     getChild(label) {
         for (let index = 0; index < this.children.length; index++)
             if (this.children[index].label == label)
                 return this.children[index];
         return undefined;
     }
+    /**
+     * Deletes component
+     */
     delete() { }
 }
+// The following is boierplate code, and left here for reference
 // class Test extends Base {
 //     static labelNo = 0;
 //     static instances:{[key: string]: Test;} = {};
@@ -198,6 +283,9 @@ class Component extends Base {
 //         Test.makeLabel(this); Test.instances[this.label] = this;
 //     }
 // }
+/**
+ * Function stack base
+ */
 class FunctionStack_BASE extends Function {
     constructor() {
         super('...args', 'return this.__self__.__call__(...args)');
@@ -206,17 +294,30 @@ class FunctionStack_BASE extends Function {
         return self;
     }
 }
+/**
+ * Function stack
+ */
 class FunctionStack extends FunctionStack_BASE {
     constructor() {
         super();
         this.functionArray = [];
     }
+    /**
+     * Determines whether call
+     * @param Arguments
+     */
     __call__(...Arguments) {
         let elTarget = Arguments[0]["target"];
         if (this.functionArray && this.functionArray.length)
             for (let index = 0; index < this.functionArray.length; index++)
                 this.functionArray[index].bind(elTarget)(...Arguments);
     }
+    /**
+     * Pushs function stack
+     * @param prevFunction
+     * @param [newFunction]
+     * @returns
+     */
     static push(prevFunction, newFunction = undefined) {
         let functionStackInstance;
         if (prevFunction && prevFunction.constructor && prevFunction.constructor.name == "FunctionStack")
@@ -234,12 +335,24 @@ class FunctionStack extends FunctionStack_BASE {
         }
         return functionStackInstance;
     }
+    /**
+     * Pops function stack
+     * @param functionStackInstance
+     * @param label
+     * @returns
+     */
     static pop(functionStackInstance, label) {
         for (let index = 0; index < functionStackInstance.functionArray.length; index++)
             if (label == functionStackInstance.functionArray[index].name)
                 functionStackInstance.functionArray.splice(index--, 1);
         return functionStackInstance;
     }
+    /**
+     * Determines whether in is
+     * @param functionStackInstance
+     * @param label
+     * @returns
+     */
     static isIn(functionStackInstance, label) {
         for (let index = 0; index < functionStackInstance.functionArray.length; index++)
             if (label == functionStackInstance.functionArray[index].name)
@@ -247,13 +360,25 @@ class FunctionStack extends FunctionStack_BASE {
         return false;
     }
 }
+/**
+ * Debounce
+ */
 class debounce_ extends FunctionStack_BASE {
+    /**
+     * Creates an instance of debounce .
+     * @param FUNCTION
+     * @param delay
+     */
     constructor(FUNCTION, delay) {
         super();
         this.FUNCTION = FUNCTION;
         this.delay = delay;
         this.lasttime = new Date().getTime();
     }
+    /**
+     * Determines whether call
+     * @param Arguments
+     */
     __call__(...Arguments) {
         let thistime = new Date().getTime();
         if (thistime - this.lasttime > this.delay) {
@@ -263,8 +388,14 @@ class debounce_ extends FunctionStack_BASE {
     }
 }
 function debounce(FUNCTION, delay) { return new debounce_(FUNCTION, delay); }
-//node_asArray(node, function(node){ return node.whatever})
+/**
+ * Node
+ */
 class node_ extends Base {
+    /**
+     * Creates an instance of node .
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.ParentNode = undefined;
@@ -274,16 +405,35 @@ class node_ extends Base {
         if (!this.label)
             node_.makeLabel(this);
     }
+    /**
+     * News node
+     * @param THIS
+     * @param Arguments
+     * @returns
+     */
     static newNode(THIS, ...Arguments) {
         let newnode = new node_(...Arguments);
         newnode.ParentNodeTree = THIS.ParentNodeTree;
         return newnode;
     }
+    /**
+     * Determines whether array as
+     * @param node
+     * @param [traverseFunction]
+     * @returns array
+     */
     static asArray(node, traverseFunction = function (node) { return node; }) {
         let returnArray = [];
         node_.traverse(node, function (node) { returnArray.push(traverseFunction(node)); });
         return returnArray;
     }
+    /**
+     * Traverses node
+     * @param node
+     * @param traverseFunction
+     * @param [traverseChildren]
+     * @param [traverseNode]
+     */
     static traverse(node, traverseFunction, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
         if (traverseNode(node)) {
             traverseFunction(node);
@@ -317,6 +467,11 @@ class node_ extends Base {
             this.ParentNode.children.splice(index + 1, 0, newNode);
         }
     }
+    /**
+     * Depths node
+     * @param [deep]
+     * @returns
+     */
     depth(deep = 0) {
         let node = this;
         while (node) {
@@ -326,10 +481,20 @@ class node_ extends Base {
         ;
         return deep;
     }
+    /**
+     * Lengths node
+     * @param [count]
+     * @returns
+     */
     length(count = -1) {
         node_.traverse(this, function (node) { count++; });
         return count;
     }
+    /**
+     * News child
+     * @param Arguments
+     * @returns child
+     */
     newChild(...Arguments) {
         let newNode;
         if (typeof (Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
@@ -341,6 +506,11 @@ class node_ extends Base {
         this.children.push(newNode);
         return newNode;
     }
+    /**
+     * News sibling
+     * @param Arguments
+     * @returns sibling
+     */
     newSibling(...Arguments) {
         let newNode;
         if (typeof (Arguments[0]) == "object" && Arguments[0].constructor.name == "node_")
@@ -352,12 +522,24 @@ class node_ extends Base {
         this.NextSibling = newNode;
         return newNode;
     }
+    /**
+     * Pops node
+     * @returns
+     */
     pop() {
         this.ParentNode.children.splice(this.ParentNode.children.indexOf(this), 1);
         this.ParentNode = undefined;
         return this;
     }
+    /**
+     * Dones node
+     * @returns
+     */
     done() { return this.ParentNodeTree; }
+    /**
+     * Roots node
+     * @returns
+     */
     root() {
         let node = this;
         while (node.parent()) {
@@ -365,7 +547,15 @@ class node_ extends Base {
         }
         return node;
     }
+    /**
+     * Parents node
+     * @returns
+     */
     parent() { return this.ParentNode; }
+    /**
+     * Logs node
+     * @param [showNode]
+     */
     log(showNode = false) {
         if (this.children.length) {
             console.groupCollapsed(this.label);
@@ -418,9 +608,20 @@ function sample() {
     return node;
 }
 var _x_, _y_, _width_, _height_;
+/**
+ * Point - Yea, a interface would do the same thing... so whats the point!
+ */
 class Point {
 }
+/**
+ * Within - Coordinates of the Parent - to determine if this (child) is partially cut off
+ * or goes partially (or completly) out of view
+ */
 class Within {
+    /**
+     * Creates an instance of within.
+     * @param Arguments
+     */
     constructor(...Arguments) { }
     get x() { return (this.lockedToScreenSize) ? 0 : this.x_; }
     set x(x) { this.x_ = x; }
@@ -430,9 +631,15 @@ class Within {
     set width(width) { this.width_ = width; }
     get height() { return (this.lockedToScreenSize) ? Handler.ScreenSizeCoord.height : this.height_; }
     set height(height) { this.height_ = height; }
+    /**
+     * Resets within
+     */
     reset() { this.x = this.y = this.width = this.height = undefined; }
     ;
 }
+/**
+ * Coord
+ */
 class Coord extends Base {
     constructor(...Arguments) {
         super();
@@ -440,6 +647,9 @@ class Coord extends Base {
         _y_.set(this, void 0);
         _width_.set(this, void 0);
         _height_.set(this, void 0);
+        /**
+         * Within  of coord
+         */
         this.within = new Within();
         this.buildBase(...Arguments);
         Coord.makeLabel(this);
@@ -456,14 +666,32 @@ class Coord extends Base {
     get height() { return __classPrivateFieldGet(this, _height_) + ((this.offset) ? this.offset.height : 0); }
     set height(height) { if (!this.frozen)
         __classPrivateFieldSet(this, _height_, height); }
+    /**
+     * Gets x2
+     */
     get x2() { return this.x + this.width; }
+    /**
+     * Gets y2
+     */
     get y2() { return this.y + this.height; }
+    /**
+     * Sets offset
+     * @param [x]
+     * @param [y]
+     * @param [width]
+     * @param [height]
+     */
     setOffset(x = 0, y = 0, width = 0, height = 0) {
         if (x == 0 && y == 0 && width == 0 && height == 0)
             this.offset = undefined;
         else
             this.offset = { x, y, width, height };
     }
+    /**
+     * Merges within
+     * @param p
+     * @returns
+     */
     mergeWithin(p /* parent Coord */) {
         if (!this.frozen) {
             let ax1 = p.x, ax2 = p.x + p.width, ay1 = p.y, ay2 = p.y + p.height;
@@ -475,6 +703,14 @@ class Coord extends Base {
         }
         return this;
     }
+    /**
+     * Applys margins
+     * @param [left]
+     * @param [right]
+     * @param [top]
+     * @param [bottom]
+     * @returns
+     */
     applyMargins(left = 0, right = 0, top = 0, bottom = 0) {
         this.x += left;
         this.y += top;
@@ -482,6 +718,19 @@ class Coord extends Base {
         this.height -= (top + bottom);
         return this;
     }
+    /**
+     * Assigns coord
+     * @param [x]
+     * @param [y]
+     * @param [width]
+     * @param [height]
+     * @param [wx]
+     * @param [wy]
+     * @param [wwidth]
+     * @param [wheight]
+     * @param [zindex]
+     * @returns
+     */
     assign(x = undefined, y = undefined, width = undefined, height = undefined, wx = undefined, wy = undefined, wwidth = undefined, wheight = undefined, zindex = undefined) {
         if (!this.frozen) {
             if (x != undefined)
@@ -505,6 +754,16 @@ class Coord extends Base {
         }
         return this;
     }
+    /**
+     * Copys coord
+     * @param fromCoord
+     * @param [x]
+     * @param [y]
+     * @param [width]
+     * @param [height]
+     * @param [zindex]
+     * @returns
+     */
     copy(fromCoord, x = undefined, y = undefined, width = undefined, height = undefined, zindex = undefined) {
         if (!this.frozen) {
             let noX = (x == undefined);
@@ -524,18 +783,41 @@ class Coord extends Base {
         }
         return this;
     }
+    /**
+     * Logs coord
+     */
     log() {
         console.log(`x=${this.x}`, `y=${this.y}`, `width=${this.width}`, `height=${this.height}`);
         console.log(`wx=${this.within.x}`, `wy=${this.within.y}`, `wwidth=${this.within.width}`, `wheight=${this.within.height}`);
     }
+    /**
+     * Determines whether coord completely outside is
+     * @param [WITHIN]
+     * @returns
+     */
     isCoordCompletelyOutside(WITHIN = this.within) {
         return ((WITHIN.x + WITHIN.width < this.x) ||
             (WITHIN.x > this.x + this.width) ||
             (WITHIN.y + WITHIN.height < this.y) ||
             (WITHIN.y > this.y + this.height));
     }
+    /**
+     * Derenders coord
+     * @param derender
+     * @returns
+     */
     derender(derender) { return derender || this.isCoordCompletelyOutside(); }
+    /**
+     * Determines whether point in is
+     * @param x
+     * @param y
+     * @returns true if point in
+     */
     isPointIn(x, y) { return (this.x <= x && x <= this.x + this.width && this.y <= y && y <= this.y + this.height); }
+    /**
+     * Red coord
+     * @param [id]
+     */
     red(id = "red") {
         let div = document.getElementById(id);
         if (!div) {
@@ -548,18 +830,40 @@ class Coord extends Base {
     }
 }
 _x_ = new WeakMap(), _y_ = new WeakMap(), _width_ = new WeakMap(), _height_ = new WeakMap();
+/**
+ * Instances  of coord
+ */
 Coord.instances = [];
+/**
+ * Active instances of coord
+ */
 Coord.activeInstances = [];
+/**
+ * Defaults  of coord
+ */
 Coord.defaults = { x: 0, y: 0, width: 0, height: 0, zindex: 0 };
+/**
+ * Arg map of coord
+ */
 Coord.argMap = {
     string: ["label"],
     number: ["x", "y", "width", "height", "zindex"],
     boolean: ["hideWidth"]
 };
+/**
+ * Copy arg map of coord
+ */
 Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
     number: ["x", "y", "width", "height", "zindex"] };
 function events(object_) { return { processEvents: object_ }; }
+/**
+ * Element
+ */
 class Element_ extends Component {
+    /**
+     * Creates an instance of element .
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.events = {};
@@ -599,6 +903,10 @@ class Element_ extends Component {
     }
     get coord() { if (this.parentDisplayCell)
         return this.parentDisplayCell.coord; return undefined; }
+    /**
+     * Loads element
+     * @param el
+     */
     loadElement(el) {
         this.el = el;
         this.attributes = Element_.getAttribs(el);
@@ -607,8 +915,15 @@ class Element_ extends Component {
         // console.log("loading Element", el)
         el.remove();
     }
+    /**
+     * Applys events
+     */
     applyEvents() { for (let key in this.events)
         this.el[key] = this.events[key]; }
+    /**
+     * Adds events
+     * @param eventObject
+     */
     addEvents(eventObject) {
         for (const key in eventObject) {
             if (key in Element_.customEvents)
@@ -617,8 +932,14 @@ class Element_ extends Component {
                 this.events[key] = FunctionStack.push(this.events[key], eventObject[key]);
         }
     }
+    /**
+     * Renders html attributes
+     */
     renderHtmlAttributes() { for (let key in this.attributes)
         Element_.setAttrib(this.el, key, this.attributes[key]); }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         if (this.dim_) {
             this.parentDisplayCell.dim = this.dim_;
@@ -627,6 +948,12 @@ class Element_ extends Component {
         if (this.retArgs["number"])
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
     }
+    /**
+     * Renders element
+     * @param derender
+     * @param node
+     * @returns
+     */
     Render(derender, node) {
         let el = Element_.elExists(this.label);
         if (derender || this.coord.width <= 0) {
@@ -650,6 +977,9 @@ class Element_ extends Component {
             this.el.style.cssText = styleString;
         return [];
     }
+    /**
+     * Sets as selected
+     */
     setAsSelected() {
         if (!this.attributes.class.endsWith("Selected")) {
             this.attributes.class += "Selected";
@@ -657,6 +987,9 @@ class Element_ extends Component {
                 Element_.setAttrib(this.el, "class", this.attributes.class);
         }
     }
+    /**
+     * Sets as un selected
+     */
     setAsUnSelected() {
         if (this.attributes.class.endsWith("Selected")) {
             this.attributes.class = this.attributes.class.slice(0, -8);
@@ -664,6 +997,11 @@ class Element_ extends Component {
                 Element_.setAttrib(this.el, "class", this.attributes.class);
         }
     }
+    /**
+     * Clips style string
+     * @param element
+     * @returns
+     */
     static clipStyleString(element) {
         let COORD = element.coord;
         let WITHIN = element.coord.within;
@@ -683,6 +1021,11 @@ class Element_ extends Component {
             returnString = `clip-path: inset(${top}px ${right}px ${bottom}px ${left}px);`;
         return returnString;
     }
+    /**
+     * Styles element
+     * @param element
+     * @returns style
+     */
     static style(element) {
         let coord = element.coord;
         let clip = Element_.clipStyleString(element);
@@ -692,17 +1035,38 @@ class Element_ extends Component {
             + ((element.attributes.style) ? element.attributes.style : "");
         return returnString;
     }
+    /**
+     * Gets attribs
+     * @param el
+     * @param [retObj]
+     * @returns attribs
+     */
     static getAttribs(el, retObj = {}) {
         for (let i = 0; i < el.attributes.length; i++)
             if (Element_.attribFilter.indexOf(el.attributes[i].name) == -1)
                 retObj[el.attributes[i].name] = el.attributes[i].value;
         return retObj;
     }
+    /**
+     * exists
+     * @param id_label
+     * @returns
+     */
     static elExists(id_label) { return document.getElementById(id_label); }
+    /**
+     * Sets attribs
+     * @param element
+     */
     static setAttribs(element) {
         for (const key in element.attributes)
             Element_.setAttrib(element.el, key, element.attributes[key]);
     }
+    /**
+     * Sets attrib
+     * @param el
+     * @param attrib
+     * @param value
+     */
     static setAttrib(el, attrib, value) {
         let prevAttrib = el.getAttribute(attrib);
         if (prevAttrib != value) {
@@ -723,12 +1087,23 @@ Element_.argMap = {
     Css: ["Css"],
     function: ["evalInner"],
 };
+/**
+ * Custom events of element
+ */
 Element_.customEvents = {};
+/**
+ * Attrib filter of element
+ */
 Element_.attribFilter = ["id"];
-function I(...Arguments) {
-    return new DisplayCell(new Element_(...Arguments));
-}
+function I(...Arguments) { return new DisplayCell(new Element_(...Arguments)); }
+/**
+ * Display cell
+ */
 class DisplayCell extends Component {
+    /**
+     * Creates an instance of display cell.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.children = [];
@@ -752,6 +1127,11 @@ class DisplayCell extends Component {
     }
     set dim(value) { this.setdim(value); }
     get dim() { return this.getdim(); }
+    /**
+     * Adds component
+     * @param component
+     * @returns component
+     */
     addComponent(component) {
         DisplayCell.objectTypes.add(component.constructor.name);
         this.children.push(component);
@@ -761,6 +1141,12 @@ class DisplayCell extends Component {
             this.label = component.label;
         return this;
     }
+    /**
+     * Gets component
+     * @param type
+     * @param [label]
+     * @returns component
+     */
     getComponent(type, label = undefined) {
         for (let index = 0; index < this.children.length; index++) {
             const component = this.children[index];
@@ -773,6 +1159,12 @@ class DisplayCell extends Component {
         }
         return undefined;
     }
+    /**
+     * Deletes component
+     * @param type
+     * @param [label]
+     * @returns true if component
+     */
     deleteComponent(type, label = undefined) {
         let returnValue = false;
         for (let index = 0; index < this.children.length; index++) {
@@ -786,6 +1178,13 @@ class DisplayCell extends Component {
         }
         return returnValue;
     }
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns
+     */
     preRender(derender, node, zindex) {
         let returnArray = [];
         for (let index = 0; index < this.children.length; index++) {
@@ -799,6 +1198,13 @@ class DisplayCell extends Component {
         }
         return returnArray;
     }
+    /**
+     * Renders display cell
+     * @param [derender]
+     * @param node
+     * @param zindex
+     * @returns
+     */
     Render(derender = false, node, zindex) {
         this.coord.applyMargins(this.marginLeft, this.marginRight, this.marginTop, this.marginBottom);
         if (this.coord.zindex < 0)
@@ -807,11 +1213,20 @@ class DisplayCell extends Component {
             this.coord.zindex = zindex;
         return this.children;
     }
+    /**
+     * Adds events
+     * @param Argument
+     */
     addEvents(Argument) {
         let element_ = this.getComponent("Element_");
         if (element_)
             element_.addEvents(Argument);
     }
+    /**
+     * Margins assign
+     * @param cell
+     * @param numberArray
+     */
     static marginAssign(cell, numberArray) {
         switch (numberArray.length) {
             case 1:
@@ -833,6 +1248,9 @@ class DisplayCell extends Component {
     }
 }
 DisplayCell.labelNo = 0;
+/**
+ * Instances  of display cell
+ */
 DisplayCell.instances = {};
 DisplayCell.activeInstances = {};
 DisplayCell.defaults = { getdim: function () { return this.dim_; }, setdim: function (value) { this.dim_ = value; } };
@@ -840,7 +1258,14 @@ DisplayCell.argMap = {
     string: ["label"],
 };
 DisplayCell.objectTypes = new Set();
+/**
+ * Display group
+ */
 class DisplayGroup extends Component {
+    /**
+     * Creates an instance of display group.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.children = [];
@@ -855,6 +1280,9 @@ class DisplayGroup extends Component {
     ;
     set dim(value) { this.dim_ = value; }
     get coord() { return (this.parentDisplayCell) ? this.parentDisplayCell.coord : undefined; }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         let THIS = this;
         this.parentDisplayCell.getdim = function () { return THIS.dim; };
@@ -863,6 +1291,13 @@ class DisplayGroup extends Component {
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"].slice(1));
     }
     ;
+    /**
+     * Renders display group
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         // console.log("Render")
         let TotalPixels = ((this.isHor) ? this.coord.width : this.coord.height) - (this.children.length - 1) * ((this.margin) ? this.margin : 0);
@@ -945,6 +1380,11 @@ class DisplayGroup extends Component {
         }
         return this.children;
     }
+    /**
+     * Forces min
+     * @param answersArray
+     * @returns
+     */
     static forceMin(answersArray) {
         let morePixels = 0;
         let totalPercent = 0;
@@ -983,7 +1423,14 @@ DisplayGroup.argMap = {
 };
 function h(...Arguments) { return new DisplayCell(new DisplayGroup(...Arguments)); }
 function v(...Arguments) { return h(false, ...Arguments); }
+/**
+ * Handler
+ */
 class Handler extends Component {
+    /**
+     * Creates an instance of handler.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.children = [];
@@ -1006,6 +1453,9 @@ class Handler extends Component {
         if (this.startRendered)
             Handler.activeInstances[this.label] = this;
     }
+    /**
+     * Links handlers
+     */
     static linkHandlers() {
         let links = document.querySelectorAll("[handler]");
         Handler.linkHandlerOldList = Handler.linkHandlerNewList;
@@ -1019,16 +1469,12 @@ class Handler extends Component {
             let coord = (parentEl) ? Element_.instances[parentEl.id].parentDisplayCell.coord : Handler.ScreenSizeCoord;
             let handlerLabel = el.getAttribute("handler");
             let handler = Handler.instances[handlerLabel];
-            //console.log("label", handlerLabel, handler);
             if (handler) {
-                if (!Handler.activeInstances[handlerLabel]) {
+                if (!Handler.activeInstances[handlerLabel])
                     Handler.activeInstances[handlerLabel] = handler;
-                    //console.log("Found Handler", handler.label, "now Active Instance", links)
-                }
                 if (Handler.linkHandlerNewList.indexOf(handler) == -1)
                     Handler.linkHandlerNewList.push(handler);
                 if (!handler.preRenderCallBack) {
-                    //console.log("Setting", handler.label, "Callback")
                     handler.preRenderCallBack = FunctionStack.push(undefined, function setHandlerCoord(handler) {
                         let { x, y, width, height } = el.getBoundingClientRect();
                         handler.coord.copy(coord, x, y, width, height);
@@ -1039,36 +1485,57 @@ class Handler extends Component {
         for (let index = 0; index < Handler.linkHandlerOldList.length; index++) {
             let handler = Handler.linkHandlerOldList[index];
             if (Handler.linkHandlerNewList.indexOf(handler) == -1) {
-                //console.log("removing Handler", handler.label)
                 delete handler.preRenderCallBack;
                 Render.update(handler.parentDisplayCell, true);
                 delete Handler.activeInstances[handler.label];
             }
         }
     }
+    /**
+     * Updates screen size coord
+     */
     static updateScreenSizeCoord() {
         let win = window, doc = document, docElem = doc.documentElement, body = doc.getElementsByTagName('body')[0], x = win.innerWidth || docElem.clientWidth || body.clientWidth, y = win.innerHeight || docElem.clientHeight || body.clientHeight;
         Handler.ScreenSizeCoord.frozen = false;
         Handler.ScreenSizeCoord.assign(0, 0, x, y, 0, 0, x, y);
         Handler.ScreenSizeCoord.frozen = true;
     }
+    /**
+     * Gets handlers
+     * @returns handlers
+     */
     static getHandlers() {
         let objectArray = [];
         for (const key in Handler.activeInstances)
             objectArray.push(Handler.activeInstances[key].parentDisplayCell);
         return objectArray;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         if (this.retArgs["number"] && this.retArgs["number"].length >= 1)
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"]);
         if (this.startRendered)
             Render.scheduleUpdate();
     }
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     */
     preRender(derender, node) {
         if (this.preRenderCallBack)
             this.preRenderCallBack(this);
         this.parentDisplayCell.coord.copy(this.coord);
     }
+    /**
+     * Renders handler
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         for (let index = 0; index < this.children.length; index++)
             (this.children[index]).coord.copy(this.parentDisplayCell.coord);
@@ -1076,7 +1543,13 @@ class Handler extends Component {
             this.postRenderCallBack(this);
         return this.children;
     }
+    /**
+     * Shows handler
+     */
     show() { Handler.activeInstances[this.label] = this; Render.scheduleUpdate(); }
+    /**
+     * Hides handler
+     */
     hide() {
         Render.update(this.parentDisplayCell, true);
         delete Handler.activeInstances[this.label];
@@ -1094,9 +1567,19 @@ Handler.argMap = {
 };
 Handler.linkHandlerOldList = [];
 Handler.linkHandlerNewList = [];
+/**
+ * Screen size coord of handler
+ */
 Handler.ScreenSizeCoord = new Coord();
 function H(...Arguments) { return new DisplayCell(new Handler(...Arguments)); }
+/**
+ * Css
+ */
 class Css extends Base {
+    /**
+     * Creates an instance of css.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -1114,16 +1597,32 @@ class Css extends Base {
         }
         Css.instances[this.classname] = this;
     }
+    /**
+     * label
+     * @param classname
+     * @returns label
+     */
     static byLabel(classname) {
         for (let key in Css.instances)
             if (Css.instances[key].classname == classname)
                 return Css.instances[key];
         return undefined;
     }
+    /**
+     * News string
+     * @param data
+     */
     newString(data) {
         this.cssObj = this.makeObj(data);
         this.css = this.makeString();
     }
+    /**
+     * Makes string
+     * @param [obj]
+     * @param [postfix]
+     * @param [addToClassName]
+     * @returns string
+     */
     makeString(obj = this.cssObj, postfix = "", addToClassName = "") {
         let returnString = `${(this.isClassname) ? "." : ""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix : ""} {\n`;
         for (let key in obj)
@@ -1131,6 +1630,11 @@ class Css extends Base {
         returnString += "}";
         return returnString;
     }
+    /**
+     * Makes obj
+     * @param [str]
+     * @returns obj
+     */
     makeObj(str = this.css) {
         //let str = this.asString;
         let obj = {};
@@ -1150,10 +1654,9 @@ class Css extends Base {
         }
         return obj;
     }
-    // static byname(css:string){
-    //     for (let cssInstance of Css.instances) if (cssInstance.css == css) return cssInstance;
-    //     return undefined;
-    // }
+    /**
+     * Updates css
+     */
     static update() {
         let style = document.getElementById(Css.elementId);
         let alreadyexists = true;
@@ -1185,17 +1688,28 @@ Css.elementId = "llmStyle";
 Css.instances = {};
 Css.activeInstances = {};
 Css.defaults = { isClassname: true };
+/**
+ * Arg map of css
+ */
 Css.argMap = {
     string: ["classname", "css", "cssHover", "cssSelect", "cssSelectHover"],
     boolean: ["isClassname"]
 };
+/**
+ * Delete on first run classname of css
+ */
 Css.deleteOnFirstRunClassname = ".remove";
 Css.advisedDiv = new Css("div[llm]", "position:absolute;", false, { type: "llm" });
 Css.advisedBody = new Css("body", "overflow: auto hidden;", false, { type: "llm" });
 Css.advisedHtml = new Css("html", "overflow: auto hidden;", false, { type: "llm" });
 function css(...Arguments) { return new Css(...Arguments); }
-// export {Css, css}
+/**
+ * Render
+ */
 class Render {
+    /**
+     * Schedules update
+     */
     static scheduleUpdate() {
         if (Render.firstRun) {
             Render.firstRun = false;
@@ -1214,6 +1728,10 @@ class Render {
             }, 0);
         }
     }
+    /**
+     * Fullupdates render
+     * @param [derender]
+     */
     static fullupdate(derender = false) {
         Css.update();
         Render.node = new node_("Root");
@@ -1225,6 +1743,13 @@ class Render {
             Render.update([handlers[index]], derender, Render.node, index * Render.zindexHandlerIncrement);
         }
     }
+    /**
+     * Updates render
+     * @param [components_]
+     * @param [derender]
+     * @param [parentNode]
+     * @param [zindex]
+     */
     static update(components_ = undefined, derender = false, parentNode = undefined, zindex = 0) {
         if (components_) {
             let components;
@@ -1253,15 +1778,26 @@ class Render {
             }
         }
     }
+    /**
+     * Registers render
+     * @param label
+     * @param object_
+     */
     static register(label, object_) { Render.classes[label] = object_; }
 }
 Render.zindexIncrement = 5;
 Render.zindexHandlerIncrement = 100;
 Render.pleaseUpdate = false;
 Render.firstRun = true;
+/**
+ * Classes  of render
+ */
 Render.classes = { /* DragBar,for wxample... filled in when modules load. */};
 class ScrollBar extends Component {
-    // retArgs:objectAny;   // <- this will appear
+    /**
+     * Creates an instance of scroll bar.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -1297,23 +1833,41 @@ class ScrollBar extends Component {
     get ratio() {
         return pf.decimalPlaces(this.pixelsUsed / this.scrollbarPixels, 3);
     }
+    /**
+     * Updates scroll bar
+     * @param pixelsUsed
+     * @param pixelsAvailable
+     * @returns update
+     */
     update(pixelsUsed, pixelsAvailable) {
         this.pixelsUsed = pixelsUsed;
         this.pixelsAvailable = pixelsAvailable;
         this.limit();
         return this.offset;
     }
+    /**
+     * Limits scroll bar
+     */
     limit() {
         if (this.offset < 0)
             this.offset = 0;
         if (this.offset > this.pixelsUsed - this.pixelsAvailable)
             this.offset = this.pixelsUsed - this.pixelsAvailable;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         this.preRender(undefined, undefined);
         Render.scheduleUpdate();
     }
     ;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @returns render
+     */
     preRender(derender, node) {
         if (this.isHor)
             this.parentDisplayCell.coord.height -= this.barSize;
@@ -1322,6 +1876,13 @@ class ScrollBar extends Component {
         return undefined;
     }
     ;
+    /**
+     * Renders scroll bar
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         // console.log("Scrollbar Render");
         let coord = this.parentDisplayCell.coord;
@@ -1336,10 +1897,16 @@ class ScrollBar extends Component {
         return [this.scrollbarDisplayCell];
     }
     ;
+    /**
+     * Deletes scroll bar
+     */
     delete() {
         Render.update(this.scrollbarDisplayCell, true);
         Render.scheduleUpdate();
     }
+    /**
+     * Builds scroll bar
+     */
     build() {
         let label = this.label + ((this.isHor) ? "_H" : "_V");
         this.preBar = I(`${label}_preBar`, ScrollBar.ScrollBar_whiteBG, events({ onclick: this.onSmallerBar.bind(this) }));
@@ -1348,26 +1915,10 @@ class ScrollBar extends Component {
         this.scrollbarDisplayCell =
             h(`${label}_h`, this.isHor, I(`${label}_backArrow`, `${this.barSize}px`, (this.isHor) ? ScrollBar.leftArrowSVG("scrollArrows") : ScrollBar.upArrowSVG("scrollArrows"), events({ onholdclick: [this.onSmallArrow.bind(this)] })), this.preBar, this.Bar, this.postBar, I(`${label}_forwardArrow`, `${this.barSize}px`, (this.isHor) ? ScrollBar.rightArrowSVG("scrollArrows") : ScrollBar.downArrowSVG("scrollArrows"), events({ onholdclick: [this.onBigArrow.bind(this)] })));
     }
-    onSmallArrow(e) {
-        this.offset -= this.ratio * this.scrollMultiplier;
-        this.limit();
-        Render.scheduleUpdate();
-    }
-    onBigArrow(e) {
-        this.offset += this.ratio * this.scrollMultiplier;
-        this.limit();
-        Render.scheduleUpdate();
-    }
-    onSmallerBar(e) {
-        this.offset -= this.pixelsAvailable;
-        this.limit();
-        Render.scheduleUpdate();
-    }
-    onBiggerBar(e) {
-        this.offset += this.pixelsAvailable;
-        this.limit();
-        Render.scheduleUpdate();
-    }
+    onSmallArrow(e) { this.offset -= this.ratio * this.scrollMultiplier; this.limit(); Render.scheduleUpdate(); }
+    onBigArrow(e) { this.offset += this.ratio * this.scrollMultiplier; this.limit(); Render.scheduleUpdate(); }
+    onSmallerBar(e) { this.offset -= this.pixelsAvailable; this.limit(); Render.scheduleUpdate(); }
+    onBiggerBar(e) { this.offset += this.pixelsAvailable; this.limit(); Render.scheduleUpdate(); }
     onBarDown(e) { ScrollBar.startoffset = this.offset; }
     onBarMove(e, xmouseDiff) {
         let dist = (this.isHor) ? xmouseDiff["x"] : xmouseDiff["y"];
@@ -1394,7 +1945,14 @@ Render.register("ScrollBar", ScrollBar);
 function scrollbar(...Arguments) {
     return new ScrollBar(...Arguments);
 }
+/**
+ * On drag
+ */
 class onDrag_ extends Base {
+    /**
+     * Creates an instance of on drag .
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.onDown = function () { };
@@ -1431,6 +1989,9 @@ class onDrag_ extends Base {
             }
         };
     }
+    /**
+     * Resets on drag
+     */
     reset() {
         FunctionStack.pop((window.onmousemove), "onDragMove");
         FunctionStack.pop((window.onmouseup), "onDragUp");
@@ -1448,7 +2009,14 @@ onDrag_.argMap = {
 };
 function onDrag(...Arguments) { return (new onDrag_(...Arguments)).returnObject; }
 Element_.customEvents["ondrag"] = function (newData) { return onDrag(newData); };
+/**
+ * On hold click
+ */
 class onHoldClick_ extends Base {
+    /**
+     * Creates an instance of on hold click .
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -1475,6 +2043,9 @@ class onHoldClick_ extends Base {
             }
         };
     }
+    /**
+     * Repeats on hold click
+     */
     repeat() {
         let THIS = this;
         this.FUNCTION(this.mouseDownEvent);
@@ -1494,7 +2065,14 @@ onHoldClick_.argMap = {
 };
 function onHoldClick(...Arguments) { return (new onHoldClick_(...Arguments)).returnObject; }
 Element_.customEvents["onholdclick"] = function (newData) { return onHoldClick(...newData); };
+/**
+ * Selected
+ */
 class Selected extends Base {
+    /**
+     * Creates an instance of selected.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -1506,6 +2084,9 @@ class Selected extends Base {
     }
     get indexer() { return this.getIndexerArray(this); }
     set indexer(value) { this.indexer_ = value; }
+    /**
+     * Updates events
+     */
     updateEvents() {
         let THIS = this;
         for (let index = 0; index < this.indexer.length; index++) {
@@ -1519,6 +2100,10 @@ class Selected extends Base {
                 displayCells[index].addEvents({ onclick: function selected(e) { THIS.select(displayCells[index]); } });
         }
     }
+    /**
+     * Selects selected
+     * @param displaycellOrNumber
+     */
     select(displaycellOrNumber) {
         let newIndex;
         let type = Arguments_.typeof(displaycellOrNumber);
@@ -1535,13 +2120,25 @@ class Selected extends Base {
             }
         }
     }
+    /**
+     * Clears selected
+     */
     clear() { this.onUnselect(this.currentButtonIndex); this.currentButtonIndex = undefined; }
+    /**
+     * Indexs of
+     * @param displaycell
+     * @returns of
+     */
     indexOf(displaycell) {
         for (let index = 0; index < this.indexer.length; index++)
             if (this.indexer[index].indexOf(displaycell) > -1)
                 return index;
         return undefined;
     }
+    /**
+     * Determines whether select on
+     * @param index
+     */
     onSelect(index) {
         // console.log("onSelectCalled", this.indexer)
         let selectArray = (this.indexer[index]);
@@ -1554,6 +2151,10 @@ class Selected extends Base {
                 this.onselect(index, displaycell);
         }
     }
+    /**
+     * Determines whether unselect on
+     * @param index
+     */
     onUnselect(index) {
         let unSelectArray = (this.indexer[index]);
         for (let i = 0; i < unSelectArray.length; i++) {
@@ -1577,8 +2178,15 @@ Selected.argMap = {
     number: ["startValue"],
     Pages: ["pages"],
 };
+/**
+ * Pages
+ */
 class Pages extends Component {
     // retArgs:objectAny;   // <- this will appear
+    /**
+     * Creates an instance of pages.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -1619,12 +2227,22 @@ class Pages extends Component {
         }
     }
     get currentPage() { return this.currentPage_; }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         let THIS = this;
         this.parentDisplayCell.getdim = function () { return THIS.dim; };
         this.parentDisplayCell.setdim = function (value) { THIS.dim = value; };
     }
     ;
+    /**
+     * Renders pages
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         let newPage = this.evalFunction(this);
         if (newPage != this.prevPage)
@@ -1636,7 +2254,6 @@ class Pages extends Component {
         return [this.cellArray[this.currentPage]];
     }
     ;
-    delete() { }
 }
 Pages.labelNo = 0;
 Pages.instances = {};
@@ -1655,7 +2272,14 @@ Render.register("Pages", Pages);
 function P(...Arguments) {
     return new DisplayCell(new Pages(...Arguments));
 }
+/**
+ * Tree
+ */
 class Tree_ extends Component {
+    /**
+     * Creates an instance of tree .
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -1723,9 +2347,18 @@ class Tree_ extends Component {
             });
         }
     }
+    /**
+     * Icons tree
+     * @param node
+     * @returns
+     */
     static icon(node) {
         return (node.children.length) ? ((node.collapsed) ? Tree_.collapsedSVG() : Tree_.expandedSVG()) : "";
     }
+    /**
+     * News node
+     * @param node
+     */
     newNode(node) {
         let THIS = this;
         let argMap = {
@@ -1751,11 +2384,25 @@ class Tree_ extends Component {
         });
         this.parentTreeNode = node;
     }
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender, node, zindex) {
         this.displayHeight = (this.topMargin + this.parentTreeNode.length() * this.height) - this.parentDisplayCell.coord.y;
         return undefined;
     }
     ;
+    /**
+     * Renders tree
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         let THIS = this;
         let returnDisplayCellArray = [];
@@ -1837,264 +2484,15 @@ Tree_.scrollArrowsSVGCss = css(`scrollArrows`, `stroke: black;`, `fill: white;`,
 Tree_.extension = "_TreeNode";
 Tree_.pointerCss = css("justpointer", "cursor:pointer");
 Render.register("Tree_", Tree_);
-// const defaultArgMap:ArgMap = {
-//     string : ["label"],
-//     other: ["hello"]
-// }
-// class Tree_ extends Base {
-//     static labelNo = 0;
-//     static instances:Tree_[] = [];
-//     static activeInstances:Tree_[] = [];
-//     static toggleCollapse(el:HTMLElement, node:node_, mouseEvent:MouseEvent){
-//         if (!node.collapsed) node.ParentNodeTree.derenderChildren(node);
-//         node.collapsed = !node.collapsed;
-//         let iconDisplayCell:DisplayCell = DisplayCell.byLabel(`${node.label}_icon`);
-//         iconDisplayCell.htmlBlock.innerHTML = (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon;
-//         Render.update();
-//     }
-//     static onNodeCreation(node:node_){
-//         // console.log("node:", node.label, node.displaycell)
-//         let nodeLabel:DisplayCell
-//         if (node.displaycell) {
-//             nodeLabel = node.displaycell;
-//             if (nodeLabel.htmlBlock.css.trim() == "") nodeLabel.htmlBlock.css = node.ParentNodeTree.css;
-//             nodeLabel.htmlBlock.events = node.ParentNodeTree.events;
-//         } else nodeLabel = I(`${node.label}_node`, `${node.label}`,
-//                             node.ParentNodeTree.css,
-//                             node.ParentNodeTree.events);
-//         nodeLabel.coord.hideWidth = true;                            
-//         node.displaycell = h(`${node.label}_h`, // dim is un-necessary, not used.
-//                                 (node.children.length) ?
-//                                     I(`${node.label}_icon`, `${node.ParentNodeTree.height}px`,
-//                                         (node.collapsed) ? node.ParentNodeTree.collapsedIcon : node.ParentNodeTree.expandedIcon,
-//                                         node.ParentNodeTree.iconClass,
-//                                         events({onclick:function(mouseEvent:MouseEvent){ Tree_.toggleCollapse(this, node,mouseEvent) }})
-//                                     )
-//                                 :   I(`${node.label}_iconSpacer`, `${node.ParentNodeTree.height}px`),
-//                                 nodeLabel
-//                             );
-//                         }
-//     static defaults = {height:20, indent:6, onNodeCreation:Tree_.onNodeCreation, topMargin:2, sideMargin:0, tabSize:8,
-//                         collapsedIcon:DefaultTheme.rightArrowSVG("arrowIcon"), expandedIcon:DefaultTheme.downArrowSVG("arrowIcon"),
-//                         iconClass: DefaultTheme.arrowSVGCss.classname, offsetx:0, offsety:0}
-//     static argMap = {
-//         string : ["label", "css"],
-//         DisplayCell: ["parentDisplayCell"],
-//         function: ["onNodeCreation"],
-//         number: ["height", "indent"],
-//         Css: ["Css"],
-//         Events: ["events"],
-//         node_: ["rootNode"], 
-//     }
-//     Arguments:any;
-//     retArgs:ArgsObj;   // <- this will appear
-//     renderNode:node_; // render node
-//     label:string;
-//     collapsedIcon: string;
-//     expandedIcon: string;
-//     iconClass: string;
-//     offsetx:number;
-//     offsety:number;
-//     rootNode: node_; // = new node("Root");
-//     height:number;
-//     css:string;
-//     Css:Css;
-//     indent:number;
-//     parentDisplayCell:DisplayCell;
-//     events: Events;
-//     offset:number;
-//     finalParentDisplayCellWidth:number;
-//     node_arg_map:ArgMap;
-//     topMargin:number;
-//     sideMargin:number;
-//     tabSize:number;
-//     preRenderCallback:Function;
-//     scrollbarh:ScrollBar;
-//     scrollbarv:ScrollBar;
-//     onNodeCreation:(node: node_) => void;
-//     constructor(...Arguments:any){
-//         super();this.buildBase(...Arguments);
-//         let THIS = this;
-//         if (this.Css && !this.css) {
-//             //console.log("Here", this.Css)
-//             this.css = this.Css.classname;
-//         }
-//         if (this.rootNode)
-//             node_.traverse( this.rootNode, function(node:node_){
-//                                 node.ParentNodeTree = THIS;
-//                                 THIS.onNodeCreation(node);
-//                             });
-//         else {
-//             this.rootNode = new node_(...Arguments)
-//             this.rootNode.ParentNodeTree = this;
-//             this.onNodeCreation(this.rootNode);
-//             this.rootNode.ParentNodeTree = THIS;
-//         }
-//         if (this.node_arg_map) node_.argMap = this.node_arg_map;
-//     }
-//     newRoot(node:node_){
-//         let THIS = this;
-//         this.derender(this.rootNode);
-//         this.rootNode = node;
-//         node_.traverse(this.rootNode, function(node:node_){
-//             node.ParentNodeTree = THIS;
-//             THIS.onNodeCreation(node);
-//         } );
-//     }
-//     root(...Arguments:any){
-//         this.rootNode = new node_(...Arguments)
-//         return this.rootNode;
-//     }
-//     log() {
-//         this.rootNode.log()
-//     }
-//     derender(node:node_) {
-//         node_.traverse( node, function traverseFunction(node:node_){Render.update(node.displaycell, true);})        
-//     }
-//     derenderChildren(node:node_){
-//         for (let index = 0; index < node.children.length; index++)
-//             this.derender(node.children[index]);
-//     }    
-//     static Render(thisTree:Tree_, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
-//         if (thisTree.preRenderCallback) {
-//             console.log("Tree Prerender Callback Called");
-//             thisTree.preRenderCallback();
-//         }
-//         let THIS:Tree_ = thisTree;
-//         let PDScoord = THIS.parentDisplayCell.coord;
-//         let x_= PDScoord.x + THIS.sideMargin ;//- thisTree.offsetx;
-//         let y_= PDScoord.y + THIS.topMargin ;
-//         let max_x2:number = 0;
-//         let renderChildren = new RenderChildren;
-//         zindex += Render.zIncrement;
-//         node_.traverse( THIS.rootNode,
-//             function traverseFunction(node:node_){
-//                 let x = x_ + (node.depth()-1)*THIS.tabSize - thisTree.offsetx;
-//                 let y = y_- thisTree.offsety;
-//                 let width = PDScoord.width
-//                 let height = THIS.height;
-//                 node.displaycell.coord.assign(x, y, width, height,
-//                                             PDScoord.x, PDScoord.y, PDScoord.width, PDScoord.height,
-//                                             Handler.currentZindex + Handler.zindexIncrement);
-//                 node.displaycell.coord.within = THIS.parentDisplayCell.coord.within
-//                 y_ += THIS.height;
-//                 renderChildren.RenderSibling(node.displaycell, derender);
-//                 let cellArray = node.displaycell.displaygroup.cellArray;
-//                 let el = cellArray[ cellArray.length-1 ].htmlBlock.el;
-//                 if (el) {
-//                     let bounding = el.getBoundingClientRect();
-//                     let x2 = bounding["x"] + bounding["width"];
-//                     if (x2 > max_x2) max_x2 = x2;
-//                 }                
-//             },
-//             function traverseChildren(node: node_) {
-//                 return (!node.collapsed)
-//             },
-//         );
-//         if (y_ + THIS.height > PDScoord.y + PDScoord.height) {
-//             PDScoord.width = PDScoord.width - ScrollBar.defaults.barSize;
-//             PDScoord.within.width = PDScoord.width;
-//             if (!thisTree.scrollbarv) {
-//                 thisTree.scrollbarv = new ScrollBar(`${thisTree.label}_scrollbarv`, false);
-//                 // console.log(thisTree.scrollbarv);
-//             }
-//             thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height, PDScoord.y + PDScoord.height,
-//                 PDScoord.x + PDScoord.width,
-//                 PDScoord.y,
-//                 thisTree.scrollbarv.barSize,
-//                 PDScoord.height)
-//             renderChildren.RenderSibling(thisTree.scrollbarv.scrollbarDisplayCell, derender);
-//         } else {
-//             if (thisTree.scrollbarv) {
-//                 thisTree.scrollbarv.delete();
-//                 thisTree.offsety = 0;
-//             }
-//         }
-//         if (max_x2 >= PDScoord.x + PDScoord.width) {
-//             PDScoord.height = PDScoord.height - ScrollBar.defaults.barSize;
-//             PDScoord.within.height = PDScoord.height;
-//             if (!thisTree.scrollbarh) {
-//                 thisTree.scrollbarh = new ScrollBar(`${thisTree.label}_scrollbarh`, true);
-//             }
-//             thisTree.offsetx = thisTree.scrollbarh.update(max_x2, PDScoord.x + PDScoord.width,
-//                 PDScoord.x,
-//                 PDScoord.y + PDScoord.height,
-//                 PDScoord.width,
-//                 thisTree.scrollbarh.barSize,
-//                 )
-//             renderChildren.RenderSibling(thisTree.scrollbarh.scrollbarDisplayCell, derender);
-//         } else {
-//             if (thisTree.scrollbarh) {
-//                 thisTree.scrollbarh.delete();
-//                 thisTree.offsetx = 0;
-//             }
-//         }
-//         return {zindex,
-//             siblings: renderChildren.siblings};
-//     }
-// }
-// Render.register("Tree_", Tree_);
-// function tree(...Arguments:any): DisplayCell {return Overlay.new("Tree_", ...Arguments)};
-// Overlay.classes["Tree_"] = Tree_;
-// //let scrollbarh = thisTree.parentDisplayCell.getOverlays("ScrollBar")
-//         // max_x2 += ((scrollbarv) ? scrollbarv.barSize:0)
-//         // // check horizontal first
-//         // if (max_x2 > (PDScoord.x + PDScoord.width) + 2) { 
-//         //      if (!thisTree.scrollbarh) {
-//         //          //console.log("no way")
-//         //          let newOverlay = new Overlay("ScrollBar", "scrollbarh",thisTree.parentDisplayCell, true);
-//         //          thisTree.scrollbarh = <ScrollBar>newOverlay.returnObj;
-//         //          //console.log("herereere", thisTree.scrollbarh)
-//         //      }
-//         //     thisTree.offsetx = thisTree.scrollbarh.update(max_x2);
-//         // } else {
-//         //     if (thisTree.scrollbarh) {
-//         //         thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
-//         //             return (<ScrollBar>overlay.returnObj).ishor;
-//         //         });
-//         //         thisTree.scrollbarh.delete();
-//         //         thisTree.offsetx = 0;
-//         //         thisTree.scrollbarh = undefined;
-//         //     }
-//         // }
-//         // // check vertical second
-//         // if (y_ + THIS.height + 100 > boundHeight){
-//         //     if (!thisTree.scrollbarv) {
-//         //         let newOverlay = new Overlay("ScrollBar", "scrollbarh", thisTree.parentDisplayCell, false);
-//         //         thisTree.scrollbarv = <ScrollBar>newOverlay.returnObj;
-//         //         // console.log(thisTree.scrollbarv)
-//         //     }
-//         //     thisTree.offsety = thisTree.scrollbarv.update(y_ + THIS.height + 100);
-//         // } else {
-//         //     if (thisTree.scrollbarv) {
-//         //         thisTree.parentDisplayCell.popOverlay("ScrollBar", function (overlay:Overlay){
-//         //             return !((<ScrollBar>overlay.returnObj).ishor)
-//         //         });
-//         //         thisTree.scrollbarv.delete();
-//         //         thisTree.offsety = 0;
-//         //         thisTree.scrollbarv = undefined;
-//         //     }
-//         // }
-//             // static getOverlays(thisTree:Tree_){
-//     //     let overlayArray = thisTree.parentDisplayCell.getOverlays("ScrollBar");
-//     //     let scrollbarh:ScrollBar
-//     //     let scrollbarv:ScrollBar
-//     //     for (let index = 0; index < overlayArray.length; index++) {
-//     //         let overlay = <Overlay>overlayArray[index];
-//     //         let scrollbar = <ScrollBar>overlay.returnObj
-//     //         if (scrollbar.ishor) {
-//     //             if (scrollbarh) console.log("Duplicate Horizontal Scrollbars Found!");
-//     //             scrollbarh = scrollbar;
-//     //         }
-//     //         else {
-//     //             if (scrollbarv) console.log("Duplicate Vertical Scrollbars Found!");
-//     //             scrollbarv = scrollbar;
-//     //         }
-//     //     }
-//     //     return [scrollbarh, scrollbarv];
-//     // }
+/**
+ * Context
+ */
 class Context extends Component {
     // retArgs:objectAny;   // <- this will appear
+    /**
+     * Creates an instance of context.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -2104,6 +2502,9 @@ class Context extends Component {
             this.contextNode = sample();
         this.build();
     }
+    /**
+     * Builds context
+     */
     build() {
         let THIS = this;
         let displaycells = [];
@@ -2134,6 +2535,11 @@ class Context extends Component {
         this.displaygroup = new DisplayGroup(`${this.label}_ContextV`, false, ...displaycells);
         this.displaycell = new DisplayCell(this.displaygroup);
     }
+    /**
+     * Contexts on mouse move
+     * @param event
+     * @returns
+     */
     static ContextOnMouseMove(event) {
         let X = event.clientX, Y = event.clientY;
         let length = Context.activeInstanceArray.length;
@@ -2144,10 +2550,18 @@ class Context extends Component {
             topInstance.pop();
         return Context.activeInstanceArray.length;
     }
+    /**
+     * Pops all
+     * @param [keepFunction]
+     */
     static popAll(keepFunction = false) {
         while (Context.activeInstanceArray.length)
             Context.activeInstanceArray[Context.activeInstanceArray.length - 1].pop(keepFunction);
     }
+    /**
+     * Pops context
+     * @param [keepFunction]
+     */
     pop(keepFunction = false) {
         // console.log("pop")
         let index = Context.activeInstanceArray.indexOf(this);
@@ -2159,6 +2573,10 @@ class Context extends Component {
                 window.onmousemove = FunctionStack.pop(window.onmousemove, "ContextOnMouseMove");
         }
     }
+    /**
+     * Launchs context
+     * @param [event]
+     */
     launchContext(event = undefined) {
         // console.log("launch")
         event.preventDefault();
@@ -2179,12 +2597,20 @@ class Context extends Component {
         this.isShown = true;
         Render.scheduleUpdate();
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         let eventObject = {};
         eventObject[this.eventType] = this.launchContext.bind(this);
         this.parentDisplayCell.addEvents(eventObject);
     }
     ;
+    /**
+     * Sets coord
+     * @param [Pcoord]
+     * @param [event]
+     */
     setCoord(Pcoord = this.parentDisplayCell.coord, event = this.launchEvent) {
         let Dcoord = this.displaycell.coord;
         let Mcoord = Handler.ScreenSizeCoord;
@@ -2196,6 +2622,13 @@ class Context extends Component {
             height = Mcoord.y + Mcoord.height - y;
         this.displaycell.coord.copy(Mcoord, x, y, width, height);
     }
+    /**
+     * Renders context
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         if (this.isShown) {
             this.setCoord();
@@ -2222,155 +2655,14 @@ Context.pointOffset = 5;
 Context.activeInstanceArray = [];
 function context(...Arguments) { return new Context(...Arguments); }
 Render.register("Context", Context);
-// class Context extends Base {
-//     static lastRendered: Context;
-//     static subOverlapPx = 4;
-//     static instances:Context[] = [];
-//     static activeInstances:Context[] = [];
-//     static defaultObj = {one:function(){console.log("one")},
-//                          two:function(){console.log("two")},
-//                          three:function(){console.log("three")},
-//                         }
-//     static defaults = {
-//         width : 100,
-//         cellheight : 25,
-//         css: Css.theme.context, //Context.defaultContextCss
-//     }
-//     static argMap = {
-//         string : ["label"],
-//         number : ["width", "cellheight"]
-//     }
-//     label:string;
-//     menuObj:object;
-//     x: number;
-//     y: number;
-//     width:number;
-//     cellheight:number;
-//     height:number;
-//     displaycell: DisplayCell;
-//     coord:Coord = new Coord();
-//     css: Css;
-//     handler:Handler;
-//     launchcell:DisplayCell;
-//     parentContext:Context;
-//     constructor(...Arguments: any) {
-//         super();this.buildBase(...Arguments);
-//         if (!this.menuObj) this.menuObj = Context.defaultObj;
-//         Context.makeLabel(this);
-//         this.changeMenuObject();
-//     }
-//     changeMenuObject(menuObj = this.menuObj){
-//         if (menuObj != this.menuObj) this.menuObj = menuObj;
-//         this.height = Object.keys(this.menuObj).length*this.cellheight;
-//         let THIS = this;
-//         let cellArray:DisplayCell[] = [];
-//         let numKeys = Object.keys(menuObj).length;
-//         let index = 0;
-//         let newContext: Context;
-//         this.displaycell = v({cellArray:[/* filled at bottom */]})
-//         for (let key in menuObj) {
-//             let valueFunctionOrObject = menuObj[key];
-//             if (typeof(valueFunctionOrObject) == "function"){
-//                 cellArray.push(I(   ( (index == numKeys-1)?"100%":`${this.cellheight}px`  ),
-//                                     {innerHTML: key},
-//                                     this.css,
-//                                     events({onclick: function(mouseEvent:MouseEvent){
-//                                         valueFunctionOrObject(mouseEvent, THIS);
-//                                         THIS.popAll();
-//                                     }})
-//                                 ));
-//             } else {
-//                 newContext = new Context({menuObj:valueFunctionOrObject,
-//                                           width: this.width,
-//                                           cellheight: this.cellheight,
-//                                           css: this.css,
-//                                           parentContext: this
-//                                         });
-//                 newContext.launchcell=I(( (index == numKeys-1)?"100%":`${this.cellheight}px`),
-//                         {innerHTML: key},
-//                         this.css,
-//                         events({onmouseover: function() {
-//                                     let coord = THIS.coord;
-//                                     if (!newContext.handler)
-//                                         newContext.render(undefined, coord.x + coord.width - Context.subOverlapPx,
-//                                                         coord.y + THIS.cellheight*(index-2) - Context.subOverlapPx);
-//                                 }
-//                         })
-//                 );
-//                 cellArray.push(newContext.launchcell);       
-//             }
-//             index += 1; 
-//         }
-//         this.displaycell.displaygroup.cellArray = cellArray;
-//     }
-//     popAll(){
-//         this.pop();
-//         if (this.parentContext) this.parentContext.popAll();
-//         else window.onmousemove = function(){};
-//     }
-//     pop(){
-//         this.handler.pop();
-//         this.handler = undefined;
-//         if (this.parentContext) Context.lastRendered = this.parentContext;
-//     }
-//     managePop(mouseEvent:MouseEvent) {
-//         let x = mouseEvent.clientX;
-//         let y= mouseEvent.clientY;
-//         let pop = !this.displaycell.coord.isPointIn(x,y)
-//         if (pop && this.launchcell && this.launchcell.coord.isPointIn(x,y)) pop = false;
-//         let THIS = this
-//         if (pop){
-//             if (this.parentContext)
-//                 window.onmousemove = function(mouseEvent:MouseEvent){THIS.parentContext.managePop(mouseEvent);};
-//             else
-//             window.onmousemove = function(){};
-//             this.pop();
-//         }
-//     }
-//     render(mouseEvent:MouseEvent, x:number=0, y:number=0) {
-//         if (mouseEvent){
-//             mouseEvent.preventDefault();
-//             x=mouseEvent.clientX - Context.subOverlapPx;
-//             y=mouseEvent.clientY - Context.subOverlapPx;
-//         }
-//         this.coord.assign(x, y, (this.launchcell && (this.width == Context.defaults.width)) ? this.launchcell.coord.width :this.width , this.height);
-//         this.handler = H(this.displaycell, this.coord, {type:"context"});
-//         let THIS = this;
-//         window.onmousemove = function(mouseEvent:MouseEvent){THIS.managePop(mouseEvent);}
-//         Context.lastRendered = this;
-//     }
-//     // static Render(displaygroup:DisplayGroup, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
-//     //     return {zindex}
-//     // }
-//     hMenuBarx(){return this.launchcell.coord.x}
-//     hMenuBary(){return this.launchcell.coord.y+this.launchcell.coord.height}
-//     vMenuBarx(){return this.launchcell.coord.x + this.launchcell.coord.width}
-//     vMenuBary(){return this.launchcell.coord.y}
-// }
-// //Render.register("Context", Context);
-// let context = function(...Arguments:any){
-//     let newcontext=new Context(...Arguments);
-//     return function(mouseEvent:MouseEvent){newcontext.render(mouseEvent);return false;}
-// }
-// let hMenuBar = function(...Arguments:any){ // requires launchcell
-//     let newcontext=new Context(...Arguments);
-//     return function(mouseEvent:MouseEvent){
-//         if (Context.lastRendered && Context.lastRendered.handler){
-//             Context.lastRendered.popAll();
-//         }
-//         newcontext.render(undefined, newcontext.hMenuBarx(), newcontext.hMenuBary());
-//         return false;
-//     }
-// }
-// let vMenuBar = function(...Arguments:any){ // requires launchcell
-//     let newcontext=new Context(...Arguments);
-//     return function(mouseEvent:MouseEvent){
-//         newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary());
-//         return false;
-//     }
-// }
-// // export {vMenuBar, hMenuBar, context, Context}
+/**
+ * Modal
+ */
 class Modal extends Component {
+    /**
+     * Creates an instance of modal.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.children = [];
@@ -2393,6 +2685,9 @@ class Modal extends Component {
         if ("number" in this.retArgs)
             this.sizer = this.evalNumbers(this.retArgs["number"]);
     }
+    /**
+     * Determines whether down on
+     */
     static onDown() {
         let THIS = this;
         window.dispatchEvent(new CustomEvent('ModalStartDrag', { detail: THIS }));
@@ -2400,12 +2695,22 @@ class Modal extends Component {
         Modal.x = THIS.coord.x;
         Modal.y = THIS.coord.y;
     }
+    /**
+     * Determines whether move on
+     * @param mouseEvent
+     * @param offset
+     */
     static onMove(mouseEvent, offset) {
         let THIS = this;
         THIS.coord.x = Modal.x + offset.x;
         THIS.coord.y = Modal.y + offset.y;
         Render.scheduleUpdate();
     }
+    /**
+     * Determines whether up on
+     * @param mouseEvent
+     * @param offset
+     */
     static onUp(mouseEvent, offset) {
         let THIS = this;
         Modal.movingInstace = undefined;
@@ -2414,6 +2719,11 @@ class Modal extends Component {
         window.dispatchEvent(new CustomEvent('ModalDropped', { detail: THIS }));
     }
     get coord() { return this.handler.coord; }
+    /**
+     * Evals numbers
+     * @param numbers
+     * @returns numbers
+     */
     evalNumbers(numbers) {
         let qty = numbers.length;
         let sizer = {};
@@ -2430,6 +2740,9 @@ class Modal extends Component {
             sizer.maxHeight = numbers[5];
         return sizer;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         if (this.startCoord)
             this.handler.coord.copy(this.startCoord);
@@ -2443,6 +2756,13 @@ class Modal extends Component {
         }
     }
     ;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender, node, zindex) {
         if (this.sizer.minWidth && !this.stretch)
             this.stretch = new Stretch(this);
@@ -2460,30 +2780,56 @@ class Modal extends Component {
         return undefined;
     }
     ;
+    /**
+     * Renders modal
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         return this.children;
     }
     ;
+    /**
+     * Gets child
+     * @param label
+     * @returns
+     */
     getChild(label) {
         for (let index = 0; index < this.children.length; index++)
             if (this.children[index].label == label)
                 return this.children[index];
         return undefined;
     }
-    delete() { }
+    /**
+     * Shows modal
+     */
     show() {
         if (!Handler.activeInstances[this.handler.label]) {
             Handler.activeInstances[this.handler.label] = this.handler;
             Render.scheduleUpdate();
         }
     }
+    /**
+     * Hides modal
+     * @param [event]
+     */
     hide(event = undefined) {
         if (Handler.activeInstances[this.handler.label]) {
             Render.update(Handler.activeInstances[this.handler.label], true);
             delete Handler.activeInstances[this.handler.label];
         }
     }
+    /**
+     * Determines whether shown is
+     * @returns
+     */
     isShown() { return (Handler.activeInstances[this.handler.label]) ? true : false; }
+    /**
+     * Drags with
+     * @param displaycells
+     */
     dragWith(...displaycells) {
         let THIS = this;
         for (let index = 0; index < displaycells.length; index++) {
@@ -2493,6 +2839,10 @@ class Modal extends Component {
             element.addEvents({ ondrag: [Modal.onDown.bind(THIS), Modal.onMove.bind(THIS), Modal.onUp.bind(THIS)] });
         }
     }
+    /**
+     * Closes with
+     * @param displaycells
+     */
     closeWith(...displaycells) {
         let THIS = this;
         for (let index = 0; index < displaycells.length; index++) {
@@ -2517,7 +2867,14 @@ Modal.argMap = {
     Coord: ["startCoord"],
     Handler: ["handler"],
 };
+/**
+ * Win modal
+ */
 class winModal extends Base {
+    /**
+     * Creates an instance of win modal.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -2541,6 +2898,9 @@ class winModal extends Base {
     set parentDisplayCell(value) { this.modal.parentDisplayCell = value; }
     show() { this.modal.show(); }
     hide() { this.modal.hide(); }
+    /**
+     * Builds win modal
+     */
     build() {
         this.titleDisplayCell = I(`${this.label}_titleCell`, this.titleText, winModal.titleCss);
         this.closeDisplayCell = I(`${this.label}_closeIcon`, winModal.closeSVG, `${this.headerHeight}px`);
@@ -2573,7 +2933,14 @@ winModal.closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="
       </svg>`;
 winModal.whiteBGCss = css(`whiteBGCss`, `background:white;box-sizing: border-box;-moz-box-sizing: border-box;
                                             -webkit-box-sizing: border-box;border: 1px solid black;`);
+/**
+ * Stretch
+ */
 class Stretch extends Component {
+    /**
+     * Creates an instance of stretch.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.children = [];
@@ -2611,21 +2978,41 @@ class Stretch extends Component {
     static urDrag(e, offset) { Stretch.updateCoord(this["modal"], 0, 1, 1, -1, offset); }
     static llDrag(e, offset) { Stretch.updateCoord(this["modal"], 1, 0, -1, 1, offset); }
     static lrDrag(e, offset) { Stretch.updateCoord(this["modal"], 0, 0, 1, 1, offset); }
+    /**
+     * Builds stretch
+     */
     build() {
         this.upperLeft = I(`${this.label}_ul`, Stretch.CssNW, events({ ondrag: [Stretch.setStart.bind(this), Stretch.ulDrag.bind(this)] }));
         this.upperRight = I(`${this.label}_ur`, Stretch.CssNE, events({ ondrag: [Stretch.setStart.bind(this), Stretch.urDrag.bind(this)] }));
         this.lowerLeft = I(`${this.label}_ll`, Stretch.CssNE, events({ ondrag: [Stretch.setStart.bind(this), Stretch.llDrag.bind(this)] }));
         this.lowerRight = I(`${this.label}_lr`, Stretch.CssNW, events({ ondrag: [Stretch.setStart.bind(this), Stretch.lrDrag.bind(this)] }));
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         console.log("STretch Connected");
     }
     ;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender, node, zindex) {
         //console.log("Stretch Pre-Render");
         return undefined;
     }
     ;
+    /**
+     * Renders stretch
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         if (this.parentDisplayCell) {
             let z = -(zindex + Render.zindexIncrement * 10);
@@ -2651,7 +3038,14 @@ Stretch.CssNE = css("CssNE", `cursor:ne-resize`);
 Stretch.CssNW = css("CssNW", `cursor:nw-resize`);
 Stretch.pixelSize = 10;
 Stretch.startDrag = new Coord();
+/**
+ * Drag bar
+ */
 class DragBar extends Component {
+    /**
+     * Creates an instance of drag bar.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -2659,6 +3053,11 @@ class DragBar extends Component {
         DragBar.instances[this.label] = this;
         DragBar.instances[this.label] = this;
     }
+    /**
+     * Parents display group
+     * @param THIS
+     * @returns display group
+     */
     static parentDisplayGroup(THIS) {
         let node = THIS.parentDisplayCell.node;
         let prev;
@@ -2671,10 +3070,19 @@ class DragBar extends Component {
         return (node) ? [node.Arguments[1], (displaygroup.children.indexOf(THIS.parentDisplayCell) == displaygroup.children.length - 1)]
             : [undefined, undefined];
     }
+    /**
+     * Determines whether down on
+     * @param e
+     */
     static onDown(e) {
         let THIS = this;
         DragBar.dragStartDim = pf.pxAsNumber(THIS.parentDisplayGroupChild.dim);
     }
+    /**
+     * Determines whether move on
+     * @param e
+     * @param offset
+     */
     static onMove(e, offset) {
         let THIS = this;
         let newdim = DragBar.dragStartDim + (((THIS.isHor) ? offset.x : offset.y) * ((THIS.isLast) ? -1 : 1));
@@ -2685,8 +3093,20 @@ class DragBar extends Component {
         THIS.parentDisplayGroupChild.dim = `${newdim}px`;
         Render.scheduleUpdate();
     }
+    /**
+     * Determines whether up on
+     * @param e
+     * @param offset
+     */
     static onUp(e, offset) { DragBar.dragStartDim = undefined; }
     get isHor() { return this.parentDisplayGroup.isHor; }
+    /**
+     * Renders drag bar
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         if (!this.parentDisplayGroup) {
             [this.parentDisplayGroup, this.isLast] = DragBar.parentDisplayGroup(this);

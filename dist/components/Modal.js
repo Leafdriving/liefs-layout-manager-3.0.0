@@ -1,4 +1,11 @@
+/**
+ * Modal
+ */
 class Modal extends Component {
+    /**
+     * Creates an instance of modal.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.children = [];
@@ -21,6 +28,9 @@ class Modal extends Component {
         if ("number" in this.retArgs)
             this.sizer = this.evalNumbers(this.retArgs["number"]);
     }
+    /**
+     * Determines whether down on
+     */
     static onDown() {
         let THIS = this;
         window.dispatchEvent(new CustomEvent('ModalStartDrag', { detail: THIS }));
@@ -28,12 +38,22 @@ class Modal extends Component {
         Modal.x = THIS.coord.x;
         Modal.y = THIS.coord.y;
     }
+    /**
+     * Determines whether move on
+     * @param mouseEvent
+     * @param offset
+     */
     static onMove(mouseEvent, offset) {
         let THIS = this;
         THIS.coord.x = Modal.x + offset.x;
         THIS.coord.y = Modal.y + offset.y;
         Render.scheduleUpdate();
     }
+    /**
+     * Determines whether up on
+     * @param mouseEvent
+     * @param offset
+     */
     static onUp(mouseEvent, offset) {
         let THIS = this;
         Modal.movingInstace = undefined;
@@ -42,6 +62,11 @@ class Modal extends Component {
         window.dispatchEvent(new CustomEvent('ModalDropped', { detail: THIS }));
     }
     get coord() { return this.handler.coord; }
+    /**
+     * Evals numbers
+     * @param numbers
+     * @returns numbers
+     */
     evalNumbers(numbers) {
         let qty = numbers.length;
         let sizer = {};
@@ -58,6 +83,9 @@ class Modal extends Component {
             sizer.maxHeight = numbers[5];
         return sizer;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         if (this.startCoord)
             this.handler.coord.copy(this.startCoord);
@@ -71,6 +99,13 @@ class Modal extends Component {
         }
     }
     ;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender, node, zindex) {
         if (this.sizer.minWidth && !this.stretch)
             this.stretch = new Stretch(this);
@@ -88,30 +123,56 @@ class Modal extends Component {
         return undefined;
     }
     ;
+    /**
+     * Renders modal
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         return this.children;
     }
     ;
+    /**
+     * Gets child
+     * @param label
+     * @returns
+     */
     getChild(label) {
         for (let index = 0; index < this.children.length; index++)
             if (this.children[index].label == label)
                 return this.children[index];
         return undefined;
     }
-    delete() { }
+    /**
+     * Shows modal
+     */
     show() {
         if (!Handler.activeInstances[this.handler.label]) {
             Handler.activeInstances[this.handler.label] = this.handler;
             Render.scheduleUpdate();
         }
     }
+    /**
+     * Hides modal
+     * @param [event]
+     */
     hide(event = undefined) {
         if (Handler.activeInstances[this.handler.label]) {
             Render.update(Handler.activeInstances[this.handler.label], true);
             delete Handler.activeInstances[this.handler.label];
         }
     }
+    /**
+     * Determines whether shown is
+     * @returns
+     */
     isShown() { return (Handler.activeInstances[this.handler.label]) ? true : false; }
+    /**
+     * Drags with
+     * @param displaycells
+     */
     dragWith(...displaycells) {
         let THIS = this;
         for (let index = 0; index < displaycells.length; index++) {
@@ -121,6 +182,10 @@ class Modal extends Component {
             element.addEvents({ ondrag: [Modal.onDown.bind(THIS), Modal.onMove.bind(THIS), Modal.onUp.bind(THIS)] });
         }
     }
+    /**
+     * Closes with
+     * @param displaycells
+     */
     closeWith(...displaycells) {
         let THIS = this;
         for (let index = 0; index < displaycells.length; index++) {
@@ -145,7 +210,14 @@ Modal.argMap = {
     Coord: ["startCoord"],
     Handler: ["handler"],
 };
+/**
+ * Win modal
+ */
 class winModal extends Base {
+    /**
+     * Creates an instance of win modal.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -169,6 +241,9 @@ class winModal extends Base {
     set parentDisplayCell(value) { this.modal.parentDisplayCell = value; }
     show() { this.modal.show(); }
     hide() { this.modal.hide(); }
+    /**
+     * Builds win modal
+     */
     build() {
         this.titleDisplayCell = I(`${this.label}_titleCell`, this.titleText, winModal.titleCss);
         this.closeDisplayCell = I(`${this.label}_closeIcon`, winModal.closeSVG, `${this.headerHeight}px`);
@@ -201,7 +276,14 @@ winModal.closeSVG = `<svg class="closeIcon" width="100%" height="100%" version="
       </svg>`;
 winModal.whiteBGCss = css(`whiteBGCss`, `background:white;box-sizing: border-box;-moz-box-sizing: border-box;
                                             -webkit-box-sizing: border-box;border: 1px solid black;`);
+/**
+ * Stretch
+ */
 class Stretch extends Component {
+    /**
+     * Creates an instance of stretch.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.children = [];
@@ -239,21 +321,41 @@ class Stretch extends Component {
     static urDrag(e, offset) { Stretch.updateCoord(this["modal"], 0, 1, 1, -1, offset); }
     static llDrag(e, offset) { Stretch.updateCoord(this["modal"], 1, 0, -1, 1, offset); }
     static lrDrag(e, offset) { Stretch.updateCoord(this["modal"], 0, 0, 1, 1, offset); }
+    /**
+     * Builds stretch
+     */
     build() {
         this.upperLeft = I(`${this.label}_ul`, Stretch.CssNW, events({ ondrag: [Stretch.setStart.bind(this), Stretch.ulDrag.bind(this)] }));
         this.upperRight = I(`${this.label}_ur`, Stretch.CssNE, events({ ondrag: [Stretch.setStart.bind(this), Stretch.urDrag.bind(this)] }));
         this.lowerLeft = I(`${this.label}_ll`, Stretch.CssNE, events({ ondrag: [Stretch.setStart.bind(this), Stretch.llDrag.bind(this)] }));
         this.lowerRight = I(`${this.label}_lr`, Stretch.CssNW, events({ ondrag: [Stretch.setStart.bind(this), Stretch.lrDrag.bind(this)] }));
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         console.log("STretch Connected");
     }
     ;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender, node, zindex) {
         //console.log("Stretch Pre-Render");
         return undefined;
     }
     ;
+    /**
+     * Renders stretch
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         if (this.parentDisplayCell) {
             let z = -(zindex + Render.zindexIncrement * 10);

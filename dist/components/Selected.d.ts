@@ -1,3 +1,6 @@
+/**
+ * Selected
+ */
 declare class Selected extends Base {
     static labelNo: number;
     static instances: {
@@ -26,11 +29,38 @@ declare class Selected extends Base {
     onunselect: (index: number, displaycell: DisplayCell) => void;
     startValue: number;
     currentButtonIndex: number;
+    /**
+     * Creates an instance of selected.
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Updates events
+     */
     updateEvents(): void;
+    /**
+     * Selects selected
+     * @param displaycellOrNumber
+     */
     select(displaycellOrNumber: DisplayCell | number): void;
+    /**
+     * Clears selected
+     */
     clear(): void;
+    /**
+     * Indexs of
+     * @param displaycell
+     * @returns of
+     */
     indexOf(displaycell: DisplayCell): number;
+    /**
+     * Determines whether select on
+     * @param index
+     */
     onSelect(index: number): void;
+    /**
+     * Determines whether unselect on
+     * @param index
+     */
     onUnselect(index: number): void;
 }

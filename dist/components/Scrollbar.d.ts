@@ -37,13 +37,48 @@ declare class ScrollBar extends Component {
     scrollMultiplier: number;
     get scrollbarPixels(): number;
     get ratio(): number;
+    /**
+     * Updates scroll bar
+     * @param pixelsUsed
+     * @param pixelsAvailable
+     * @returns update
+     */
     update(pixelsUsed: number, pixelsAvailable: number): number;
+    /**
+     * Limits scroll bar
+     */
     limit(): void;
+    /**
+     * Creates an instance of scroll bar.
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Determines whether connect on
+     */
     onConnect(): void;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @returns render
+     */
     preRender(derender: boolean, node: node_): void;
+    /**
+     * Renders scroll bar
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender: boolean, node: node_, zindex: number): Component[];
+    /**
+     * Deletes scroll bar
+     */
     delete(): void;
+    /**
+     * Builds scroll bar
+     */
     build(): void;
     onSmallArrow(e: PointerEvent): void;
     onBigArrow(e: PointerEvent): void;
@@ -53,6 +88,9 @@ declare class ScrollBar extends Component {
     onBarMove(e: MouseEvent, xmouseDiff: object): void;
 }
 declare function scrollbar(...Arguments: any): ScrollBar;
+/**
+ * On drag
+ */
 declare class onDrag_ extends Base {
     static instances: onDrag_[];
     static activeInstances: onDrag_[];
@@ -70,11 +108,21 @@ declare class onDrag_ extends Base {
     mousePos: object;
     mouseDiff: object;
     returnObject: object;
+    /**
+     * Creates an instance of on drag .
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Resets on drag
+     */
     reset(): void;
     static disableSelect(event: MouseEvent): void;
 }
 declare function onDrag(...Arguments: any): object;
+/**
+ * On hold click
+ */
 declare class onHoldClick_ extends Base {
     static labelNo: number;
     static instances: {
@@ -97,7 +145,14 @@ declare class onHoldClick_ extends Base {
     isDown: number;
     timeDown: number;
     mouseDownEvent: PointerEvent;
+    /**
+     * Creates an instance of on hold click .
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Repeats on hold click
+     */
     repeat(): void;
     onDown(e: MouseEvent): void;
 }

@@ -6,9 +6,9 @@
 class Arguments_ {
     /**
      * Arguments by type
-     * @param Args 
-     * @param [customTypes] 
-     * @returns  
+     * @param Args Array of Arguments ie new Class(...Args)
+     * @param [customTypes] Array of Functions returning Type Name (if qualifies), or undefined.
+     * @returns An Object Key "TypeName", value Array of Arguments, of that Type, in the order discovered
      */
     static argumentsByType(Args:any[],                                                 // 1st argument is a list of args.
         customTypes:Function[] = []) { // 2rd argument is a list of functions for custion types.
@@ -28,10 +28,25 @@ class Arguments_ {
         return returnObject;
     }
     /**
+     * This function merges the defaults Object, with Argument Object(s)
+     * @param THIS - Class Object instance, like "DisplayCell"
+     * @param CLASS - Class (static) Object
+     * @returns Defaults Objects merged with Argument Objects
+     */
+         static ifObjectMergeWithDefaults(THIS:any, CLASS:any) : object{
+            if ("object" in THIS.retArgs) {
+                let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
+                for (let key in THIS.retArgs["object"]) 
+                    returnObj = Arguments_.mergeObjects(returnObj, THIS.retArgs["object"][key])
+                return returnObj;
+            }
+            return CLASS.defaults;
+        }
+    /**
      * retArgsMapped
-     * @param updatedDefaults 
-     * @param THIS 
-     * @param CLASS 
+     * @param updatedDefaults (Return of Arguments_.ifObjectMergeWithDefaults())
+     * @param THIS - Class Object instance, like "DisplayCell"
+     * @param CLASS - Class (static) Object
      * @returns args mapped 
      */
     static retArgsMapped(updatedDefaults: object, THIS:any, CLASS:any) : object {
@@ -52,39 +67,25 @@ class Arguments_ {
         }
         return returnObject;
     }
+
     /**
-     * ifObjectMergeWithDefaults
-     * @param THIS 
-     * @param CLASS 
-     * @returns object merge with defaults 
-     */
-    static ifObjectMergeWithDefaults(THIS:any, CLASS:any) : object{
-        if ("object" in THIS.retArgs) {
-            let returnObj = CLASS.defaults; // mergeObjects doens't overwrite this!
-            for (let key in THIS.retArgs["object"]) 
-                returnObj = Arguments_.mergeObjects(returnObj, THIS.retArgs["object"][key])
-            return returnObj;
-        }
-        return CLASS.defaults;
-    }
-    /**
-     * Typeofs arguments 
+     * Similar to javascript typeof, but returns custom types like "dim" (ending in "px" or "%")
      * @param Argument 
-     * @returns  
+     * @returns Type Name (If Object, Class Name)
      */
     static typeof(Argument:any) {return (Object.keys(Arguments_.argumentsByType([Argument])))[0];}
 
     /**
      * Modifys class properties
-     * @param argobj 
-     * @param targetobject 
+     * @param argobj - Object to be mapped from
+     * @param targetobject - Object (Class Instance) to be mapped to
      */
     static modifyClassProperties(argobj:object, targetobject:object){
         for (let key of Object.keys(argobj))
             targetobject[key] = argobj[key];
     }
     /**
-     * Merge objects of arguments 
+     * Standard Merge objects function
      */
     static mergeObjects = function (startObj: object, AddObj: object){
         let returnObject: object = {};

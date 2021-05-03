@@ -1,5 +1,12 @@
+/**
+ * Context
+ */
 class Context extends Component {
     // retArgs:objectAny;   // <- this will appear
+    /**
+     * Creates an instance of context.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -9,6 +16,9 @@ class Context extends Component {
             this.contextNode = sample();
         this.build();
     }
+    /**
+     * Builds context
+     */
     build() {
         let THIS = this;
         let displaycells = [];
@@ -39,6 +49,11 @@ class Context extends Component {
         this.displaygroup = new DisplayGroup(`${this.label}_ContextV`, false, ...displaycells);
         this.displaycell = new DisplayCell(this.displaygroup);
     }
+    /**
+     * Contexts on mouse move
+     * @param event
+     * @returns
+     */
     static ContextOnMouseMove(event) {
         let X = event.clientX, Y = event.clientY;
         let length = Context.activeInstanceArray.length;
@@ -49,10 +64,18 @@ class Context extends Component {
             topInstance.pop();
         return Context.activeInstanceArray.length;
     }
+    /**
+     * Pops all
+     * @param [keepFunction]
+     */
     static popAll(keepFunction = false) {
         while (Context.activeInstanceArray.length)
             Context.activeInstanceArray[Context.activeInstanceArray.length - 1].pop(keepFunction);
     }
+    /**
+     * Pops context
+     * @param [keepFunction]
+     */
     pop(keepFunction = false) {
         // console.log("pop")
         let index = Context.activeInstanceArray.indexOf(this);
@@ -64,6 +87,10 @@ class Context extends Component {
                 window.onmousemove = FunctionStack.pop(window.onmousemove, "ContextOnMouseMove");
         }
     }
+    /**
+     * Launchs context
+     * @param [event]
+     */
     launchContext(event = undefined) {
         // console.log("launch")
         event.preventDefault();
@@ -84,12 +111,20 @@ class Context extends Component {
         this.isShown = true;
         Render.scheduleUpdate();
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         let eventObject = {};
         eventObject[this.eventType] = this.launchContext.bind(this);
         this.parentDisplayCell.addEvents(eventObject);
     }
     ;
+    /**
+     * Sets coord
+     * @param [Pcoord]
+     * @param [event]
+     */
     setCoord(Pcoord = this.parentDisplayCell.coord, event = this.launchEvent) {
         let Dcoord = this.displaycell.coord;
         let Mcoord = Handler.ScreenSizeCoord;
@@ -101,6 +136,13 @@ class Context extends Component {
             height = Mcoord.y + Mcoord.height - y;
         this.displaycell.coord.copy(Mcoord, x, y, width, height);
     }
+    /**
+     * Renders context
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         if (this.isShown) {
             this.setCoord();
@@ -127,151 +169,3 @@ Context.pointOffset = 5;
 Context.activeInstanceArray = [];
 function context(...Arguments) { return new Context(...Arguments); }
 Render.register("Context", Context);
-// class Context extends Base {
-//     static lastRendered: Context;
-//     static subOverlapPx = 4;
-//     static instances:Context[] = [];
-//     static activeInstances:Context[] = [];
-//     static defaultObj = {one:function(){console.log("one")},
-//                          two:function(){console.log("two")},
-//                          three:function(){console.log("three")},
-//                         }
-//     static defaults = {
-//         width : 100,
-//         cellheight : 25,
-//         css: Css.theme.context, //Context.defaultContextCss
-//     }
-//     static argMap = {
-//         string : ["label"],
-//         number : ["width", "cellheight"]
-//     }
-//     label:string;
-//     menuObj:object;
-//     x: number;
-//     y: number;
-//     width:number;
-//     cellheight:number;
-//     height:number;
-//     displaycell: DisplayCell;
-//     coord:Coord = new Coord();
-//     css: Css;
-//     handler:Handler;
-//     launchcell:DisplayCell;
-//     parentContext:Context;
-//     constructor(...Arguments: any) {
-//         super();this.buildBase(...Arguments);
-//         if (!this.menuObj) this.menuObj = Context.defaultObj;
-//         Context.makeLabel(this);
-//         this.changeMenuObject();
-//     }
-//     changeMenuObject(menuObj = this.menuObj){
-//         if (menuObj != this.menuObj) this.menuObj = menuObj;
-//         this.height = Object.keys(this.menuObj).length*this.cellheight;
-//         let THIS = this;
-//         let cellArray:DisplayCell[] = [];
-//         let numKeys = Object.keys(menuObj).length;
-//         let index = 0;
-//         let newContext: Context;
-//         this.displaycell = v({cellArray:[/* filled at bottom */]})
-//         for (let key in menuObj) {
-//             let valueFunctionOrObject = menuObj[key];
-//             if (typeof(valueFunctionOrObject) == "function"){
-//                 cellArray.push(I(   ( (index == numKeys-1)?"100%":`${this.cellheight}px`  ),
-//                                     {innerHTML: key},
-//                                     this.css,
-//                                     events({onclick: function(mouseEvent:MouseEvent){
-//                                         valueFunctionOrObject(mouseEvent, THIS);
-//                                         THIS.popAll();
-//                                     }})
-//                                 ));
-//             } else {
-//                 newContext = new Context({menuObj:valueFunctionOrObject,
-//                                           width: this.width,
-//                                           cellheight: this.cellheight,
-//                                           css: this.css,
-//                                           parentContext: this
-//                                         });
-//                 newContext.launchcell=I(( (index == numKeys-1)?"100%":`${this.cellheight}px`),
-//                         {innerHTML: key},
-//                         this.css,
-//                         events({onmouseover: function() {
-//                                     let coord = THIS.coord;
-//                                     if (!newContext.handler)
-//                                         newContext.render(undefined, coord.x + coord.width - Context.subOverlapPx,
-//                                                         coord.y + THIS.cellheight*(index-2) - Context.subOverlapPx);
-//                                 }
-//                         })
-//                 );
-//                 cellArray.push(newContext.launchcell);       
-//             }
-//             index += 1; 
-//         }
-//         this.displaycell.displaygroup.cellArray = cellArray;
-//     }
-//     popAll(){
-//         this.pop();
-//         if (this.parentContext) this.parentContext.popAll();
-//         else window.onmousemove = function(){};
-//     }
-//     pop(){
-//         this.handler.pop();
-//         this.handler = undefined;
-//         if (this.parentContext) Context.lastRendered = this.parentContext;
-//     }
-//     managePop(mouseEvent:MouseEvent) {
-//         let x = mouseEvent.clientX;
-//         let y= mouseEvent.clientY;
-//         let pop = !this.displaycell.coord.isPointIn(x,y)
-//         if (pop && this.launchcell && this.launchcell.coord.isPointIn(x,y)) pop = false;
-//         let THIS = this
-//         if (pop){
-//             if (this.parentContext)
-//                 window.onmousemove = function(mouseEvent:MouseEvent){THIS.parentContext.managePop(mouseEvent);};
-//             else
-//             window.onmousemove = function(){};
-//             this.pop();
-//         }
-//     }
-//     render(mouseEvent:MouseEvent, x:number=0, y:number=0) {
-//         if (mouseEvent){
-//             mouseEvent.preventDefault();
-//             x=mouseEvent.clientX - Context.subOverlapPx;
-//             y=mouseEvent.clientY - Context.subOverlapPx;
-//         }
-//         this.coord.assign(x, y, (this.launchcell && (this.width == Context.defaults.width)) ? this.launchcell.coord.width :this.width , this.height);
-//         this.handler = H(this.displaycell, this.coord, {type:"context"});
-//         let THIS = this;
-//         window.onmousemove = function(mouseEvent:MouseEvent){THIS.managePop(mouseEvent);}
-//         Context.lastRendered = this;
-//     }
-//     // static Render(displaygroup:DisplayGroup, zindex:number, derender = false, node:node_):zindexAndRenderChildren{
-//     //     return {zindex}
-//     // }
-//     hMenuBarx(){return this.launchcell.coord.x}
-//     hMenuBary(){return this.launchcell.coord.y+this.launchcell.coord.height}
-//     vMenuBarx(){return this.launchcell.coord.x + this.launchcell.coord.width}
-//     vMenuBary(){return this.launchcell.coord.y}
-// }
-// //Render.register("Context", Context);
-// let context = function(...Arguments:any){
-//     let newcontext=new Context(...Arguments);
-//     return function(mouseEvent:MouseEvent){newcontext.render(mouseEvent);return false;}
-// }
-// let hMenuBar = function(...Arguments:any){ // requires launchcell
-//     let newcontext=new Context(...Arguments);
-//     return function(mouseEvent:MouseEvent){
-//         if (Context.lastRendered && Context.lastRendered.handler){
-//             Context.lastRendered.popAll();
-//         }
-//         newcontext.render(undefined, newcontext.hMenuBarx(), newcontext.hMenuBary());
-//         return false;
-//     }
-// }
-// let vMenuBar = function(...Arguments:any){ // requires launchcell
-//     let newcontext=new Context(...Arguments);
-//     return function(mouseEvent:MouseEvent){
-//         newcontext.render(undefined, newcontext.vMenuBarx(), newcontext.vMenuBary());
-//         return false;
-//     }
-// }
-// // export {vMenuBar, hMenuBar, context, Context}

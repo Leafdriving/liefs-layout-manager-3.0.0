@@ -1,3 +1,6 @@
+/**
+ * Tree
+ */
 declare class Tree_ extends Component {
     static labelNo: number;
     static instances: {
@@ -43,10 +46,37 @@ declare class Tree_ extends Component {
     selectedStartIndex: number;
     selectParents: boolean;
     cascadeCollapse: boolean;
+    /**
+     * Creates an instance of tree .
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Icons tree
+     * @param node
+     * @returns
+     */
     static icon(node: node_): string;
+    /**
+     * News node
+     * @param node
+     */
     newNode(node: node_): void;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     preRender(derender: boolean, node: node_, zindex: number): Component[] | void;
+    /**
+     * Renders tree
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender: boolean, node: node_, zindex: number): Component[];
     delete(): void;
 }

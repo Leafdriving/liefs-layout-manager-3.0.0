@@ -1,9 +1,10 @@
 /**
- * Point
+ * Point - Yea, a interface would do the same thing... so whats the point!
  */
 class Point{x:number;y:number}
 /**
- * Within
+ * Within - Coordinates of the Parent - to determine if this (child) is partially cut off
+ * or goes partially (or completly) out of view
  */
 class Within{
     lockedToScreenSize:boolean;

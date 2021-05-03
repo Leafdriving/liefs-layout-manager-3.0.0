@@ -1,3 +1,6 @@
+/**
+ * Pages
+ */
 declare class Pages extends Component {
     static labelNo: number;
     static instances: {
@@ -26,9 +29,22 @@ declare class Pages extends Component {
     currentPage_: number;
     set currentPage(value: number);
     get currentPage(): number;
+    /**
+     * Creates an instance of pages.
+     * @param Arguments
+     */
     constructor(...Arguments: any);
+    /**
+     * Determines whether connect on
+     */
     onConnect(): void;
+    /**
+     * Renders pages
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender: boolean, node: node_, zindex: number): Component[];
-    delete(): void;
 }
 declare function P(...Arguments: any): DisplayCell;

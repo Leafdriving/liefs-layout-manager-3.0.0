@@ -1,5 +1,12 @@
+/**
+ * Pages
+ */
 class Pages extends Component {
     // retArgs:objectAny;   // <- this will appear
+    /**
+     * Creates an instance of pages.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -40,12 +47,22 @@ class Pages extends Component {
         }
     }
     get currentPage() { return this.currentPage_; }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         let THIS = this;
         this.parentDisplayCell.getdim = function () { return THIS.dim; };
         this.parentDisplayCell.setdim = function (value) { THIS.dim = value; };
     }
     ;
+    /**
+     * Renders pages
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         let newPage = this.evalFunction(this);
         if (newPage != this.prevPage)
@@ -57,7 +74,6 @@ class Pages extends Component {
         return [this.cellArray[this.currentPage]];
     }
     ;
-    delete() { }
 }
 Pages.labelNo = 0;
 Pages.instances = {};

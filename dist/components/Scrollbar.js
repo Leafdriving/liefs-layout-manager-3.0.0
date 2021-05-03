@@ -1,5 +1,8 @@
 class ScrollBar extends Component {
-    // retArgs:objectAny;   // <- this will appear
+    /**
+     * Creates an instance of scroll bar.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -35,23 +38,41 @@ class ScrollBar extends Component {
     get ratio() {
         return pf.decimalPlaces(this.pixelsUsed / this.scrollbarPixels, 3);
     }
+    /**
+     * Updates scroll bar
+     * @param pixelsUsed
+     * @param pixelsAvailable
+     * @returns update
+     */
     update(pixelsUsed, pixelsAvailable) {
         this.pixelsUsed = pixelsUsed;
         this.pixelsAvailable = pixelsAvailable;
         this.limit();
         return this.offset;
     }
+    /**
+     * Limits scroll bar
+     */
     limit() {
         if (this.offset < 0)
             this.offset = 0;
         if (this.offset > this.pixelsUsed - this.pixelsAvailable)
             this.offset = this.pixelsUsed - this.pixelsAvailable;
     }
+    /**
+     * Determines whether connect on
+     */
     onConnect() {
         this.preRender(undefined, undefined);
         Render.scheduleUpdate();
     }
     ;
+    /**
+     * Pre render
+     * @param derender
+     * @param node
+     * @returns render
+     */
     preRender(derender, node) {
         if (this.isHor)
             this.parentDisplayCell.coord.height -= this.barSize;
@@ -60,6 +81,13 @@ class ScrollBar extends Component {
         return undefined;
     }
     ;
+    /**
+     * Renders scroll bar
+     * @param derender
+     * @param node
+     * @param zindex
+     * @returns render
+     */
     Render(derender, node, zindex) {
         // console.log("Scrollbar Render");
         let coord = this.parentDisplayCell.coord;
@@ -74,10 +102,16 @@ class ScrollBar extends Component {
         return [this.scrollbarDisplayCell];
     }
     ;
+    /**
+     * Deletes scroll bar
+     */
     delete() {
         Render.update(this.scrollbarDisplayCell, true);
         Render.scheduleUpdate();
     }
+    /**
+     * Builds scroll bar
+     */
     build() {
         let label = this.label + ((this.isHor) ? "_H" : "_V");
         this.preBar = I(`${label}_preBar`, ScrollBar.ScrollBar_whiteBG, events({ onclick: this.onSmallerBar.bind(this) }));
@@ -86,26 +120,10 @@ class ScrollBar extends Component {
         this.scrollbarDisplayCell =
             h(`${label}_h`, this.isHor, I(`${label}_backArrow`, `${this.barSize}px`, (this.isHor) ? ScrollBar.leftArrowSVG("scrollArrows") : ScrollBar.upArrowSVG("scrollArrows"), events({ onholdclick: [this.onSmallArrow.bind(this)] })), this.preBar, this.Bar, this.postBar, I(`${label}_forwardArrow`, `${this.barSize}px`, (this.isHor) ? ScrollBar.rightArrowSVG("scrollArrows") : ScrollBar.downArrowSVG("scrollArrows"), events({ onholdclick: [this.onBigArrow.bind(this)] })));
     }
-    onSmallArrow(e) {
-        this.offset -= this.ratio * this.scrollMultiplier;
-        this.limit();
-        Render.scheduleUpdate();
-    }
-    onBigArrow(e) {
-        this.offset += this.ratio * this.scrollMultiplier;
-        this.limit();
-        Render.scheduleUpdate();
-    }
-    onSmallerBar(e) {
-        this.offset -= this.pixelsAvailable;
-        this.limit();
-        Render.scheduleUpdate();
-    }
-    onBiggerBar(e) {
-        this.offset += this.pixelsAvailable;
-        this.limit();
-        Render.scheduleUpdate();
-    }
+    onSmallArrow(e) { this.offset -= this.ratio * this.scrollMultiplier; this.limit(); Render.scheduleUpdate(); }
+    onBigArrow(e) { this.offset += this.ratio * this.scrollMultiplier; this.limit(); Render.scheduleUpdate(); }
+    onSmallerBar(e) { this.offset -= this.pixelsAvailable; this.limit(); Render.scheduleUpdate(); }
+    onBiggerBar(e) { this.offset += this.pixelsAvailable; this.limit(); Render.scheduleUpdate(); }
     onBarDown(e) { ScrollBar.startoffset = this.offset; }
     onBarMove(e, xmouseDiff) {
         let dist = (this.isHor) ? xmouseDiff["x"] : xmouseDiff["y"];
@@ -132,7 +150,14 @@ Render.register("ScrollBar", ScrollBar);
 function scrollbar(...Arguments) {
     return new ScrollBar(...Arguments);
 }
+/**
+ * On drag
+ */
 class onDrag_ extends Base {
+    /**
+     * Creates an instance of on drag .
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.onDown = function () { };
@@ -169,6 +194,9 @@ class onDrag_ extends Base {
             }
         };
     }
+    /**
+     * Resets on drag
+     */
     reset() {
         FunctionStack.pop((window.onmousemove), "onDragMove");
         FunctionStack.pop((window.onmouseup), "onDragUp");
@@ -186,7 +214,14 @@ onDrag_.argMap = {
 };
 function onDrag(...Arguments) { return (new onDrag_(...Arguments)).returnObject; }
 Element_.customEvents["ondrag"] = function (newData) { return onDrag(newData); };
+/**
+ * On hold click
+ */
 class onHoldClick_ extends Base {
+    /**
+     * Creates an instance of on hold click .
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -213,6 +248,9 @@ class onHoldClick_ extends Base {
             }
         };
     }
+    /**
+     * Repeats on hold click
+     */
     repeat() {
         let THIS = this;
         this.FUNCTION(this.mouseDownEvent);

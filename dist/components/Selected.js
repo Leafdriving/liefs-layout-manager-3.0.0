@@ -1,4 +1,11 @@
+/**
+ * Selected
+ */
 class Selected extends Base {
+    /**
+     * Creates an instance of selected.
+     * @param Arguments
+     */
     constructor(...Arguments) {
         super();
         this.buildBase(...Arguments);
@@ -10,6 +17,9 @@ class Selected extends Base {
     }
     get indexer() { return this.getIndexerArray(this); }
     set indexer(value) { this.indexer_ = value; }
+    /**
+     * Updates events
+     */
     updateEvents() {
         let THIS = this;
         for (let index = 0; index < this.indexer.length; index++) {
@@ -23,6 +33,10 @@ class Selected extends Base {
                 displayCells[index].addEvents({ onclick: function selected(e) { THIS.select(displayCells[index]); } });
         }
     }
+    /**
+     * Selects selected
+     * @param displaycellOrNumber
+     */
     select(displaycellOrNumber) {
         let newIndex;
         let type = Arguments_.typeof(displaycellOrNumber);
@@ -39,13 +53,25 @@ class Selected extends Base {
             }
         }
     }
+    /**
+     * Clears selected
+     */
     clear() { this.onUnselect(this.currentButtonIndex); this.currentButtonIndex = undefined; }
+    /**
+     * Indexs of
+     * @param displaycell
+     * @returns of
+     */
     indexOf(displaycell) {
         for (let index = 0; index < this.indexer.length; index++)
             if (this.indexer[index].indexOf(displaycell) > -1)
                 return index;
         return undefined;
     }
+    /**
+     * Determines whether select on
+     * @param index
+     */
     onSelect(index) {
         // console.log("onSelectCalled", this.indexer)
         let selectArray = (this.indexer[index]);
@@ -58,6 +84,10 @@ class Selected extends Base {
                 this.onselect(index, displaycell);
         }
     }
+    /**
+     * Determines whether unselect on
+     * @param index
+     */
     onUnselect(index) {
         let unSelectArray = (this.indexer[index]);
         for (let i = 0; i < unSelectArray.length; i++) {
