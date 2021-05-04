@@ -389,7 +389,8 @@ class debounce_ extends FunctionStack_BASE {
 }
 function debounce(FUNCTION, delay) { return new debounce_(FUNCTION, delay); }
 /**
- * Node
+ * Node - A basic Tree Object.  Node by itself doesn't do much.
+ * It purpose is determined by its parent, usually a Tree_ Object
  */
 class node_ extends Base {
     /**
@@ -406,7 +407,7 @@ class node_ extends Base {
             node_.makeLabel(this);
     }
     /**
-     * News node
+     * New node - Used Interally
      * @param THIS
      * @param Arguments
      * @returns
@@ -417,7 +418,7 @@ class node_ extends Base {
         return newnode;
     }
     /**
-     * Determines whether array as
+     * Returns a Tree Structure, as An Array
      * @param node
      * @param [traverseFunction]
      * @returns array
@@ -429,10 +430,10 @@ class node_ extends Base {
     }
     /**
      * Traverses node
-     * @param node
-     * @param traverseFunction
-     * @param [traverseChildren]
-     * @param [traverseNode]
+     * @param node - parent starting node
+     * @param traverseFunction - what to do on each iteration
+     * @param [traverseChildren] - Boolean Return - Traverse this Child?
+     * @param [traverseNode] - Boolean Return - Traverse this Node?
      */
     static traverse(node, traverseFunction, traverseChildren = function () { return true; }, traverseNode = function () { return true; }) {
         if (traverseNode(node)) {
@@ -443,6 +444,9 @@ class node_ extends Base {
                         node_.traverse(node.children[index], traverseFunction, traverseChildren, traverseNode);
         }
     }
+    /**
+     * Gets previous sibling
+     */
     get PreviousSibling() {
         if (!this.ParentNode)
             return undefined;
@@ -455,6 +459,9 @@ class node_ extends Base {
             this.ParentNode.children.splice(index, 0, newNode);
         }
     }
+    /**
+     * Gets next sibling
+     */
     get NextSibling() {
         if (!this.ParentNode)
             return undefined;
@@ -468,7 +475,7 @@ class node_ extends Base {
         }
     }
     /**
-     * Depths node
+     * Depth - returns number of steps up parent, to reach the root
      * @param [deep]
      * @returns
      */
@@ -482,7 +489,7 @@ class node_ extends Base {
         return deep;
     }
     /**
-     * Lengths node
+     * Length - returns number of node children (Recursive)
      * @param [count]
      * @returns
      */
@@ -491,7 +498,9 @@ class node_ extends Base {
         return count;
     }
     /**
-     * News child
+     * Create New Child Node.
+     * Either a) Fill node.Arguements Array or
+     * b) insert type node here.
      * @param Arguments
      * @returns child
      */
@@ -507,7 +516,9 @@ class node_ extends Base {
         return newNode;
     }
     /**
-     * News sibling
+     * Create New Sibling Node
+     * Either a) Fill node.Arguements Array or
+     * b) insert type node here.
      * @param Arguments
      * @returns sibling
      */
@@ -523,7 +534,7 @@ class node_ extends Base {
         return newNode;
     }
     /**
-     * Pops node
+     * Pops node from node tree
      * @returns
      */
     pop() {
@@ -532,12 +543,12 @@ class node_ extends Base {
         return this;
     }
     /**
-     * Dones node
+     * Done - returns ParentNodeTree
      * @returns
      */
     done() { return this.ParentNodeTree; }
     /**
-     * Roots node
+     * Return Root Node Of Tree
      * @returns
      */
     root() {
@@ -548,12 +559,12 @@ class node_ extends Base {
         return node;
     }
     /**
-     * Parents node
+     * Returns Parent of Current Node
      * @returns
      */
     parent() { return this.ParentNode; }
     /**
-     * Logs node
+     * Logs node to console.  set (true) to get full node objects as well
      * @param [showNode]
      */
     log(showNode = false) {
@@ -583,6 +594,7 @@ node_.defaults = { collapsed: false };
 node_.argMap = {
     string: ["label"],
 };
+// Sample Node Provided in Source
 function sample() {
     let node = new node_();
     node.newChild("One")
@@ -632,7 +644,7 @@ class Within {
     get height() { return (this.lockedToScreenSize) ? Handler.ScreenSizeCoord.height : this.height_; }
     set height(height) { this.height_ = height; }
     /**
-     * Resets within
+     * Resets within to undefined values
      */
     reset() { this.x = this.y = this.width = this.height = undefined; }
     ;
@@ -648,7 +660,7 @@ class Coord extends Base {
         _width_.set(this, void 0);
         _height_.set(this, void 0);
         /**
-         * Within  of coord
+         * Within of coord
          */
         this.within = new Within();
         this.buildBase(...Arguments);
@@ -667,19 +679,15 @@ class Coord extends Base {
     set height(height) { if (!this.frozen)
         __classPrivateFieldSet(this, _height_, height); }
     /**
-     * Gets x2
+     * Gets x2 (Read Only)
      */
     get x2() { return this.x + this.width; }
     /**
-     * Gets y2
+     * Gets y2 (Read Only)
      */
     get y2() { return this.y + this.height; }
     /**
-     * Sets offset
-     * @param [x]
-     * @param [y]
-     * @param [width]
-     * @param [height]
+     * Sets offset (x=0, y=0, width=0, height=0)
      */
     setOffset(x = 0, y = 0, width = 0, height = 0) {
         if (x == 0 && y == 0 && width == 0 && height == 0)
@@ -688,9 +696,8 @@ class Coord extends Base {
             this.offset = { x, y, width, height };
     }
     /**
-     * Merges within
-     * @param p
-     * @returns
+     * Merges parent Within with this Within (to see if part goes off-screen)
+     * @param p Coord Object
      */
     mergeWithin(p /* parent Coord */) {
         if (!this.frozen) {
@@ -704,11 +711,7 @@ class Coord extends Base {
         return this;
     }
     /**
-     * Applys margins
-     * @param [left]
-     * @param [right]
-     * @param [top]
-     * @param [bottom]
+     * Applys margins (left:number = 0, right:number = 0, top:number =0, bottom:number =0)
      * @returns
      */
     applyMargins(left = 0, right = 0, top = 0, bottom = 0) {
@@ -719,17 +722,8 @@ class Coord extends Base {
         return this;
     }
     /**
-     * Assigns coord
-     * @param [x]
-     * @param [y]
-     * @param [width]
-     * @param [height]
-     * @param [wx]
-     * @param [wy]
-     * @param [wwidth]
-     * @param [wheight]
-     * @param [zindex]
-     * @returns
+     * Assigns coord (x, y, width, height, wx, wy, wwidth, wheight, zindex)
+     * Used for assigning a "New Coord Root"
      */
     assign(x = undefined, y = undefined, width = undefined, height = undefined, wx = undefined, wy = undefined, wwidth = undefined, wheight = undefined, zindex = undefined) {
         if (!this.frozen) {
@@ -755,13 +749,8 @@ class Coord extends Base {
         return this;
     }
     /**
-     * Copys coord
-     * @param fromCoord
-     * @param [x]
-     * @param [y]
-     * @param [width]
-     * @param [height]
-     * @param [zindex]
+     * Copys coord (and uses their 'within', and applies child co-ordinates)
+     * @param (fromCoord,  x, y, width, height, zindex)
      * @returns
      */
     copy(fromCoord, x = undefined, y = undefined, width = undefined, height = undefined, zindex = undefined) {
@@ -792,8 +781,9 @@ class Coord extends Base {
     }
     /**
      * Determines whether coord completely outside is
-     * @param [WITHIN]
-     * @returns
+     * if true, de-render, rather than render.
+     * @param WITHIN or Coord
+     * @returns boolean
      */
     isCoordCompletelyOutside(WITHIN = this.within) {
         return ((WITHIN.x + WITHIN.width < this.x) ||
@@ -802,20 +792,19 @@ class Coord extends Base {
             (WITHIN.y > this.y + this.height));
     }
     /**
-     * Derenders coord
+     * Derenders - if was already derender, or completly outside, then derender.
      * @param derender
-     * @returns
+     * @returns boolean
      */
     derender(derender) { return derender || this.isCoordCompletelyOutside(); }
     /**
-     * Determines whether point in is
-     * @param x
-     * @param y
-     * @returns true if point in
+     * Determines whether point is in Coord
+     * @param (x, y)
+     * @returns true if point whithin Coord.
      */
     isPointIn(x, y) { return (this.x <= x && x <= this.x + this.width && this.y <= y && y <= this.y + this.height); }
     /**
-     * Red coord
+     * Red coord - used for de-bugging - Renders a Coord "Red"
      * @param [id]
      */
     red(id = "red") {
@@ -831,30 +820,28 @@ class Coord extends Base {
 }
 _x_ = new WeakMap(), _y_ = new WeakMap(), _width_ = new WeakMap(), _height_ = new WeakMap();
 /**
- * Instances  of coord
+ * Instances of coord object (Key = label)
  */
 Coord.instances = [];
 /**
- * Active instances of coord
+ * Active instances of coord (Not Implemented)
  */
 Coord.activeInstances = [];
 /**
- * Defaults  of coord
+ * Defaults of coord
  */
 Coord.defaults = { x: 0, y: 0, width: 0, height: 0, zindex: 0 };
 /**
- * Arg map of coord
+ * Arg map of coord: for example:
+ * instance.label = first string argument
+ * instance.x , y, width, height, zindex = first though fifth arguments
+ * instance.hidewidth = first boolean argument
  */
 Coord.argMap = {
     string: ["label"],
     number: ["x", "y", "width", "height", "zindex"],
     boolean: ["hideWidth"]
 };
-/**
- * Copy arg map of coord
- */
-Coord.CopyArgMap = { Within: ["Within"], Coord: ["Coord"], boolean: ["isRoot"],
-    number: ["x", "y", "width", "height", "zindex"] };
 function events(object_) { return { processEvents: object_ }; }
 /**
  * Element
@@ -1097,12 +1084,14 @@ Element_.customEvents = {};
 Element_.attribFilter = ["id"];
 function I(...Arguments) { return new DisplayCell(new Element_(...Arguments)); }
 /**
- * Display cell
+ * Display cell houses all the Componenets within a Coord (div)
+ * It can have multiple children.  All Components must be withing a DisplayCell
  */
 class DisplayCell extends Component {
     /**
      * Creates an instance of display cell.
-     * @param Arguments
+     * Arguments are first string = label, and object to become children.
+     * usually, you will use displaycellInstance.addComponent()
      */
     constructor(...Arguments) {
         super();
@@ -1128,9 +1117,7 @@ class DisplayCell extends Component {
     set dim(value) { this.setdim(value); }
     get dim() { return this.getdim(); }
     /**
-     * Adds component
-     * @param component
-     * @returns component
+     * Adds component to children of DisplayCell, and runs onConnect()
      */
     addComponent(component) {
         DisplayCell.objectTypes.add(component.constructor.name);
@@ -1142,10 +1129,9 @@ class DisplayCell extends Component {
         return this;
     }
     /**
-     * Gets component
-     * @param type
-     * @param [label]
-     * @returns component
+     * Gets component from the Children of DisplayCell
+     * @param type ie Element_, DisplayGroup
+     * @param label of above type, in cases of multiple similar types in children
      */
     getComponent(type, label = undefined) {
         for (let index = 0; index < this.children.length; index++) {
@@ -1160,16 +1146,12 @@ class DisplayCell extends Component {
         return undefined;
     }
     /**
-     * Deletes component
-     * @param type
-     * @param [label]
-     * @returns true if component
+     * Deletes component from DisplayCell Children
      */
     deleteComponent(type, label = undefined) {
         let returnValue = false;
         for (let index = 0; index < this.children.length; index++) {
             const component = this.children[index];
-            // console.log(Arguments_.typeof(component), component["label"], label)
             if ((Arguments_.typeof(component) == type) && (!label || label == component["label"])) {
                 component["parentDisplayCell"] = undefined;
                 this.children.splice(index--, 1);
@@ -1179,11 +1161,8 @@ class DisplayCell extends Component {
         return returnValue;
     }
     /**
-     * Pre render
-     * @param derender
-     * @param node
-     * @param zindex
-     * @returns
+     * Pre render phase is identical to Render, but gives you an oppotunity
+     * to change the parent DisplayCells, before they are rendered
      */
     preRender(derender, node, zindex) {
         let returnArray = [];
@@ -1199,11 +1178,8 @@ class DisplayCell extends Component {
         return returnArray;
     }
     /**
-     * Renders display cell
-     * @param [derender]
-     * @param node
-     * @param zindex
-     * @returns
+     * Renders objects and expects a return array of children of this object to be rendered.
+     * It is at this point that the co-ordinates of the children are set.
      */
     Render(derender = false, node, zindex) {
         this.coord.applyMargins(this.marginLeft, this.marginRight, this.marginTop, this.marginBottom);
@@ -1214,8 +1190,7 @@ class DisplayCell extends Component {
         return this.children;
     }
     /**
-     * Adds events
-     * @param Argument
+     * Adds events to expected child Element_
      */
     addEvents(Argument) {
         let element_ = this.getComponent("Element_");
@@ -1223,9 +1198,9 @@ class DisplayCell extends Component {
             element_.addEvents(Argument);
     }
     /**
-     * Margins assign
-     * @param cell
-     * @param numberArray
+     * Sets Margins, in different ways depending on number of arguments.
+     * if one, all set to that value, if two, left and right to first, top and bottom to second,
+     * if 4, left, right, top, bottom set to those values
      */
     static marginAssign(cell, numberArray) {
         switch (numberArray.length) {
@@ -1249,7 +1224,7 @@ class DisplayCell extends Component {
 }
 DisplayCell.labelNo = 0;
 /**
- * Instances  of display cell
+ * Instances of display cell as object key=label of DisplayCell
  */
 DisplayCell.instances = {};
 DisplayCell.activeInstances = {};
@@ -1259,12 +1234,16 @@ DisplayCell.argMap = {
 };
 DisplayCell.objectTypes = new Set();
 /**
- * Display group
+ * Display group Objects stores an Array of children to be
+ * rendered in either a column (vertical) or row (horizontal)
  */
 class DisplayGroup extends Component {
     /**
      * Creates an instance of display group.
-     * @param Arguments
+     * first string argument is label,
+     * first number argument is number of pixels between cells
+     * optional "dim" value expected (ends with "px" or "%")
+     * if new DisplayGroup() - first boolean true = horizontal, false = vertical
      */
     constructor(...Arguments) {
         super();
@@ -1281,7 +1260,8 @@ class DisplayGroup extends Component {
     set dim(value) { this.dim_ = value; }
     get coord() { return (this.parentDisplayCell) ? this.parentDisplayCell.coord : undefined; }
     /**
-     * Determines whether connect on
+     * This is called by the parent when it finds this child.
+     * Parent retrieves "dim" value of this, and copies Margins.
      */
     onConnect() {
         let THIS = this;
@@ -1292,11 +1272,8 @@ class DisplayGroup extends Component {
     }
     ;
     /**
-     * Renders display group
-     * @param derender
-     * @param node
-     * @param zindex
-     * @returns render
+     * Renders Displaygroup (Called during Render Phase)
+     * (derender:boolean, node:node_, zindex:number)
      */
     Render(derender, node, zindex) {
         // console.log("Render")
@@ -1573,12 +1550,13 @@ Handler.linkHandlerNewList = [];
 Handler.ScreenSizeCoord = new Coord();
 function H(...Arguments) { return new DisplayCell(new Handler(...Arguments)); }
 /**
- * Css
+ * Css - This class is used like a css sheet.
+ * It stores the data in an object, rather than css sheet
  */
 class Css extends Base {
     /**
      * Creates an instance of css.
-     * @param Arguments
+     * First String is classname, Second is css, third is onhover css, fourth is on Selected
      */
     constructor(...Arguments) {
         super();
@@ -1617,11 +1595,7 @@ class Css extends Base {
         this.css = this.makeString();
     }
     /**
-     * Makes string
-     * @param [obj]
-     * @param [postfix]
-     * @param [addToClassName]
-     * @returns string
+     * Converts Obect to String
      */
     makeString(obj = this.cssObj, postfix = "", addToClassName = "") {
         let returnString = `${(this.isClassname) ? "." : ""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix : ""} {\n`;
@@ -1631,8 +1605,7 @@ class Css extends Base {
         return returnString;
     }
     /**
-     * Makes obj
-     * @param [str]
+     * Makes an object from a css string (within the {} of class definition)
      * @returns obj
      */
     makeObj(str = this.css) {
@@ -1655,7 +1628,7 @@ class Css extends Base {
         return obj;
     }
     /**
-     * Updates css
+     * Updates css Objects in DOM <style id="llmstyle"></style>
      */
     static update() {
         let style = document.getElementById(Css.elementId);
@@ -1679,7 +1652,6 @@ class Css extends Base {
             }
         }
         style.innerHTML = outstring;
-        // console.log("outstring",outstring)
         if (!alreadyexists)
             document.getElementsByTagName('head')[0].appendChild(style);
     }
@@ -1689,14 +1661,15 @@ Css.instances = {};
 Css.activeInstances = {};
 Css.defaults = { isClassname: true };
 /**
- * Arg map of css
+ * Argument map of css
+ * First String is classname, Second is css, third is onhover css, fourth is on Selected
  */
 Css.argMap = {
     string: ["classname", "css", "cssHover", "cssSelect", "cssSelectHover"],
     boolean: ["isClassname"]
 };
 /**
- * Delete on first run classname of css
+ * On First Run, all elements with class = "remove", are removed.
  */
 Css.deleteOnFirstRunClassname = ".remove";
 Css.advisedDiv = new Css("div[llm]", "position:absolute;", false, { type: "llm" });
@@ -1704,11 +1677,11 @@ Css.advisedBody = new Css("body", "overflow: auto hidden;", false, { type: "llm"
 Css.advisedHtml = new Css("html", "overflow: auto hidden;", false, { type: "llm" });
 function css(...Arguments) { return new Css(...Arguments); }
 /**
- * Render
+ * Render Object - Renders Components
  */
 class Render {
     /**
-     * Schedules update
+     * Schedules update - Prefered Method for updating
      */
     static scheduleUpdate() {
         if (Render.firstRun) {
@@ -1744,7 +1717,8 @@ class Render {
         }
     }
     /**
-     * Updates render
+     * Updates render - usually called for de-render
+     * update(SomeObject, true);
      * @param [components_]
      * @param [derender]
      * @param [parentNode]
@@ -1790,7 +1764,7 @@ Render.zindexHandlerIncrement = 100;
 Render.pleaseUpdate = false;
 Render.firstRun = true;
 /**
- * Classes  of render
+ * Classes of render - Used for determinine what modules are loaded
  */
 Render.classes = { /* DragBar,for wxample... filled in when modules load. */};
 class ScrollBar extends Component {
@@ -2948,7 +2922,6 @@ class Stretch extends Component {
         Stretch.makeLabel(this);
         Stretch.instances[this.label] = this;
         this.build();
-        console.log("Stretch Created", this.modal);
         if (this.modal)
             this.modal.children.push(this);
         this.parentDisplayCell = this.modal.parentDisplayCell;

@@ -291,7 +291,6 @@ class Stretch extends Component {
         Stretch.makeLabel(this);
         Stretch.instances[this.label] = this;
         this.build();
-        console.log("Stretch Created", this.modal);
         if (this.modal)
             this.modal.children.push(this);
         this.parentDisplayCell = this.modal.parentDisplayCell;

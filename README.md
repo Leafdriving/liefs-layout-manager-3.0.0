@@ -8,12 +8,16 @@ Full Manual is available here:
 
 [https://leafdriving.github.io/liefs-layout-manager-3.0.0/Manual/Manual.html](https://leafdriving.github.io/liefs-layout-manager-3.0.0/Manual/Manual.html)
 
-Liefs Layout Manager is a framework for creating Dynamic Web Pages.  It is a client-side solution to advanced layouts of 'div' Elements.  It does not need "installation" and can be added to you webpage by simply adding one line of code:
+Liefs Layout Manager is a framework for creating Dynamic Web Pages.  It is a client-side solution to advanced layouts of 'div' Elements.  It keeps the dom clean, by removing all non-visible 'div's from the dom.
+
+It does not need "installation" and can be added to you webpage by simply adding one line of code:
 ```
 // Full Script with Docs
 <script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3_FULL.js"></script>
 // Minimized Version
 <script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3_FULL.min.js"></script>
+// Scoped to llm Version - llm.h rather than h etc...
+<script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3_SCOPED.min.js"></script>
 ```
 Note: the above is the full documented version.  You can load the 'min' version, or simply the components you require as shown here:
 ```
@@ -27,6 +31,17 @@ Note: the above is the full documented version.  You can load the 'min' version,
 <script src="https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/components/Tree.min.js"></script>
 ```
 The Full version is still smaller than JQuery, so it's pretty small.
+
+You can import, of course:
+```
+// https://leafdriving.github.io/liefs-layout-manager-3.0.0/dist/liefs-layout-managerV3_FULL_MODULE.js
+// From depends on how you save the file (or use NPM)
+import {pf, Arguments_, Base, Component, FunctionStack_BASE, FunctionStack, debounce_,
+debounce, node_, sample, Point, Within, Coord, events, Element_, DisplayCell, DisplayGroup,
+h, v, Handler, H, Css, css, Render, ScrollBar, scrollbar, onDrag_, onDrag, onHoldClick_,
+onHoldClick, Selected, Pages, P, Tree_, Context, context, Modal, winModal, Stretch, DragBar,
+dragbar} from 'liefs-layout-manager';
+```
 
 Liefs layout Manager includes 'Context': (Right-click and Drop Down Menus)
 

@@ -224,7 +224,8 @@ declare class debounce_ extends FunctionStack_BASE {
 }
 declare function debounce(FUNCTION: Function, delay: number): debounce_;
 /**
- * Node
+ * Node - A basic Tree Object.  Node by itself doesn't do much.
+ * It purpose is determined by its parent, usually a Tree_ Object
  */
 declare class node_ extends Base {
     static labelNo: number;
@@ -239,14 +240,14 @@ declare class node_ extends Base {
     };
     static argMap: objectStringArray;
     /**
-     * News node
+     * New node - Used Interally
      * @param THIS
      * @param Arguments
      * @returns
      */
     static newNode(THIS: node_, ...Arguments: any): node_;
     /**
-     * Determines whether array as
+     * Returns a Tree Structure, as An Array
      * @param node
      * @param [traverseFunction]
      * @returns array
@@ -254,20 +255,29 @@ declare class node_ extends Base {
     static asArray(node: node_, traverseFunction?: (node: node_) => any): any[];
     /**
      * Traverses node
-     * @param node
-     * @param traverseFunction
-     * @param [traverseChildren]
-     * @param [traverseNode]
+     * @param node - parent starting node
+     * @param traverseFunction - what to do on each iteration
+     * @param [traverseChildren] - Boolean Return - Traverse this Child?
+     * @param [traverseNode] - Boolean Return - Traverse this Node?
      */
     static traverse(node: node_, traverseFunction: (node: node_) => void, traverseChildren?: (node: node_) => boolean, traverseNode?: (node: node_) => boolean): void;
     label: string;
     Arguments: any;
     ParentNodeTree: any;
     ParentNode: node_;
+    /**
+     * Gets previous sibling
+     */
     get PreviousSibling(): node_;
     set PreviousSibling(newNode: node_);
+    /**
+     * Gets next sibling
+     */
     get NextSibling(): node_;
     set NextSibling(newNode: node_);
+    /**
+     * Collapsed  true if node is collapsed
+     */
     collapsed: boolean;
     children: node_[];
     /**
@@ -276,51 +286,55 @@ declare class node_ extends Base {
      */
     constructor(...Arguments: any);
     /**
-     * Depths node
+     * Depth - returns number of steps up parent, to reach the root
      * @param [deep]
      * @returns
      */
     depth(deep?: number): number;
     /**
-     * Lengths node
+     * Length - returns number of node children (Recursive)
      * @param [count]
      * @returns
      */
     length(count?: number): number;
     /**
-     * News child
+     * Create New Child Node.
+     * Either a) Fill node.Arguements Array or
+     * b) insert type node here.
      * @param Arguments
      * @returns child
      */
     newChild(...Arguments: any): node_;
     /**
-     * News sibling
+     * Create New Sibling Node
+     * Either a) Fill node.Arguements Array or
+     * b) insert type node here.
      * @param Arguments
      * @returns sibling
      */
     newSibling(...Arguments: any): node_;
     /**
-     * Pops node
+     * Pops node from node tree
      * @returns
      */
     pop(): this;
     /**
-     * Dones node
+     * Done - returns ParentNodeTree
      * @returns
      */
     done(): any;
     /**
-     * Roots node
+     * Return Root Node Of Tree
      * @returns
      */
     root(): node_;
     /**
-     * Parents node
+     * Returns Parent of Current Node
      * @returns
      */
     parent(): node_;
     /**
-     * Logs node
+     * Logs node to console.  set (true) to get full node objects as well
      * @param [showNode]
      */
     log(showNode?: boolean): void;
@@ -357,11 +371,11 @@ declare class Within {
      */
     constructor(...Arguments: any);
     /**
-     * Resets within
+     * Resets within to undefined values
      */
     reset(): void;
     /**
-     * To string of within
+     * To string of within (No Implemented yet)
      */
     toString: Function;
 }
@@ -371,15 +385,15 @@ declare class Within {
 declare class Coord extends Base {
     #private;
     /**
-     * Instances  of coord
+     * Instances of coord object (Key = label)
      */
     static instances: Coord[];
     /**
-     * Active instances of coord
+     * Active instances of coord (Not Implemented)
      */
     static activeInstances: Coord[];
     /**
-     * Defaults  of coord
+     * Defaults of coord
      */
     static defaults: {
         x: number;
@@ -389,7 +403,10 @@ declare class Coord extends Base {
         zindex: number;
     };
     /**
-     * Arg map of coord
+     * Arg map of coord: for example:
+     * instance.label = first string argument
+     * instance.x , y, width, height, zindex = first though fifth arguments
+     * instance.hidewidth = first boolean argument
      */
     static argMap: {
         string: string[];
@@ -399,12 +416,6 @@ declare class Coord extends Base {
     /**
      * Copy arg map of coord
      */
-    static CopyArgMap: {
-        Within: string[];
-        Coord: string[];
-        boolean: string[];
-        number: string[];
-    };
     /**
      * Label  of coord
      */
@@ -422,27 +433,27 @@ declare class Coord extends Base {
     get height(): number;
     set height(height: number);
     /**
-     * Gets x2
+     * Gets x2 (Read Only)
      */
     get x2(): number;
     /**
-     * Gets y2
+     * Gets y2 (Read Only)
      */
     get y2(): number;
     /**
-     * Zindex  of coord
+     * Zindex of coord
      */
     zindex: number;
     /**
-     * Within  of coord
+     * Within of coord
      */
     within: Within;
     /**
-     * Hide width of coord
+     * Hide width of coord - if true, 'div' ends at end of text, rather than end of cell size.
      */
     hideWidth: boolean;
     /**
-     * Offset  of coord
+     * Offset  of coord - Used for "Moving" DisplayCells (Not Implemented yet)
      */
     offset: {
         x: number;
@@ -452,50 +463,27 @@ declare class Coord extends Base {
     };
     constructor(...Arguments: any);
     /**
-     * Sets offset
-     * @param [x]
-     * @param [y]
-     * @param [width]
-     * @param [height]
+     * Sets offset (x=0, y=0, width=0, height=0)
      */
     setOffset(x?: number, y?: number, width?: number, height?: number): void;
     /**
-     * Merges within
-     * @param p
-     * @returns
+     * Merges parent Within with this Within (to see if part goes off-screen)
+     * @param p Coord Object
      */
     mergeWithin(p: Coord): this;
     /**
-     * Applys margins
-     * @param [left]
-     * @param [right]
-     * @param [top]
-     * @param [bottom]
+     * Applys margins (left:number = 0, right:number = 0, top:number =0, bottom:number =0)
      * @returns
      */
     applyMargins(left?: number, right?: number, top?: number, bottom?: number): this;
     /**
-     * Assigns coord
-     * @param [x]
-     * @param [y]
-     * @param [width]
-     * @param [height]
-     * @param [wx]
-     * @param [wy]
-     * @param [wwidth]
-     * @param [wheight]
-     * @param [zindex]
-     * @returns
+     * Assigns coord (x, y, width, height, wx, wy, wwidth, wheight, zindex)
+     * Used for assigning a "New Coord Root"
      */
     assign(x?: any, y?: any, width?: any, height?: any, wx?: any, wy?: any, wwidth?: any, wheight?: any, zindex?: any): this;
     /**
-     * Copys coord
-     * @param fromCoord
-     * @param [x]
-     * @param [y]
-     * @param [width]
-     * @param [height]
-     * @param [zindex]
+     * Copys coord (and uses their 'within', and applies child co-ordinates)
+     * @param (fromCoord,  x, y, width, height, zindex)
      * @returns
      */
     copy(fromCoord: Coord, x?: number, y?: number, width?: number, height?: number, zindex?: number): this;
@@ -505,25 +493,25 @@ declare class Coord extends Base {
     log(): void;
     /**
      * Determines whether coord completely outside is
-     * @param [WITHIN]
-     * @returns
+     * if true, de-render, rather than render.
+     * @param WITHIN or Coord
+     * @returns boolean
      */
     isCoordCompletelyOutside(WITHIN?: Coord | Within): boolean;
     /**
-     * Derenders coord
+     * Derenders - if was already derender, or completly outside, then derender.
      * @param derender
-     * @returns
+     * @returns boolean
      */
     derender(derender: boolean): boolean;
     /**
-     * Determines whether point in is
-     * @param x
-     * @param y
-     * @returns true if point in
+     * Determines whether point is in Coord
+     * @param (x, y)
+     * @returns true if point whithin Coord.
      */
     isPointIn(x: number, y: number): boolean;
     /**
-     * Red coord
+     * Red coord - used for de-bugging - Renders a Coord "Red"
      * @param [id]
      */
     red(id?: string): void;
@@ -658,12 +646,13 @@ declare class Element_ extends Component {
 }
 declare function I(...Arguments: any): DisplayCell;
 /**
- * Display cell
+ * Display cell houses all the Componenets within a Coord (div)
+ * It can have multiple children.  All Components must be withing a DisplayCell
  */
 declare class DisplayCell extends Component {
     static labelNo: number;
     /**
-     * Instances  of display cell
+     * Instances of display cell as object key=label of DisplayCell
      */
     static instances: {
         [key: string]: DisplayCell;
@@ -694,59 +683,48 @@ declare class DisplayCell extends Component {
     min: number;
     /**
      * Creates an instance of display cell.
-     * @param Arguments
+     * Arguments are first string = label, and object to become children.
+     * usually, you will use displaycellInstance.addComponent()
      */
     constructor(...Arguments: any);
     /**
-     * Adds component
-     * @param component
-     * @returns component
+     * Adds component to children of DisplayCell, and runs onConnect()
      */
     addComponent(component: Component): DisplayCell;
     /**
-     * Gets component
-     * @param type
-     * @param [label]
-     * @returns component
+     * Gets component from the Children of DisplayCell
+     * @param type ie Element_, DisplayGroup
+     * @param label of above type, in cases of multiple similar types in children
      */
     getComponent(type: string, label?: string): object;
     /**
-     * Deletes component
-     * @param type
-     * @param [label]
-     * @returns true if component
+     * Deletes component from DisplayCell Children
      */
     deleteComponent(type: string, label?: string): boolean;
     /**
-     * Pre render
-     * @param derender
-     * @param node
-     * @param zindex
-     * @returns
+     * Pre render phase is identical to Render, but gives you an oppotunity
+     * to change the parent DisplayCells, before they are rendered
      */
     preRender(derender: boolean, node: node_, zindex: number): any[];
     /**
-     * Renders display cell
-     * @param [derender]
-     * @param node
-     * @param zindex
-     * @returns
+     * Renders objects and expects a return array of children of this object to be rendered.
+     * It is at this point that the co-ordinates of the children are set.
      */
     Render(derender: boolean, node: node_, zindex: number): Component[];
     /**
-     * Adds events
-     * @param Argument
+     * Adds events to expected child Element_
      */
     addEvents(Argument: object): void;
     /**
-     * Margins assign
-     * @param cell
-     * @param numberArray
+     * Sets Margins, in different ways depending on number of arguments.
+     * if one, all set to that value, if two, left and right to first, top and bottom to second,
+     * if 4, left, right, top, bottom set to those values
      */
     static marginAssign(cell: DisplayCell, numberArray: number[]): void;
 }
 /**
- * Display group
+ * Display group Objects stores an Array of children to be
+ * rendered in either a column (vertical) or row (horizontal)
  */
 declare class DisplayGroup extends Component {
     static labelNo: number;
@@ -777,19 +755,20 @@ declare class DisplayGroup extends Component {
     offset: number;
     /**
      * Creates an instance of display group.
-     * @param Arguments
+     * first string argument is label,
+     * first number argument is number of pixels between cells
+     * optional "dim" value expected (ends with "px" or "%")
+     * if new DisplayGroup() - first boolean true = horizontal, false = vertical
      */
     constructor(...Arguments: any);
     /**
-     * Determines whether connect on
+     * This is called by the parent when it finds this child.
+     * Parent retrieves "dim" value of this, and copies Margins.
      */
     onConnect(): void;
     /**
-     * Renders display group
-     * @param derender
-     * @param node
-     * @param zindex
-     * @returns render
+     * Renders Displaygroup (Called during Render Phase)
+     * (derender:boolean, node:node_, zindex:number)
      */
     Render(derender: boolean, node: node_, zindex: number): DisplayCell[];
     /**
@@ -884,7 +863,8 @@ declare class Handler extends Component {
 }
 declare function H(...Arguments: any): DisplayCell;
 /**
- * Css
+ * Css - This class is used like a css sheet.
+ * It stores the data in an object, rather than css sheet
  */
 declare class Css extends Base {
     static theme: any;
@@ -905,14 +885,15 @@ declare class Css extends Base {
         isClassname: boolean;
     };
     /**
-     * Arg map of css
+     * Argument map of css
+     * First String is classname, Second is css, third is onhover css, fourth is on Selected
      */
     static argMap: {
         string: string[];
         boolean: string[];
     };
     /**
-     * Delete on first run classname of css
+     * On First Run, all elements with class = "remove", are removed.
      */
     static deleteOnFirstRunClassname: string;
     classname: string;
@@ -928,7 +909,7 @@ declare class Css extends Base {
     isClassname: boolean;
     /**
      * Creates an instance of css.
-     * @param Arguments
+     * First String is classname, Second is css, third is onhover css, fourth is on Selected
      */
     constructor(...Arguments: any);
     /**
@@ -937,21 +918,16 @@ declare class Css extends Base {
      */
     newString(data: string): void;
     /**
-     * Makes string
-     * @param [obj]
-     * @param [postfix]
-     * @param [addToClassName]
-     * @returns string
+     * Converts Obect to String
      */
     makeString(obj?: object, postfix?: string, addToClassName?: string): string;
     /**
-     * Makes obj
-     * @param [str]
+     * Makes an object from a css string (within the {} of class definition)
      * @returns obj
      */
     makeObj(str?: string): object;
     /**
-     * Updates css
+     * Updates css Objects in DOM <style id="llmstyle"></style>
      */
     static update(): void;
     static advisedDiv: Css;
@@ -960,7 +936,7 @@ declare class Css extends Base {
 }
 declare function css(...Arguments: any): Css;
 /**
- * Render
+ * Render Object - Renders Components
  */
 declare class Render {
     static node: node_;
@@ -969,7 +945,7 @@ declare class Render {
     static pleaseUpdate: boolean;
     static firstRun: boolean;
     /**
-     * Schedules update
+     * Schedules update - Prefered Method for updating
      */
     static scheduleUpdate(): void;
     /**
@@ -978,7 +954,8 @@ declare class Render {
      */
     static fullupdate(derender?: boolean): void;
     /**
-     * Updates render
+     * Updates render - usually called for de-render
+     * update(SomeObject, true);
      * @param [components_]
      * @param [derender]
      * @param [parentNode]
@@ -986,7 +963,7 @@ declare class Render {
      */
     static update(components_?: Component[] | Component, derender?: boolean, parentNode?: node_, zindex?: number): void;
     /**
-     * Classes  of render
+     * Classes of render - Used for determinine what modules are loaded
      */
     static classes: {};
     /**
