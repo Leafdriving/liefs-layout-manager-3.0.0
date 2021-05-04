@@ -1,5 +1,6 @@
 /**
- * Node 
+ * Node - A basic Tree Object.  Node by itself doesn't do much.
+ * It purpose is determined by its parent, usually a Tree_ Object
  */
 class node_ extends Base {
     static labelNo = 0;
@@ -10,7 +11,7 @@ class node_ extends Base {
         string : ["label"],
     }
     /**
-     * News node
+     * New node - Used Interally
      * @param THIS 
      * @param Arguments 
      * @returns  
@@ -21,7 +22,7 @@ class node_ extends Base {
         return newnode;
     }
     /**
-     * Determines whether array as
+     * Returns a Tree Structure, as An Array
      * @param node 
      * @param [traverseFunction] 
      * @returns array 
@@ -33,10 +34,10 @@ class node_ extends Base {
     }
     /**
      * Traverses node 
-     * @param node 
-     * @param traverseFunction 
-     * @param [traverseChildren] 
-     * @param [traverseNode] 
+     * @param node - parent starting node
+     * @param traverseFunction - what to do on each iteration
+     * @param [traverseChildren] - Boolean Return - Traverse this Child?
+     * @param [traverseNode] - Boolean Return - Traverse this Node?
      */
     static traverse(node:node_, traverseFunction:(node: node_) => void,
             traverseChildren:(node: node_)=>boolean = function(){return true},
@@ -56,6 +57,9 @@ class node_ extends Base {
     ParentNodeTree: any;  /* Tree_  */
     ParentNode:node_ = undefined;
 
+    /**
+     * Gets previous sibling
+     */
     get PreviousSibling() {
         if (!this.ParentNode) return undefined;
         let index = this.ParentNode.children.indexOf(this);
@@ -66,6 +70,9 @@ class node_ extends Base {
             this.ParentNode.children.splice(index, 0, newNode);
         }
     }
+    /**
+     * Gets next sibling
+     */
     get NextSibling() {
         if (!this.ParentNode) return undefined;
         let index = this.ParentNode.children.indexOf(this);
@@ -77,6 +84,9 @@ class node_ extends Base {
             this.ParentNode.children.splice(index + 1, 0, newNode);
         }
     }
+    /**
+     * Collapsed  true if node is collapsed
+     */
     collapsed: boolean;
     children:node_[] = [];
     /**
@@ -89,7 +99,7 @@ class node_ extends Base {
         if (!this.label) node_.makeLabel(this);
     }
     /**
-     * Depths node 
+     * Depth - returns number of steps up parent, to reach the root
      * @param [deep] 
      * @returns  
      */
@@ -102,7 +112,7 @@ class node_ extends Base {
         return deep;
     }
     /**
-     * Lengths node 
+     * Length - returns number of node children (Recursive)
      * @param [count] 
      * @returns  
      */
@@ -111,7 +121,9 @@ class node_ extends Base {
         return count;
     }
     /**
-     * News child
+     * Create New Child Node.
+     * Either a) Fill node.Arguements Array or
+     * b) insert type node here.
      * @param Arguments 
      * @returns child 
      */
@@ -128,7 +140,9 @@ class node_ extends Base {
         
     }
     /**
-     * News sibling
+     * Create New Sibling Node
+     * Either a) Fill node.Arguements Array or
+     * b) insert type node here.
      * @param Arguments 
      * @returns sibling 
      */
@@ -141,10 +155,10 @@ class node_ extends Base {
         newNode.ParentNodeTree = this.ParentNodeTree;
         newNode.ParentNode = this.ParentNode;
         this.NextSibling = newNode;
-        return newNode;
+        return newNode; 
     }
     /**
-     * Pops node 
+     * Pops node from node tree
      * @returns  
      */
     pop(){
@@ -153,12 +167,12 @@ class node_ extends Base {
         return this;
     }
     /**
-     * Dones node 
+     * Done - returns ParentNodeTree
      * @returns  
      */
     done(){return this.ParentNodeTree}
     /**
-     * Roots node 
+     * Return Root Node Of Tree
      * @returns  
      */
     root(){
@@ -167,12 +181,12 @@ class node_ extends Base {
         return node;
     }
     /**
-     * Parents node 
+     * Returns Parent of Current Node 
      * @returns  
      */
     parent(){return this.ParentNode}
     /**
-     * Logs node 
+     * Logs node to console.  set (true) to get full node objects as well
      * @param [showNode] 
      */
     log(showNode:boolean = false){
@@ -191,7 +205,7 @@ class node_ extends Base {
         }
     }
 }
-
+// Sample Node Provided in Source
 function sample(){
     let node = new node_();
     node.newChild("One")

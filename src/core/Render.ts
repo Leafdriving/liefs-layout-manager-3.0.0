@@ -1,5 +1,5 @@
 /**
- * Render
+ * Render Object - Renders Components
  */
 class Render {
     static node:node_;
@@ -8,7 +8,7 @@ class Render {
     static pleaseUpdate:boolean = false;
     static firstRun=true;
     /**
-     * Schedules update
+     * Schedules update - Prefered Method for updating
      */
     static scheduleUpdate(){
         if (Render.firstRun){
@@ -47,7 +47,8 @@ class Render {
         }
     }
     /**
-     * Updates render
+     * Updates render - usually called for de-render
+     * update(SomeObject, true);
      * @param [components_] 
      * @param [derender] 
      * @param [parentNode] 
@@ -81,7 +82,7 @@ class Render {
         }
     }
     /**
-     * Classes  of render
+     * Classes of render - Used for determinine what modules are loaded
      */
     static classes = { /* DragBar,for wxample... filled in when modules load. */};
     /**

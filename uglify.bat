@@ -7,3 +7,6 @@ call uglifyjs dist/components/Pages.js > dist/components/Pages.min.js
 call uglifyjs dist/components/Scrollbar.js > dist/components/Scrollbar.min.js
 call uglifyjs dist/components/Selected.js > dist/components/Selected.min.js
 call uglifyjs dist/components/Tree.js > dist/components/Tree.min.js
+call copy dist\liefs-layout-managerV3_FULL.js dist\liefs-layout-managerV3_FULL_MODULE.js
+call type MakeModule.js >> dist/liefs-layout-managerV3_FULL_MODULE.js
+call webpack

@@ -455,6 +455,7 @@ on the screen, use:</p>
 <p>Context is simply a drop down menu.  This could occur on a "right-click" or a "click" or a "onhover" etc... 
 How it is used is up to you.  Lets look at an example.</p>
 <div handler="context_01_" style="width:100%;height:400px;"></div>
+<p>This Example shows context added to a Tree, Cell, and Pages.  You can event Context, a Context if you want to.</p>
 </div>
 
 
@@ -462,13 +463,136 @@ How it is used is up to you.  Lets look at an example.</p>
     <div class="heading">DragBar</div>
 <p>A DragBar resizes one DisplayCell within a DisplayGroup.</p>
 <div handler="DragBar_01_" style="width:100%;height:400px;"></div>
+<p>A DragBar can be added to any DisplayCell.  Argument are label:string, min:number, max:number, and width:number (optional)</p>
 </div>
 
 
 <div id="Modal" class="allowScroll">
     <div class="heading">Modal</div>
-<p>A Modal is a Handler, defined within a "window".</p>
+<p>A Modal is a Handler, defined within a "window". It has a "pre-built" style called a winModal. Try this example
+In the console now, or simply launch another instance <button onclick="launchModal1()">here</button></p>
+
+<pre><code id="modal_1">new winModal("MyModal_1", "My Title", "This is the Body")</code></pre><script>
+js("modal_1");
+let launchModal1 = function(){
+    if ("Modal_ex1" in winModal.instances) winModal.instances.Modal_ex1.show()
+    else new winModal("Modal_ex1", "My Title", "This is the Body");
+}
+</script>
+<p>Note, like all objects in Lief's Layout Manager, Each new Modal, or winModal must have it's own unique label.
+Note: By Default, a Modal/winModal does not "Stretch" - but this can easily be achieved by adding one:<button onclick="launchModal2()">Launch</button></p>
+<pre><code id="modal_2">
+new winModal("MyModal_2", "My Title", "This is the Body", {
+    sizer:{ minWidth:100, maxWidth:1000, minHeight:100, maxHeight:700, width:300, height:300 }
+});
+</code></pre><script>
+js("modal_2");
+let launchModal2 = function(){
+    if ("Modal_ex2" in winModal.instances) winModal.instances.Modal_ex2.show()
+    else new winModal("Modal_ex2", "My Title", "This is the Body", {
+        sizer:{ minWidth:100, maxWidth:1000, minHeight:100, maxHeight:700, width:300, height:300 }
+    });
+}
+</script>
+<p>You can pass ANY displaycell instead of a Body String: <button onclick="launchModal3()">Launch</button></p>
+<pre><code id="modal_3">
+new winModal("MyModal_3", "My Title",
+    v("MyModal_3_v",
+        h("MyModal_3_h1",
+            I("MyModal_3_1","This", css("BlueBg","background:blue;color:white")),
+            I("MyModal_3_2","is", css("greyBG","background:gray;color:white;")),
+        ),
+        h("MyModal_3_h2",
+            I("MyModal_3_3","my", css("orangeBG","background:orange")),
+            I("MyModal_3_4","modal", css("cyanBG", "background:cyan;")),
+        ),
+    ),
+    {sizer:{ minWidth:100, maxWidth:1000, minHeight:100, maxHeight:700, width:300, height:300 }}
+);</code></pre><script>
+    js("modal_3");
+    let launchModal3 = function(){
+        if ("Modal_ex3" in winModal.instances) winModal.instances.Modal_ex3.show()
+        else new winModal("MyModal_3a", "My Title",
+            v("MyModal_3_va",
+                h("MyModal_3_h1a",
+                    I("MyModal_3_1a","This", css("BlueBg","background:blue;color:white")),
+                    I("MyModal_3_2a","is", css("greyBG","background:gray;color:white;")),
+                ),
+                h("MyModal_3_h2a",
+                    I("MyModal_3_3a","my", css("orangeBG","background:orange")),
+                    I("MyModal_3_4a","modal", css("cyanBG", "background:cyan;")),
+                ),
+            ),
+            {sizer:{ minWidth:100, maxWidth:1000, minHeight:100, maxHeight:700, width:300, height:300 }}
+        );
+    }
+    </script>
+<p>By using a Basic Modal, rather than a winModal, you can add as many Drag/close options as you wish.
+<button onclick="launchModal4()">Launch</button></p>
+<pre><code id="modal_4">
+let purpleBG = css("purpleBG", "background:purple;");
+let redBG = css("redBG", "background:red;");
+let leftDragable = I("Modal4_LeftDraggable", redBG);
+let leftClose = I("Modal4_LeftClose", "X", purpleBG, "20px");
+let rightDragable = I("Modal4_RightDraggable", redBG);
+let rightClose = I("Modal4_RightClose", "X", purpleBG, "20px");
+let myNewModal = new Modal("MyModal_4",
+    h("MyModal_4_body",
+        v("MyModal_4_left", leftDragable, leftClose, "20px"),
+        v("MyModal_4_v",
+            h("MyModal_4_h1",
+                I("MyModal_4_1","This", css("BlueBg","background:blue;color:white")),
+                I("MyModal_4_2","is", css("greyBG","background:gray;color:white;")),
+            ),
+            h("MyModal_4_h2",
+                I("MyModal_4_3","my", css("orangeBG","background:orange")),
+                I("MyModal_4_4","modal", css("cyanBG", "background:cyan;")),
+            ),
+        ),
+        v("MyModal_4_right", rightDragable, rightClose, "20px")
+    ),
+    {sizer:{ minWidth:100, maxWidth:1000, minHeight:100, maxHeight:700, width:300, height:300 }}
+)
+myNewModal.dragWith(leftDragable, rightDragable);
+myNewModal.closeWith(leftClose, rightClose)
+myNewModal.show();
+</code></pre><script>
+js("modal_4");
+let launchModal4 = function(){
+        if ("Modal_ex4" in winModal.instances) winModal.instances.Modal_ex3.show()
+        else {
+            let purpleBG = css("purpleBG", "background:purple;");
+            let redBG = css("redBG", "background:red;");
+            let leftDragablea = I("Modal4_LeftDraggablea", redBG);
+            let leftClosea = I("Modal4_LeftClosea", "X", purpleBG, "20px");
+            let rightDragablea = I("Modal4_RightDraggablea", redBG);
+            let rightClosea = I("Modal4_RightClosea", "X", purpleBG, "20px");
+            let myNewModala = new Modal("MyModal_4a",
+                    h("MyModal_4_bodya",
+                        v("MyModal_4_lefta", leftDragablea, leftClosea, "20px"),
+                        v("MyModal_4_va",
+                            h("MyModal_4_h1a",
+                                I("MyModal_4_1a","This", css("BlueBg","background:blue;color:white")),
+                                I("MyModal_4_2a","is", css("greyBG","background:gray;color:white;")),
+                            ),
+                            h("MyModal_4_h2a",
+                                I("MyModal_4_3a","my", css("orangeBG","background:orange")),
+                                I("MyModal_4_4a","modal", css("cyanBG", "background:cyan;")),
+                            ),
+                        ),
+                        v("MyModal_4_righta", rightDragablea, rightClosea, "20px")
+                    ),
+                    {sizer:{ minWidth:100, maxWidth:1000, minHeight:100, maxHeight:700, width:300, height:300 }}
+                )
+            myNewModala.dragWith(leftDragablea, rightDragablea);
+            myNewModala.closeWith(leftClosea, rightClosea)
+            myNewModala.show();
+        }
+}</script>
 </div>
+
+
+
 
 
 
