@@ -1,10 +1,11 @@
 /**
- * Display cell
+ * Display cell houses all the Componenets within a Coord (div)
+ * It can have multiple children.  All Components must be withing a DisplayCell
  */
 class DisplayCell extends Component {
     static labelNo = 0;
     /**
-     * Instances  of display cell
+     * Instances of display cell as object key=label of DisplayCell
      */
     static instances:{[key: string]: DisplayCell;} = {};
     static activeInstances:{[key: string]: DisplayCell;} = {};
@@ -32,7 +33,8 @@ class DisplayCell extends Component {
 
     /**
      * Creates an instance of display cell.
-     * @param Arguments 
+     * Arguments are first string = label, and object to become children.
+     * usually, you will use displaycellInstance.addComponent()
      */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
@@ -50,9 +52,7 @@ class DisplayCell extends Component {
         DisplayCell.instances[this.label] = this;
     }
     /**
-     * Adds component
-     * @param component 
-     * @returns component 
+     * Adds component to children of DisplayCell, and runs onConnect()
      */
     addComponent(component:Component) : DisplayCell {
         DisplayCell.objectTypes.add(component.constructor.name);
@@ -63,10 +63,9 @@ class DisplayCell extends Component {
         return this;
     }
     /**
-     * Gets component
-     * @param type 
-     * @param [label] 
-     * @returns component 
+     * Gets component from the Children of DisplayCell
+     * @param type ie Element_, DisplayGroup
+     * @param label of above type, in cases of multiple similar types in children
      */
     getComponent(type:string, label:string = undefined) : object {
         for (let index = 0; index < this.children.length; index++) {
@@ -79,16 +78,12 @@ class DisplayCell extends Component {
         return undefined;
     }
     /**
-     * Deletes component
-     * @param type 
-     * @param [label] 
-     * @returns true if component 
+     * Deletes component from DisplayCell Children
      */
     deleteComponent(type:string, label:string = undefined): boolean {
         let returnValue = false;
         for (let index = 0; index < this.children.length; index++) {
             const component = this.children[index];
-            // console.log(Arguments_.typeof(component), component["label"], label)
             if ((Arguments_.typeof(component) == type) && (!label || label == component["label"])) {
                 component["parentDisplayCell"] = undefined;
                 this.children.splice(index--, 1);
@@ -98,11 +93,8 @@ class DisplayCell extends Component {
         return returnValue;
     }
     /**
-     * Pre render
-     * @param derender 
-     * @param node 
-     * @param zindex 
-     * @returns  
+     * Pre render phase is identical to Render, but gives you an oppotunity
+     * to change the parent DisplayCells, before they are rendered
      */
     preRender(derender:boolean, node:node_, zindex:number){
         let returnArray = [];
@@ -117,11 +109,8 @@ class DisplayCell extends Component {
         return returnArray;
     }
     /**
-     * Renders display cell
-     * @param [derender] 
-     * @param node 
-     * @param zindex 
-     * @returns  
+     * Renders objects and expects a return array of children of this object to be rendered.
+     * It is at this point that the co-ordinates of the children are set.
      */
     Render(derender = false, node:node_, zindex:number) {
         this.coord.applyMargins(this.marginLeft, this.marginRight, this.marginTop, this.marginBottom);
@@ -130,17 +119,16 @@ class DisplayCell extends Component {
         return this.children;
     }
     /**
-     * Adds events
-     * @param Argument 
+     * Adds events to expected child Element_
      */
     addEvents(Argument:object){
         let element_ = <Element_>this.getComponent("Element_");
         if (element_) element_.addEvents(Argument)
     }
     /**
-     * Margins assign
-     * @param cell 
-     * @param numberArray 
+     * Sets Margins, in different ways depending on number of arguments.
+     * if one, all set to that value, if two, left and right to first, top and bottom to second,
+     * if 4, left, right, top, bottom set to those values
      */
     static marginAssign(cell:DisplayCell, numberArray:number[]) {
         switch (numberArray.length) {

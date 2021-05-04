@@ -27,11 +27,11 @@ class Within{
      */
     constructor(...Arguments: any) {}
     /**
-     * Resets within
+     * Resets within to undefined values
      */
     reset(){this.x = this.y = this.width = this.height = undefined};
     /**
-     * To string of within
+     * To string of within (No Implemented yet)
      */
     toString:Function;
 }
@@ -40,20 +40,23 @@ class Within{
  */
 class Coord extends Base {
     /**
-     * Instances  of coord
+     * Instances of coord object (Key = label)
      */
     static instances:Coord[] = [];
     /**
-     * Active instances of coord
+     * Active instances of coord (Not Implemented)
      */
     static activeInstances:Coord[] = [];
 
     /**
-     * Defaults  of coord
+     * Defaults of coord
      */
     static defaults = {x : 0, y : 0, width : 0, height: 0, zindex: 0};
     /**
-     * Arg map of coord
+     * Arg map of coord: for example:
+     * instance.label = first string argument
+     * instance.x , y, width, height, zindex = first though fifth arguments
+     * instance.hidewidth = first boolean argument
      */
     static argMap = {
         string : ["label"],
@@ -63,8 +66,8 @@ class Coord extends Base {
     /**
      * Copy arg map of coord
      */
-    static CopyArgMap = {Within : ["Within"],Coord : ["Coord"], boolean:["isRoot"],
-                         number : ["x", "y", "width", "height", "zindex"]};
+    // static CopyArgMap = {Within : ["Within"],Coord : ["Coord"], boolean:["isRoot"],
+    //                      number : ["x", "y", "width", "height", "zindex"]};
 
     /**
      * Label  of coord
@@ -89,28 +92,27 @@ class Coord extends Base {
     set height(height) {if (!this.frozen) this.#height_ = height}
 
     /**
-     * Gets x2
+     * Gets x2 (Read Only)
      */
     get x2(){return this.x + this.width}
     /**
-     * Gets y2
+     * Gets y2 (Read Only)
      */
     get y2(){return this.y + this.height}
-
     /**
-     * Zindex  of coord
+     * Zindex of coord
      */
     zindex: number;
     /**
-     * Within  of coord
+     * Within of coord
      */
     within: Within = new Within();
     /**
-     * Hide width of coord
+     * Hide width of coord - if true, 'div' ends at end of text, rather than end of cell size.
      */
     hideWidth: boolean;
     /**
-     * Offset  of coord
+     * Offset  of coord - Used for "Moving" DisplayCells (Not Implemented yet)
      */
     offset: {x:number, y:number, width:number, height:number};
 
@@ -120,20 +122,15 @@ class Coord extends Base {
         Coord.makeLabel(this);
     }
     /**
-     * Sets offset
-     * @param [x] 
-     * @param [y] 
-     * @param [width] 
-     * @param [height] 
+     * Sets offset (x=0, y=0, width=0, height=0)
      */
     setOffset(x=0, y=0, width=0, height=0){
         if (x==0 && y==0 && width ==0 && height == 0) this.offset = undefined;
         else this.offset = {x, y, width, height};
     }
     /**
-     * Merges within
-     * @param p 
-     * @returns  
+     * Merges parent Within with this Within (to see if part goes off-screen)
+     * @param p Coord Object
      */
     mergeWithin(p:Coord /* parent Coord */){
         if (!this.frozen) {
@@ -147,11 +144,7 @@ class Coord extends Base {
         return this;
     }
     /**
-     * Applys margins
-     * @param [left] 
-     * @param [right] 
-     * @param [top] 
-     * @param [bottom] 
+     * Applys margins (left:number = 0, right:number = 0, top:number =0, bottom:number =0)
      * @returns  
      */
     applyMargins(left:number = 0, right:number = 0, top:number =0, bottom:number =0){
@@ -162,17 +155,8 @@ class Coord extends Base {
         return this;
     }
     /**
-     * Assigns coord
-     * @param [x] 
-     * @param [y] 
-     * @param [width] 
-     * @param [height] 
-     * @param [wx] 
-     * @param [wy] 
-     * @param [wwidth] 
-     * @param [wheight] 
-     * @param [zindex] 
-     * @returns  
+     * Assigns coord (x, y, width, height, wx, wy, wwidth, wheight, zindex)
+     * Used for assigning a "New Coord Root"
      */
     assign(x=undefined, y=undefined, width=undefined, height=undefined,
             wx=undefined, wy=undefined, wwidth=undefined, wheight=undefined, zindex=undefined){
@@ -192,13 +176,8 @@ class Coord extends Base {
         return this;
     }
     /**
-     * Copys coord
-     * @param fromCoord 
-     * @param [x] 
-     * @param [y] 
-     * @param [width] 
-     * @param [height] 
-     * @param [zindex] 
+     * Copys coord (and uses their 'within', and applies child co-ordinates)
+     * @param (fromCoord,  x, y, width, height, zindex)
      * @returns  
      */
     copy(fromCoord:Coord,
@@ -231,8 +210,9 @@ class Coord extends Base {
 
     /**
      * Determines whether coord completely outside is
-     * @param [WITHIN] 
-     * @returns  
+     * if true, de-render, rather than render.
+     * @param WITHIN or Coord
+     * @returns boolean
      */
     isCoordCompletelyOutside(WITHIN: Coord|Within = this.within){
         return ((WITHIN.x + WITHIN.width < this.x) ||
@@ -241,20 +221,19 @@ class Coord extends Base {
                 (WITHIN.y > this.y + this.height)) 
     }
     /**
-     * Derenders coord
+     * Derenders - if was already derender, or completly outside, then derender.
      * @param derender 
-     * @returns  
+     * @returns boolean
      */
     derender(derender:boolean) {return derender || this.isCoordCompletelyOutside()}
     /**
-     * Determines whether point in is
-     * @param x 
-     * @param y 
-     * @returns true if point in 
+     * Determines whether point is in Coord
+     * @param (x, y) 
+     * @returns true if point whithin Coord.
      */
     isPointIn(x:number, y:number): boolean {return (this.x <= x && x <= this.x+this.width && this.y <= y && y <= this.y+this.height)}
     /**
-     * Red coord
+     * Red coord - used for de-bugging - Renders a Coord "Red"
      * @param [id] 
      */
     red(id="red"){

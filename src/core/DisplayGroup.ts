@@ -1,5 +1,6 @@
 /**
- * Display group
+ * Display group Objects stores an Array of children to be
+ * rendered in either a column (vertical) or row (horizontal)
  */
 class DisplayGroup extends Component {
     static labelNo = 0;
@@ -28,7 +29,10 @@ class DisplayGroup extends Component {
     
     /**
      * Creates an instance of display group.
-     * @param Arguments 
+     * first string argument is label,
+     * first number argument is number of pixels between cells
+     * optional "dim" value expected (ends with "px" or "%")
+     * if new DisplayGroup() - first boolean true = horizontal, false = vertical
      */
     constructor(...Arguments:any){
         super();this.buildBase(...Arguments);
@@ -37,7 +41,8 @@ class DisplayGroup extends Component {
         if ("DisplayCell" in this.retArgs) this.children = this.retArgs["DisplayCell"];
     }
     /**
-     * Determines whether connect on
+     * This is called by the parent when it finds this child.
+     * Parent retrieves "dim" value of this, and copies Margins.
      */
     onConnect():void{
         let THIS = this;
@@ -47,11 +52,8 @@ class DisplayGroup extends Component {
             DisplayCell.marginAssign(this.parentDisplayCell, this.retArgs["number"].slice(1));
     };
     /**
-     * Renders display group
-     * @param derender 
-     * @param node 
-     * @param zindex 
-     * @returns render 
+     * Renders Displaygroup (Called during Render Phase)
+     * (derender:boolean, node:node_, zindex:number)
      */
     Render(derender:boolean, node:node_, zindex:number):DisplayCell[]{
         // console.log("Render")

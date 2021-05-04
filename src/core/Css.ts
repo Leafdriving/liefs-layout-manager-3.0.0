@@ -1,5 +1,6 @@
 /**
- * Css
+ * Css - This class is used like a css sheet.
+ * It stores the data in an object, rather than css sheet
  */
 class Css extends Base {
     static theme:any // set by theme class
@@ -20,14 +21,15 @@ class Css extends Base {
     }
     static defaults = {isClassname : true}
     /**
-     * Arg map of css
+     * Argument map of css
+     * First String is classname, Second is css, third is onhover css, fourth is on Selected
      */
     static argMap = {
         string : ["classname", "css", "cssHover", "cssSelect", "cssSelectHover"],
         boolean : ["isClassname"]
     }
     /**
-     * Delete on first run classname of css
+     * On First Run, all elements with class = "remove", are removed.
      */
     static deleteOnFirstRunClassname=".remove";
     classname:string;
@@ -49,7 +51,7 @@ class Css extends Base {
 
     /**
      * Creates an instance of css.
-     * @param Arguments 
+     * First String is classname, Second is css, third is onhover css, fourth is on Selected 
      */
     constructor(...Arguments: any) {
         super();this.buildBase(...Arguments);
@@ -77,11 +79,7 @@ class Css extends Base {
         this.css = this.makeString();
     }
     /**
-     * Makes string
-     * @param [obj] 
-     * @param [postfix] 
-     * @param [addToClassName] 
-     * @returns string 
+     * Converts Obect to String
      */
     makeString(obj:object = this.cssObj, postfix:string = "", addToClassName=""):string{
         let returnString:string  = `${(this.isClassname)?".":""}${this.classname}${addToClassName}${(postfix) ? ":" + postfix:""} {\n`;
@@ -91,8 +89,7 @@ class Css extends Base {
         return returnString;
     }
     /**
-     * Makes obj
-     * @param [str] 
+     * Makes an object from a css string (within the {} of class definition)
      * @returns obj 
      */
     makeObj(str:string = this.css):object {
@@ -116,7 +113,7 @@ class Css extends Base {
     }
 
     /**
-     * Updates css
+     * Updates css Objects in DOM <style id="llmstyle"></style>
      */
     static update() {
         let style:HTMLElement = document.getElementById(Css.elementId);
@@ -134,7 +131,6 @@ class Css extends Base {
             if (instance.cssSelect){ outstring += instance.cssSelect + "\n";}
         }
         style.innerHTML = outstring;
-        // console.log("outstring",outstring)
         if (!alreadyexists) document.getElementsByTagName('head')[0].appendChild(style);
     }
     static advisedDiv = new Css("div[llm]","position:absolute;", false, {type:"llm"});
