@@ -630,6 +630,13 @@ let launchModal4 = function(){
     <p>Something</p>
 <div handler="Selected_01_" style="width:100%;height:400px;"></div>
 <p>Something</p>
+<script>
+let clearit = function(index){
+    Selected.instances[`Selected_01_${index}`].clear();
+    document.getElementById(`SelectedOutput${index}`).innerHTML = `<div id='SelectedOutput${index}'>Group ${index}: no selection</div><br>`;
+    DisplayCell.instances["Selected_01_output"].getComponent("Element_").innerHTML = document.getElementById("Selected_01_output").innerHTML;
+}
+</script>
 </div>
 
 
